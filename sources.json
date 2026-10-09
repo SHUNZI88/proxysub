@@ -1,0 +1,73 @@
+{
+  "_doc": "official: 正式源（每次都抓取）。origin=manual 为手工添加，discovered 为自动发现后晋升。removed: 被淘汰的源及原因（30 天内不会被重新发现）。deny_repos: 永不自动收录的仓库 owner/repo。",
+  "max_official": 30,
+  "official": [
+    {
+      "url": "https://raw.githubusercontent.com/Au1rxx/free-vpn-subscriptions/main/output/clash.yaml",
+      "origin": "manual",
+      "added": "2026-10-10"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Ruk1ng001/freeSub/main/clash.yaml",
+      "origin": "manual",
+      "added": "2026-10-10"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/PuddinCat/BestClash/refs/heads/main/proxies.yaml",
+      "origin": "manual",
+      "added": "2026-10-10"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/yy1588133/proxy-pool/main/clash.yaml",
+      "origin": "manual",
+      "added": "2026-10-10"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/snakem982/proxypool/main/source/clash-meta-2.yaml",
+      "origin": "manual",
+      "added": "2026-10-10"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/zhuhaiuk/free-nodes/main/clash_config.yaml",
+      "origin": "manual",
+      "added": "2026-10-10"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/chengaopan/AutoMergePublicNodes/master/list.meta.yml",
+      "origin": "manual",
+      "added": "2026-10-10"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Russ534/clash/cdf534db8f8c9306d61c630b840d0a1936d09dd2/bp.yaml",
+      "origin": "manual",
+      "added": "2026-10-10"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/shaoyouvip/free/main/mihomo.yaml",
+      "origin": "manual",
+      "added": "2026-10-10"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/zhangkaiitugithub/passcro/main/speednodes.yaml",
+      "origin": "manual",
+      "added": "2026-10-10"
+    },
+    {
+      "url": "https://blog.ermao.net/sub/clash/ermao.net",
+      "origin": "manual",
+      "added": "2026-10-10"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/lanzm/MetaFetch/master/list.meta.yml",
+      "origin": "manual",
+      "added": "2026-10-10"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/peasoft/NoMoreWalls/master/list.meta.yml",
+      "origin": "manual",
+      "added": "2026-10-10"
+    }
+  ],
+  "removed": [],
+  "deny_repos": []
+}
