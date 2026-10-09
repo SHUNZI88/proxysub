@@ -1,4 +1,181 @@
 {
-  "candidates": {},
+  "candidates": {
+    "https://raw.githubusercontent.com/0xRadikal/Free-v2ray-Configs/main/all/clash.yaml": {
+      "repo": "0xRadikal/Free-v2ray-Configs",
+      "stars": 710,
+      "repo_created": "2026-06-06T08:44:26Z",
+      "reputation": "ok",
+      "reputation_note": "stars=710,age=125d",
+      "required_runs": 3,
+      "first_seen": "2026-10-09",
+      "initial_nodes": 11636,
+      "runs": 1,
+      "good_streak": 1,
+      "fail_streak": 0,
+      "history": [
+        {
+          "date": "2026-10-09",
+          "count": 11636,
+          "usable": 83,
+          "unique_new": 4,
+          "tamper": 1
+        }
+      ]
+    },
+    "https://raw.githubusercontent.com/0xRadikal/Free-v2ray-Configs/main/heavy/clash.yaml": {
+      "repo": "0xRadikal/Free-v2ray-Configs",
+      "stars": 710,
+      "repo_created": "2026-06-06T08:44:26Z",
+      "reputation": "ok",
+      "reputation_note": "stars=710,age=125d",
+      "required_runs": 3,
+      "first_seen": "2026-10-09",
+      "initial_nodes": 9069,
+      "runs": 1,
+      "good_streak": 1,
+      "fail_streak": 0,
+      "history": [
+        {
+          "date": "2026-10-09",
+          "count": 9069,
+          "usable": 80,
+          "unique_new": 4,
+          "tamper": 1
+        }
+      ]
+    },
+    "https://raw.githubusercontent.com/F0rc3Run/F0rc3Run/main/Best-Results/clash.yaml": {
+      "repo": "F0rc3Run/F0rc3Run",
+      "stars": 310,
+      "repo_created": "2025-07-09T01:22:05Z",
+      "reputation": "ok",
+      "reputation_note": "stars=310,age=457d",
+      "required_runs": 3,
+      "first_seen": "2026-10-09",
+      "initial_nodes": 437,
+      "runs": 1,
+      "good_streak": 1,
+      "fail_streak": 0,
+      "history": [
+        {
+          "date": "2026-10-09",
+          "count": 437,
+          "usable": 52,
+          "unique_new": 27,
+          "tamper": 1
+        }
+      ]
+    },
+    "https://raw.githubusercontent.com/F0rc3Run/F0rc3Run/main/Best-Results/clash-provider.yaml": {
+      "repo": "F0rc3Run/F0rc3Run",
+      "stars": 310,
+      "repo_created": "2025-07-09T01:22:05Z",
+      "reputation": "ok",
+      "reputation_note": "stars=310,age=457d",
+      "required_runs": 3,
+      "first_seen": "2026-10-09",
+      "initial_nodes": 437,
+      "runs": 1,
+      "good_streak": 1,
+      "fail_streak": 0,
+      "history": [
+        {
+          "date": "2026-10-09",
+          "count": 437,
+          "usable": 52,
+          "unique_new": 27,
+          "tamper": 1
+        }
+      ]
+    },
+    "https://raw.githubusercontent.com/wzmwayne/proxy-node/main/output/radikal/clash.yaml": {
+      "repo": "wzmwayne/proxy-node",
+      "stars": 16,
+      "repo_created": "2026-07-14T15:27:48Z",
+      "reputation": "ok",
+      "reputation_note": "stars=16,age=87d",
+      "required_runs": 3,
+      "first_seen": "2026-10-09",
+      "initial_nodes": 9030,
+      "runs": 1,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": [
+        {
+          "date": "2026-10-09",
+          "count": 9030,
+          "usable": 42,
+          "unique_new": 0,
+          "tamper": 1
+        }
+      ]
+    },
+    "https://raw.githubusercontent.com/wzmwayne/proxy-node/main/output/au1rxx/clash.yaml": {
+      "repo": "wzmwayne/proxy-node",
+      "stars": 16,
+      "repo_created": "2026-07-14T15:27:48Z",
+      "reputation": "ok",
+      "reputation_note": "stars=16,age=87d",
+      "required_runs": 3,
+      "first_seen": "2026-10-09",
+      "initial_nodes": 1842,
+      "runs": 1,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": [
+        {
+          "date": "2026-10-09",
+          "count": 1842,
+          "usable": 100,
+          "unique_new": 0,
+          "tamper": 0
+        }
+      ]
+    },
+    "https://raw.githubusercontent.com/freenodess/freenodess/main/nodes/clash.yaml": {
+      "repo": "freenodess/freenodess",
+      "stars": 13,
+      "repo_created": "2026-09-04T05:29:42Z",
+      "reputation": "low",
+      "reputation_note": "stars=13,age=35d",
+      "required_runs": 5,
+      "first_seen": "2026-10-09",
+      "initial_nodes": 1840,
+      "runs": 1,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": [
+        {
+          "date": "2026-10-09",
+          "count": 1840,
+          "usable": 100,
+          "unique_new": 0,
+          "tamper": 0
+        }
+      ]
+    },
+    "https://raw.githubusercontent.com/freenodess/freenodess/main/output/clash.yaml": {
+      "repo": "freenodess/freenodess",
+      "stars": 13,
+      "repo_created": "2026-09-04T05:29:42Z",
+      "reputation": "low",
+      "reputation_note": "stars=13,age=35d",
+      "required_runs": 5,
+      "first_seen": "2026-10-09",
+      "initial_nodes": 100,
+      "runs": 1,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": [
+        {
+          "date": "2026-10-09",
+          "count": 100,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        }
+      ]
+    }
+  },
   "rejected": {}
 }

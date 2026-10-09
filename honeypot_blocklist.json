@@ -4,5 +4,18 @@
   "ips": [],
   "cidrs": [],
   "keywords": [],
-  "auto": {}
+  "auto": {
+    "fp:298dcf6bdf401c0cd44953f38356d9cd1ee0ced4": {
+      "reason": "tls_mitm:certificate verify failed: Hostname mismatch, certificate is not valid for ",
+      "added": "2026-10-09",
+      "expires": "2026-10-23",
+      "source": "https://raw.githubusercontent.com/0xRadikal/Free-v2ray-Configs/main/all/clash.yaml"
+    },
+    "fp:349ed0f6bb6d50ee2efae716c611d28c12fc5189": {
+      "reason": "tls_mitm:certificate verify failed: Hostname mismatch, certificate is not valid for ",
+      "added": "2026-10-09",
+      "expires": "2026-10-23",
+      "source": "https://raw.githubusercontent.com/F0rc3Run/F0rc3Run/main/Best-Results/clash-provider.yaml"
+    }
+  }
 }
