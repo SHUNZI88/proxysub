@@ -38,6 +38,7 @@ SOURCE_URLS = [
     "https://blog.ermao.net/sub/clash/ermao.net",
     "https://sunmiao4458.github.io/free-proxy-airport/clash.yaml",
     "https://raw.githubusercontent.com/lanzm/MetaFetch/master/list.meta.yml",
+    "https://raw.githubusercontent.com/peasoft/NoMoreWalls/master/list.meta.yml",
 ]
 
 EXCLUDE_KEYWORDS = r"(官网|流量|到期|过期|剩余|测试|无效|假|防失联|127\.0\.0|IPv6|试用|公告|电报|TG|频道)"
