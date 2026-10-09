@@ -11,6 +11,11 @@
       "count": 13,
       "error": null
     },
+    "https://raw.githubusercontent.com/zhangkaiitugithub/passcro/main/speednodes.yaml": {
+      "ok": true,
+      "count": 144,
+      "error": null
+    },
     "https://raw.githubusercontent.com/Russ534/clash/cdf534db8f8c9306d61c630b840d0a1936d09dd2/bp.yaml": {
       "ok": true,
       "count": 91,
@@ -21,24 +26,9 @@
       "count": 500,
       "error": null
     },
-    "https://raw.githubusercontent.com/zhangkaiitugithub/passcro/main/speednodes.yaml": {
-      "ok": true,
-      "count": 144,
-      "error": null
-    },
     "https://raw.githubusercontent.com/PuddinCat/BestClash/refs/heads/main/proxies.yaml": {
       "ok": true,
       "count": 16,
-      "error": null
-    },
-    "https://raw.githubusercontent.com/Pawdroid/Free-servers/main/sub": {
-      "ok": false,
-      "count": 0,
-      "error": "empty_or_unparsed"
-    },
-    "https://raw.githubusercontent.com/snakem982/proxypool/main/source/clash-meta-2.yaml": {
-      "ok": true,
-      "count": 60,
       "error": null
     },
     "https://raw.githubusercontent.com/chengaopan/AutoMergePublicNodes/master/list.meta.yml": {
@@ -46,14 +36,19 @@
       "count": 530,
       "error": null
     },
-    "https://sunmiao4458.github.io/free-proxy-airport/clash.yaml": {
-      "ok": false,
-      "count": 0,
-      "error": "empty_or_unparsed"
-    },
-    "https://blog.ermao.net/sub/clash/ermao.net": {
+    "https://raw.githubusercontent.com/snakem982/proxypool/main/source/clash-meta-2.yaml": {
       "ok": true,
-      "count": 595,
+      "count": 60,
+      "error": null
+    },
+    "https://raw.githubusercontent.com/Au1rxx/free-vpn-subscriptions/main/output/clash.yaml": {
+      "ok": true,
+      "count": 1813,
+      "error": null
+    },
+    "https://raw.githubusercontent.com/yy1588133/proxy-pool/main/clash.yaml": {
+      "ok": true,
+      "count": 1631,
       "error": null
     },
     "https://raw.githubusercontent.com/peasoft/NoMoreWalls/master/list.meta.yml": {
@@ -66,14 +61,9 @@
       "count": 986,
       "error": null
     },
-    "https://raw.githubusercontent.com/yy1588133/proxy-pool/main/clash.yaml": {
+    "https://blog.ermao.net/sub/clash/ermao.net": {
       "ok": true,
-      "count": 1631,
-      "error": null
-    },
-    "https://raw.githubusercontent.com/Au1rxx/free-vpn-subscriptions/main/output/clash.yaml": {
-      "ok": true,
-      "count": 1816,
+      "count": 595,
       "error": null
     }
   }
