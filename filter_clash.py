@@ -28,7 +28,6 @@ SOURCE_URLS = [
     "https://raw.githubusercontent.com/Ruk1ng001/freeSub/main/clash.yaml",
     "https://raw.githubusercontent.com/PuddinCat/BestClash/refs/heads/main/proxies.yaml",
     "https://raw.githubusercontent.com/yy1588133/proxy-pool/main/clash.yaml",
-    "https://raw.githubusercontent.com/Pawdroid/Free-servers/main/sub",
     "https://raw.githubusercontent.com/snakem982/proxypool/main/source/clash-meta-2.yaml",
     "https://raw.githubusercontent.com/zhuhaiuk/free-nodes/main/clash_config.yaml",
     "https://raw.githubusercontent.com/chengaopan/AutoMergePublicNodes/master/list.meta.yml",
@@ -36,7 +35,6 @@ SOURCE_URLS = [
     "https://raw.githubusercontent.com/shaoyouvip/free/main/mihomo.yaml",
     "https://raw.githubusercontent.com/zhangkaiitugithub/passcro/main/speednodes.yaml",
     "https://blog.ermao.net/sub/clash/ermao.net",
-    "https://sunmiao4458.github.io/free-proxy-airport/clash.yaml",
     "https://raw.githubusercontent.com/lanzm/MetaFetch/master/list.meta.yml",
     "https://raw.githubusercontent.com/peasoft/NoMoreWalls/master/list.meta.yml",
 ]
@@ -44,15 +42,27 @@ SOURCE_URLS = [
 EXCLUDE_KEYWORDS = r"(官网|流量|到期|过期|剩余|测试|无效|假|防失联|127\.0\.0|IPv6|试用|公告|电报|TG|频道)"
 
 REGION_RULES = {
+    # Order matters: first match wins. AI-oriented regions first.
     "🇭🇰 香港": r"(香港|HK|Hong Kong|HongKong)",
-    "🇯🇵 日本": r"(日本|JP|Japan)",
+    "🇺🇸 美国": r"(美国|US|United States|USA|America)",
     "🇸🇬 新加坡": r"(新加坡|SG|Singapore|狮城)",
-    "🇺🇸 美国": r"(美国|US|United States|USA)",
-    "🇹🇼 台湾": r"(台湾|TW|Taiwan)",
+    "🇯🇵 日本": r"(日本|JP|Japan|东京|大阪|Tokyo|Osaka)",
+    "🇰🇷 韩国": r"(韩国|韓國|KR|Korea|首尔|首爾|Seoul)",
+    "🇹🇼 台湾": r"(台湾|台灣|TW|Taiwan)",
+    "🇬🇧 英国": r"(英国|英國|UK|United Kingdom|London|伦敦)",
 }
 
-MAX_PER_REGION = 35
-MAX_OTHER = 25
+# Per-region caps for AI use: more HK/US capacity, add KR/UK, keep purity via survival+probe ranking.
+REGION_QUOTAS = {
+    "🇭🇰 香港": 45,
+    "🇺🇸 美国": 45,
+    "🇸🇬 新加坡": 35,
+    "🇯🇵 日本": 30,
+    "🇰🇷 韩国": 25,
+    "🇹🇼 台湾": 20,
+    "🇬🇧 英国": 15,
+}
+MAX_OTHER = 30  # EU/CA/AU and misc; still ranked by latency+survival
 
 TCP_TIMEOUT = 3.5
 PROBE_TIMEOUT = 8.0
@@ -72,7 +82,7 @@ BAD_SOURCES_FILE = "bad_sources.json"
 PROBE_URL = "http://www.gstatic.com/generate_204"
 
 # Cross-day survival: each consecutive day seen alive adds this many "score" points
-SURVIVAL_WEIGHT = 40  # ms-equivalent bonus per consecutive day (lower score = better)
+SURVIVAL_WEIGHT = 55  # ms-equivalent bonus per consecutive day (lower score = better)
 MAX_SURVIVAL_DAYS = 14
 
 # Demote sources that fail this many consecutive runs
@@ -396,7 +406,7 @@ def mihomo_available() -> str | None:
     return None
 
 
-def mihomo_batch_probe(proxies: list[dict], bin_path: str, limit: int = 400) -> dict[str, float]:
+def mihomo_batch_probe(proxies: list[dict], bin_path: str, limit: int = 500) -> dict[str, float]:
     """
     Start a temporary mihomo with external-controller, switch each proxy, measure PROBE_URL.
     Returns fingerprint -> latency_ms for successes.
@@ -642,9 +652,9 @@ def main() -> None:
     bin_path = mihomo_available()
     if bin_path:
         print(f"使用 mihomo 真实探测: {bin_path}")
-        # probe up to 400 fastest TCP nodes to bound runtime
+        # probe up to 500 fastest TCP nodes to bound runtime
         tcp_alive.sort(key=lambda x: x[1])
-        real_latency = mihomo_batch_probe([p for p, _ in tcp_alive], bin_path, limit=400)
+        real_latency = mihomo_batch_probe([p for p, _ in tcp_alive], bin_path, limit=500)
     else:
         print("未找到 mihomo，对 http/socks 做真实探测，其余用 TCP 延迟")
         http_socks = [(p, lat) for p, lat in tcp_alive if str(p.get("type", "")).lower() in ("http", "https", "socks5", "socks5h", "socks")]
@@ -664,7 +674,7 @@ def main() -> None:
         real_ok = fp in real_latency
         display = real_latency.get(fp, tcp_lat)
         # prefer real-ok nodes: add penalty if only TCP
-        penalty = 0.0 if real_ok or not bin_path else 800.0
+        penalty = 0.0 if real_ok or not bin_path else 1000.0
         score = display + penalty + survival_bonus_ms(fp, survival)
         scored.append((proxy, score, display, is_preferred(proxy), real_ok))
 
@@ -689,7 +699,7 @@ def main() -> None:
 
     final_proxies: list[dict] = []
     for region, nodes in region_dict.items():
-        limit = MAX_PER_REGION if region != "🌐 其他" else MAX_OTHER
+        limit = REGION_QUOTAS.get(region, MAX_OTHER)
         selected = nodes[:limit]
         for proxy, _score, display, preferred, real_ok in selected:
             # rename with latency for client-side readability
