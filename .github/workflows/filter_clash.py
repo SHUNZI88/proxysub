@@ -2,6 +2,7 @@ import requests
 import yaml
 import re
 import socket
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from collections import defaultdict
 
@@ -26,7 +27,7 @@ SOURCE_URLS = [
 # 排除垃圾节点
 EXCLUDE_KEYWORDS = r"(官网|流量|到期|过期|剩余|测试|无效|假|防失联|127\.0\.0|IPv6|试用|公告|电报|TG|频道)"
 
-# 地区分类规则（按优先级）
+# 地区分类规则
 REGION_RULES = {
     "🇭🇰 香港": r"(香港|HK|Hong Kong|HongKong)",
     "🇯🇵 日本": r"(日本|JP|Japan)",
@@ -35,13 +36,13 @@ REGION_RULES = {
     "🇹🇼 台湾": r"(台湾|TW|Taiwan)",
 }
 
-# 每个地区最多保留多少个节点
-MAX_PER_REGION = 40
-MAX_OTHER = 30
+# 每个地区最多保留数量
+MAX_PER_REGION = 35
+MAX_OTHER = 25
 
-# TCP 检测超时（秒）
-TCP_TIMEOUT = 3
-MAX_WORKERS = 50          # 并发检测数
+# TCP 检测参数
+TCP_TIMEOUT = 3.5
+MAX_WORKERS = 60
 
 OUTPUT_FILE = "clean_clash.yaml"
 # ====================================================
@@ -57,19 +58,41 @@ def fetch_proxies(url):
         print(f"失败: {e}")
         return []
 
-def is_port_open(server, port):
-    try:
-        with socket.create_connection((server, int(port)), timeout=TCP_TIMEOUT):
-            return True
-    except:
-        return False
-
-def test_proxy(proxy):
+def get_latency_and_alive(proxy):
+    """返回 (是否存活, 延迟ms)"""
     server = proxy.get("server")
     port = proxy.get("port")
     if not server or not port:
-        return False
-    return is_port_open(server, port)
+        return False, 9999
+
+    try:
+        start = time.time()
+        with socket.create_connection((server, int(port)), timeout=TCP_TIMEOUT):
+            latency = (time.time() - start) * 1000  # 毫秒
+            return True, round(latency, 1)
+    except:
+        return False, 9999
+
+def is_preferred(proxy):
+    """判断是否为优先保留的节点（Hysteria2 或 Reality）"""
+    ptype = proxy.get("type", "").lower()
+    name = proxy.get("name", "").lower()
+
+    # Hysteria2
+    if ptype in ("hysteria2", "hy2"):
+        return True
+
+    # Reality (常见于 vless)
+    if ptype == "vless":
+        if "reality-opts" in proxy or proxy.get("reality-opts"):
+            return True
+        if "reality" in name:
+            return True
+        # 有些节点用 flow 或 client-fingerprint 配合 reality
+        if proxy.get("flow") and "reality" in str(proxy.get("servername", "")).lower():
+            return True
+
+    return False
 
 def classify_proxy(name):
     for region, pattern in REGION_RULES.items():
@@ -84,7 +107,7 @@ def main():
         all_proxies.extend(fetch_proxies(url))
     print(f"原始节点总数: {len(all_proxies)}")
 
-    # 2. 基础过滤 + 去重
+    # 2. 关键词过滤 + 去重
     exclude_re = re.compile(EXCLUDE_KEYWORDS, re.IGNORECASE)
     unique = {}
     for p in all_proxies:
@@ -102,35 +125,44 @@ def main():
     candidates = list(unique.values())
     print(f"去重+关键词过滤后: {len(candidates)}")
 
-    # 3. TCP 有效性测试
-    print("开始 TCP 连通性检测...")
-    alive = []
+    # 3. TCP 检测 + 记录延迟
+    print("开始 TCP 连通性与延迟检测...")
+    alive_list = []  # [(proxy, latency, is_preferred), ...]
+
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        future_to_proxy = {executor.submit(test_proxy, p): p for p in candidates}
+        future_to_proxy = {executor.submit(get_latency_and_alive, p): p for p in candidates}
         for future in as_completed(future_to_proxy):
             proxy = future_to_proxy[future]
-            if future.result():
-                alive.append(proxy)
+            alive, latency = future.result()
+            if alive:
+                preferred = is_preferred(proxy)
+                alive_list.append((proxy, latency, preferred))
 
-    print(f"TCP 存活节点: {len(alive)}")
+    print(f"TCP 存活节点: {len(alive_list)}")
 
-    # 4. 按地区分类并精简
+    # 4. 排序：优先 Hysteria2/Reality，再按延迟从小到大
+    alive_list.sort(key=lambda x: (not x[2], x[1]))
+
+    # 5. 按地区分类并精简（优先节点会被优先保留）
     region_dict = defaultdict(list)
-    for p in alive:
-        region = classify_proxy(p.get("name", ""))
-        region_dict[region].append(p)
+    for proxy, latency, preferred in alive_list:
+        region = classify_proxy(proxy.get("name", ""))
+        region_dict[region].append((proxy, latency, preferred))
 
     final_proxies = []
     for region, nodes in region_dict.items():
         limit = MAX_PER_REGION if region != "🌐 其他" else MAX_OTHER
-        selected = nodes[:limit]
+        # 已经按优先+延迟排好序，直接取前 limit 个
+        selected = [item[0] for item in nodes[:limit]]
         final_proxies.extend(selected)
-        print(f"{region}: {len(selected)} 个")
+        pref_count = sum(1 for _, _, p in nodes[:limit] if p)
+        print(f"{region}: 保留 {len(selected)} 个（其中优先节点 {pref_count} 个）")
 
-    print(f"最终精简节点数: {len(final_proxies)}")
+    print(f"\n最终精简节点数: {len(final_proxies)}")
 
-    # 5. 生成配置
+    # 6. 生成配置
     names = [p["name"] for p in final_proxies]
+
     groups = [
         {
             "name": "🚀 节点选择",
@@ -147,9 +179,8 @@ def main():
         }
     ]
 
-    # 添加地区组
     for region in list(REGION_RULES.keys()) + ["🌐 其他"]:
-        region_names = [p["name"] for p in final_proxies if classify_proxy(p["name"]) == region]
+        region_names = [p["name"] for p in final_proxies if classify_proxy(p.get("name", "")) == region]
         if region_names:
             groups.append({
                 "name": region,
