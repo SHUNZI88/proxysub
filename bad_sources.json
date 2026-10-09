@@ -1,18 +1,18 @@
 {
   "https://raw.githubusercontent.com/Pawdroid/Free-servers/main/sub": {
-    "fail_streak": 1,
+    "fail_streak": 2,
     "last_error": "empty_or_unparsed",
     "last_count": 0
   },
   "https://raw.githubusercontent.com/zhuhaiuk/free-nodes/main/clash_config.yaml": {
     "fail_streak": 0,
     "last_error": null,
-    "last_count": 33
+    "last_count": 30
   },
   "https://raw.githubusercontent.com/shaoyouvip/free/main/mihomo.yaml": {
     "fail_streak": 0,
     "last_error": null,
-    "last_count": 48
+    "last_count": 13
   },
   "https://raw.githubusercontent.com/zhangkaiitugithub/passcro/main/speednodes.yaml": {
     "fail_streak": 0,
@@ -40,7 +40,7 @@
     "last_count": 530
   },
   "https://sunmiao4458.github.io/free-proxy-airport/clash.yaml": {
-    "fail_streak": 1,
+    "fail_streak": 2,
     "last_error": "empty_or_unparsed",
     "last_count": 0
   },
@@ -52,7 +52,7 @@
   "https://raw.githubusercontent.com/Au1rxx/free-vpn-subscriptions/main/output/clash.yaml": {
     "fail_streak": 0,
     "last_error": null,
-    "last_count": 1810
+    "last_count": 1816
   },
   "https://blog.ermao.net/sub/clash/ermao.net": {
     "fail_streak": 0,
@@ -68,5 +68,10 @@
     "fail_streak": 0,
     "last_error": null,
     "last_count": 986
+  },
+  "https://raw.githubusercontent.com/peasoft/NoMoreWalls/master/list.meta.yml": {
+    "fail_streak": 0,
+    "last_error": null,
+    "last_count": 539
   }
 }

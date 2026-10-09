@@ -1,24 +1,14 @@
 {
   "date": "2026-10-09",
   "sources": {
-    "https://raw.githubusercontent.com/Pawdroid/Free-servers/main/sub": {
-      "ok": false,
-      "count": 0,
-      "error": "empty_or_unparsed"
-    },
     "https://raw.githubusercontent.com/zhuhaiuk/free-nodes/main/clash_config.yaml": {
       "ok": true,
-      "count": 33,
+      "count": 30,
       "error": null
     },
     "https://raw.githubusercontent.com/shaoyouvip/free/main/mihomo.yaml": {
       "ok": true,
-      "count": 48,
-      "error": null
-    },
-    "https://raw.githubusercontent.com/zhangkaiitugithub/passcro/main/speednodes.yaml": {
-      "ok": true,
-      "count": 144,
+      "count": 13,
       "error": null
     },
     "https://raw.githubusercontent.com/Russ534/clash/cdf534db8f8c9306d61c630b840d0a1936d09dd2/bp.yaml": {
@@ -26,14 +16,29 @@
       "count": 91,
       "error": null
     },
-    "https://raw.githubusercontent.com/snakem982/proxypool/main/source/clash-meta-2.yaml": {
-      "ok": true,
-      "count": 60,
-      "error": null
-    },
     "https://raw.githubusercontent.com/Ruk1ng001/freeSub/main/clash.yaml": {
       "ok": true,
       "count": 500,
+      "error": null
+    },
+    "https://raw.githubusercontent.com/zhangkaiitugithub/passcro/main/speednodes.yaml": {
+      "ok": true,
+      "count": 144,
+      "error": null
+    },
+    "https://raw.githubusercontent.com/PuddinCat/BestClash/refs/heads/main/proxies.yaml": {
+      "ok": true,
+      "count": 16,
+      "error": null
+    },
+    "https://raw.githubusercontent.com/Pawdroid/Free-servers/main/sub": {
+      "ok": false,
+      "count": 0,
+      "error": "empty_or_unparsed"
+    },
+    "https://raw.githubusercontent.com/snakem982/proxypool/main/source/clash-meta-2.yaml": {
+      "ok": true,
+      "count": 60,
       "error": null
     },
     "https://raw.githubusercontent.com/chengaopan/AutoMergePublicNodes/master/list.meta.yml": {
@@ -46,19 +51,19 @@
       "count": 0,
       "error": "empty_or_unparsed"
     },
-    "https://raw.githubusercontent.com/PuddinCat/BestClash/refs/heads/main/proxies.yaml": {
-      "ok": true,
-      "count": 16,
-      "error": null
-    },
-    "https://raw.githubusercontent.com/Au1rxx/free-vpn-subscriptions/main/output/clash.yaml": {
-      "ok": true,
-      "count": 1810,
-      "error": null
-    },
     "https://blog.ermao.net/sub/clash/ermao.net": {
       "ok": true,
       "count": 595,
+      "error": null
+    },
+    "https://raw.githubusercontent.com/peasoft/NoMoreWalls/master/list.meta.yml": {
+      "ok": true,
+      "count": 539,
+      "error": null
+    },
+    "https://raw.githubusercontent.com/lanzm/MetaFetch/master/list.meta.yml": {
+      "ok": true,
+      "count": 986,
       "error": null
     },
     "https://raw.githubusercontent.com/yy1588133/proxy-pool/main/clash.yaml": {
@@ -66,9 +71,9 @@
       "count": 1631,
       "error": null
     },
-    "https://raw.githubusercontent.com/lanzm/MetaFetch/master/list.meta.yml": {
+    "https://raw.githubusercontent.com/Au1rxx/free-vpn-subscriptions/main/output/clash.yaml": {
       "ok": true,
-      "count": 986,
+      "count": 1816,
       "error": null
     }
   }
