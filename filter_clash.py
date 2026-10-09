@@ -22,22 +22,12 @@ from urllib.parse import parse_qs, unquote, urlparse
 import requests
 import yaml
 
+import honeypot as hp
+import sources_manager as sm
+
 # ====================== 配置区 ======================
-SOURCE_URLS = [
-    "https://raw.githubusercontent.com/Au1rxx/free-vpn-subscriptions/main/output/clash.yaml",
-    "https://raw.githubusercontent.com/Ruk1ng001/freeSub/main/clash.yaml",
-    "https://raw.githubusercontent.com/PuddinCat/BestClash/refs/heads/main/proxies.yaml",
-    "https://raw.githubusercontent.com/yy1588133/proxy-pool/main/clash.yaml",
-    "https://raw.githubusercontent.com/snakem982/proxypool/main/source/clash-meta-2.yaml",
-    "https://raw.githubusercontent.com/zhuhaiuk/free-nodes/main/clash_config.yaml",
-    "https://raw.githubusercontent.com/chengaopan/AutoMergePublicNodes/master/list.meta.yml",
-    "https://raw.githubusercontent.com/Russ534/clash/cdf534db8f8c9306d61c630b840d0a1936d09dd2/bp.yaml",
-    "https://raw.githubusercontent.com/shaoyouvip/free/main/mihomo.yaml",
-    "https://raw.githubusercontent.com/zhangkaiitugithub/passcro/main/speednodes.yaml",
-    "https://blog.ermao.net/sub/clash/ermao.net",
-    "https://raw.githubusercontent.com/lanzm/MetaFetch/master/list.meta.yml",
-    "https://raw.githubusercontent.com/peasoft/NoMoreWalls/master/list.meta.yml",
-]
+# 订阅源已移到 sources.json（正式源）和 candidate_sources.json（候选/试用源），
+# 由 sources_manager.py 负责自动发现、试用、晋升与淘汰。
 
 EXCLUDE_KEYWORDS = r"(官网|流量|到期|过期|剩余|测试|无效|假|防失联|127\.0\.0|IPv6|试用|公告|电报|TG|频道)"
 
@@ -68,7 +58,7 @@ TCP_TIMEOUT = 3.5
 PROBE_TIMEOUT = 8.0
 MAX_WORKERS = 60
 FETCH_WORKERS = 8
-FETCH_RETRIES = 3
+FETCH_RETRIES = 2  # at most 2 attempts per source per run
 FETCH_TIMEOUT = 25
 
 # url-test / fallback intervals (seconds)
@@ -80,13 +70,22 @@ SURVIVAL_FILE = "survival.json"
 SOURCE_STATS_FILE = "source_stats.json"
 BAD_SOURCES_FILE = "bad_sources.json"
 PROBE_URL = "http://www.gstatic.com/generate_204"
+PROBE_URL_2 = "http://cp.cloudflare.com/generate_204"   # second opinion before calling a node "tampering"
+TRACE_URL = "https://www.cloudflare.com/cdn-cgi/trace"  # HTTPS with cert verification + egress IP/loc
+PROBE_LIMIT_OFFICIAL = 500
+PROBE_PER_CANDIDATE = 20
+PROBE_BATCH = 100
+PROBE_CONCURRENCY = 32
+CANDIDATE_ONLY_PENALTY = 400.0   # nodes only offered by probation sources rank lower
+NO_HTTPS_PENALTY = 300.0         # HTTP ok but HTTPS (needed by AI sites) failed
+MAX_PER_CREDENTIAL = 8           # diversity: same uuid/password across many servers
+MAX_PER_EGRESS_IP = 3            # diversity: many nodes exiting from one IP = one operator
+TAMPER_STATUSES = ("tamper_http", "tamper_https", "tls_mitm", "bad_egress")
 
 # Cross-day survival: each consecutive day seen alive adds this many "score" points
 SURVIVAL_WEIGHT = 55  # ms-equivalent bonus per consecutive day (lower score = better)
 MAX_SURVIVAL_DAYS = 14
 
-# Demote sources that fail this many consecutive runs
-BAD_SOURCE_THRESHOLD = 3
 # ====================================================
 
 
@@ -311,25 +310,18 @@ def fetch_one(url: str) -> tuple[str, list[dict], str | None]:
     return url, [], last_err or "unknown"
 
 
-def fetch_all_sources(urls: list[str]) -> tuple[list[dict], dict]:
+def fetch_all_sources(urls: list[str]) -> tuple[dict[str, list[dict]], dict]:
     stats: dict[str, Any] = {}
-    all_proxies: list[dict] = []
+    per_source: dict[str, list[dict]] = {}
     print(f"并行拉取 {len(urls)} 个源（workers={FETCH_WORKERS}, retries={FETCH_RETRIES})...")
     with ThreadPoolExecutor(max_workers=FETCH_WORKERS) as ex:
         futs = {ex.submit(fetch_one, u): u for u in urls}
         for fut in as_completed(futs):
             url, proxies, err = fut.result()
-            stats[url] = {
-                "ok": err is None,
-                "count": len(proxies),
-                "error": err,
-            }
-            if err:
-                print(f"失败: {url} -> {err}")
-            else:
-                print(f"拉取: {url} -> {len(proxies)}")
-                all_proxies.extend(proxies)
-    return all_proxies, stats
+            stats[url] = {"ok": err is None, "count": len(proxies), "error": err}
+            per_source[url] = proxies if not err else []
+            print(f"{'失败' if err else '拉取'}: {url} -> {err or len(proxies)}")
+    return per_source, stats
 
 
 def tcp_probe(proxy: dict) -> tuple[bool, float]:
@@ -406,92 +398,124 @@ def mihomo_available() -> str | None:
     return None
 
 
-def mihomo_batch_probe(proxies: list[dict], bin_path: str, limit: int = 500) -> dict[str, float]:
-    """
-    Start a temporary mihomo with external-controller, switch each proxy, measure PROBE_URL.
-    Returns fingerprint -> latency_ms for successes.
-    """
-    results: dict[str, float] = {}
-    sample = proxies[:limit]
-    if not sample:
-        return results
+def _probe_through(port: int) -> dict:
+    """Probe one local mihomo listener. Verifies content, not just reachability."""
+    px = {"http": f"http://127.0.0.1:{port}", "https": f"http://127.0.0.1:{port}"}
+    res: dict[str, Any] = {"status": "fail"}
+    try:
+        t0 = time.time()
+        r = requests.get(PROBE_URL, proxies=px, timeout=PROBE_TIMEOUT, allow_redirects=False)
+        lat = round((time.time() - t0) * 1000, 1)
+    except Exception:
+        return res
+    if r.status_code >= 400:
+        return res  # dial failure / error page: unusable, not counted as tampering
+    if r.status_code != 204 or r.content:
+        # second opinion from a different endpoint before calling it tampering
+        try:
+            t0 = time.time()
+            r2 = requests.get(PROBE_URL_2, proxies=px, timeout=PROBE_TIMEOUT, allow_redirects=False)
+            lat = round((time.time() - t0) * 1000, 1)
+        except Exception:
+            return res
+        if r2.status_code >= 400:
+            return res  # error pages: unusable, but not proof of tampering
+        if r2.status_code != 204 or r2.content:
+            return {"status": "tamper_http", "detail": f"{r.status_code}/{r2.status_code}"}
+    res = {"status": "ok", "latency": lat, "https_ok": False}
+    try:
+        t = requests.get(TRACE_URL, proxies=px, timeout=PROBE_TIMEOUT, allow_redirects=False)
+        body = t.text if t.status_code == 200 else ""
+        kv = dict(line.split("=", 1) for line in body.splitlines() if "=" in line)
+        if t.status_code == 200 and kv.get("ip") and kv.get("h"):
+            if hp.is_bad_ip(kv["ip"]):
+                return {"status": "bad_egress", "detail": kv["ip"]}
+            res.update(https_ok=True, egress=kv["ip"], loc=kv.get("loc"))
+        elif 300 <= t.status_code < 400 or t.status_code == 200:
+            return {"status": "tamper_https", "detail": str(t.status_code)}
+    except requests.exceptions.SSLError as e:
+        msg = str(e)
+        if re.search(r"CERTIFICATE_VERIFY_FAILED|certificate verify failed|hostname mismatch|doesn't match", msg, re.I):
+            m = re.search(r"(certificate verify failed[^)'\"]*|hostname mismatch[^)'\"]*)", msg, re.I)
+            return {"status": "tls_mitm", "detail": (m.group(1) if m else msg[-120:])[:120]}
+    except Exception:
+        pass
+    return res
 
-    # unique names for mihomo
+
+def _mihomo_batch(batch: list[dict], bin_path: str) -> dict[int, dict] | None:
+    """Start one mihomo with one listener per node; probe concurrently. None => config rejected."""
+    base_port, controller = 21000, "127.0.0.1:19090"
     named = []
-    for i, p in enumerate(sample):
+    for i, p in enumerate(batch):
         q = dict(p)
         q["name"] = f"n{i}"
         named.append(q)
-
-    controller = "127.0.0.1:19090"
-    mixed_port = 17890
     cfg = {
-        "mixed-port": mixed_port,
         "allow-lan": False,
-        "mode": "global",
-        "log-level": "error",
+        "mode": "rule",
+        "log-level": "silent",
+        "ipv6": False,
         "external-controller": controller,
         "proxies": named,
-        "proxy-groups": [
-            {
-                "name": "PROBE",
-                "type": "select",
-                "proxies": [p["name"] for p in named],
-            }
+        "listeners": [
+            {"name": f"in{i}", "type": "mixed", "listen": "127.0.0.1", "port": base_port + i, "proxy": f"n{i}"}
+            for i in range(len(named))
         ],
-        "rules": ["MATCH,PROBE"],
+        "rules": ["MATCH,DIRECT"],
     }
-
     with tempfile.TemporaryDirectory(prefix="mihomo-probe-") as td:
         cfg_path = Path(td) / "config.yaml"
         cfg_path.write_text(yaml.dump(cfg, allow_unicode=True), encoding="utf-8")
-        proc = subprocess.Popen(
-            [bin_path, "-d", td, "-f", str(cfg_path)],
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
+        proc = subprocess.Popen([bin_path, "-d", td, "-f", str(cfg_path)],
+                                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         try:
-            # wait for API
-            api = f"http://{controller}"
             ready = False
-            for _ in range(40):
+            for _ in range(60):
+                if proc.poll() is not None:
+                    return None
                 try:
-                    requests.get(f"{api}/version", timeout=0.5)
+                    requests.get(f"http://{controller}/version", timeout=0.5)
                     ready = True
                     break
                 except Exception:
-                    time.sleep(0.15)
+                    time.sleep(0.2)
             if not ready:
-                print("mihomo API 未就绪，跳过真实探测")
-                return results
-
-            proxy_url = f"http://127.0.0.1:{mixed_port}"
-            for i, original in enumerate(sample):
-                name = f"n{i}"
-                try:
-                    requests.put(
-                        f"{api}/proxies/PROBE",
-                        json={"name": name},
-                        timeout=2,
-                    )
-                    start = time.time()
-                    r = requests.get(
-                        PROBE_URL,
-                        proxies={"http": proxy_url, "https": proxy_url},
-                        timeout=PROBE_TIMEOUT,
-                        allow_redirects=False,
-                    )
-                    if r.status_code in (204, 200, 301, 302, 404):
-                        results[fingerprint(original)] = round((time.time() - start) * 1000, 1)
-                except Exception:
-                    continue
+                return None
+            time.sleep(0.5)
+            out: dict[int, dict] = {}
+            with ThreadPoolExecutor(max_workers=PROBE_CONCURRENCY) as ex:
+                futs = {ex.submit(_probe_through, base_port + i): i for i in range(len(named))}
+                for fut in as_completed(futs):
+                    out[futs[fut]] = fut.result()
+            return out
         finally:
             proc.terminate()
             try:
                 proc.wait(timeout=5)
             except Exception:
                 proc.kill()
-    print(f"mihomo 真实探测成功: {len(results)}/{len(sample)}")
+
+
+def mihomo_probe(proxies: list[dict], bin_path: str) -> dict[str, dict]:
+    """fingerprint -> probe result. Bad node configs are isolated by bisecting a failed batch."""
+    results: dict[str, dict] = {}
+    queue = [proxies[i:i + PROBE_BATCH] for i in range(0, len(proxies), PROBE_BATCH)]
+    skipped = 0
+    while queue:
+        batch = queue.pop(0)
+        out = _mihomo_batch(batch, bin_path)
+        if out is None:
+            if len(batch) <= 6:
+                skipped += len(batch)
+                continue
+            mid = len(batch) // 2
+            queue[:0] = [batch[:mid], batch[mid:]]
+            continue
+        for i, r in out.items():
+            results[fingerprint(batch[i])] = r
+    ok = sum(1 for r in results.values() if r["status"] == "ok")
+    print(f"mihomo 真实探测: ok {ok}/{len(proxies)}，配置无法加载跳过 {skipped}")
     return results
 
 
@@ -570,155 +594,281 @@ def survival_bonus_ms(fp: str, survival: dict) -> float:
     return -SURVIVAL_WEIGHT * streak
 
 
-def write_github_summary(stats: dict, final_count: int, tcp_n: int, real_n: int) -> None:
+def write_github_summary(info: dict) -> None:
     path = os.environ.get("GITHUB_STEP_SUMMARY")
     if not path:
         return
+    d, c, o = info["discovery"], info["cand_rep"], info["off_rep"]
     lines = [
         "# proxysub clean summary",
         "",
-        f"- Final proxies: **{final_count}**",
-        f"- TCP alive: **{tcp_n}**",
-        f"- Real probe ok: **{real_n}**",
         f"- Time (UTC): {datetime.now(timezone.utc).isoformat()}",
+        f"- Final proxies: **{info['final']}** | TCP alive: **{info['tcp']}** | real probe ok: **{info['real']}** (HTTPS ok {info['https']})",
+        "",
+        "## Sources lifecycle",
+        "",
+        f"- Official sources: **{info['n_official']}** | active candidates: **{info['n_cands']}**",
+        f"- Discovered (new candidates): **{len(d['added'])}** (repos scanned {d['searched_repos']}, API calls {d['api_calls']}, repo rejects {len(d['rejected'])})",
+        f"- Promoted: **{len(c['promoted'])}** | candidates rejected: **{len(c['rejected'])}** | official demoted: **{len(o['demoted'])}**",
+    ]
+    for u in d["added"]:
+        lines.append(f"  - discovered `{u}`")
+    for u in c["promoted"]:
+        lines.append(f"  - promoted `{u}`")
+    for u, why in c["rejected"].items():
+        lines.append(f"  - candidate rejected `{u}`: {why}")
+    for u, why in o["demoted"].items():
+        lines.append(f"  - demoted `{u}`: {why}")
+    if d.get("errors"):
+        lines.append(f"- Discovery notes: {'; '.join(d['errors'][:5])}")
+    lines += [
+        "",
+        "## Anti-honeypot",
+        "",
+        f"- Nodes rejected before probing: **{sum(info['pre_reasons'].values())}** ({hp.summarize_reasons(info['pre_reasons'])})",
+        f"- Nodes rejected by probe (tamper/MITM/bad egress): **{sum(info['probe_reasons'].values())}** ({hp.summarize_reasons(info['probe_reasons'])})",
+        f"- Auto-blocklisted this run: **{info['auto_added']}** | expired auto entries pruned: {info['expired']}",
+        f"- Diversity caps dropped: {info['diversity_dropped']}",
+        f"- Suspicious source structure: {info['flags'] or '-'}",
         "",
         "## Sources",
         "",
-        "| Source | OK | Count | Error |",
-        "|---|---|---|---|",
+        "| Source | Role | OK | Count | Alive | Unique | Real ok | Tamper | Error |",
+        "|---|---|---|---|---|---|---|---|---|",
     ]
-    for url, s in stats.items():
+    for url, s in info["per_src"].items():
         err = (s.get("error") or "").replace("|", "/")
-        lines.append(f"| `{url}` | {s.get('ok')} | {s.get('count')} | {err} |")
+        lines.append(
+            f"| `{url}` | {s.get('role')} | {s.get('ok')} | {s.get('count')} | {s.get('alive', 0)} | "
+            f"{s.get('unique_alive', s.get('unique_new', 0))} | {s.get('real_ok', 0)} | {s.get('tamper', 0)} | {err} |"
+        )
     with open(path, "a", encoding="utf-8") as f:
         f.write("\n".join(lines) + "\n")
 
 
 def main() -> None:
+    sources = sm.load_sources()
+    cands = sm.load_candidates()
+    blocklist = hp.Blocklist(load_json(hp.BLOCKLIST_FILE, None))
+    expired = blocklist.prune_expired()
+    stats_file = load_json(SOURCE_STATS_FILE, {})
+    history = stats_file.get("history", {}) if isinstance(stats_file, dict) else {}
+
+    # ---- 1. discovery ----
+    disc = sm.discover(sources, cands, parse_subscription_text, os.environ.get("GITHUB_TOKEN"))
+    print(f"自动发现: 新增候选 {len(disc['added'])}，扫描仓库 {disc['searched_repos']}")
+
+    off_urls = sm.official_urls(sources)
+    cand_urls = [u for u in sm.active_candidate_urls(cands) if u not in off_urls]
+    off_set = set(off_urls)
+
+    # ---- 2. fetch ----
+    per_source, fstats = fetch_all_sources(off_urls + cand_urls)
+    print(f"原始节点总数: {sum(len(v) for v in per_source.values())}")
+
     bad_sources = load_json(BAD_SOURCES_FILE, {})
-    # demote: put repeatedly-failing sources at end; still try them
-    urls = list(SOURCE_URLS)
-    urls.sort(key=lambda u: int(bad_sources.get(u, {}).get("fail_streak", 0)), reverse=False)
-
-    all_proxies, stats = fetch_all_sources(urls)
-    print(f"原始节点总数: {len(all_proxies)}")
-
-    # update bad source streaks
-    for url, s in stats.items():
+    bad_sources = {u: v for u, v in bad_sources.items() if u in fstats}
+    for url, s in fstats.items():
         rec = bad_sources.get(url, {"fail_streak": 0})
-        if s.get("ok"):
-            rec["fail_streak"] = 0
-        else:
-            rec["fail_streak"] = int(rec.get("fail_streak", 0)) + 1
+        rec["fail_streak"] = 0 if s.get("ok") else int(rec.get("fail_streak", 0)) + 1
         rec["last_error"] = s.get("error")
         rec["last_count"] = s.get("count", 0)
         bad_sources[url] = rec
-    save_json(BAD_SOURCES_FILE, bad_sources)
-    save_json(SOURCE_STATS_FILE, {"date": _today(), "sources": stats})
 
-    demoted = [u for u, r in bad_sources.items() if int(r.get("fail_streak", 0)) >= BAD_SOURCE_THRESHOLD]
-    if demoted:
-        print(f"持续失败降权源 ({BAD_SOURCE_THRESHOLD}+): {len(demoted)}")
-
+    # ---- 3. static + DNS + blocklist filters ----
     exclude_re = re.compile(EXCLUDE_KEYWORDS, re.IGNORECASE)
+    pre_reasons: dict[str, int] = defaultdict(int)
+    staged: dict[str, list[dict]] = {}
+    for url, plist in per_source.items():
+        keep = []
+        for p in plist:
+            if not p.get("server") or not p.get("port") or exclude_re.search(str(p.get("name", ""))):
+                continue
+            why = hp.static_reject_reason(p)
+            if why:
+                pre_reasons[why] += 1
+                continue
+            keep.append(p)
+        staged[url] = keep
+    hosts = {str(p["server"]).strip().lower().rstrip(".") for pl in staged.values() for p in pl}
+    print(f"解析 {len(hosts)} 个主机名...")
+    resolved = hp.resolve_hosts(hosts)
+    # Guard against fake-IP DNS environments (198.18.0.0/15 etc.): if most domains
+    # "resolve" to reserved space, DNS answers are meaningless -> skip that check.
+    doms = [h for h in hosts if not h.replace(".", "").isdigit() and ":" not in h]
+    bad_dns = sum(1 for h in doms if any(hp.is_bad_ip(i) for i in resolved.get(h, [])))
+    dns_trusted = not doms or bad_dns / len(doms) < 0.3
+    if not dns_trusted:
+        print(f"警告: {bad_dns}/{len(doms)} 个域名解析到保留地址，疑似 fake-ip DNS，跳过 DNS 保留地址检查与源网段聚集检查")
+
     unique: dict[str, dict] = {}
-    for p in all_proxies:
-        name = p.get("name", "")
-        if not p.get("server") or not p.get("port"):
-            continue
-        if exclude_re.search(str(name)):
-            continue
-        fp = fingerprint(p)
-        # keep first for now; after latency we may replace with faster
-        if fp not in unique:
-            unique[fp] = p
-
+    prov: dict[str, set] = defaultdict(set)
+    src_flags: dict[str, list[str]] = {}
+    for url, plist in staged.items():
+        flags = hp.source_cluster_flags(plist, resolved) if dns_trusted else []
+        if flags:
+            src_flags[url] = flags
+        for p in plist:
+            host = str(p["server"]).strip().lower().rstrip(".")
+            ips = resolved.get(host, [])
+            if not ips:
+                pre_reasons["unresolvable"] += 1
+                continue
+            if dns_trusted and any(hp.is_bad_ip(ip) for ip in ips):
+                pre_reasons["dns_to_reserved_ip"] += 1
+                continue
+            hit = blocklist.match(host, ips if dns_trusted else [], fingerprint(p))
+            if hit:
+                pre_reasons[f"blocklist:{hit.split(':')[0]}"] += 1
+                continue
+            fp = fingerprint(p)
+            unique.setdefault(fp, p)
+            prov[fp].add(url)
+    official_fps = {fp for fp, s in prov.items() if s & off_set}
     candidates = list(unique.values())
-    print(f"去重(协议+凭证)+关键词过滤后: {len(candidates)}")
+    print(f"去重+过滤后: {len(candidates)}（预过滤拒绝 {sum(pre_reasons.values())}）")
 
+    # ---- 4. TCP ----
     print("开始 TCP 连通性与延迟检测...")
-    tcp_alive: list[tuple[dict, float]] = []
+    tcp_lat: dict[str, float] = {}
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        fut_map = {executor.submit(tcp_probe, p): p for p in candidates}
+        fut_map = {executor.submit(tcp_probe, p): fp for fp, p in unique.items()}
         for fut in as_completed(fut_map):
-            proxy = fut_map[fut]
             alive, latency = fut.result()
             if alive:
-                tcp_alive.append((proxy, latency))
-    print(f"TCP 存活节点: {len(tcp_alive)}")
+                tcp_lat[fut_map[fut]] = latency
+    print(f"TCP 存活节点: {len(tcp_lat)}")
 
-    # Real probe: prefer mihomo; else http/socks direct probe; else TCP latency
-    real_latency: dict[str, float] = {}
+    # ---- 5. real probe (official sample + reserved budget per candidate) ----
+    alive_sorted = sorted(tcp_lat, key=tcp_lat.get)
+    sample = [fp for fp in alive_sorted if fp in official_fps][:PROBE_LIMIT_OFFICIAL]
+    chosen = set(sample)
+    for cu in cand_urls:
+        extra = [fp for fp in alive_sorted if cu in prov[fp] and fp not in official_fps and fp not in chosen]
+        extra = extra[:PROBE_PER_CANDIDATE]
+        sample += extra
+        chosen.update(extra)
+
+    probe: dict[str, dict] = {}
     bin_path = mihomo_available()
     if bin_path:
-        print(f"使用 mihomo 真实探测: {bin_path}")
-        # probe up to 500 fastest TCP nodes to bound runtime
-        tcp_alive.sort(key=lambda x: x[1])
-        real_latency = mihomo_batch_probe([p for p, _ in tcp_alive], bin_path, limit=500)
+        print(f"使用 mihomo 真实探测 {len(sample)} 个节点: {bin_path}")
+        probe = mihomo_probe([unique[fp] for fp in sample], bin_path)
     else:
-        print("未找到 mihomo，对 http/socks 做真实探测，其余用 TCP 延迟")
-        http_socks = [(p, lat) for p, lat in tcp_alive if str(p.get("type", "")).lower() in ("http", "https", "socks5", "socks5h", "socks")]
-        with ThreadPoolExecutor(max_workers=min(40, MAX_WORKERS)) as ex:
-            fut_map = {ex.submit(http_socks_probe, p): (p, lat) for p, lat in http_socks}
+        print("未找到 mihomo，对 http/socks 做简单真实探测，其余用 TCP 延迟")
+        hs = [fp for fp in sample if str(unique[fp].get("type", "")).lower() in ("http", "https", "socks5", "socks5h", "socks")]
+        with ThreadPoolExecutor(max_workers=40) as ex:
+            fut_map = {ex.submit(http_socks_probe, unique[fp]): fp for fp in hs}
             for fut in as_completed(fut_map):
-                p, _tcp = fut_map[fut]
                 ok, lat = fut.result()
                 if ok:
-                    real_latency[fingerprint(p)] = lat
+                    probe[fut_map[fut]] = {"status": "ok", "latency": lat, "https_ok": False}
 
+    probe_reasons: dict[str, int] = defaultdict(int)
+    tampered: set[str] = set()
+    host_users: dict[str, int] = defaultdict(int)
+    for p in unique.values():
+        host_users[str(p["server"]).strip().lower().rstrip(".")] += 1
+    for fp, r in probe.items():
+        if r["status"] in TAMPER_STATUSES:
+            tampered.add(fp)
+            probe_reasons[r["status"]] += 1
+            host = str(unique[fp]["server"]).strip().lower().rstrip(".")
+            # shared hosts (CDN front domains / anycast IPs) are blocked per node, not per host
+            key = host if host_users[host] <= 2 else f"fp:{fp}"
+            blocklist.auto_add(key, f"{r['status']}:{r.get('detail', '')}"[:100], sorted(prov[fp])[0])
+    real_ok = {fp: r for fp, r in probe.items() if r["status"] == "ok"}
+
+    # ---- 6. per-source metrics ----
+    per_src: dict[str, dict] = {}
+    for url in off_urls + cand_urls:
+        fps = [fp for fp, s in prov.items() if url in s]
+        alive = [fp for fp in fps if fp in tcp_lat]
+        is_off = url in off_set
+        m = dict(fstats.get(url, {}))
+        m.update(
+            role="official" if is_off else "candidate",
+            alive=len(alive),
+            real_ok=sum(1 for fp in alive if fp in real_ok),
+            probed=sum(1 for fp in fps if fp in probe),
+            tamper=sum(1 for fp in fps if fp in tampered),
+            flags=src_flags.get(url, []),
+        )
+        if is_off:
+            m["unique_alive"] = sum(1 for fp in alive if len(prov[fp] & off_set) == 1)
+        else:
+            usable = [fp for fp in alive if (fp in real_ok if bin_path else True)]
+            m["usable"] = len(usable)
+            m["unique_new"] = sum(1 for fp in usable if fp not in official_fps)
+        per_src[url] = m
+
+    cand_rep = sm.evaluate_candidates(cands, {u: per_src[u] for u in cand_urls}, sources)
+    off_rep = sm.update_official(sources, history, {u: per_src[u] for u in off_urls})
+    for u in cand_rep["promoted"]:
+        print(f"候选源晋升为正式源: {u}")
+    for u, why in {**cand_rep["rejected"], **off_rep["demoted"]}.items():
+        print(f"移除源: {u} -> {why}")
+
+    # ---- 7. scoring ----
     survival = load_json(SURVIVAL_FILE, {})
     scored: list[tuple[dict, float, float, bool, bool]] = []
-    # proxy, sort_score, display_latency, preferred, real_ok
-    for proxy, tcp_lat in tcp_alive:
-        fp = fingerprint(proxy)
-        real_ok = fp in real_latency
-        display = real_latency.get(fp, tcp_lat)
-        # prefer real-ok nodes: add penalty if only TCP
-        penalty = 0.0 if real_ok or not bin_path else 1000.0
+    for fp, tlat in tcp_lat.items():
+        if fp in tampered:
+            continue
+        cand_only = fp not in official_fps
+        r = real_ok.get(fp)
+        if cand_only and bin_path and not r:
+            continue  # probation-source nodes must pass the real probe
+        display = r["latency"] if r else tlat
+        penalty = 0.0 if r or not bin_path else 1000.0
+        if r and bin_path and not r.get("https_ok"):
+            penalty += NO_HTTPS_PENALTY
+        if cand_only:
+            penalty += CANDIDATE_ONLY_PENALTY
         score = display + penalty + survival_bonus_ms(fp, survival)
-        scored.append((proxy, score, display, is_preferred(proxy), real_ok))
-
-    # Dedup again preferring lower score (better latency / survival)
-    best_by_fp: dict[str, tuple[dict, float, float, bool, bool]] = {}
-    for item in scored:
-        fp = fingerprint(item[0])
-        prev = best_by_fp.get(fp)
-        if prev is None or item[1] < prev[1]:
-            best_by_fp[fp] = item
-    scored = list(best_by_fp.values())
+        scored.append((unique[fp], score, display, is_preferred(unique[fp]), bool(r)))
 
     scored.sort(key=lambda x: (not x[3], x[1]))
     alive_fps = {fingerprint(p) for p, *_ in scored}
     survival = update_survival(alive_fps, survival)
-    save_json(SURVIVAL_FILE, survival)
+
+    # diversity caps: one credential / one egress IP must not dominate the output
+    cred_n: dict[str, int] = defaultdict(int)
+    egress_n: dict[str, int] = defaultdict(int)
+    diversified = []
+    diversity_dropped = 0
+    for item in scored:
+        fp = fingerprint(item[0])
+        cred = hp.credential_of(item[0])
+        eg = (real_ok.get(fp) or {}).get("egress")
+        if (cred and cred_n[cred] >= MAX_PER_CREDENTIAL) or (eg and egress_n[eg] >= MAX_PER_EGRESS_IP):
+            diversity_dropped += 1
+            continue
+        if cred:
+            cred_n[cred] += 1
+        if eg:
+            egress_n[eg] += 1
+        diversified.append(item)
+    scored = diversified
 
     region_dict: dict[str, list] = defaultdict(list)
     for item in scored:
-        region = classify_proxy(item[0].get("name", ""))
-        region_dict[region].append(item)
+        region_dict[classify_proxy(item[0].get("name", ""))].append(item)
 
     final_proxies: list[dict] = []
     for region, nodes in region_dict.items():
-        limit = REGION_QUOTAS.get(region, MAX_OTHER)
-        selected = nodes[:limit]
-        for proxy, _score, display, preferred, real_ok in selected:
-            # rename with latency for client-side readability
+        selected = nodes[:REGION_QUOTAS.get(region, MAX_OTHER)]
+        for proxy, _score, display, _pref, _real in selected:
             base = re.sub(r"\s+\d+ms$", "", str(proxy.get("name", "node")))
-            tag = latency_tag(display)
-            extra = ""
-            if real_ok:
-                extra = ""
             np = dict(proxy)
-            np["name"] = f"{base}{tag}{extra}"
-            # avoid empty names
+            np["name"] = f"{base}{latency_tag(display)}"
             if not np["name"].strip():
-                np["name"] = f"node{tag}"
+                np["name"] = f"node{latency_tag(display)}"
             final_proxies.append(np)
         pref_count = sum(1 for _, _, _, p, _ in selected if p)
         real_count = sum(1 for _, _, _, _, r in selected if r)
         print(f"{region}: 保留 {len(selected)}（优先 {pref_count}，真实探测 {real_count}）")
 
-    # Ensure unique names
     seen_names: dict[str, int] = {}
     for p in final_proxies:
         n = p["name"]
@@ -730,32 +880,17 @@ def main() -> None:
 
     print(f"\n最终精简节点数: {len(final_proxies)}")
     names = [p["name"] for p in final_proxies]
-
     groups = [
         {
             "name": "🚀 节点选择",
             "type": "select",
-            "proxies": ["♻️ 自动选择", "🔯 故障转移", "DIRECT"]
-            + list(REGION_RULES.keys())
-            + ["🌐 其他"],
+            "proxies": ["♻️ 自动选择", "🔯 故障转移", "DIRECT"] + list(REGION_RULES.keys()) + ["🌐 其他"],
         },
-        {
-            "name": "♻️ 自动选择",
-            "type": "url-test",
-            "proxies": names,
-            "url": PROBE_URL,
-            "interval": URLTEST_INTERVAL,
-            "tolerance": 50,
-        },
-        {
-            "name": "🔯 故障转移",
-            "type": "fallback",
-            "proxies": names,
-            "url": PROBE_URL,
-            "interval": FALLBACK_INTERVAL,
-        },
+        {"name": "♻️ 自动选择", "type": "url-test", "proxies": names, "url": PROBE_URL,
+         "interval": URLTEST_INTERVAL, "tolerance": 50},
+        {"name": "🔯 故障转移", "type": "fallback", "proxies": names, "url": PROBE_URL,
+         "interval": FALLBACK_INTERVAL},
     ]
-
     for region in list(REGION_RULES.keys()) + ["🌐 其他"]:
         region_names = []
         for p in final_proxies:
@@ -764,15 +899,11 @@ def main() -> None:
                 region_names.append(p["name"])
         region_names = list(dict.fromkeys(region_names))
         if region_names:
-            groups.append(
-                {
-                    "name": region,
-                    "type": "url-test",
-                    "proxies": region_names,
-                    "url": PROBE_URL,
-                    "interval": URLTEST_INTERVAL,
-                }
-            )
+            groups.append({"name": region, "type": "url-test", "proxies": region_names,
+                           "url": PROBE_URL, "interval": URLTEST_INTERVAL})
+    # a select group referencing an empty region group would break the config
+    present = {g["name"] for g in groups}
+    groups[0]["proxies"] = [n for n in groups[0]["proxies"] if n in present or n == "DIRECT"]
 
     config = {
         "mixed-port": 7890,
@@ -784,11 +915,28 @@ def main() -> None:
         "rules": ["GEOIP,CN,DIRECT", "MATCH,🚀 节点选择"],
     }
 
+    # ---- 8. persist ----
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
         yaml.dump(config, f, allow_unicode=True, sort_keys=False)
+    save_json(SURVIVAL_FILE, survival)
+    save_json(BAD_SOURCES_FILE, bad_sources)
+    save_json(SOURCE_STATS_FILE, {"date": _today(), "sources": per_src, "history": history})
+    sm.save_json(sm.SOURCES_FILE, sources)
+    sm.save_json(sm.CANDIDATES_FILE, cands)
+    sm.save_json(hp.BLOCKLIST_FILE, blocklist.data)
 
     print(f"\n✅ 已生成: {OUTPUT_FILE}")
-    write_github_summary(stats, len(final_proxies), len(tcp_alive), len(real_latency))
+    write_github_summary({
+        "final": len(final_proxies), "tcp": len(tcp_lat), "real": len(real_ok),
+        "https": sum(1 for r in real_ok.values() if r.get("https_ok")),
+        "n_official": len(sources["official"]), "n_cands": len(cands["candidates"]),
+        "discovery": disc, "cand_rep": cand_rep, "off_rep": off_rep,
+        "pre_reasons": dict(pre_reasons), "probe_reasons": dict(probe_reasons),
+        "auto_added": len(blocklist.added_this_run), "expired": expired,
+        "diversity_dropped": diversity_dropped,
+        "flags": "; ".join(f"{u.split('/')[3] if '//' in u else u}: {','.join(f)}" for u, f in src_flags.items()),
+        "per_src": per_src,
+    })
 
 
 if __name__ == "__main__":

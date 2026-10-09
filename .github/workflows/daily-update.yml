@@ -44,11 +44,14 @@ jobs:
       - name: Check if script exists
         run: |
           ls -la
-          test -f filter_clash.py
+          test -f filter_clash.py && test -f sources.json
 
       - name: Run filter script
         env:
           MIHOMO_BIN: /usr/local/bin/mihomo
+          # used only for read-only GitHub search (source discovery); rate limits respected in sources_manager.py
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PROXYSUB_DISCOVERY: '1'
         run: python filter_clash.py
 
       - name: Commit and Push
@@ -56,7 +59,8 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add filter_clash.py clean_clash.yaml survival.json source_stats.json bad_sources.json .github/workflows/daily-update.yml || true
+          git add clean_clash.yaml survival.json source_stats.json bad_sources.json \
+            sources.json candidate_sources.json honeypot_blocklist.json || true
           # remove accidental duplicate if still tracked
           if [ -f .github/workflows/filter_clash.py ]; then
             git rm -f .github/workflows/filter_clash.py || true

@@ -1,0 +1,8 @@
+{
+  "_doc": "Manual entries: domains (suffix match), ips, cidrs, keywords (substring of server). auto: added by the cleaner when a node tampers with probe traffic or fails TLS verification; each auto entry expires after its 'expires' date.",
+  "domains": [],
+  "ips": [],
+  "cidrs": [],
+  "keywords": [],
+  "auto": {}
+}
