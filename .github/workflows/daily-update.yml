@@ -1,0 +1,32 @@
+name: Daily Clean Clash Subscription
+
+on:
+  schedule:
+    - cron: '0 16 * * *'   # 每天北京时间 00:00 运行（UTC 16:00）
+  workflow_dispatch:        # 允许手动触发
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install pyyaml requests
+
+      - name: Run filter & test
+        run: python filter_clash.py
+
+      - name: Commit & Push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add clean_clash.yaml
+          git commit -m "Daily update: $(date +'%Y-%m-%d %H:%M')" || echo "No changes"
+          git push
