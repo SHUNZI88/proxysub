@@ -42,17 +42,17 @@ REGION_RULES = {
     "🇬🇧 英国": r"(英国|英國|UK|United Kingdom|London|伦敦)",
 }
 
-# Per-region caps for AI use: more HK/US capacity, add KR/UK, keep purity via survival+probe ranking.
+# Smaller caps: quality over quantity (user FLClash usable << quota fill).
 REGION_QUOTAS = {
-    "🇭🇰 香港": 45,
-    "🇺🇸 美国": 45,
-    "🇸🇬 新加坡": 35,
-    "🇯🇵 日本": 30,
-    "🇰🇷 韩国": 25,
-    "🇹🇼 台湾": 20,
-    "🇬🇧 英国": 15,
+    "🇭🇰 香港": 22,
+    "🇺🇸 美国": 22,
+    "🇸🇬 新加坡": 16,
+    "🇯🇵 日本": 16,
+    "🇰🇷 韩国": 12,
+    "🇹🇼 台湾": 10,
+    "🇬🇧 英国": 8,
 }
-MAX_OTHER = 30  # EU/CA/AU and misc; still ranked by latency+survival
+MAX_OTHER = 12  # EU/CA/AU and misc; still ranked by latency+survival
 
 TCP_TIMEOUT = 3.5
 PROBE_TIMEOUT = 8.0
@@ -72,34 +72,62 @@ BAD_SOURCES_FILE = "bad_sources.json"
 PROBE_URL = "http://www.gstatic.com/generate_204"
 PROBE_URL_2 = "http://cp.cloudflare.com/generate_204"   # second opinion before calling a node "tampering"
 TRACE_URL = "https://www.cloudflare.com/cdn-cgi/trace"  # HTTPS with cert verification + egress IP/loc
-PROBE_LIMIT_OFFICIAL = 720
+PROBE_LIMIT_OFFICIAL = 780
 PROBE_PER_CANDIDATE = 16
 PROBE_BATCH = 100
 PROBE_CONCURRENCY = 32
 # Reserve real-probe slots per region so HK/JP/KR/SG/TW are not starved by low-TCP-latency US nodes.
 PROBE_RESERVE_PER_REGION = {
-    "🇭🇰 香港": 90,
+    "🇭🇰 香港": 110,
     "🇺🇸 美国": 90,
-    "🇸🇬 新加坡": 70,
-    "🇯🇵 日本": 70,
-    "🇰🇷 韩国": 55,
-    "🇹🇼 台湾": 50,
+    "🇸🇬 新加坡": 90,
+    "🇯🇵 日本": 90,
+    "🇰🇷 韩国": 70,
+    "🇹🇼 台湾": 60,
     "🇬🇧 英国": 40,
     "🌐 其他": 40,
 }
-CANDIDATE_ONLY_PENALTY = 600.0   # nodes only offered by probation sources rank lower
-NO_HTTPS_PENALTY = 300.0         # HTTP ok but HTTPS (needed by AI sites) failed
+# Within each region reserve, probe this many preferred (hy2/reality) first.
+PROBE_PREFERRED_PER_REGION = {
+    "🇭🇰 香港": 55,
+    "🇺🇸 美国": 35,
+    "🇸🇬 新加坡": 45,
+    "🇯🇵 日本": 45,
+    "🇰🇷 韩国": 35,
+    "🇹🇼 台湾": 30,
+    "🇬🇧 英国": 15,
+    "🌐 其他": 15,
+}
+CANDIDATE_ONLY_PENALTY = 800.0   # nodes only offered by probation sources rank lower
+NO_HTTPS_PENALTY = 5000.0        # HTTPS needed by AI/CF sites; treat as unusable when requiring purity
 NO_REAL_PROBE_PENALTY = 5000.0   # effectively exclude TCP-only when mihomo is available
 MULTI_SOURCE_BONUS = 80.0        # ms-equivalent: appear in multiple official sources
-SEEN_DAYS_WEIGHT = 25            # longevity: lifetime seen_days (capped)
-MAX_PER_CREDENTIAL = 6           # diversity: same uuid/password across many servers
+SEEN_DAYS_WEIGHT = 35            # longevity: lifetime seen_days (capped)
+MAX_PER_CREDENTIAL = 4           # diversity: same uuid/password across many servers
 MAX_PER_EGRESS_IP = 2            # diversity: many nodes exiting from one IP = one operator
-TAMPER_STATUSES = ("tamper_http", "tamper_https", "tls_mitm", "bad_egress")
+TAMPER_STATUSES = ("tamper_http", "tamper_https", "tls_mitm", "bad_egress", "cf_blocked")
 # When mihomo is present, only real-probe OK nodes enter the final subscription (usable rate).
 REQUIRE_REAL_PROBE_IN_OUTPUT = True
+# Require Cloudflare-trace HTTPS success (cert + egress) for final list — filters polluted open proxies.
+REQUIRE_HTTPS_OK_IN_OUTPUT = True
+# Drop nodes slower than this (ms) even if probe "ok" — FLClash experience / longevity proxy.
+MAX_ACCEPT_LATENCY_MS = 1800.0
+# Soft cap: how many low-tier (ss/vmess-plain/http/socks) may enter a region after preferred fill.
+MAX_LOW_TIER_PER_REGION = 1
+# Protocol score adjustments (ms-equivalent; lower score = better).
+PROTOCOL_BONUS_HY2 = -400.0
+PROTOCOL_BONUS_REALITY = -350.0
+PROTOCOL_BONUS_TLS_OK = -80.0
+PROTOCOL_PENALTY_VMESS = 250.0
+PROTOCOL_PENALTY_SS = 320.0
+PROTOCOL_PENALTY_HTTP_SOCKS = 900.0
+PROTOCOL_PENALTY_OTHER_LOW = 400.0
+# Cheap purity check: CF zone that often blocks polluted egress (matches user grok.com Error 1005).
+PURITY_URL = "https://grok.com/"
+PURITY_TIMEOUT = 6.0
 
 # Cross-day survival: each consecutive day seen alive adds this many "score" points
-SURVIVAL_WEIGHT = 120  # ms-equivalent bonus per consecutive day (lower score = better)
+SURVIVAL_WEIGHT = 160  # ms-equivalent bonus per consecutive day (lower score = better)
 MAX_SURVIVAL_DAYS = 21
 
 # ====================================================
@@ -456,6 +484,31 @@ def _probe_through(port: int) -> dict:
             return {"status": "tls_mitm", "detail": (m.group(1) if m else msg[-120:])[:120]}
     except Exception:
         pass
+    # Optional CF purity: grok.com often returns Error 1005 for blocked egress IPs.
+    if res.get("https_ok") and PURITY_URL:
+        try:
+            pr = requests.get(
+                PURITY_URL,
+                proxies=px,
+                timeout=PURITY_TIMEOUT,
+                allow_redirects=True,
+                headers={"User-Agent": "Mozilla/5.0 (compatible; proxysub-purity/1.0)"},
+            )
+            body = (pr.text or "")[:4000]
+            blocked = bool(re.search(
+                r"Error 1005|Access Denied|access denied|cf-error-details|Sorry, you have been blocked",
+                body,
+                re.I,
+            ))
+            if blocked or (pr.status_code in (403, 503) and "cloudflare" in body.lower()):
+                return {
+                    "status": "cf_blocked",
+                    "detail": f"http{pr.status_code}",
+                    "egress": res.get("egress"),
+                    "loc": res.get("loc"),
+                }
+        except Exception:
+            pass  # purity probe soft-fail: keep https_ok node
     return res
 
 
@@ -535,19 +588,66 @@ def mihomo_probe(proxies: list[dict], bin_path: str) -> dict[str, dict]:
     return results
 
 
+def _has_reality(proxy: dict) -> bool:
+    if proxy.get("reality-opts"):
+        return True
+    name = str(proxy.get("name", "")).lower()
+    if "reality" in name:
+        return True
+    sni = str(proxy.get("servername") or proxy.get("sni") or "").lower()
+    if proxy.get("flow") and "reality" in sni:
+        return True
+    return False
+
+
 def is_preferred(proxy: dict) -> bool:
-    ptype = proxy.get("type", "").lower()
-    name = proxy.get("name", "").lower()
+    """Hysteria2 / VLESS+Reality — user-requested keep-priority protocols."""
+    ptype = str(proxy.get("type", "")).lower()
     if ptype in ("hysteria2", "hy2"):
         return True
-    if ptype == "vless":
-        if "reality-opts" in proxy or proxy.get("reality-opts"):
-            return True
-        if "reality" in name:
-            return True
-        if proxy.get("flow") and "reality" in str(proxy.get("servername", "")).lower():
-            return True
+    if ptype == "vless" and _has_reality(proxy):
+        return True
     return False
+
+
+def protocol_tier(proxy: dict) -> int:
+    """0=best (hy2/reality), 1=tls modern, 2=legacy encrypted, 3=open/plain junk."""
+    ptype = str(proxy.get("type", "")).lower()
+    if ptype in ("hysteria2", "hy2"):
+        return 0
+    if ptype == "vless" and _has_reality(proxy):
+        return 0
+    if ptype in ("anytls", "tuic", "hysteria", "trojan"):
+        return 1
+    if ptype == "vless":
+        return 1
+    if ptype == "vmess":
+        tls = proxy.get("tls") in (True, "tls", "1", 1)
+        return 2 if tls else 3
+    if ptype in ("ss", "ssr"):
+        return 3
+    if ptype in ("http", "https", "socks5", "socks5h", "socks"):
+        return 3
+    return 2
+
+
+def protocol_penalty(proxy: dict) -> float:
+    ptype = str(proxy.get("type", "")).lower()
+    if ptype in ("hysteria2", "hy2"):
+        return PROTOCOL_BONUS_HY2
+    if ptype == "vless" and _has_reality(proxy):
+        return PROTOCOL_BONUS_REALITY
+    if ptype in ("trojan", "anytls", "tuic", "hysteria"):
+        return PROTOCOL_BONUS_TLS_OK
+    if ptype == "vless":
+        return PROTOCOL_BONUS_TLS_OK
+    if ptype == "vmess":
+        return PROTOCOL_PENALTY_VMESS
+    if ptype in ("ss", "ssr"):
+        return PROTOCOL_PENALTY_SS
+    if ptype in ("http", "https", "socks5", "socks5h", "socks"):
+        return PROTOCOL_PENALTY_HTTP_SOCKS
+    return PROTOCOL_PENALTY_OTHER_LOW
 
 
 def classify_proxy(name: str) -> str:
@@ -762,14 +862,16 @@ def main() -> None:
     survival_pre = load_json(SURVIVAL_FILE, {})
 
     def _probe_rank(fp: str) -> tuple:
-        # Prefer known survivors, then low TCP latency.
+        # Preferred protocols first, then survivors, then low TCP latency.
         rec = survival_pre.get(fp, {})
         streak = int(rec.get("streak", 0))
         seen = int(rec.get("seen_days", 0))
-        return (-streak, -seen, tcp_lat[fp])
+        tier = protocol_tier(unique[fp])
+        return (tier, -streak, -seen, tcp_lat[fp])
 
     alive_sorted = sorted(tcp_lat, key=_probe_rank)
     # Stratify: fill per-region reserves first so Asia is actually probed.
+    # Within region: take preferred (hy2/reality) quota first, then rest by rank.
     by_region: dict[str, list[str]] = defaultdict(list)
     for fp in alive_sorted:
         if fp not in official_fps:
@@ -778,7 +880,12 @@ def main() -> None:
     sample: list[str] = []
     chosen: set[str] = set()
     for region, reserve in PROBE_RESERVE_PER_REGION.items():
-        for fp in by_region.get(region, [])[:reserve]:
+        pool = by_region.get(region, [])
+        pref_n = PROBE_PREFERRED_PER_REGION.get(region, 0)
+        pref = [fp for fp in pool if is_preferred(unique[fp])]
+        rest = [fp for fp in pool if fp not in pref]
+        ordered = pref[:pref_n] + rest + pref[pref_n:]
+        for fp in ordered[:reserve]:
             if fp not in chosen:
                 sample.append(fp)
                 chosen.add(fp)
@@ -837,6 +944,8 @@ def main() -> None:
             real_ok=sum(1 for fp in alive if fp in real_ok),
             probed=sum(1 for fp in fps if fp in probe),
             tamper=sum(1 for fp in fps if fp in tampered),
+            cf_blocked=sum(1 for fp in fps if (probe.get(fp) or {}).get("status") == "cf_blocked"),
+            preferred_ok=sum(1 for fp in alive if fp in real_ok and is_preferred(unique[fp])),
             flags=src_flags.get(url, []),
         )
         if is_off:
@@ -856,7 +965,7 @@ def main() -> None:
 
     # ---- 7. scoring ----
     survival = survival_pre
-    scored: list[tuple[dict, float, float, bool, bool]] = []
+    scored: list[tuple[dict, float, float, bool, bool, int]] = []
     for fp, tlat in tcp_lat.items():
         if fp in tampered:
             continue
@@ -866,7 +975,17 @@ def main() -> None:
             continue  # usable-rate: drop TCP-only / unprobed from final pool
         if cand_only and bin_path and not r:
             continue  # probation-source nodes must pass the real probe
+        if bin_path and REQUIRE_HTTPS_OK_IN_OUTPUT and r and not r.get("https_ok"):
+            continue  # AI/CF sites need working HTTPS egress
         display = r["latency"] if r else tlat
+        if r and display > MAX_ACCEPT_LATENCY_MS:
+            continue  # too slow for usable FLClash experience
+        # Drop open http/socks from final when we have mihomo purity path
+        tier = protocol_tier(unique[fp])
+        if bin_path and tier >= 3 and str(unique[fp].get("type", "")).lower() in (
+            "http", "https", "socks5", "socks5h", "socks",
+        ):
+            continue
         penalty = 0.0 if r or not bin_path else NO_REAL_PROBE_PENALTY
         if r and bin_path and not r.get("https_ok"):
             penalty += NO_HTTPS_PENALTY
@@ -875,10 +994,14 @@ def main() -> None:
         multi = len(prov[fp] & off_set)
         if multi >= 2:
             penalty -= MULTI_SOURCE_BONUS * min(multi - 1, 3)
-        score = display + penalty + survival_bonus_ms(fp, survival)
-        scored.append((unique[fp], score, display, is_preferred(unique[fp]), bool(r)))
+        penalty += protocol_penalty(unique[fp])
+        bonus = survival_bonus_ms(fp, survival)
+        if is_preferred(unique[fp]):
+            bonus *= 1.35  # keep long-lived hy2/reality even harder
+        score = display + penalty + bonus
+        scored.append((unique[fp], score, display, is_preferred(unique[fp]), bool(r), tier))
 
-    scored.sort(key=lambda x: (not x[3], x[1]))
+    scored.sort(key=lambda x: (x[5], not x[3], x[1]))
     alive_fps = {fingerprint(p) for p, *_ in scored}
     survival = update_survival(alive_fps, survival)
 
@@ -909,31 +1032,52 @@ def main() -> None:
     for region, nodes in region_dict.items():
         quota = REGION_QUOTAS.get(region, MAX_OTHER)
         if bin_path and REQUIRE_REAL_PROBE_IN_OUTPUT:
-            # Prefer HTTPS-verified egress when the region has enough; else any real-ok.
-            https_first = []
-            other_real = []
+            # Prefer: hy2/reality -> other https real-ok -> (rare) non-https real-ok.
+            # Cap low-tier fill so SS/vmess-plain do not pad quotas.
+            preferred, high, low = [], [], []
             for item in nodes:
                 fp = fingerprint(item[0])
                 r = real_ok.get(fp) or {}
-                if r.get("https_ok"):
-                    https_first.append(item)
-                elif item[4]:
-                    other_real.append(item)
-            pool = https_first + other_real
-            # Soft fill: if https pool is tiny, still take other real-ok to avoid empty region.
-            selected = pool[:quota]
+                if REQUIRE_HTTPS_OK_IN_OUTPUT and not r.get("https_ok"):
+                    continue
+                tier = item[5] if len(item) > 5 else protocol_tier(item[0])
+                if item[3] or tier == 0:
+                    preferred.append(item)
+                elif tier <= 1:
+                    high.append(item)
+                else:
+                    low.append(item)
+            selected = []
+            for bucket in (preferred, high):
+                for item in bucket:
+                    if len(selected) >= quota:
+                        break
+                    selected.append(item)
+                if len(selected) >= quota:
+                    break
+            low_added = 0
+            if len(selected) < quota:
+                for item in low:
+                    if len(selected) >= quota or low_added >= MAX_LOW_TIER_PER_REGION:
+                        break
+                    selected.append(item)
+                    low_added += 1
         else:
             selected = nodes[:quota]
-        for proxy, _score, display, _pref, _real in selected:
+        for row in selected:
+            proxy, _score, display = row[0], row[1], row[2]
             base = re.sub(r"\s+\d+ms$", "", str(proxy.get("name", "node")))
             np = dict(proxy)
             np["name"] = f"{base}{latency_tag(display)}"
             if not np["name"].strip():
                 np["name"] = f"node{latency_tag(display)}"
             final_proxies.append(np)
-        pref_count = sum(1 for _, _, _, p, _ in selected if p)
-        real_count = sum(1 for _, _, _, _, r in selected if r)
-        print(f"{region}: 保留 {len(selected)}（优先 {pref_count}，真实探测 {real_count}）")
+        pref_count = sum(1 for row in selected if row[3])
+        real_count = sum(1 for row in selected if row[4])
+        print(
+            f"{region}: 保留 {len(selected)}（优先 {pref_count}，真实探测 {real_count}，"
+            f"tier0 {sum(1 for r in selected if (r[5] if len(r)>5 else 9)==0)}）"
+        )
 
     seen_names: dict[str, int] = {}
     for p in final_proxies:
