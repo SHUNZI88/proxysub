@@ -1,15 +1,17 @@
 #!/usr/bin/env python3
 """proxysub —— 高纯度订阅清洗与结构规范化工具。
 
-定位：本仓库只负责把公开免费订阅源清洗成「干净、格式标准」的节点列表；
-最终活性测试（连通性 / 延迟 / 优选）完全交由用户本地客户端
-（FlClash / Clash Verge Rev 等）在真实国内网络环境下通过
-http://www.gstatic.com/generate_204 自行动态完成。
+定位：本仓库负责把公开免费订阅源清洗成「干净、格式标准、且确认存活」的节点列表；
+测速与优选（延迟排序、自动切换）完全交由用户本地客户端（FlClash / Clash Verge
+Rev 等）在真实国内网络环境下通过 http://www.gstatic.com/generate_204 完成。
 
-云端（GitHub Actions，美西机房）物理上无法穿越防火墙，无法模拟中国大陆
-用户到节点的真实连通性，测得的低延迟反而会把国内根本无法连接的节点误选进来。
-因此 CI 中彻底禁用 Mihomo 真实流量拨测（PROXYSUB_DISABLE_PROBE=1），
-源质量改由「协议白名单 + 关键参数校验 + 深度指纹去重」的硬性静态门槛保证。
+云端（GitHub Actions，美西机房）物理上无法穿越防火墙，无法预测国内连通性，
+因此：
+  1. 云端真实流量探测只用作「死活闸门」——连美国都无法代理成功的节点必然是
+     僵尸节点（凭证过期/后端已死/CDN 空壳），直接淘汰；
+  2. 探测延迟绝不参与排序与命名——美西延迟不代表国内路径，曾因用美西低延迟
+     选点而误选大量国内不可用节点；
+  3. 源质量的静态把关由「协议白名单 + 关键参数校验 + 深度指纹去重」完成。
 """
 
 from __future__ import annotations
@@ -100,8 +102,9 @@ SUPPORTED_FLOWS = {"", "xtls-rprx-vision"}
 INSECURE_TAG = " [Insecure]"
 INSECURE_GROUP = "⚠️ 高风险(跳过证书校验)"
 
-# 云端真实流量拨测总开关：PROXYSUB_DISABLE_PROBE=1 时彻底跳过 mihomo / http-socks 拨测，
-# 仅保留 TCP 存活检查作为服务器是否在线的信号；最终测速由本地客户端完成。
+# 云端真实流量拨测总开关：PROXYSUB_DISABLE_PROBE=1 时跳过 mihomo / http-socks 拨测，
+# 仅保留 TCP 存活检查。注意：禁用拨测后输出会被「TCP 可达但协议层已死」的僵尸节点
+# 淹没（免费源中此类节点占绝对多数），仅建议临时调试使用，CI 常规运行必须开启。
 def real_probe_enabled() -> bool:
     return os.environ.get("PROXYSUB_DISABLE_PROBE", "0") != "1"
 
@@ -151,7 +154,7 @@ PROBE_RESERVE_PER_REGION = {
     "🇸🇬 新加坡": 160,
     "🇹🇼 台湾": 110,
     "🇰🇷 韩国": 100,
-    "🇺🇸 美国": 60,
+    "🇺🇸 美国": 120,
     "🇬🇧 英国": 30,
     "🌐 其他": 40,
 }
@@ -162,13 +165,13 @@ PROBE_PREFERRED_PER_REGION = {
     "🇸🇬 新加坡": 100,
     "🇹🇼 台湾": 70,
     "🇰🇷 韩国": 60,
-    "🇺🇸 美国": 24,
+    "🇺🇸 美国": 60,
     "🇬🇧 英国": 10,
     "🌐 其他": 14,
 }
 CANDIDATE_ONLY_PENALTY = 800.0   # nodes only offered by probation sources rank lower
 NO_HTTPS_PENALTY = 180.0         # soft: CF HTTPS is a signal, not a sole veto
-# TCP-alive without real-ok: rank worse but still eligible to fill Asia quotas / floor.
+# TCP-alive without real-ok（仅禁用拨测时出现）: rank worse but still eligible.
 NO_REAL_PROBE_PENALTY = 1600.0
 MULTI_SOURCE_BONUS = 80.0        # ms-equivalent: appear in multiple official sources
 SEEN_DAYS_WEIGHT = 55            # longevity: lifetime seen_days (capped)
@@ -176,9 +179,9 @@ MAX_PER_CREDENTIAL = 6           # diversity (slightly looser so floor can be me
 MAX_PER_EGRESS_IP = 3            # diversity (slightly looser)
 # Hard rejects only; cf_blocked is soft (many China-usable nodes are CF-risked).
 TAMPER_STATUSES = ("tamper_http", "tamper_https", "tls_mitm", "bad_egress")
-# Prefer real-probe OK via ranking; do NOT hard-exclude TCP-alive (US runner≠China).
-# Floor backfill may add TCP-alive Asia / preferred to hit MIN_FINAL.
-REQUIRE_REAL_PROBE_IN_OUTPUT = False
+# 云端拨测 = 死活闸门：连美国都无法代理成功的节点必然已死（凭证过期/后端下线/
+# CDN 空壳），不允许进入最终列表。探测延迟不参与排序（见 TCP_LATENCY_CAP_IN_SCORE）。
+REQUIRE_REAL_PROBE_IN_OUTPUT = True
 # CF HTTPS trace is soft — do NOT hard-exclude; apply NO_HTTPS_PENALTY instead.
 REQUIRE_HTTPS_OK_IN_OUTPUT = False
 # Soft latency gate: US runner RTT ≠ China RTT; only drop extreme outliers.
@@ -208,11 +211,11 @@ REALITY_FP_BONUS = -100.0
 # Asia score bonus / US China-path penalties (ms-equivalent).
 ASIA_REGIONS = {"🇭🇰 香港", "🇯🇵 日本", "🇸🇬 新加坡", "🇹🇼 台湾", "🇰🇷 韩国"}
 ASIA_SCORE_BONUS = -220.0
-US_REGION_DELAY_PENALTY = 400.0   # named US region: +400ms
-US_EGRESS_PENALTY_HY2_REALITY = 300.0
-US_EGRESS_PENALTY_MID = 450.0
-US_EGRESS_PENALTY_SS_VMESS = 600.0
-MAX_US_SHARE = 0.25               # final list US share ≤ 25% (floor-friendly)
+US_REGION_DELAY_PENALTY = 120.0   # named US region: mild penalty only (relaxed)
+US_EGRESS_PENALTY_HY2_REALITY = 120.0
+US_EGRESS_PENALTY_MID = 180.0
+US_EGRESS_PENALTY_SS_VMESS = 250.0
+MAX_US_SHARE = 0.40               # final list US share <= 40% (no over-discrimination)
 CF_BLOCKED_PENALTY = 320.0        # soft purity hit (not hard veto)
 US_HOST_HINTS = re.compile(
     r"(digitalocean|vultr|linode|oracle|amazonaws|aws\.amazon|googleusercontent|"

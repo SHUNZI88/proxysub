@@ -12,7 +12,7 @@ permissions:
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
 
     steps:
       - name: Checkout
@@ -31,19 +31,41 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Install mihomo (liveness gate probe)
+        env:
+          # 固定版本，避免 latest 接口偶发失败；下载带重试
+          MIHOMO_VERSION: v1.19.32
+        run: |
+          set -euo pipefail
+          VER="${MIHOMO_VERSION}"
+          URL="https://github.com/MetaCubeX/mihomo/releases/download/${VER}/mihomo-linux-amd64-${VER}.gz"
+          ok=0
+          for i in 1 2 3; do
+            if curl -fsSL --retry 3 --retry-all-errors -o /tmp/mihomo.gz -L "$URL"; then
+              ok=1; break
+            fi
+            echo "download attempt $i failed, retrying in 5s..."
+            sleep 5
+          done
+          if [ "$ok" != "1" ]; then
+            echo "ERROR: mihomo download failed after retries" >&2
+            exit 1
+          fi
+          gunzip -c /tmp/mihomo.gz > /usr/local/bin/mihomo
+          chmod +x /usr/local/bin/mihomo
+          mihomo -v
+
       - name: Check if script exists
         run: |
           ls -la
           test -f filter_clash.py && test -f sources.json && test -f requirements.txt
 
-      - name: Run filter script (static cleaning only, no cloud probing)
+      - name: Run filter script (liveness-gated static cleaning)
         env:
+          MIHOMO_BIN: /usr/local/bin/mihomo
           # 仅用于只读 GitHub 搜索（源发现）；sources_manager.py 内部已做限流
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PROXYSUB_DISCOVERY: '1'
-          # 显式禁用云端真实流量拨测：GitHub Actions（美西机房）无法穿越 GFW，
-          # 物理上无法模拟中国大陆用户的真实连通性，测得的低延迟无参考价值。
-          PROXYSUB_DISABLE_PROBE: '1'
         run: python filter_clash.py
 
       - name: Commit and Push
