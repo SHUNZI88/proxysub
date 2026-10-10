@@ -72,19 +72,35 @@ BAD_SOURCES_FILE = "bad_sources.json"
 PROBE_URL = "http://www.gstatic.com/generate_204"
 PROBE_URL_2 = "http://cp.cloudflare.com/generate_204"   # second opinion before calling a node "tampering"
 TRACE_URL = "https://www.cloudflare.com/cdn-cgi/trace"  # HTTPS with cert verification + egress IP/loc
-PROBE_LIMIT_OFFICIAL = 500
-PROBE_PER_CANDIDATE = 20
+PROBE_LIMIT_OFFICIAL = 720
+PROBE_PER_CANDIDATE = 16
 PROBE_BATCH = 100
 PROBE_CONCURRENCY = 32
-CANDIDATE_ONLY_PENALTY = 400.0   # nodes only offered by probation sources rank lower
+# Reserve real-probe slots per region so HK/JP/KR/SG/TW are not starved by low-TCP-latency US nodes.
+PROBE_RESERVE_PER_REGION = {
+    "🇭🇰 香港": 90,
+    "🇺🇸 美国": 90,
+    "🇸🇬 新加坡": 70,
+    "🇯🇵 日本": 70,
+    "🇰🇷 韩国": 55,
+    "🇹🇼 台湾": 50,
+    "🇬🇧 英国": 40,
+    "🌐 其他": 40,
+}
+CANDIDATE_ONLY_PENALTY = 600.0   # nodes only offered by probation sources rank lower
 NO_HTTPS_PENALTY = 300.0         # HTTP ok but HTTPS (needed by AI sites) failed
-MAX_PER_CREDENTIAL = 8           # diversity: same uuid/password across many servers
-MAX_PER_EGRESS_IP = 3            # diversity: many nodes exiting from one IP = one operator
+NO_REAL_PROBE_PENALTY = 5000.0   # effectively exclude TCP-only when mihomo is available
+MULTI_SOURCE_BONUS = 80.0        # ms-equivalent: appear in multiple official sources
+SEEN_DAYS_WEIGHT = 25            # longevity: lifetime seen_days (capped)
+MAX_PER_CREDENTIAL = 6           # diversity: same uuid/password across many servers
+MAX_PER_EGRESS_IP = 2            # diversity: many nodes exiting from one IP = one operator
 TAMPER_STATUSES = ("tamper_http", "tamper_https", "tls_mitm", "bad_egress")
+# When mihomo is present, only real-probe OK nodes enter the final subscription (usable rate).
+REQUIRE_REAL_PROBE_IN_OUTPUT = True
 
 # Cross-day survival: each consecutive day seen alive adds this many "score" points
-SURVIVAL_WEIGHT = 55  # ms-equivalent bonus per consecutive day (lower score = better)
-MAX_SURVIVAL_DAYS = 14
+SURVIVAL_WEIGHT = 120  # ms-equivalent bonus per consecutive day (lower score = better)
+MAX_SURVIVAL_DAYS = 21
 
 # ====================================================
 
@@ -588,10 +604,13 @@ def update_survival(alive_fps: set[str], survival: dict) -> dict:
 
 
 def survival_bonus_ms(fp: str, survival: dict) -> float:
-    streak = int(survival.get(fp, {}).get("streak", 0))
+    rec = survival.get(fp, {})
+    streak = int(rec.get("streak", 0))
     streak = max(0, min(streak, MAX_SURVIVAL_DAYS))
-    # higher streak => lower effective score
-    return -SURVIVAL_WEIGHT * streak
+    seen = int(rec.get("seen_days", 0))
+    seen = max(0, min(seen, MAX_SURVIVAL_DAYS))
+    # higher streak / lifetime => lower effective score (prefer long-lived nodes)
+    return -SURVIVAL_WEIGHT * streak - SEEN_DAYS_WEIGHT * seen
 
 
 def write_github_summary(info: dict) -> None:
@@ -739,10 +758,36 @@ def main() -> None:
                 tcp_lat[fut_map[fut]] = latency
     print(f"TCP 存活节点: {len(tcp_lat)}")
 
-    # ---- 5. real probe (official sample + reserved budget per candidate) ----
-    alive_sorted = sorted(tcp_lat, key=tcp_lat.get)
-    sample = [fp for fp in alive_sorted if fp in official_fps][:PROBE_LIMIT_OFFICIAL]
-    chosen = set(sample)
+    # ---- 5. real probe (region-stratified official sample + per-candidate budget) ----
+    survival_pre = load_json(SURVIVAL_FILE, {})
+
+    def _probe_rank(fp: str) -> tuple:
+        # Prefer known survivors, then low TCP latency.
+        rec = survival_pre.get(fp, {})
+        streak = int(rec.get("streak", 0))
+        seen = int(rec.get("seen_days", 0))
+        return (-streak, -seen, tcp_lat[fp])
+
+    alive_sorted = sorted(tcp_lat, key=_probe_rank)
+    # Stratify: fill per-region reserves first so Asia is actually probed.
+    by_region: dict[str, list[str]] = defaultdict(list)
+    for fp in alive_sorted:
+        if fp not in official_fps:
+            continue
+        by_region[classify_proxy(unique[fp].get("name", ""))].append(fp)
+    sample: list[str] = []
+    chosen: set[str] = set()
+    for region, reserve in PROBE_RESERVE_PER_REGION.items():
+        for fp in by_region.get(region, [])[:reserve]:
+            if fp not in chosen:
+                sample.append(fp)
+                chosen.add(fp)
+    for fp in alive_sorted:
+        if len(sample) >= PROBE_LIMIT_OFFICIAL:
+            break
+        if fp in official_fps and fp not in chosen:
+            sample.append(fp)
+            chosen.add(fp)
     for cu in cand_urls:
         extra = [fp for fp in alive_sorted if cu in prov[fp] and fp not in official_fps and fp not in chosen]
         extra = extra[:PROBE_PER_CANDIDATE]
@@ -810,21 +855,26 @@ def main() -> None:
         print(f"移除源: {u} -> {why}")
 
     # ---- 7. scoring ----
-    survival = load_json(SURVIVAL_FILE, {})
+    survival = survival_pre
     scored: list[tuple[dict, float, float, bool, bool]] = []
     for fp, tlat in tcp_lat.items():
         if fp in tampered:
             continue
         cand_only = fp not in official_fps
         r = real_ok.get(fp)
+        if bin_path and REQUIRE_REAL_PROBE_IN_OUTPUT and not r:
+            continue  # usable-rate: drop TCP-only / unprobed from final pool
         if cand_only and bin_path and not r:
             continue  # probation-source nodes must pass the real probe
         display = r["latency"] if r else tlat
-        penalty = 0.0 if r or not bin_path else 1000.0
+        penalty = 0.0 if r or not bin_path else NO_REAL_PROBE_PENALTY
         if r and bin_path and not r.get("https_ok"):
             penalty += NO_HTTPS_PENALTY
         if cand_only:
             penalty += CANDIDATE_ONLY_PENALTY
+        multi = len(prov[fp] & off_set)
+        if multi >= 2:
+            penalty -= MULTI_SOURCE_BONUS * min(multi - 1, 3)
         score = display + penalty + survival_bonus_ms(fp, survival)
         scored.append((unique[fp], score, display, is_preferred(unique[fp]), bool(r)))
 
@@ -857,7 +907,23 @@ def main() -> None:
 
     final_proxies: list[dict] = []
     for region, nodes in region_dict.items():
-        selected = nodes[:REGION_QUOTAS.get(region, MAX_OTHER)]
+        quota = REGION_QUOTAS.get(region, MAX_OTHER)
+        if bin_path and REQUIRE_REAL_PROBE_IN_OUTPUT:
+            # Prefer HTTPS-verified egress when the region has enough; else any real-ok.
+            https_first = []
+            other_real = []
+            for item in nodes:
+                fp = fingerprint(item[0])
+                r = real_ok.get(fp) or {}
+                if r.get("https_ok"):
+                    https_first.append(item)
+                elif item[4]:
+                    other_real.append(item)
+            pool = https_first + other_real
+            # Soft fill: if https pool is tiny, still take other real-ok to avoid empty region.
+            selected = pool[:quota]
+        else:
+            selected = nodes[:quota]
         for proxy, _score, display, _pref, _real in selected:
             base = re.sub(r"\s+\d+ms$", "", str(proxy.get("name", "node")))
             np = dict(proxy)

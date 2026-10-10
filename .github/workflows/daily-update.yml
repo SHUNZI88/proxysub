@@ -31,11 +31,34 @@ jobs:
           pip install pyyaml requests pysocks
 
       - name: Install mihomo for real proxy probe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MIHOMO_FALLBACK_VER: v1.19.32
         run: |
-          set -e
-          VER=$(curl -fsSL https://api.github.com/repos/MetaCubeX/mihomo/releases/latest | python -c "import sys,json; print(json.load(sys.stdin)['tag_name'])")
+          set -euo pipefail
+          VER=""
+          # Unauthenticated api.github.com often 403s on shared Actions IPs; use GITHUB_TOKEN.
+          if RESP=$(curl -fsSL \
+              -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+              -H "Accept: application/vnd.github+json" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              https://api.github.com/repos/MetaCubeX/mihomo/releases/latest); then
+            VER=$(printf '%s' "$RESP" | python -c "import sys,json; print(json.load(sys.stdin)['tag_name'])")
+          else
+            echo "GitHub API latest failed; using fallback ${MIHOMO_FALLBACK_VER}"
+            VER="$MIHOMO_FALLBACK_VER"
+          fi
           echo "mihomo version: $VER"
-          curl -fsSL -o /tmp/mihomo.gz "https://github.com/MetaCubeX/mihomo/releases/download/${VER}/mihomo-linux-amd64-${VER}.gz"
+          ASSET="mihomo-linux-amd64-${VER}.gz"
+          URL="https://github.com/MetaCubeX/mihomo/releases/download/${VER}/${ASSET}"
+          # Public release assets: do not send Authorization (breaks CDN redirects).
+          if ! curl -fsSL -o /tmp/mihomo.gz -L "$URL"; then
+            echo "download ${ASSET} failed; retry fallback ${MIHOMO_FALLBACK_VER}"
+            VER="$MIHOMO_FALLBACK_VER"
+            ASSET="mihomo-linux-amd64-${VER}.gz"
+            URL="https://github.com/MetaCubeX/mihomo/releases/download/${VER}/${ASSET}"
+            curl -fsSL -o /tmp/mihomo.gz -L "$URL"
+          fi
           gunzip -c /tmp/mihomo.gz > /usr/local/bin/mihomo
           chmod +x /usr/local/bin/mihomo
           mihomo -v

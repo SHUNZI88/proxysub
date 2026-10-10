@@ -29,10 +29,11 @@ PROBATION_RUNS_LOW_REP = 5    # low-star / young repos are held longer
 PROBATION_MAX_RUNS = 16       # give up on a candidate after this many runs w/o promotion
 CANDIDATE_MAX_FAILS = 3
 MAX_ACTIVE_CANDIDATES = 15
-MIN_CANDIDATE_USABLE = 3      # usable (real-probe ok) nodes per run
-MIN_CANDIDATE_UNIQUE = 3      # of which not already offered by official sources
+MIN_CANDIDATE_USABLE = 5      # usable (real-probe ok) nodes per run
+MIN_CANDIDATE_UNIQUE = 4      # of which not already offered by official sources
 OFFICIAL_FAIL_DEMOTE = 4      # consecutive failed runs (= ~24h at 6h cadence)
 OFFICIAL_ZERO_UNIQUE_DEMOTE = 28  # consecutive runs w/o unique alive node (= ~7 days)
+OFFICIAL_ZERO_REAL_DEMOTE = 8     # consecutive runs with probes but 0 real-ok (= ~2 days)
 REMOVED_COOLDOWN_DAYS = 30
 
 # ---- discovery knobs ----
@@ -380,7 +381,7 @@ def update_official(sources: dict, stats_hist: dict, run: dict[str, dict]) -> di
         r = run.get(url, {})
         h = stats_hist.setdefault(url, {
             "runs": 0, "ok_runs": 0, "fail_streak": 0, "zero_unique_streak": 0,
-            "ok_rate_ema": 1.0, "unique_ema": 0.0,
+            "zero_real_streak": 0, "ok_rate_ema": 1.0, "unique_ema": 0.0, "real_ema": 0.0,
         })
         ok = bool(r.get("ok"))
         h["runs"] += 1
@@ -388,9 +389,14 @@ def update_official(sources: dict, stats_hist: dict, run: dict[str, dict]) -> di
         h["fail_streak"] = 0 if ok else h.get("fail_streak", 0) + 1
         u = int(r.get("unique_alive", 0))
         h["zero_unique_streak"] = 0 if u > 0 else h.get("zero_unique_streak", 0) + 1
+        probed_n = int(r.get("probed", 0))
+        real_n = int(r.get("real_ok", 0))
+        if probed_n >= 5:
+            h["zero_real_streak"] = 0 if real_n > 0 else h.get("zero_real_streak", 0) + 1
         h["ok_rate_ema"] = round(0.8 * h.get("ok_rate_ema", 1.0) + 0.2 * (1.0 if ok else 0.0), 4)
         h["unique_ema"] = round(0.7 * h.get("unique_ema", 0.0) + 0.3 * u, 2)
-        h["last"] = {"date": _today(), **{k: r.get(k) for k in ("count", "alive", "unique_alive", "real_ok", "tamper", "error")}}
+        h["real_ema"] = round(0.7 * h.get("real_ema", 0.0) + 0.3 * real_n, 2)
+        h["last"] = {"date": _today(), **{k: r.get(k) for k in ("count", "alive", "unique_alive", "real_ok", "probed", "tamper", "error")}}
 
         reason = None
         tamper, probed = int(r.get("tamper", 0)), max(1, int(r.get("probed", 0)))
@@ -398,6 +404,8 @@ def update_official(sources: dict, stats_hist: dict, run: dict[str, dict]) -> di
             reason = f"honeypot_tamper:{tamper}/{probed}"
         elif h["fail_streak"] >= OFFICIAL_FAIL_DEMOTE:
             reason = f"consecutive_failures:{h['fail_streak']}"
+        elif h.get("zero_real_streak", 0) >= OFFICIAL_ZERO_REAL_DEMOTE:
+            reason = f"zero_real_ok:{h['zero_real_streak']}runs"
         elif h["zero_unique_streak"] >= OFFICIAL_ZERO_UNIQUE_DEMOTE:
             reason = f"zero_unique_contribution:{h['zero_unique_streak']}runs"
         if reason:
@@ -405,7 +413,9 @@ def update_official(sources: dict, stats_hist: dict, run: dict[str, dict]) -> di
 
     def score(entry: dict) -> float:
         h = stats_hist.get(entry["url"], {})
-        return 100 * h.get("ok_rate_ema", 1.0) + h.get("unique_ema", 0.0) + (25 if entry.get("origin") == "manual" else 0)
+        return (100 * h.get("ok_rate_ema", 1.0) + h.get("unique_ema", 0.0)
+                + 2.0 * h.get("real_ema", 0.0)
+                + (25 if entry.get("origin") == "manual" else 0))
 
     keep = [e for e in sources["official"] if e["url"] not in rep["demoted"]]
     cap = int(sources.get("max_official", MAX_OFFICIAL))
