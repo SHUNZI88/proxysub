@@ -32,27 +32,27 @@ import sources_manager as sm
 EXCLUDE_KEYWORDS = r"(官网|流量|到期|过期|剩余|测试|无效|假|防失联|127\.0\.0|IPv6|试用|公告|电报|TG|频道)"
 
 REGION_RULES = {
-    # Order matters: first match wins. AI-oriented regions first.
+    # Order matters: first match wins. Asia first (China client path).
     "🇭🇰 香港": r"(香港|HK|Hong Kong|HongKong)",
-    "🇺🇸 美国": r"(美国|US|United States|USA|America)",
-    "🇸🇬 新加坡": r"(新加坡|SG|Singapore|狮城)",
     "🇯🇵 日本": r"(日本|JP|Japan|东京|大阪|Tokyo|Osaka)",
-    "🇰🇷 韩国": r"(韩国|韓國|KR|Korea|首尔|首爾|Seoul)",
+    "🇸🇬 新加坡": r"(新加坡|SG|Singapore|狮城)",
     "🇹🇼 台湾": r"(台湾|台灣|TW|Taiwan)",
+    "🇰🇷 韩国": r"(韩国|韓國|KR|Korea|首尔|首爾|Seoul)",
+    "🇺🇸 美国": r"(美国|US|United States|USA|America)",
     "🇬🇧 英国": r"(英国|英國|UK|United Kingdom|London|伦敦)",
 }
 
-# Smaller caps: quality over quantity (user FLClash usable << quota fill).
+# China-path tilt: Asia quotas up, US/UK down (US runner ≠ China client).
 REGION_QUOTAS = {
-    "🇭🇰 香港": 22,
-    "🇺🇸 美国": 22,
-    "🇸🇬 新加坡": 16,
-    "🇯🇵 日本": 16,
+    "🇭🇰 香港": 28,
+    "🇯🇵 日本": 22,
+    "🇸🇬 新加坡": 20,
+    "🇹🇼 台湾": 14,
     "🇰🇷 韩国": 12,
-    "🇹🇼 台湾": 10,
-    "🇬🇧 英国": 8,
+    "🇺🇸 美国": 10,
+    "🇬🇧 英国": 4,
 }
-MAX_OTHER = 12  # EU/CA/AU and misc; still ranked by latency+survival
+MAX_OTHER = 8  # EU/CA/AU and misc; still ranked by latency+survival
 
 TCP_TIMEOUT = 3.5
 PROBE_TIMEOUT = 8.0
@@ -69,66 +69,101 @@ OUTPUT_FILE = "clean_clash.yaml"
 SURVIVAL_FILE = "survival.json"
 SOURCE_STATS_FILE = "source_stats.json"
 BAD_SOURCES_FILE = "bad_sources.json"
-PROBE_URL = "http://www.gstatic.com/generate_204"
-PROBE_URL_2 = "http://cp.cloudflare.com/generate_204"   # second opinion before calling a node "tampering"
-TRACE_URL = "https://www.cloudflare.com/cdn-cgi/trace"  # HTTPS with cert verification + egress IP/loc
+# China-client connectivity URLs first (Asia egress reaches them more easily from US runners).
+PROBE_URLS = [
+    "http://connectivitycheck.platform.hicloud.com/generate_204",  # Huawei
+    "http://wifi.vivo.com.cn/generate_204",                        # vivo
+    "http://www.msftconnecttest.com/connecttest.txt",              # Microsoft
+    "http://cp.cloudflare.com/generate_204",
+    "http://www.gstatic.com/generate_204",
+]
+PROBE_PASS_NEED = 1  # any 1 success => HTTP ok (China-friendly)
+PROBE_URL = PROBE_URLS[0]  # client url-test / fallback default
+TRACE_URL = "https://www.cloudflare.com/cdn-cgi/trace"  # soft HTTPS signal + egress IP/loc
 PROBE_LIMIT_OFFICIAL = 780
 PROBE_PER_CANDIDATE = 16
 PROBE_BATCH = 100
 PROBE_CONCURRENCY = 32
-# Reserve real-probe slots per region so HK/JP/KR/SG/TW are not starved by low-TCP-latency US nodes.
+# Reserve real-probe slots: Asia heavy, US light.
 PROBE_RESERVE_PER_REGION = {
-    "🇭🇰 香港": 110,
-    "🇺🇸 美国": 90,
-    "🇸🇬 新加坡": 90,
-    "🇯🇵 日本": 90,
+    "🇭🇰 香港": 160,
+    "🇯🇵 日本": 130,
+    "🇸🇬 新加坡": 120,
+    "🇹🇼 台湾": 80,
     "🇰🇷 韩国": 70,
-    "🇹🇼 台湾": 60,
-    "🇬🇧 英国": 40,
-    "🌐 其他": 40,
+    "🇺🇸 美国": 50,
+    "🇬🇧 英国": 20,
+    "🌐 其他": 30,
 }
 # Within each region reserve, probe this many preferred (hy2/reality) first.
 PROBE_PREFERRED_PER_REGION = {
-    "🇭🇰 香港": 55,
-    "🇺🇸 美国": 35,
-    "🇸🇬 新加坡": 45,
-    "🇯🇵 日本": 45,
-    "🇰🇷 韩国": 35,
-    "🇹🇼 台湾": 30,
-    "🇬🇧 英国": 15,
-    "🌐 其他": 15,
+    "🇭🇰 香港": 100,
+    "🇯🇵 日本": 80,
+    "🇸🇬 新加坡": 75,
+    "🇹🇼 台湾": 50,
+    "🇰🇷 韩国": 45,
+    "🇺🇸 美国": 20,
+    "🇬🇧 英国": 8,
+    "🌐 其他": 10,
 }
 CANDIDATE_ONLY_PENALTY = 800.0   # nodes only offered by probation sources rank lower
-NO_HTTPS_PENALTY = 5000.0        # HTTPS needed by AI/CF sites; treat as unusable when requiring purity
+NO_HTTPS_PENALTY = 280.0         # soft: CF HTTPS is a signal, not a sole veto
 NO_REAL_PROBE_PENALTY = 5000.0   # effectively exclude TCP-only when mihomo is available
 MULTI_SOURCE_BONUS = 80.0        # ms-equivalent: appear in multiple official sources
-SEEN_DAYS_WEIGHT = 35            # longevity: lifetime seen_days (capped)
+SEEN_DAYS_WEIGHT = 55            # longevity: lifetime seen_days (capped)
 MAX_PER_CREDENTIAL = 4           # diversity: same uuid/password across many servers
 MAX_PER_EGRESS_IP = 2            # diversity: many nodes exiting from one IP = one operator
-TAMPER_STATUSES = ("tamper_http", "tamper_https", "tls_mitm", "bad_egress", "cf_blocked")
+# Hard rejects only; cf_blocked is soft (many China-usable nodes are CF-risked).
+TAMPER_STATUSES = ("tamper_http", "tamper_https", "tls_mitm", "bad_egress")
 # When mihomo is present, only real-probe OK nodes enter the final subscription (usable rate).
 REQUIRE_REAL_PROBE_IN_OUTPUT = True
-# Require Cloudflare-trace HTTPS success (cert + egress) for final list — filters polluted open proxies.
-REQUIRE_HTTPS_OK_IN_OUTPUT = True
+# CF HTTPS trace is soft — do NOT hard-exclude; apply NO_HTTPS_PENALTY instead.
+REQUIRE_HTTPS_OK_IN_OUTPUT = False
 # Drop nodes slower than this (ms) even if probe "ok" — FLClash experience / longevity proxy.
-MAX_ACCEPT_LATENCY_MS = 1800.0
+MAX_ACCEPT_LATENCY_MS = 2000.0
 # Soft cap: how many low-tier (ss/vmess-plain/http/socks) may enter a region after preferred fill.
 MAX_LOW_TIER_PER_REGION = 1
-# Protocol score adjustments (ms-equivalent; lower score = better).
-PROTOCOL_BONUS_HY2 = -400.0
-PROTOCOL_BONUS_REALITY = -350.0
+# Protocol score: Hy2 > VLESS+Reality > Trojan > else (ms-equivalent; lower = better).
+PROTOCOL_BONUS_HY2 = -420.0
+PROTOCOL_BONUS_REALITY = -380.0
+PROTOCOL_BONUS_TROJAN = -220.0
 PROTOCOL_BONUS_TLS_OK = -80.0
-PROTOCOL_PENALTY_VMESS = 250.0
-PROTOCOL_PENALTY_SS = 320.0
+PROTOCOL_PENALTY_VMESS = 280.0
+PROTOCOL_PENALTY_SS = 360.0
 PROTOCOL_PENALTY_HTTP_SOCKS = 900.0
 PROTOCOL_PENALTY_OTHER_LOW = 400.0
-# Cheap purity check: CF zone that often blocks polluted egress (matches user grok.com Error 1005).
+# China-friendly feature bonuses (SNI / port / Reality fingerprint).
+SNI_WHITELIST_SUFFIXES = (
+    "microsoft.com", "apple.com", "cloudflare.com", "icloud.com",
+    "gateway.icloud.com", "dl.google.com", "windows.com", "office.com",
+    "mzstatic.com", "akamai.net", "akamaized.net",
+)
+FRIENDLY_PORTS = {443, 8443, 2053, 2083, 2087, 2096}
+SNI_BONUS = -120.0
+PORT_BONUS = -80.0
+REALITY_FP_BONUS = -100.0
+# Asia score bonus / US China-path penalties (ms-equivalent).
+ASIA_REGIONS = {"🇭🇰 香港", "🇯🇵 日本", "🇸🇬 新加坡", "🇹🇼 台湾", "🇰🇷 韩国"}
+ASIA_SCORE_BONUS = -220.0
+US_REGION_DELAY_PENALTY = 400.0   # named US region: +400ms
+US_EGRESS_PENALTY_HY2_REALITY = 300.0
+US_EGRESS_PENALTY_MID = 450.0
+US_EGRESS_PENALTY_SS_VMESS = 600.0
+MAX_US_SHARE = 0.22               # final list US share ≤ 22%
+CF_BLOCKED_PENALTY = 320.0        # soft purity hit (not hard veto)
+US_HOST_HINTS = re.compile(
+    r"(digitalocean|vultr|linode|oracle|amazonaws|aws\.amazon|googleusercontent|"
+    r"azure|choopa|bandwagon|bwh|contabo|north\s*bergen|secaucus|"
+    r"los\s*angeles|new\s*york|dallas|miami|chicago|ashburn|\bSJC\b|\bLAX\b|\bNYC\b)",
+    re.I,
+)
+# Soft purity check: flag CF Error 1005; do not sole-veto (China-usable often CF-risked).
 PURITY_URL = "https://grok.com/"
 PURITY_TIMEOUT = 6.0
 
-# Cross-day survival: each consecutive day seen alive adds this many "score" points
-SURVIVAL_WEIGHT = 160  # ms-equivalent bonus per consecutive day (lower score = better)
-MAX_SURVIVAL_DAYS = 21
+# Cross-day survival: raise weight — multi-day survivors more likely usable from China.
+SURVIVAL_WEIGHT = 240  # ms-equivalent bonus per consecutive day (lower score = better)
+MAX_SURVIVAL_DAYS = 28
 
 # ====================================================
 
@@ -402,17 +437,11 @@ def http_socks_probe(proxy: dict) -> tuple[bool, float]:
     else:
         return False, 9999.0
 
+    px = {"http": proxy_url, "https": proxy_url}
     try:
-        start = time.time()
-        r = requests.get(
-            PROBE_URL,
-            proxies={"http": proxy_url, "https": proxy_url},
-            timeout=PROBE_TIMEOUT,
-            allow_redirects=False,
-        )
-        # 204 or any response means tunnel worked
-        if r.status_code in (204, 200, 301, 302, 404):
-            return True, round((time.time() - start) * 1000, 1)
+        ok, lat, _tamper, _d = _probe_http_china_friendly(px)
+        if ok and lat is not None:
+            return True, lat
         return False, 9999.0
     except Exception:
         return False, 9999.0
@@ -442,31 +471,62 @@ def mihomo_available() -> str | None:
     return None
 
 
-def _probe_through(port: int) -> dict:
-    """Probe one local mihomo listener. Verifies content, not just reachability."""
-    px = {"http": f"http://127.0.0.1:{port}", "https": f"http://127.0.0.1:{port}"}
-    res: dict[str, Any] = {"status": "fail"}
-    try:
-        t0 = time.time()
-        r = requests.get(PROBE_URL, proxies=px, timeout=PROBE_TIMEOUT, allow_redirects=False)
-        lat = round((time.time() - t0) * 1000, 1)
-    except Exception:
-        return res
-    if r.status_code >= 400:
-        return res  # dial failure / error page: unusable, not counted as tampering
-    if r.status_code != 204 or r.content:
-        # second opinion from a different endpoint before calling it tampering
+def _expected_probe_response(url: str, r: requests.Response) -> bool:
+    """True when response matches the connectivity-check contract for that URL."""
+    if "connecttest.txt" in url:
+        body = (r.text or "").strip()
+        return r.status_code == 200 and ("Microsoft" in body or "Connect Test" in body or len(body) < 80)
+    # generate_204 family: empty 204 (some CDNs return 200 empty)
+    if r.status_code == 204 and not r.content:
+        return True
+    if r.status_code == 200 and not r.content:
+        return True
+    return False
+
+
+def _probe_http_china_friendly(px: dict) -> tuple[bool, float | None, bool, str]:
+    """Try PROBE_URLS; pass if PROBE_PASS_NEED succeed. Returns (ok, latency, tamper, detail)."""
+    successes = 0
+    tamper_like = 0
+    lat: float | None = None
+    details: list[str] = []
+    for url in PROBE_URLS:
         try:
             t0 = time.time()
-            r2 = requests.get(PROBE_URL_2, proxies=px, timeout=PROBE_TIMEOUT, allow_redirects=False)
-            lat = round((time.time() - t0) * 1000, 1)
-        except Exception:
-            return res
-        if r2.status_code >= 400:
-            return res  # error pages: unusable, but not proof of tampering
-        if r2.status_code != 204 or r2.content:
-            return {"status": "tamper_http", "detail": f"{r.status_code}/{r2.status_code}"}
-    res = {"status": "ok", "latency": lat, "https_ok": False}
+            r = requests.get(url, proxies=px, timeout=PROBE_TIMEOUT, allow_redirects=False)
+            lat_i = round((time.time() - t0) * 1000, 1)
+        except Exception as e:
+            details.append(f"err:{type(e).__name__}")
+            continue
+        if r.status_code >= 400:
+            details.append(f"{r.status_code}")
+            continue
+        if _expected_probe_response(url, r):
+            successes += 1
+            if lat is None:
+                lat = lat_i
+            if successes >= PROBE_PASS_NEED:
+                return True, lat, False, f"ok:{successes}"
+        else:
+            tamper_like += 1
+            details.append(f"bad{r.status_code}")
+    if successes >= PROBE_PASS_NEED:
+        return True, lat, False, f"ok:{successes}"
+    if successes == 0 and tamper_like >= 2:
+        return False, None, True, "/".join(details[:4])
+    return False, None, False, "/".join(details[:4])
+
+
+def _probe_through(port: int) -> dict:
+    """Probe one local mihomo listener. China-friendly HTTP URLs; CF HTTPS is soft."""
+    px = {"http": f"http://127.0.0.1:{port}", "https": f"http://127.0.0.1:{port}"}
+    ok, lat, tamper, detail = _probe_http_china_friendly(px)
+    if tamper:
+        return {"status": "tamper_http", "detail": detail[:120]}
+    if not ok:
+        return {"status": "fail"}
+    res: dict[str, Any] = {"status": "ok", "latency": lat if lat is not None else 9999.0, "https_ok": False}
+    # Soft CF HTTPS trace: useful for egress IP/loc, NOT a sole veto.
     try:
         t = requests.get(TRACE_URL, proxies=px, timeout=PROBE_TIMEOUT, allow_redirects=False)
         body = t.text if t.status_code == 200 else ""
@@ -475,8 +535,7 @@ def _probe_through(port: int) -> dict:
             if hp.is_bad_ip(kv["ip"]):
                 return {"status": "bad_egress", "detail": kv["ip"]}
             res.update(https_ok=True, egress=kv["ip"], loc=kv.get("loc"))
-        elif 300 <= t.status_code < 400 or t.status_code == 200:
-            return {"status": "tamper_https", "detail": str(t.status_code)}
+        # wrong/redirect body: leave https_ok=False (soft), do not hard-fail
     except requests.exceptions.SSLError as e:
         msg = str(e)
         if re.search(r"CERTIFICATE_VERIFY_FAILED|certificate verify failed|hostname mismatch|doesn't match", msg, re.I):
@@ -484,8 +543,8 @@ def _probe_through(port: int) -> dict:
             return {"status": "tls_mitm", "detail": (m.group(1) if m else msg[-120:])[:120]}
     except Exception:
         pass
-    # Optional CF purity: grok.com often returns Error 1005 for blocked egress IPs.
-    if res.get("https_ok") and PURITY_URL:
+    # Soft purity: flag CF blocks; keep node (China-usable nodes are often CF-risked).
+    if PURITY_URL:
         try:
             pr = requests.get(
                 PURITY_URL,
@@ -501,14 +560,10 @@ def _probe_through(port: int) -> dict:
                 re.I,
             ))
             if blocked or (pr.status_code in (403, 503) and "cloudflare" in body.lower()):
-                return {
-                    "status": "cf_blocked",
-                    "detail": f"http{pr.status_code}",
-                    "egress": res.get("egress"),
-                    "loc": res.get("loc"),
-                }
+                res["cf_blocked"] = True
+                res["cf_detail"] = f"http{pr.status_code}"
         except Exception:
-            pass  # purity probe soft-fail: keep https_ok node
+            pass
     return res
 
 
@@ -637,7 +692,9 @@ def protocol_penalty(proxy: dict) -> float:
         return PROTOCOL_BONUS_HY2
     if ptype == "vless" and _has_reality(proxy):
         return PROTOCOL_BONUS_REALITY
-    if ptype in ("trojan", "anytls", "tuic", "hysteria"):
+    if ptype == "trojan":
+        return PROTOCOL_BONUS_TROJAN
+    if ptype in ("anytls", "tuic", "hysteria"):
         return PROTOCOL_BONUS_TLS_OK
     if ptype == "vless":
         return PROTOCOL_BONUS_TLS_OK
@@ -648,6 +705,68 @@ def protocol_penalty(proxy: dict) -> float:
     if ptype in ("http", "https", "socks5", "socks5h", "socks"):
         return PROTOCOL_PENALTY_HTTP_SOCKS
     return PROTOCOL_PENALTY_OTHER_LOW
+
+
+def china_feature_bonus(proxy: dict) -> float:
+    """SNI whitelist / common ports / Reality chrome|firefox fingerprint."""
+    bonus = 0.0
+    sni = str(proxy.get("servername") or proxy.get("sni") or "").lower().strip(".")
+    if sni and any(sni == s or sni.endswith("." + s) for s in SNI_WHITELIST_SUFFIXES):
+        bonus += SNI_BONUS
+    try:
+        port = int(proxy.get("port", 0))
+    except Exception:
+        port = 0
+    if port in FRIENDLY_PORTS:
+        bonus += PORT_BONUS
+    cfp = str(proxy.get("client-fingerprint") or proxy.get("client_fingerprint") or "").lower()
+    if not cfp:
+        ro = proxy.get("reality-opts") or {}
+        if isinstance(ro, dict):
+            cfp = str(ro.get("client-fingerprint") or ro.get("fingerprint") or "").lower()
+    if _has_reality(proxy) and cfp in ("chrome", "firefox", "safari", "ios", "edge", "android"):
+        bonus += REALITY_FP_BONUS
+    return bonus
+
+
+def is_us_node(proxy: dict, probe_result: dict | None = None) -> bool:
+    """US by region name, CF trace loc, or common US VPS host hints."""
+    if classify_proxy(str(proxy.get("name", ""))) == "🇺🇸 美国":
+        return True
+    if probe_result and str(probe_result.get("loc") or "").upper() == "US":
+        return True
+    blob = f"{proxy.get('name', '')} {proxy.get('server', '')}"
+    if US_HOST_HINTS.search(blob):
+        return True
+    return False
+
+
+def us_china_penalty(proxy: dict, probe_result: dict | None = None) -> float:
+    """Extra ms penalty for US egress/region when ranking for China clients."""
+    region = classify_proxy(str(proxy.get("name", "")))
+    pen = 0.0
+    if region == "🇺🇸 美国":
+        pen += US_REGION_DELAY_PENALTY
+    elif region in ASIA_REGIONS:
+        pen += ASIA_SCORE_BONUS
+    if not is_us_node(proxy, probe_result):
+        return pen
+    # Already counted region penalty; add egress-style protocol-tiered penalty once.
+    # If region was not US but egress/host is US, apply full egress penalty.
+    ptype = str(proxy.get("type", "")).lower()
+    if ptype in ("hysteria2", "hy2") or (ptype == "vless" and _has_reality(proxy)):
+        egress_pen = US_EGRESS_PENALTY_HY2_REALITY
+    elif ptype in ("ss", "ssr", "vmess") or ptype in ("http", "https", "socks5", "socks5h", "socks"):
+        egress_pen = US_EGRESS_PENALTY_SS_VMESS
+    else:
+        egress_pen = US_EGRESS_PENALTY_MID
+    if region == "🇺🇸 美国":
+        # region already +400; add only the delta so Hy2 US is lighter than SS US overall
+        # Hy2: 400+300=700, SS: 400+600=1000, Mid: 400+450=850
+        pen += egress_pen
+    else:
+        pen += egress_pen
+    return pen
 
 
 def classify_proxy(name: str) -> str:
@@ -944,7 +1063,7 @@ def main() -> None:
             real_ok=sum(1 for fp in alive if fp in real_ok),
             probed=sum(1 for fp in fps if fp in probe),
             tamper=sum(1 for fp in fps if fp in tampered),
-            cf_blocked=sum(1 for fp in fps if (probe.get(fp) or {}).get("status") == "cf_blocked"),
+            cf_blocked=sum(1 for fp in fps if (probe.get(fp) or {}).get("cf_blocked")),
             preferred_ok=sum(1 for fp in alive if fp in real_ok and is_preferred(unique[fp])),
             flags=src_flags.get(url, []),
         )
@@ -988,16 +1107,20 @@ def main() -> None:
             continue
         penalty = 0.0 if r or not bin_path else NO_REAL_PROBE_PENALTY
         if r and bin_path and not r.get("https_ok"):
-            penalty += NO_HTTPS_PENALTY
+            penalty += NO_HTTPS_PENALTY  # soft: CF HTTPS not sole veto
+        if r and r.get("cf_blocked"):
+            penalty += CF_BLOCKED_PENALTY  # soft purity
         if cand_only:
             penalty += CANDIDATE_ONLY_PENALTY
         multi = len(prov[fp] & off_set)
         if multi >= 2:
             penalty -= MULTI_SOURCE_BONUS * min(multi - 1, 3)
         penalty += protocol_penalty(unique[fp])
+        penalty += china_feature_bonus(unique[fp])
+        penalty += us_china_penalty(unique[fp], r)
         bonus = survival_bonus_ms(fp, survival)
         if is_preferred(unique[fp]):
-            bonus *= 1.35  # keep long-lived hy2/reality even harder
+            bonus *= 1.5  # keep long-lived hy2/reality even harder
         score = display + penalty + bonus
         scored.append((unique[fp], score, display, is_preferred(unique[fp]), bool(r), tier))
 
@@ -1028,7 +1151,7 @@ def main() -> None:
     for item in scored:
         region_dict[classify_proxy(item[0].get("name", ""))].append(item)
 
-    final_proxies: list[dict] = []
+    region_selected: dict[str, list] = {}
     for region, nodes in region_dict.items():
         quota = REGION_QUOTAS.get(region, MAX_OTHER)
         if bin_path and REQUIRE_REAL_PROBE_IN_OUTPUT:
@@ -1064,6 +1187,50 @@ def main() -> None:
                     low_added += 1
         else:
             selected = nodes[:quota]
+        region_selected[region] = selected
+        pref_count = sum(1 for row in selected if row[3])
+        real_count = sum(1 for row in selected if row[4])
+        print(
+            f"{region}: 候选 {len(selected)}（优先 {pref_count}，真实探测 {real_count}，"
+            f"tier0 {sum(1 for r in selected if (r[5] if len(r)>5 else 9)==0)}）"
+        )
+
+    # Cap US share of final list (China path: US often unusable).
+    flat: list[tuple] = []
+    for region, selected in region_selected.items():
+        for row in selected:
+            flat.append((region, row))
+    # Prefer non-US first when trimming
+    def _us_rank(pair):
+        region, row = pair
+        proxy = row[0]
+        fp = fingerprint(proxy)
+        us = region == "🇺🇸 美国" or is_us_node(proxy, real_ok.get(fp))
+        return (1 if us else 0, row[1])  # non-US first, then better score
+    flat.sort(key=_us_rank)
+    max_us = max(1, int(len(flat) * MAX_US_SHARE + 0.999)) if flat else 0
+    kept: list[tuple] = []
+    us_n = 0
+    for region, row in flat:
+        proxy = row[0]
+        fp = fingerprint(proxy)
+        us = region == "🇺🇸 美国" or is_us_node(proxy, real_ok.get(fp))
+        if us:
+            if us_n >= max_us:
+                continue
+            us_n += 1
+        kept.append((region, row))
+    # Re-group for naming/output stability by region order
+    final_by_region: dict[str, list] = defaultdict(list)
+    for region, row in kept:
+        final_by_region[region].append(row)
+    us_dropped = len(flat) - len(kept)
+    if us_dropped:
+        print(f"美国占比上限 {MAX_US_SHARE:.0%}: 再去掉 {us_dropped} 个美国/美国出口节点")
+
+    final_proxies: list[dict] = []
+    for region in list(REGION_RULES.keys()) + ["🌐 其他"]:
+        selected = final_by_region.get(region, [])
         for row in selected:
             proxy, _score, display = row[0], row[1], row[2]
             base = re.sub(r"\s+\d+ms$", "", str(proxy.get("name", "node")))
@@ -1072,12 +1239,8 @@ def main() -> None:
             if not np["name"].strip():
                 np["name"] = f"node{latency_tag(display)}"
             final_proxies.append(np)
-        pref_count = sum(1 for row in selected if row[3])
-        real_count = sum(1 for row in selected if row[4])
-        print(
-            f"{region}: 保留 {len(selected)}（优先 {pref_count}，真实探测 {real_count}，"
-            f"tier0 {sum(1 for r in selected if (r[5] if len(r)>5 else 9)==0)}）"
-        )
+        if selected:
+            print(f"{region}: 最终保留 {len(selected)}")
 
     seen_names: dict[str, int] = {}
     for p in final_proxies:
