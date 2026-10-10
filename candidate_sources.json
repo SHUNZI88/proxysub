@@ -9,7 +9,7 @@
       "required_runs": 5,
       "first_seen": "2026-10-09",
       "initial_nodes": 100,
-      "runs": 6,
+      "runs": 7,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -54,6 +54,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-10",
+          "count": 1,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -66,10 +73,17 @@
       "required_runs": 3,
       "first_seen": "2026-10-10",
       "initial_nodes": 20,
-      "runs": 5,
+      "runs": 6,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
+        {
+          "date": "2026-10-10",
+          "count": 20,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
         {
           "date": "2026-10-10",
           "count": 20,
@@ -116,7 +130,7 @@
       "required_runs": 5,
       "first_seen": "2026-10-10",
       "initial_nodes": 220,
-      "runs": 5,
+      "runs": 6,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -153,6 +167,13 @@
           "count": 218,
           "usable": 5,
           "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-10",
+          "count": 215,
+          "usable": 9,
+          "unique_new": 3,
           "tamper": 0
         }
       ]
@@ -166,7 +187,7 @@
       "required_runs": 5,
       "first_seen": "2026-10-10",
       "initial_nodes": 220,
-      "runs": 5,
+      "runs": 6,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -204,6 +225,13 @@
           "usable": 5,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-10",
+          "count": 215,
+          "usable": 9,
+          "unique_new": 3,
+          "tamper": 0
         }
       ]
     },
@@ -216,7 +244,7 @@
       "required_runs": 5,
       "first_seen": "2026-10-10",
       "initial_nodes": 112,
-      "runs": 5,
+      "runs": 6,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -253,6 +281,13 @@
           "count": 112,
           "usable": 0,
           "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-10",
+          "count": 112,
+          "usable": 1,
+          "unique_new": 1,
           "tamper": 0
         }
       ]
@@ -266,8 +301,8 @@
       "required_runs": 3,
       "first_seen": "2026-10-10",
       "initial_nodes": 271,
-      "runs": 3,
-      "good_streak": 0,
+      "runs": 4,
+      "good_streak": 1,
       "fail_streak": 0,
       "history": [
         {
@@ -290,6 +325,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-10",
+          "count": 271,
+          "usable": 70,
+          "unique_new": 70,
+          "tamper": 0
         }
       ]
     },
@@ -302,8 +344,8 @@
       "required_runs": 3,
       "first_seen": "2026-10-10",
       "initial_nodes": 99,
-      "runs": 2,
-      "good_streak": 2,
+      "runs": 3,
+      "good_streak": 0,
       "fail_streak": 0,
       "history": [
         {
@@ -318,6 +360,57 @@
           "count": 99,
           "usable": 20,
           "unique_new": 20,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-10",
+          "count": 99,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        }
+      ]
+    },
+    "https://raw.githubusercontent.com/VPN-Subcription-Links/ClashX-V2Ray-TopFreeProxy/main/combine/clash.config.yaml": {
+      "repo": "VPN-Subcription-Links/ClashX-V2Ray-TopFreeProxy",
+      "stars": 5583,
+      "repo_created": "2022-07-18T10:34:45Z",
+      "reputation": "ok",
+      "reputation_note": "stars=5583,age=1545d",
+      "required_runs": 3,
+      "first_seen": "2026-10-10",
+      "initial_nodes": 2493,
+      "runs": 1,
+      "good_streak": 1,
+      "fail_streak": 0,
+      "history": [
+        {
+          "date": "2026-10-10",
+          "count": 2493,
+          "usable": 905,
+          "unique_new": 594,
+          "tamper": 0
+        }
+      ]
+    },
+    "https://raw.githubusercontent.com/LalatinaHub/LatinaSub/main/result/clash.yaml": {
+      "repo": "LalatinaHub/LatinaSub",
+      "stars": 11,
+      "repo_created": "2023-01-09T23:30:45Z",
+      "reputation": "ok",
+      "reputation_note": "stars=11,age=1369d",
+      "required_runs": 3,
+      "first_seen": "2026-10-10",
+      "initial_nodes": 467,
+      "runs": 1,
+      "good_streak": 1,
+      "fail_streak": 0,
+      "history": [
+        {
+          "date": "2026-10-10",
+          "count": 467,
+          "usable": 76,
+          "unique_new": 73,
           "tamper": 0
         }
       ]
