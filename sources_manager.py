@@ -32,8 +32,8 @@ MAX_ACTIVE_CANDIDATES = 15
 MIN_CANDIDATE_USABLE = 5      # usable (real-probe ok) nodes per run
 MIN_CANDIDATE_UNIQUE = 4      # of which not already offered by official sources
 OFFICIAL_FAIL_DEMOTE = 4      # consecutive failed runs (= ~24h at 6h cadence)
-OFFICIAL_ZERO_UNIQUE_DEMOTE = 28  # consecutive runs w/o unique alive node (= ~7 days)
-OFFICIAL_ZERO_REAL_DEMOTE = 8     # consecutive runs with probes but 0 real-ok (= ~2 days)
+OFFICIAL_ZERO_UNIQUE_DEMOTE = 16  # consecutive runs w/o unique alive node (= ~4 days)
+OFFICIAL_ZERO_REAL_DEMOTE = 4     # consecutive runs with probes but 0 real-ok (= ~1 day)
 REMOVED_COOLDOWN_DAYS = 30
 
 # ---- discovery knobs ----
@@ -348,6 +348,8 @@ def evaluate_candidates(cands: dict, run: dict[str, dict], sources: dict) -> dic
             reason = "honeypot_structure:" + ";".join(r["flags"])
         elif tamper >= 3 or (tamper >= 1 and tamper / probed >= 0.2):
             reason = f"honeypot_tamper:{tamper}/{probed}"
+        elif int(r.get("cf_blocked", 0)) >= 2 and int(r.get("cf_blocked", 0)) / probed >= 0.25:
+            reason = f"cf_blocked:{r.get('cf_blocked')}/{probed}"
         elif c["fail_streak"] >= CANDIDATE_MAX_FAILS:
             reason = "fetch_failures"
         elif c["runs"] >= PROBATION_MAX_RUNS:
@@ -400,8 +402,10 @@ def update_official(sources: dict, stats_hist: dict, run: dict[str, dict]) -> di
 
         reason = None
         tamper, probed = int(r.get("tamper", 0)), max(1, int(r.get("probed", 0)))
-        if tamper >= 5 and tamper / probed >= 0.3:
+        if tamper >= 3 and tamper / probed >= 0.25:
             reason = f"honeypot_tamper:{tamper}/{probed}"
+        elif int(r.get("cf_blocked", 0)) >= 4 and int(r.get("cf_blocked", 0)) / probed >= 0.3:
+            reason = f"cf_blocked:{r.get('cf_blocked')}/{probed}"
         elif h["fail_streak"] >= OFFICIAL_FAIL_DEMOTE:
             reason = f"consecutive_failures:{h['fail_streak']}"
         elif h.get("zero_real_streak", 0) >= OFFICIAL_ZERO_REAL_DEMOTE:
