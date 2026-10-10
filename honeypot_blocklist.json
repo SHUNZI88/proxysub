@@ -16,6 +16,18 @@
       "added": "2026-10-09",
       "expires": "2026-10-23",
       "source": "https://raw.githubusercontent.com/F0rc3Run/F0rc3Run/main/Best-Results/clash-provider.yaml"
+    },
+    "80.93.202.40": {
+      "reason": "tls_mitm:certificate verify failed: Hostname mismatch, certificate is not valid for ",
+      "added": "2026-10-10",
+      "expires": "2026-10-24",
+      "source": "https://raw.githubusercontent.com/yy1588133/proxy-pool/main/clash.yaml"
+    },
+    "tg.juntham.cn": {
+      "reason": "tls_mitm:certificate verify failed: Hostname mismatch, certificate is not valid for ",
+      "added": "2026-10-10",
+      "expires": "2026-10-24",
+      "source": "https://raw.githubusercontent.com/0xRadikal/Free-v2ray-Configs/main/all/clash.yaml"
     }
   }
 }
