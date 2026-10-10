@@ -511,10 +511,16 @@ def parse_subscription_text(text: str) -> list[dict]:
     except Exception:
         pass
 
-    # Maybe whole body is base64
-    decoded = _try_b64_decode(text)
-    if decoded and decoded != text:
-        return parse_subscription_text(decoded)
+    # Maybe whole body is base64.
+    # 仅当正文只含 base64 字符集（字母/数字/+/-/_/= 与空白）时才尝试整段解码：
+    # b64decode(validate=False) 会丢弃非法字符强行解码，若对「分享链接列表」
+    # （含 : / # @）整段解码会得到垃圾并吞掉后续逐行解析（Python 3.12/3.13
+    # 的解码严格度不同，曾导致多链接源在 3.12 上被解析为空）。
+    compact = "".join(text.split())
+    if compact and re.fullmatch(r"[A-Za-z0-9+/_=-]+", compact):
+        decoded = _try_b64_decode(text)
+        if decoded and decoded != text:
+            return parse_subscription_text(decoded)
 
     # Line-based URIs
     out: list[dict] = []

@@ -39,6 +39,27 @@ def test_parse_share_links():
     assert trojan["sni"] == "www.microsoft.com"
 
 
+def test_share_link_list_not_treated_as_base64():
+    """回归（CI/Python 3.12 实际触发）：
+
+    多行分享链接包含 : / # @ 等非 base64 字符。旧实现直接对整段文本调用
+    b64decode(validate=False)，丢弃非法字符后仍可能"解码成功"，返回垃圾并
+    吞掉逐行解析，导致整源被解析为空。
+    修复后：整段 base64 仅在正文只含 base64 字符集时尝试。
+    """
+    text = f"{SS_URI}\n{TROJAN_URI}\n" + "vmess://eyJwcyI6InYiLCJhZGQiOiIxLjIuMy40IiwicG9ydCI6IjQ0MyIsImlkIjoiYjgzMTM4MWQtNjMyNC00ZDUzLWFkNGYtOGNkYTQ4YjMwODExIiwiYWlkIjoiMCIsInNjeSI6ImF1dG8iLCJuZXQiOiJ0Y3AiLCJ0bHMiOiJ0bHMifQ=="
+    nodes = fc.parse_subscription_text(text)
+    types = {n["type"] for n in nodes}
+    assert types == {"ss", "trojan", "vmess"}
+
+
+def test_pure_base64_blob_still_decoded():
+    """纯 base64 订阅（无 URI 特征）仍需正确整段解码。"""
+    blob = base64.b64encode(f"{SS_URI}\n{TROJAN_URI}".encode()).decode()
+    nodes = fc.parse_subscription_text(blob)
+    assert {n["type"] for n in nodes} == {"ss", "trojan"}
+
+
 def test_parse_empty_and_garbage():
     assert fc.parse_subscription_text("") == []
     assert fc.parse_subscription_text("not a subscription at all\nrandom text") == []
