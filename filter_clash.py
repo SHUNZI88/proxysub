@@ -43,16 +43,20 @@ REGION_RULES = {
 }
 
 # China-path tilt: Asia quotas up, US/UK down (US runner ≠ China client).
+# Quotas sum ~180 so we can land in the 100–200 final band after US-share trim.
 REGION_QUOTAS = {
-    "🇭🇰 香港": 28,
-    "🇯🇵 日本": 22,
-    "🇸🇬 新加坡": 20,
-    "🇹🇼 台湾": 14,
-    "🇰🇷 韩国": 12,
-    "🇺🇸 美国": 10,
-    "🇬🇧 英国": 4,
+    "🇭🇰 香港": 40,
+    "🇯🇵 日本": 35,
+    "🇸🇬 新加坡": 30,
+    "🇹🇼 台湾": 22,
+    "🇰🇷 韩国": 20,
+    "🇺🇸 美国": 18,   # soft; also capped by MAX_US_SHARE
+    "🇬🇧 英国": 8,
 }
-MAX_OTHER = 8  # EU/CA/AU and misc; still ranked by latency+survival
+MAX_OTHER = 15  # EU/CA/AU and misc; still ranked by latency+survival
+# Hard band for final subscription size (China FLClash needs enough candidates).
+MIN_FINAL = 100
+MAX_FINAL = 200
 
 TCP_TIMEOUT = 3.5
 PROBE_TIMEOUT = 8.0
@@ -70,59 +74,67 @@ SURVIVAL_FILE = "survival.json"
 SOURCE_STATS_FILE = "source_stats.json"
 BAD_SOURCES_FILE = "bad_sources.json"
 # China-client connectivity URLs first (Asia egress reaches them more easily from US runners).
+# Runner probe: China-client-ish URLs first (any 1 pass). US runner≠China path,
+# so HTTP ok is a soft quality signal — NOT the sole admission gate.
 PROBE_URLS = [
     "http://connectivitycheck.platform.hicloud.com/generate_204",  # Huawei
     "http://wifi.vivo.com.cn/generate_204",                        # vivo
+    "http://connectivitycheck.gstatic.com/generate_204",
+    "http://captive.apple.com/hotspot-detect.html",                # Apple captive
     "http://www.msftconnecttest.com/connecttest.txt",              # Microsoft
     "http://cp.cloudflare.com/generate_204",
     "http://www.gstatic.com/generate_204",
 ]
 PROBE_PASS_NEED = 1  # any 1 success => HTTP ok (China-friendly)
-PROBE_URL = PROBE_URLS[0]  # client url-test / fallback default
+# FLClash url-test: overseas egress usually reaches gstatic; keep stable for clients.
+PROBE_URL = "http://www.gstatic.com/generate_204"
 TRACE_URL = "https://www.cloudflare.com/cdn-cgi/trace"  # soft HTTPS signal + egress IP/loc
-PROBE_LIMIT_OFFICIAL = 780
-PROBE_PER_CANDIDATE = 16
+PROBE_LIMIT_OFFICIAL = 980
+PROBE_PER_CANDIDATE = 20
 PROBE_BATCH = 100
 PROBE_CONCURRENCY = 32
 # Reserve real-probe slots: Asia heavy, US light.
 PROBE_RESERVE_PER_REGION = {
-    "🇭🇰 香港": 160,
-    "🇯🇵 日本": 130,
-    "🇸🇬 新加坡": 120,
-    "🇹🇼 台湾": 80,
-    "🇰🇷 韩国": 70,
-    "🇺🇸 美国": 50,
-    "🇬🇧 英国": 20,
-    "🌐 其他": 30,
+    "🇭🇰 香港": 220,
+    "🇯🇵 日本": 180,
+    "🇸🇬 新加坡": 160,
+    "🇹🇼 台湾": 110,
+    "🇰🇷 韩国": 100,
+    "🇺🇸 美国": 60,
+    "🇬🇧 英国": 30,
+    "🌐 其他": 40,
 }
 # Within each region reserve, probe this many preferred (hy2/reality) first.
 PROBE_PREFERRED_PER_REGION = {
-    "🇭🇰 香港": 100,
-    "🇯🇵 日本": 80,
-    "🇸🇬 新加坡": 75,
-    "🇹🇼 台湾": 50,
-    "🇰🇷 韩国": 45,
-    "🇺🇸 美国": 20,
-    "🇬🇧 英国": 8,
-    "🌐 其他": 10,
+    "🇭🇰 香港": 140,
+    "🇯🇵 日本": 110,
+    "🇸🇬 新加坡": 100,
+    "🇹🇼 台湾": 70,
+    "🇰🇷 韩国": 60,
+    "🇺🇸 美国": 24,
+    "🇬🇧 英国": 10,
+    "🌐 其他": 14,
 }
 CANDIDATE_ONLY_PENALTY = 800.0   # nodes only offered by probation sources rank lower
-NO_HTTPS_PENALTY = 280.0         # soft: CF HTTPS is a signal, not a sole veto
-NO_REAL_PROBE_PENALTY = 5000.0   # effectively exclude TCP-only when mihomo is available
+NO_HTTPS_PENALTY = 180.0         # soft: CF HTTPS is a signal, not a sole veto
+# TCP-alive without real-ok: rank worse but still eligible to fill Asia quotas / floor.
+NO_REAL_PROBE_PENALTY = 1600.0
 MULTI_SOURCE_BONUS = 80.0        # ms-equivalent: appear in multiple official sources
 SEEN_DAYS_WEIGHT = 55            # longevity: lifetime seen_days (capped)
-MAX_PER_CREDENTIAL = 4           # diversity: same uuid/password across many servers
-MAX_PER_EGRESS_IP = 2            # diversity: many nodes exiting from one IP = one operator
+MAX_PER_CREDENTIAL = 6           # diversity (slightly looser so floor can be met)
+MAX_PER_EGRESS_IP = 3            # diversity (slightly looser)
 # Hard rejects only; cf_blocked is soft (many China-usable nodes are CF-risked).
 TAMPER_STATUSES = ("tamper_http", "tamper_https", "tls_mitm", "bad_egress")
-# When mihomo is present, only real-probe OK nodes enter the final subscription (usable rate).
-REQUIRE_REAL_PROBE_IN_OUTPUT = True
+# Prefer real-probe OK via ranking; do NOT hard-exclude TCP-alive (US runner≠China).
+# Floor backfill may add TCP-alive Asia / preferred to hit MIN_FINAL.
+REQUIRE_REAL_PROBE_IN_OUTPUT = False
 # CF HTTPS trace is soft — do NOT hard-exclude; apply NO_HTTPS_PENALTY instead.
 REQUIRE_HTTPS_OK_IN_OUTPUT = False
-# Drop nodes slower than this (ms) even if probe "ok" — FLClash experience / longevity proxy.
-MAX_ACCEPT_LATENCY_MS = 2000.0
-# Soft cap: how many low-tier (ss/vmess-plain/http/socks) may enter a region after preferred fill.
-MAX_LOW_TIER_PER_REGION = 1
+# Soft latency gate: US runner RTT ≠ China RTT; only drop extreme outliers.
+MAX_ACCEPT_LATENCY_MS = 4500.0
+MAX_ACCEPT_LATENCY_MS_US = 2800.0  # stricter for US-named / US-egress
+# Soft cap: low-tier fill per region after preferred/high (raised to hit 100–200 band).
+MAX_LOW_TIER_PER_REGION = 10
 # Protocol score: Hy2 > VLESS+Reality > Trojan > else (ms-equivalent; lower = better).
 PROTOCOL_BONUS_HY2 = -420.0
 PROTOCOL_BONUS_REALITY = -380.0
@@ -149,7 +161,7 @@ US_REGION_DELAY_PENALTY = 400.0   # named US region: +400ms
 US_EGRESS_PENALTY_HY2_REALITY = 300.0
 US_EGRESS_PENALTY_MID = 450.0
 US_EGRESS_PENALTY_SS_VMESS = 600.0
-MAX_US_SHARE = 0.22               # final list US share ≤ 22%
+MAX_US_SHARE = 0.25               # final list US share ≤ 25% (floor-friendly)
 CF_BLOCKED_PENALTY = 320.0        # soft purity hit (not hard veto)
 US_HOST_HINTS = re.compile(
     r"(digitalocean|vultr|linode|oracle|amazonaws|aws\.amazon|googleusercontent|"
@@ -476,6 +488,9 @@ def _expected_probe_response(url: str, r: requests.Response) -> bool:
     if "connecttest.txt" in url:
         body = (r.text or "").strip()
         return r.status_code == 200 and ("Microsoft" in body or "Connect Test" in body or len(body) < 80)
+    if "hotspot-detect" in url or "success.html" in url:
+        body = (r.text or "")
+        return r.status_code == 200 and ("Success" in body or "success" in body.lower() or len(body.strip()) < 120)
     # generate_204 family: empty 204 (some CDNs return 200 empty)
     if r.status_code == 204 and not r.content:
         return True
@@ -1083,6 +1098,8 @@ def main() -> None:
         print(f"移除源: {u} -> {why}")
 
     # ---- 7. scoring ----
+    # Real-probe OK ranks first; TCP-alive (esp. Asia / Hy2/Reality) stays eligible
+    # so China-path quotas and MIN_FINAL can be filled when US-runner probe is sparse.
     survival = survival_pre
     scored: list[tuple[dict, float, float, bool, bool, int]] = []
     for fp, tlat in tcp_lat.items():
@@ -1091,14 +1108,16 @@ def main() -> None:
         cand_only = fp not in official_fps
         r = real_ok.get(fp)
         if bin_path and REQUIRE_REAL_PROBE_IN_OUTPUT and not r:
-            continue  # usable-rate: drop TCP-only / unprobed from final pool
+            continue  # legacy hard gate (off by default for China-path floor)
         if cand_only and bin_path and not r:
             continue  # probation-source nodes must pass the real probe
         if bin_path and REQUIRE_HTTPS_OK_IN_OUTPUT and r and not r.get("https_ok"):
             continue  # AI/CF sites need working HTTPS egress
         display = r["latency"] if r else tlat
-        if r and display > MAX_ACCEPT_LATENCY_MS:
-            continue  # too slow for usable FLClash experience
+        us_like = is_us_node(unique[fp], r)
+        lat_cap = MAX_ACCEPT_LATENCY_MS_US if us_like else MAX_ACCEPT_LATENCY_MS
+        if r and display > lat_cap:
+            continue  # extreme outlier on runner RTT
         # Drop open http/socks from final when we have mihomo purity path
         tier = protocol_tier(unique[fp])
         if bin_path and tier >= 3 and str(unique[fp].get("type", "")).lower() in (
@@ -1151,42 +1170,50 @@ def main() -> None:
     for item in scored:
         region_dict[classify_proxy(item[0].get("name", ""))].append(item)
 
+    def _bucketize(nodes: list) -> tuple[list, list, list, list, list]:
+        """Split into: preferred+real, high+real, preferred+TCP, high+TCP, low."""
+        pref_real, high_real, pref_tcp, high_tcp, low = [], [], [], [], []
+        for item in nodes:
+            fp = fingerprint(item[0])
+            r = real_ok.get(fp) or {}
+            if REQUIRE_HTTPS_OK_IN_OUTPUT and item[4] and not r.get("https_ok"):
+                continue
+            tier = item[5] if len(item) > 5 else protocol_tier(item[0])
+            preferred = bool(item[3] or tier == 0)
+            real = bool(item[4])
+            if preferred and real:
+                pref_real.append(item)
+            elif tier <= 1 and real:
+                high_real.append(item)
+            elif preferred and not real:
+                pref_tcp.append(item)
+            elif tier <= 1 and not real:
+                high_tcp.append(item)
+            else:
+                low.append(item)
+        return pref_real, high_real, pref_tcp, high_tcp, low
+
     region_selected: dict[str, list] = {}
     for region, nodes in region_dict.items():
         quota = REGION_QUOTAS.get(region, MAX_OTHER)
-        if bin_path and REQUIRE_REAL_PROBE_IN_OUTPUT:
-            # Prefer: hy2/reality -> other https real-ok -> (rare) non-https real-ok.
-            # Cap low-tier fill so SS/vmess-plain do not pad quotas.
-            preferred, high, low = [], [], []
-            for item in nodes:
-                fp = fingerprint(item[0])
-                r = real_ok.get(fp) or {}
-                if REQUIRE_HTTPS_OK_IN_OUTPUT and not r.get("https_ok"):
-                    continue
-                tier = item[5] if len(item) > 5 else protocol_tier(item[0])
-                if item[3] or tier == 0:
-                    preferred.append(item)
-                elif tier <= 1:
-                    high.append(item)
-                else:
-                    low.append(item)
-            selected = []
-            for bucket in (preferred, high):
-                for item in bucket:
-                    if len(selected) >= quota:
-                        break
-                    selected.append(item)
+        # China-path fill order: preferred real → high real → preferred TCP → high TCP → low.
+        # TCP tiers let Asia quotas fill when US-runner real probe under-samples Asia.
+        pref_real, high_real, pref_tcp, high_tcp, low = _bucketize(nodes)
+        selected: list = []
+        for bucket in (pref_real, high_real, pref_tcp, high_tcp):
+            for item in bucket:
                 if len(selected) >= quota:
                     break
-            low_added = 0
-            if len(selected) < quota:
-                for item in low:
-                    if len(selected) >= quota or low_added >= MAX_LOW_TIER_PER_REGION:
-                        break
-                    selected.append(item)
-                    low_added += 1
-        else:
-            selected = nodes[:quota]
+                selected.append(item)
+            if len(selected) >= quota:
+                break
+        low_added = 0
+        if len(selected) < quota:
+            for item in low:
+                if len(selected) >= quota or low_added >= MAX_LOW_TIER_PER_REGION:
+                    break
+                selected.append(item)
+                low_added += 1
         region_selected[region] = selected
         pref_count = sum(1 for row in selected if row[3])
         real_count = sum(1 for row in selected if row[4])
@@ -1228,6 +1255,68 @@ def main() -> None:
     if us_dropped:
         print(f"美国占比上限 {MAX_US_SHARE:.0%}: 再去掉 {us_dropped} 个美国/美国出口节点")
 
+    # ---- enforce MIN_FINAL / MAX_FINAL (100–200) ----
+    selected_fps = {fingerprint(row[0]) for _, row in kept}
+    total_now = len(selected_fps)
+
+    def _fill_key(item) -> tuple:
+        proxy = item[0]
+        region = classify_proxy(str(proxy.get("name", "")))
+        asia = 0 if region in ASIA_REGIONS else 1
+        real = 0 if item[4] else 1
+        pref = 0 if item[3] else 1
+        us = 1 if (region == "🇺🇸 美国" or is_us_node(proxy, real_ok.get(fingerprint(proxy)))) else 0
+        return (us, asia, real, pref, item[5] if len(item) > 5 else 9, item[1])
+
+    if total_now < MIN_FINAL:
+        pool = [item for item in scored if fingerprint(item[0]) not in selected_fps]
+        pool.sort(key=_fill_key)
+        added = 0
+        for item in pool:
+            if total_now >= MIN_FINAL or total_now >= MAX_FINAL:
+                break
+            proxy = item[0]
+            fp = fingerprint(proxy)
+            region = classify_proxy(str(proxy.get("name", "")))
+            us = region == "🇺🇸 美国" or is_us_node(proxy, real_ok.get(fp))
+            # While below floor, still respect US share soft cap on the growing list.
+            if us:
+                max_us_floor = max(1, int((total_now + 1) * MAX_US_SHARE + 0.999))
+                cur_us = sum(
+                    1 for reg, rows in final_by_region.items() for row in rows
+                    if reg == "🇺🇸 美国" or is_us_node(row[0], real_ok.get(fingerprint(row[0])))
+                )
+                if cur_us >= max_us_floor:
+                    continue
+            final_by_region[region].append(item)
+            selected_fps.add(fp)
+            total_now += 1
+            added += 1
+        if added:
+            print(f"节点数下限 {MIN_FINAL}: 回填 {added} 个（优先亚洲/真实探测/Hy2·Reality）")
+
+    # Trim to MAX_FINAL if over (drop US/low-tier/worst score first).
+    flat2: list[tuple] = []
+    for region, rows in final_by_region.items():
+        for row in rows:
+            flat2.append((region, row))
+    if len(flat2) > MAX_FINAL:
+        def _trim_key(pair):
+            region, row = pair
+            proxy = row[0]
+            fp = fingerprint(proxy)
+            us = 1 if (region == "🇺🇸 美国" or is_us_node(proxy, real_ok.get(fp))) else 0
+            real = 0 if row[4] else 1
+            pref = 0 if row[3] else 1
+            # keep best: non-US, real, preferred, better score — sort ascending then keep[:MAX]
+            return (us, real, pref, row[5] if len(row) > 5 else 9, row[1])
+        flat2.sort(key=_trim_key)
+        flat2 = flat2[:MAX_FINAL]
+        final_by_region = defaultdict(list)
+        for region, row in flat2:
+            final_by_region[region].append(row)
+        print(f"节点数上限 {MAX_FINAL}: 裁剪后 {len(flat2)}")
+
     final_proxies: list[dict] = []
     for region in list(REGION_RULES.keys()) + ["🌐 其他"]:
         selected = final_by_region.get(region, [])
@@ -1241,6 +1330,8 @@ def main() -> None:
             final_proxies.append(np)
         if selected:
             print(f"{region}: 最终保留 {len(selected)}")
+    if len(final_proxies) < MIN_FINAL:
+        print(f"警告: 最终 {len(final_proxies)} < 下限 {MIN_FINAL}（候选池不足）")
 
     seen_names: dict[str, int] = {}
     for p in final_proxies:
