@@ -28,11 +28,6 @@
       "added": "2026-10-10"
     },
     {
-      "url": "https://raw.githubusercontent.com/zhuhaiuk/free-nodes/main/clash_config.yaml",
-      "origin": "manual",
-      "added": "2026-10-10"
-    },
-    {
       "url": "https://raw.githubusercontent.com/chengaopan/AutoMergePublicNodes/master/list.meta.yml",
       "origin": "manual",
       "added": "2026-10-10"
@@ -80,8 +75,21 @@
       "added": "2026-10-10",
       "repo": "F0rc3Run/F0rc3Run",
       "probation_runs": 3
+    },
+    {
+      "url": "https://raw.githubusercontent.com/awesome-vpn/awesome-vpn/master/clash.yaml",
+      "origin": "discovered",
+      "added": "2026-10-10",
+      "repo": "awesome-vpn/awesome-vpn",
+      "probation_runs": 3
     }
   ],
-  "removed": [],
+  "removed": [
+    {
+      "url": "https://raw.githubusercontent.com/zhuhaiuk/free-nodes/main/clash_config.yaml",
+      "reason": "honeypot_tamper:4/9",
+      "date": "2026-10-10"
+    }
+  ],
   "deny_repos": []
 }
