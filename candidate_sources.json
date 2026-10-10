@@ -9,7 +9,7 @@
       "required_runs": 5,
       "first_seen": "2026-10-09",
       "initial_nodes": 100,
-      "runs": 4,
+      "runs": 5,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -40,6 +40,13 @@
           "usable": 1,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-10",
+          "count": 100,
+          "usable": 1,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -52,10 +59,17 @@
       "required_runs": 3,
       "first_seen": "2026-10-10",
       "initial_nodes": 20,
-      "runs": 3,
+      "runs": 4,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
+        {
+          "date": "2026-10-10",
+          "count": 20,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
         {
           "date": "2026-10-10",
           "count": 20,
@@ -88,8 +102,8 @@
       "required_runs": 5,
       "first_seen": "2026-10-10",
       "initial_nodes": 145,
-      "runs": 3,
-      "good_streak": 3,
+      "runs": 4,
+      "good_streak": 4,
       "fail_streak": 0,
       "history": [
         {
@@ -112,6 +126,13 @@
           "usable": 6,
           "unique_new": 6,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-10",
+          "count": 203,
+          "usable": 10,
+          "unique_new": 10,
+          "tamper": 0
         }
       ]
     },
@@ -124,7 +145,7 @@
       "required_runs": 5,
       "first_seen": "2026-10-10",
       "initial_nodes": 220,
-      "runs": 3,
+      "runs": 4,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -148,6 +169,13 @@
           "usable": 4,
           "unique_new": 0,
           "tamper": 1
+        },
+        {
+          "date": "2026-10-10",
+          "count": 218,
+          "usable": 5,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -160,7 +188,7 @@
       "required_runs": 5,
       "first_seen": "2026-10-10",
       "initial_nodes": 220,
-      "runs": 3,
+      "runs": 4,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -184,6 +212,13 @@
           "usable": 4,
           "unique_new": 0,
           "tamper": 1
+        },
+        {
+          "date": "2026-10-10",
+          "count": 218,
+          "usable": 5,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -196,10 +231,17 @@
       "required_runs": 5,
       "first_seen": "2026-10-10",
       "initial_nodes": 112,
-      "runs": 3,
+      "runs": 4,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
+        {
+          "date": "2026-10-10",
+          "count": 112,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
         {
           "date": "2026-10-10",
           "count": 112,
@@ -232,10 +274,17 @@
       "required_runs": 3,
       "first_seen": "2026-10-10",
       "initial_nodes": 271,
-      "runs": 1,
+      "runs": 2,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
+        {
+          "date": "2026-10-10",
+          "count": 271,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
         {
           "date": "2026-10-10",
           "count": 271,
@@ -254,10 +303,18 @@
       "required_runs": 3,
       "first_seen": "2026-10-10",
       "initial_nodes": 99,
-      "runs": 0,
-      "good_streak": 0,
+      "runs": 1,
+      "good_streak": 1,
       "fail_streak": 0,
-      "history": []
+      "history": [
+        {
+          "date": "2026-10-10",
+          "count": 99,
+          "usable": 15,
+          "unique_new": 15,
+          "tamper": 0
+        }
+      ]
     }
   },
   "rejected": {
