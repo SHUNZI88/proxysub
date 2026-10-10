@@ -1,5 +1,16 @@
 #!/usr/bin/env python3
-"""Clean and rank free Clash/Mihomo subscription proxies."""
+"""proxysub —— 高纯度订阅清洗与结构规范化工具。
+
+定位：本仓库只负责把公开免费订阅源清洗成「干净、格式标准」的节点列表；
+最终活性测试（连通性 / 延迟 / 优选）完全交由用户本地客户端
+（FlClash / Clash Verge Rev 等）在真实国内网络环境下通过
+http://www.gstatic.com/generate_204 自行动态完成。
+
+云端（GitHub Actions，美西机房）物理上无法穿越防火墙，无法模拟中国大陆
+用户到节点的真实连通性，测得的低延迟反而会把国内根本无法连接的节点误选进来。
+因此 CI 中彻底禁用 Mihomo 真实流量拨测（PROXYSUB_DISABLE_PROBE=1），
+源质量改由「协议白名单 + 关键参数校验 + 深度指纹去重」的硬性静态门槛保证。
+"""
 
 from __future__ import annotations
 
@@ -24,6 +35,7 @@ import yaml
 
 import honeypot as hp
 import sources_manager as sm
+from safe_io import load_json, save_json  # 原子化读写，防止 JSON 截断损坏
 
 # ====================== 配置区 ======================
 # 订阅源已移到 sources.json（正式源）和 candidate_sources.json（候选/试用源），
@@ -33,13 +45,15 @@ EXCLUDE_KEYWORDS = r"(官网|流量|到期|过期|剩余|测试|无效|假|防�
 
 REGION_RULES = {
     # Order matters: first match wins. Asia first (China client path).
-    "🇭🇰 香港": r"(香港|HK|Hong Kong|HongKong)",
-    "🇯🇵 日本": r"(日本|JP|Japan|东京|大阪|Tokyo|Osaka)",
-    "🇸🇬 新加坡": r"(新加坡|SG|Singapore|狮城)",
-    "🇹🇼 台湾": r"(台湾|台灣|TW|Taiwan)",
-    "🇰🇷 韩国": r"(韩国|韓國|KR|Korea|首尔|首爾|Seoul)",
-    "🇺🇸 美国": r"(美国|US|United States|USA|America)",
-    "🇬🇧 英国": r"(英国|英國|UK|United Kingdom|London|伦敦)",
+    # 短代码（HK/JP/SG/TW/KR/US/UK 等）强制加 \b 单词边界，防止子串误判
+    # （如 Russia 包含 us、AUS 包含 US、UKRAINE 包含 UK 被错归为美国/英国）。
+    "🇭🇰 香港": r"(香港|\bHK\b|Hong\s?Kong)",
+    "🇯🇵 日本": r"(日本|\bJP\b|Japan|东京|大阪|Tokyo|Osaka)",
+    "🇸🇬 新加坡": r"(新加坡|\bSG\b|Singapore|狮城)",
+    "🇹🇼 台湾": r"(台湾|台灣|\bTW\b|Taiwan)",
+    "🇰🇷 韩国": r"(韩国|韓國|\bKR\b|Korea|首尔|首爾|Seoul)",
+    "🇺🇸 美国": r"(美国|美國|\bUS\b|\bUSA\b|United States|\bAmerica\b)",
+    "🇬🇧 英国": r"(英国|英國|\bUK\b|United Kingdom|London|伦敦)",
 }
 
 # China-path tilt: Asia quotas up, US/UK down (US runner ≠ China client).
@@ -57,6 +71,43 @@ MAX_OTHER = 15  # EU/CA/AU and misc; still ranked by latency+survival
 # Hard band for final subscription size (China FLClash needs enough candidates).
 MIN_FINAL = 100
 MAX_FINAL = 200
+
+# ====================== 硬性静态门槛（协议白名单 + 关键参数校验） ======================
+# 云端剥离真实流量拨测后，源质量完全依赖静态门槛把关：
+#   1) 协议白名单：仅收录优质现代协议（Hysteria2 / VLESS-Reality / Trojan / TUIC 等），
+#      彻底排除 ss / ssr / vmess / http / socks 等大量掺假的 legacy 垃圾协议；
+#   2) 关键参数校验：SNI、Reality Public-Key / Short-Id、UUID、密码等必须合法匹配；
+#   3) 深度指纹去重：见 fingerprint()。
+PROTOCOL_WHITELIST = {
+    "hysteria2", "hy2",
+    "vless",      # 必须为 Reality 或显式 TLS（见 protocol_gate_reason）
+    "trojan",
+    "tuic",
+    "anytls",
+    "hysteria",
+}
+# 标准 UUID（8-4-4-4-12 hex）
+UUID_RE = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.I)
+# Reality short-id：0-8 字节的 hex（偶数位，最长 16 字符）
+SHORT_ID_RE = re.compile(r"^([0-9a-f]{2}){0,8}$", re.I)
+# X25519 公钥：base64url 编码 32 字节 = 43 字符（可带 1 个 '=' 填充）
+X25519_PUBLIC_KEY_RE = re.compile(r"^[A-Za-z0-9_-]{43}={0,1}$")
+# mihomo vless 支持的 flow
+SUPPORTED_FLOWS = {"", "xtls-rprx-vision"}
+
+# skip-cert-verify 节点（削弱 TLS 身份认证的高风险节点）的处理：
+# 名称打 [Insecure] 标签 + 独立分组隔离，不进入自动选择/故障转移/地区分组
+INSECURE_TAG = " [Insecure]"
+INSECURE_GROUP = "⚠️ 高风险(跳过证书校验)"
+
+# 云端真实流量拨测总开关：PROXYSUB_DISABLE_PROBE=1 时彻底跳过 mihomo / http-socks 拨测，
+# 仅保留 TCP 存活检查作为服务器是否在线的信号；最终测速由本地客户端完成。
+def real_probe_enabled() -> bool:
+    return os.environ.get("PROXYSUB_DISABLE_PROBE", "0") != "1"
+
+# 评分时 TCP 延迟（美西 Runner 测得，不代表国内真实路径）的贡献上限：
+# 仅作为存活/粗排信号，不允许主导排序（排序主要由协议质量/存活时长/多源等静态特征决定）。
+TCP_LATENCY_CAP_IN_SCORE = 600.0
 
 TCP_TIMEOUT = 3.5
 PROBE_TIMEOUT = 8.0
@@ -184,51 +235,153 @@ def _today() -> str:
     return date.today().isoformat()
 
 
-def load_json(path: str, default: Any) -> Any:
-    if not os.path.exists(path):
-        return default
-    try:
-        with open(path, encoding="utf-8") as f:
-            return json.load(f)
-    except Exception:
-        return default
+# load_json / save_json 统一由 safe_io 提供（原子写入 + 文件锁 + 损坏自愈）。
 
 
-def save_json(path: str, data: Any) -> None:
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+# 指纹计算时忽略的易变字段：改名不影响节点身份；latency/history 是运行期数据。
+FINGERPRINT_IGNORE_KEYS = {"name", "latency", "history"}
+
+
+def _canonicalize(obj: Any) -> Any:
+    """递归规范化：dict 按键名排序、list/tuple 保序，用于稳定的深度序列化。"""
+    if isinstance(obj, dict):
+        return {str(k): _canonicalize(v) for k, v in sorted(obj.items(), key=lambda kv: str(kv[0]))}
+    if isinstance(obj, (list, tuple)):
+        return [_canonicalize(v) for v in obj]
+    return obj
 
 
 def fingerprint(proxy: dict) -> str:
-    """Stable id from protocol + credentials (not just server:port)."""
-    ptype = str(proxy.get("type", "")).lower()
-    server = str(proxy.get("server", ""))
-    port = str(proxy.get("port", ""))
-    parts = [ptype, server, port]
+    """深度指纹：协议 + 服务器 + 端口 + 全部嵌套连接参数。
 
-    for key in (
-        "uuid",
-        "password",
-        "passwd",
-        "auth",
-        "psk",
-        "public-key",
-        "private-key",
-        "short-id",
-        "token",
-        "auth-str",
-        "obfs-password",
-    ):
-        if proxy.get(key) is not None:
-            parts.append(f"{key}={proxy.get(key)}")
+    采用「递归规范化 + 深度序列化」：除名称等易变字段外，任意层级的嵌套参数
+    （reality-opts 的 public-key/short-id、ws-opts 的 path/headers、grpc-opts 的
+    grpc-service-name、tls/alpn 置信等）都参与哈希。
+    这修复了旧实现只哈希平铺字段的问题——旧实现会遗漏嵌套参数，导致
+    「仅 WS 路径不同」「仅 Reality 公钥不同」的节点被错误合并（或被误去重丢弃）。
+    """
+    payload = {k: v for k, v in proxy.items() if k not in FINGERPRINT_IGNORE_KEYS}
+    # 归一化类型/端口，避免 int 与 str 表示差异产生不同指纹
+    payload["type"] = str(payload.get("type", "")).lower().strip()
+    try:
+        payload["port"] = int(payload.get("port"))
+    except Exception:
+        payload["port"] = str(payload.get("port"))
+    raw = json.dumps(_canonicalize(payload), ensure_ascii=False, sort_keys=True, default=str)
+    return hashlib.sha1(raw.encode("utf-8")).hexdigest()
 
-    # ss / ssr cipher + password already covered; include network/flow/sni for vless
-    for key in ("cipher", "network", "flow", "servername", "sni", "alpn"):
-        if proxy.get(key) is not None:
-            parts.append(f"{key}={proxy.get(key)}")
 
-    raw = "|".join(parts)
-    return hashlib.sha1(raw.encode("utf-8", errors="ignore")).hexdigest()
+# ====================== 硬性静态门槛校验 ======================
+
+def _truthy(v: Any) -> bool:
+    return v in (True, 1, "1", "true", "True", "yes", "on")
+
+
+def _sni_of(proxy: dict) -> str:
+    return str(proxy.get("servername") or proxy.get("sni") or "").strip()
+
+
+def _bad_sni_reason(proxy: dict) -> str | None:
+    """SNI 必须是合法主机名（Reality 借用真实站点证书，SNI 必须可解析成域名形态）。"""
+    sni = _sni_of(proxy)
+    if sni and not hp.HOST_RE.match(sni):
+        return "bad_sni"
+    return None
+
+
+def _gate_hysteria2(p: dict) -> str | None:
+    if not str(p.get("password") or "").strip():
+        return "missing_password"
+    obfs = str(p.get("obfs") or "").strip()
+    if obfs and obfs != "salamander":
+        return "unsupported_obfs"
+    if obfs == "salamander" and not str(p.get("obfs-password") or "").strip():
+        return "missing_obfs_password"
+    return None
+
+
+def _gate_vless(p: dict) -> str | None:
+    uuid_v = str(p.get("uuid") or "").strip()
+    if not uuid_v or not UUID_RE.match(uuid_v):
+        return "invalid_uuid"
+    flow = str(p.get("flow") or "").strip()
+    if flow not in SUPPORTED_FLOWS:
+        return "unsupported_flow"
+    ro = p.get("reality-opts")
+    if isinstance(ro, dict) and ro:
+        # VLESS + Reality：public-key / short-id / SNI 三要素必须合法
+        pk = str(ro.get("public-key") or "").strip()
+        if not pk or not X25519_PUBLIC_KEY_RE.match(pk):
+            return "invalid_reality_public_key"
+        sid = str(ro.get("short-id") or "").strip()
+        if sid and not SHORT_ID_RE.match(sid):
+            return "invalid_reality_short_id"
+        if not _sni_of(p):
+            return "reality_missing_sni"
+        return None
+    # 非 Reality 的 vless 必须显式开启 TLS（裸 VLESS 明文传输，风险不可接受）
+    if not _truthy(p.get("tls")):
+        return "vless_no_tls"
+    return None
+
+
+def _gate_trojan(p: dict) -> str | None:
+    if not str(p.get("password") or "").strip():
+        return "missing_password"
+    return None
+
+
+def _gate_tuic(p: dict) -> str | None:
+    uuid_v = str(p.get("uuid") or "").strip()
+    if uuid_v and not UUID_RE.match(uuid_v):
+        return "invalid_uuid"
+    if not (uuid_v or str(p.get("password") or "").strip() or str(p.get("token") or "").strip()):
+        return "missing_credentials"
+    return None
+
+
+def _gate_generic_password(p: dict) -> str | None:
+    if not str(p.get("password") or "").strip():
+        return "missing_password"
+    return None
+
+
+def _gate_hysteria(p: dict) -> str | None:
+    auth = str(p.get("auth-str") or p.get("auth") or p.get("password") or "").strip()
+    if not auth:
+        return "missing_credentials"
+    return None
+
+
+_PROTOCOL_GATES = {
+    "hysteria2": _gate_hysteria2,
+    "hy2": _gate_hysteria2,
+    "vless": _gate_vless,
+    "trojan": _gate_trojan,
+    "tuic": _gate_tuic,
+    "anytls": _gate_generic_password,
+    "hysteria": _gate_hysteria,
+}
+
+
+def protocol_gate_reason(proxy: dict) -> str | None:
+    """硬性静态门槛：协议白名单 + 关键参数完整性。返回拒绝原因（None = 通过）。
+
+    这是云端失去真实流量拨测后的核心质量闸门：
+      - 不在白名单内的协议（ss/ssr/vmess/http/socks/未知类型）整体拒绝；
+      - 白名单协议的关键参数（SNI、Reality public-key/short-id、UUID、密码等）
+        不合法或缺失的节点拒绝。
+    """
+    ptype = str(proxy.get("type", "")).lower().strip()
+    if ptype not in PROTOCOL_WHITELIST:
+        return f"protocol_not_whitelisted:{ptype or 'unknown'}"
+    reason = _bad_sni_reason(proxy)
+    if reason:
+        return reason
+    gate = _PROTOCOL_GATES.get(ptype)
+    if gate is not None:
+        return gate(proxy)
+    return None
 
 
 def _try_b64_decode(text: str) -> str | None:
@@ -791,12 +944,6 @@ def classify_proxy(name: str) -> str:
     return "🌐 其他"
 
 
-def latency_tag(ms: float) -> str:
-    if ms >= 9000:
-        return ""
-    return f" {int(ms)}ms"
-
-
 def update_survival(alive_fps: set[str], survival: dict) -> dict:
     today = _today()
     updated = dict(survival)
@@ -856,7 +1003,9 @@ def write_github_summary(info: dict) -> None:
         "# proxysub clean summary",
         "",
         f"- Time (UTC): {datetime.now(timezone.utc).isoformat()}",
-        f"- Final proxies: **{info['final']}** | TCP alive: **{info['tcp']}** | real probe ok: **{info['real']}** (HTTPS ok {info['https']})",
+        f"- Probe mode: **{info.get('probe_mode', 'n/a')}** (final liveness/speed testing is done client-side)",
+        f"- Final proxies: **{info['final']}** (compliant {info.get('compliant', info['final'])}, "
+        f"insecure-isolated {info.get('insecure', 0)}) | TCP alive: **{info['tcp']}** | real probe ok: **{info['real']}** (HTTPS ok {info['https']})",
         "",
         "## Sources lifecycle",
         "",
@@ -928,7 +1077,7 @@ def main() -> None:
         rec["last_count"] = s.get("count", 0)
         bad_sources[url] = rec
 
-    # ---- 3. static + DNS + blocklist filters ----
+    # ---- 3. static filters: keyword / honeypot / 协议白名单与关键参数硬性门槛 ----
     exclude_re = re.compile(EXCLUDE_KEYWORDS, re.IGNORECASE)
     pre_reasons: dict[str, int] = defaultdict(int)
     staged: dict[str, list[dict]] = {}
@@ -938,6 +1087,10 @@ def main() -> None:
             if not p.get("server") or not p.get("port") or exclude_re.search(str(p.get("name", ""))):
                 continue
             why = hp.static_reject_reason(p)
+            if why:
+                pre_reasons[why] += 1
+                continue
+            why = protocol_gate_reason(p)
             if why:
                 pre_reasons[why] += 1
                 continue
@@ -981,8 +1134,8 @@ def main() -> None:
     candidates = list(unique.values())
     print(f"去重+过滤后: {len(candidates)}（预过滤拒绝 {sum(pre_reasons.values())}）")
 
-    # ---- 4. TCP ----
-    print("开始 TCP 连通性与延迟检测...")
+    # ---- 4. TCP 存活性检查（仅作服务器在线信号，不代表国内连通性/延迟） ----
+    print("开始 TCP 连通性检测（仅存活信号；真实测速由本地客户端完成）...")
     tcp_lat: dict[str, float] = {}
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         fut_map = {executor.submit(tcp_probe, p): fp for fp, p in unique.items()}
@@ -992,55 +1145,64 @@ def main() -> None:
                 tcp_lat[fut_map[fut]] = latency
     print(f"TCP 存活节点: {len(tcp_lat)}")
 
-    # ---- 5. real probe (region-stratified official sample + per-candidate budget) ----
+    # ---- 5. real probe (OPTIONAL, local-only) ----
+    # GitHub Actions（美西机房）无法穿越防火墙，测得的「真实连通性」对中国大陆
+    # 用户没有参考价值，反而会误选美国垃圾节点。CI 通过 PROXYSUB_DISABLE_PROBE=1
+    # 彻底禁用本环节（见 .github/workflows/daily-update.yml）；仅本地手动运行且
+    # 装有 mihomo 时才做真实探测。最终活性测试由用户本地客户端完成。
     survival_pre = load_json(SURVIVAL_FILE, {})
+    probe: dict[str, dict] = {}
+    bin_path = mihomo_available() if real_probe_enabled() else None
+    if not real_probe_enabled():
+        print("云端真实流量拨测已禁用（PROXYSUB_DISABLE_PROBE=1）：仅保留 TCP 存活检查，"
+              "最终测速/优选由本地客户端通过 gstatic generate_204 完成")
+    if not real_probe_enabled():
+        sample: list[str] = []
+    else:
+        def _probe_rank(fp: str) -> tuple:
+            # Preferred protocols first, then survivors, then low TCP latency.
+            rec = survival_pre.get(fp, {})
+            streak = int(rec.get("streak", 0))
+            seen = int(rec.get("seen_days", 0))
+            tier = protocol_tier(unique[fp])
+            return (tier, -streak, -seen, tcp_lat[fp])
 
-    def _probe_rank(fp: str) -> tuple:
-        # Preferred protocols first, then survivors, then low TCP latency.
-        rec = survival_pre.get(fp, {})
-        streak = int(rec.get("streak", 0))
-        seen = int(rec.get("seen_days", 0))
-        tier = protocol_tier(unique[fp])
-        return (tier, -streak, -seen, tcp_lat[fp])
-
-    alive_sorted = sorted(tcp_lat, key=_probe_rank)
-    # Stratify: fill per-region reserves first so Asia is actually probed.
-    # Within region: take preferred (hy2/reality) quota first, then rest by rank.
-    by_region: dict[str, list[str]] = defaultdict(list)
-    for fp in alive_sorted:
-        if fp not in official_fps:
-            continue
-        by_region[classify_proxy(unique[fp].get("name", ""))].append(fp)
-    sample: list[str] = []
-    chosen: set[str] = set()
-    for region, reserve in PROBE_RESERVE_PER_REGION.items():
-        pool = by_region.get(region, [])
-        pref_n = PROBE_PREFERRED_PER_REGION.get(region, 0)
-        pref = [fp for fp in pool if is_preferred(unique[fp])]
-        rest = [fp for fp in pool if fp not in pref]
-        ordered = pref[:pref_n] + rest + pref[pref_n:]
-        for fp in ordered[:reserve]:
-            if fp not in chosen:
+        alive_sorted = sorted(tcp_lat, key=_probe_rank)
+        # Stratify: fill per-region reserves first so Asia is actually probed.
+        # Within region: take preferred (hy2/reality) quota first, then rest by rank.
+        by_region: dict[str, list[str]] = defaultdict(list)
+        for fp in alive_sorted:
+            if fp not in official_fps:
+                continue
+            by_region[classify_proxy(unique[fp].get("name", ""))].append(fp)
+        sample = []
+        chosen: set[str] = set()
+        for region, reserve in PROBE_RESERVE_PER_REGION.items():
+            pool = by_region.get(region, [])
+            pref_n = PROBE_PREFERRED_PER_REGION.get(region, 0)
+            pref = [fp for fp in pool if is_preferred(unique[fp])]
+            rest = [fp for fp in pool if fp not in pref]
+            ordered = pref[:pref_n] + rest + pref[pref_n:]
+            for fp in ordered[:reserve]:
+                if fp not in chosen:
+                    sample.append(fp)
+                    chosen.add(fp)
+        for fp in alive_sorted:
+            if len(sample) >= PROBE_LIMIT_OFFICIAL:
+                break
+            if fp in official_fps and fp not in chosen:
                 sample.append(fp)
                 chosen.add(fp)
-    for fp in alive_sorted:
-        if len(sample) >= PROBE_LIMIT_OFFICIAL:
-            break
-        if fp in official_fps and fp not in chosen:
-            sample.append(fp)
-            chosen.add(fp)
-    for cu in cand_urls:
-        extra = [fp for fp in alive_sorted if cu in prov[fp] and fp not in official_fps and fp not in chosen]
-        extra = extra[:PROBE_PER_CANDIDATE]
-        sample += extra
-        chosen.update(extra)
+        for cu in cand_urls:
+            extra = [fp for fp in alive_sorted if cu in prov[fp] and fp not in official_fps and fp not in chosen]
+            extra = extra[:PROBE_PER_CANDIDATE]
+            sample += extra
+            chosen.update(extra)
 
-    probe: dict[str, dict] = {}
-    bin_path = mihomo_available()
     if bin_path:
         print(f"使用 mihomo 真实探测 {len(sample)} 个节点: {bin_path}")
         probe = mihomo_probe([unique[fp] for fp in sample], bin_path)
-    else:
+    elif real_probe_enabled():
         print("未找到 mihomo，对 http/socks 做简单真实探测，其余用 TCP 延迟")
         hs = [fp for fp in sample if str(unique[fp].get("type", "")).lower() in ("http", "https", "socks5", "socks5h", "socks")]
         with ThreadPoolExecutor(max_workers=40) as ex:
@@ -1140,7 +1302,9 @@ def main() -> None:
         bonus = survival_bonus_ms(fp, survival)
         if is_preferred(unique[fp]):
             bonus *= 1.5  # keep long-lived hy2/reality even harder
-        score = display + penalty + bonus
+        # TCP 延迟（美西 Runner 测得，≠国内真实路径）仅作粗排信号：贡献设上限，
+        # 排序主要由协议质量 / 存活时长 / 多源 / 亚洲路径等静态特征决定。
+        score = min(display, TCP_LATENCY_CAP_IN_SCORE) + penalty + bonus
         scored.append((unique[fp], score, display, is_preferred(unique[fp]), bool(r), tier))
 
     scored.sort(key=lambda x: (x[5], not x[3], x[1]))
@@ -1317,32 +1481,42 @@ def main() -> None:
             final_by_region[region].append(row)
         print(f"节点数上限 {MAX_FINAL}: 裁剪后 {len(flat2)}")
 
-    final_proxies: list[dict] = []
+    # ---- 命名与安全隔离 ----
+    # 1) 不再附加美西 Runner 测得的延迟标签——该延迟不代表国内真实路径，只会误导用户；
+    #    最终测速/优选完全由本地客户端的 url-test（gstatic generate_204）动态完成。
+    # 2) skip-cert-verify: true 的节点：名称打 [Insecure] 标签 + 独立分组隔离，
+    #    不与合规节点无差别混同，也不进入自动选择/故障转移/地区分组。
+    def _base_name(p: dict) -> str:
+        base = re.sub(r"\s+\d+ms$", "", str(p.get("name", "node"))).strip()
+        return base or "node"
+
+    seen_names: dict[str, int] = {}
+    final_proxies: list[dict] = []      # 合规节点
+    insecure_proxies: list[dict] = []   # 高风险节点（跳过证书校验）
     for region in list(REGION_RULES.keys()) + ["🌐 其他"]:
         selected = final_by_region.get(region, [])
         for row in selected:
-            proxy, _score, display = row[0], row[1], row[2]
-            base = re.sub(r"\s+\d+ms$", "", str(proxy.get("name", "node")))
+            proxy = row[0]
             np = dict(proxy)
-            np["name"] = f"{base}{latency_tag(display)}"
-            if not np["name"].strip():
-                np["name"] = f"node{latency_tag(display)}"
-            final_proxies.append(np)
+            insecure = _truthy(np.get("skip-cert-verify"))
+            full = _base_name(np) + (INSECURE_TAG if insecure else "")
+            if full in seen_names:
+                seen_names[full] += 1
+                full = f"{full}#{seen_names[full]}"
+            else:
+                seen_names[full] = 1
+            np["name"] = full
+            (insecure_proxies if insecure else final_proxies).append(np)
         if selected:
             print(f"{region}: 最终保留 {len(selected)}")
-    if len(final_proxies) < MIN_FINAL:
-        print(f"警告: 最终 {len(final_proxies)} < 下限 {MIN_FINAL}（候选池不足）")
+    if insecure_proxies:
+        print(f"安全隔离: {len(insecure_proxies)} 个 skip-cert-verify 节点已标记{INSECURE_TAG}并独立分组")
+    total_final = len(final_proxies) + len(insecure_proxies)
+    if total_final < MIN_FINAL:
+        print(f"警告: 最终 {total_final} < 下限 {MIN_FINAL}（候选池不足）")
 
-    seen_names: dict[str, int] = {}
-    for p in final_proxies:
-        n = p["name"]
-        if n in seen_names:
-            seen_names[n] += 1
-            p["name"] = f"{n}#{seen_names[n]}"
-        else:
-            seen_names[n] = 1
-
-    print(f"\n最终精简节点数: {len(final_proxies)}")
+    print(f"\n最终精简节点数: {total_final}（合规 {len(final_proxies)}，高风险隔离 {len(insecure_proxies)}）")
+    # 自动选择/故障转移仅包含合规节点；url-test 由客户端本地动态测速
     names = [p["name"] for p in final_proxies]
     groups = [
         {
@@ -1356,15 +1530,16 @@ def main() -> None:
          "interval": FALLBACK_INTERVAL},
     ]
     for region in list(REGION_RULES.keys()) + ["🌐 其他"]:
-        region_names = []
-        for p in final_proxies:
-            raw = re.sub(r"\s+\d+ms(?:#\d+)?$", "", p.get("name", ""))
-            if classify_proxy(raw) == region:
-                region_names.append(p["name"])
+        region_names = [p["name"] for p in final_proxies if classify_proxy(p.get("name", "")) == region]
         region_names = list(dict.fromkeys(region_names))
         if region_names:
             groups.append({"name": region, "type": "url-test", "proxies": region_names,
                            "url": PROBE_URL, "interval": URLTEST_INTERVAL})
+    # 高风险节点独立池：仅供手动选择，不参与任何自动测速/故障转移
+    insecure_names = [p["name"] for p in insecure_proxies]
+    if insecure_names:
+        groups.append({"name": INSECURE_GROUP, "type": "select", "proxies": insecure_names})
+        groups[0]["proxies"].append(INSECURE_GROUP)
     # a select group referencing an empty region group would break the config
     present = {g["name"] for g in groups}
     groups[0]["proxies"] = [n for n in groups[0]["proxies"] if n in present or n == "DIRECT"]
@@ -1374,7 +1549,7 @@ def main() -> None:
         "allow-lan": False,
         "mode": "rule",
         "log-level": "info",
-        "proxies": final_proxies,
+        "proxies": final_proxies + insecure_proxies,
         "proxy-groups": groups,
         "rules": ["GEOIP,CN,DIRECT", "MATCH,🚀 节点选择"],
     }
@@ -1391,7 +1566,10 @@ def main() -> None:
 
     print(f"\n✅ 已生成: {OUTPUT_FILE}")
     write_github_summary({
-        "final": len(final_proxies), "tcp": len(tcp_lat), "real": len(real_ok),
+        "final": total_final, "compliant": len(final_proxies), "insecure": len(insecure_proxies),
+        "tcp": len(tcp_lat), "real": len(real_ok),
+        "probe_mode": ("disabled (client-side testing)" if not real_probe_enabled()
+                       else ("mihomo" if bin_path else "tcp-only")),
         "https": sum(1 for r in real_ok.values() if r.get("https_ok")),
         "n_official": len(sources["official"]), "n_cands": len(cands["candidates"]),
         "discovery": disc, "cand_rep": cand_rep, "off_rep": off_rep,

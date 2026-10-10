@@ -8,7 +8,6 @@ official (sources.json)  <-- promote --  candidates (candidate_sources.json)  <-
 
 from __future__ import annotations
 
-import json
 import os
 import re
 import time
@@ -17,6 +16,8 @@ from typing import Any, Callable
 from urllib.parse import quote
 
 import requests
+
+from safe_io import load_json, save_json  # 原子化读写，防止 JSON 截断损坏
 
 SOURCES_FILE = "sources.json"
 CANDIDATES_FILE = "candidate_sources.json"
@@ -78,20 +79,7 @@ def _today() -> str:
     return date.today().isoformat()
 
 
-def load_json(path: str, default: Any) -> Any:
-    if not os.path.exists(path):
-        return default
-    try:
-        with open(path, encoding="utf-8") as f:
-            return json.load(f)
-    except Exception:
-        return default
-
-
-def save_json(path: str, data: Any) -> None:
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-        f.write("\n")
+# load_json / save_json 统一由 safe_io 提供（原子写入 + 文件锁 + 损坏自愈）。
 
 
 # ====================== sources.json ======================

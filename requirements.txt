@@ -1,0 +1,7 @@
+# proxysub 依赖（详见 README.md「本地运行」）
+requests>=2.31,<3
+PyYAML>=6.0,<7
+filelock>=3.12,<4
+
+# 测试
+pytest>=8.0,<9
