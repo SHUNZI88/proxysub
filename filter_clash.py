@@ -66,13 +66,18 @@ REGION_QUOTAS = {
     "🇸🇬 新加坡": 30,
     "🇹🇼 台湾": 22,
     "🇰🇷 韩国": 20,
-    "🇺🇸 美国": 18,   # soft; also capped by MAX_US_SHARE
+    "🇺🇸 美国": 30,   # soft; also capped by MAX_US_SHARE
     "🇬🇧 英国": 8,
 }
-MAX_OTHER = 15  # EU/CA/AU and misc; still ranked by latency+survival
-# Hard band for final subscription size (China FLClash needs enough candidates).
-MIN_FINAL = 100
-MAX_FINAL = 200
+# EU/CA/AU and misc: 活节点池的大头常落在「其他」区（免费源多为冷门地区），
+# 配额过小会把大量真实探测存活的节点直接丢弃。
+MAX_OTHER = 60  # misc; still ranked by score
+# Hard band for final subscription size (China FLClash needs enough candidates):
+# 云端只做死活闸门，「美国能通但国内被墙」的残余筛选必须靠客户端 url-test 完成，
+# 因此给客户端尽量大的活节点备选池（探测存活 700+ 时全部给出）。
+MIN_FINAL = 150
+MAX_FINAL = 300
+MAX_PER_SOURCE_FINAL = 25   # 单一订阅源在最终输出中的独占上限
 
 # ====================== 硬性静态门槛（协议白名单 + 关键参数校验） ======================
 # 云端剥离真实流量拨测后，源质量完全依赖静态门槛把关：
@@ -154,9 +159,9 @@ PROBE_RESERVE_PER_REGION = {
     "🇸🇬 新加坡": 160,
     "🇹🇼 台湾": 110,
     "🇰🇷 韩国": 100,
-    "🇺🇸 美国": 120,
+    "🇺🇸 美国": 150,
     "🇬🇧 英国": 30,
-    "🌐 其他": 40,
+    "🌐 其他": 300,
 }
 # Within each region reserve, probe this many preferred (hy2/reality) first.
 PROBE_PREFERRED_PER_REGION = {
@@ -165,9 +170,9 @@ PROBE_PREFERRED_PER_REGION = {
     "🇸🇬 新加坡": 100,
     "🇹🇼 台湾": 70,
     "🇰🇷 韩国": 60,
-    "🇺🇸 美国": 60,
+    "🇺🇸 美国": 80,
     "🇬🇧 英国": 10,
-    "🌐 其他": 14,
+    "🌐 其他": 100,
 }
 CANDIDATE_ONLY_PENALTY = 800.0   # nodes only offered by probation sources rank lower
 NO_HTTPS_PENALTY = 180.0         # soft: CF HTTPS is a signal, not a sole veto
@@ -365,6 +370,32 @@ _PROTOCOL_GATES = {
     "anytls": _gate_generic_password,
     "hysteria": _gate_hysteria,
 }
+
+
+VALID_NETWORKS = {"tcp", "ws", "http", "h2", "grpc"}
+NETWORK_ALIASES = {"raw": "tcp"}  # Xray 新命名 -> mihomo 等价值
+
+
+def normalize_network(proxy: dict) -> bool:
+    """规范 transport network 字段，确保 mihomo/FlClash 能加载。
+
+    实测线上产物中 12/100 节点带非法 network 值导致客户端整体加载失败：
+      - "raw"（Xray 新命名）→ 归一为 "tcp"；
+      - "xhttp"（Xray 专属，mihomo 不支持）→ 拒绝；
+      - 垃圾值（如 "tcp#5🔥@oneclickvpnkeys"）→ 拒绝。
+    返回 False 表示应拒绝该节点。
+    """
+    if "network" not in proxy:
+        return True
+    net = str(proxy.get("network", "")).lower().strip()
+    if not net:
+        proxy["network"] = "tcp"
+        return True
+    net = NETWORK_ALIASES.get(net, net)
+    if net not in VALID_NETWORKS:
+        return False
+    proxy["network"] = net
+    return True
 
 
 def protocol_gate_reason(proxy: dict) -> str | None:
@@ -575,6 +606,17 @@ def fetch_all_sources(urls: list[str]) -> tuple[dict[str, list[dict]], dict]:
             per_source[url] = proxies if not err else []
             print(f"{'失败' if err else '拉取'}: {url} -> {err or len(proxies)}")
     return per_source, stats
+
+
+# UDP 协议（hysteria2/tuic/hysteria，走 QUIC）：服务器通常不监听 TCP，
+# TCP 检查必然失败——这曾把对墙穿透性最好的 hy2 系统性排除出输出
+#（12000+ 节点的源里仅漏进 3~8 个）。因此 UDP 协议跳过 TCP 检查，
+# 由 mihomo 拨测（QUIC）作为其死活闸门。
+UDP_PROTOCOLS = {"hysteria2", "hy2", "tuic", "hysteria", "quic"}
+
+
+def is_udp_protocol(proxy: dict) -> bool:
+    return str(proxy.get("type", "")).lower().strip() in UDP_PROTOCOLS
 
 
 def tcp_probe(proxy: dict) -> tuple[bool, float]:
@@ -842,6 +884,26 @@ def is_preferred(proxy: dict) -> bool:
     return False
 
 
+def cap_single_source(scored_rows: list, prov: dict, cap: int) -> tuple[list, int]:
+    """每个订阅源最多贡献 cap 个节点，防单一聚合源灌满输出。
+
+    实测：VPN-Subcription-Links 一家就 905 个 TCP 存活、Au1rxx 742 个唯一存活，
+    不限制就会垄断整个输出（单一源挂掉 = 输出团灭）。节点归属其来源 URL 集合；
+    仅出现在一个源里的节点占该源名额，多源节点不占任何单源名额。"""
+    out: list = []
+    dropped = 0
+    src_n: dict[str, int] = defaultdict(int)
+    for item in scored_rows:
+        urls = sorted(prov.get(fingerprint(item[0]), set()))
+        if len(urls) == 1:
+            if src_n[urls[0]] >= cap:
+                dropped += 1
+                continue
+            src_n[urls[0]] += 1
+        out.append(item)
+    return out, dropped
+
+
 def protocol_tier(proxy: dict) -> int:
     """0=best (hy2/reality), 1=tls modern, 2=legacy encrypted, 3=open/plain junk."""
     ptype = str(proxy.get("type", "")).lower()
@@ -1099,6 +1161,9 @@ def main() -> None:
             if why:
                 pre_reasons[why] += 1
                 continue
+            if not normalize_network(p):
+                pre_reasons["network_unsupported"] += 1
+                continue
             why = protocol_gate_reason(p)
             if why:
                 pre_reasons[why] += 1
@@ -1143,16 +1208,24 @@ def main() -> None:
     candidates = list(unique.values())
     print(f"去重+过滤后: {len(candidates)}（预过滤拒绝 {sum(pre_reasons.values())}）")
 
-    # ---- 4. TCP 存活性检查（仅作服务器在线信号，不代表国内连通性/延迟） ----
-    print("开始 TCP 连通性检测（仅存活信号；真实测速由本地客户端完成）...")
+    # ---- 4. 存活性检查 ----
+    # TCP 协议（vless/trojan/anytls…）：TCP 握手作在线信号。
+    # UDP 协议（hy2/tuic）：豁免 TCP 检查，由拨测闸门（QUIC）验证死活。
+    print("开始存活性检测（TCP 协议走 TCP 握手；UDP 协议交由拨测闸门验证）...")
     tcp_lat: dict[str, float] = {}
+    tcp_candidates = {fp: p for fp, p in unique.items() if not is_udp_protocol(p)}
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        fut_map = {executor.submit(tcp_probe, p): fp for fp, p in unique.items()}
+        fut_map = {executor.submit(tcp_probe, p): fp for fp, p in tcp_candidates.items()}
         for fut in as_completed(fut_map):
             alive, latency = fut.result()
             if alive:
                 tcp_lat[fut_map[fut]] = latency
-    print(f"TCP 存活节点: {len(tcp_lat)}")
+    udp_exempt = 0
+    for fp, p in unique.items():
+        if is_udp_protocol(p):
+            tcp_lat[fp] = 9999.0  # 中性延迟：不参与排序，仅使其进入拨测管道
+            udp_exempt += 1
+    print(f"TCP 存活节点: {len(tcp_lat) - udp_exempt} | UDP 协议（hy2/tuic，交拨测验证）: {udp_exempt}")
 
     # ---- 5. real probe (OPTIONAL, local-only) ----
     # GitHub Actions（美西机房）无法穿越防火墙，测得的「真实连通性」对中国大陆
@@ -1196,6 +1269,18 @@ def main() -> None:
                 if fp not in chosen:
                     sample.append(fp)
                     chosen.add(fp)
+        # UDP protocols (hy2/tuic) skipped TCP probe — force them into the probe
+        # sample, otherwise the dead-or-alive gate can never verify them.
+        udp_sorted = sorted(
+            (fp for fp in alive_sorted if is_udp_protocol(unique[fp]) and fp in official_fps),
+            key=_probe_rank,
+        )
+        for fp in udp_sorted:
+            if len(sample) >= PROBE_LIMIT_OFFICIAL:
+                break
+            if fp not in chosen:
+                sample.append(fp)
+                chosen.add(fp)
         for fp in alive_sorted:
             if len(sample) >= PROBE_LIMIT_OFFICIAL:
                 break
@@ -1338,6 +1423,11 @@ def main() -> None:
             egress_n[eg] += 1
         diversified.append(item)
     scored = diversified
+
+    # per-source cap: one aggregator feed must not dominate the output
+    scored, src_dropped = cap_single_source(scored, prov, MAX_PER_SOURCE_FINAL)
+    if src_dropped:
+        print(f"单一源独占上限 {MAX_PER_SOURCE_FINAL}: 再去掉 {src_dropped} 个（防聚合源垄断）")
 
     region_dict: dict[str, list] = defaultdict(list)
     for item in scored:
