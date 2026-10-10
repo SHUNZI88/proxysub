@@ -66,6 +66,20 @@
       "url": "https://raw.githubusercontent.com/peasoft/NoMoreWalls/master/list.meta.yml",
       "origin": "manual",
       "added": "2026-10-10"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/F0rc3Run/F0rc3Run/main/Best-Results/clash.yaml",
+      "origin": "discovered",
+      "added": "2026-10-10",
+      "repo": "F0rc3Run/F0rc3Run",
+      "probation_runs": 3
+    },
+    {
+      "url": "https://raw.githubusercontent.com/F0rc3Run/F0rc3Run/main/Best-Results/clash-provider.yaml",
+      "origin": "discovered",
+      "added": "2026-10-10",
+      "repo": "F0rc3Run/F0rc3Run",
+      "probation_runs": 3
     }
   ],
   "removed": [],

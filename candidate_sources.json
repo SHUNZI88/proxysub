@@ -9,8 +9,8 @@
       "required_runs": 3,
       "first_seen": "2026-10-09",
       "initial_nodes": 11636,
-      "runs": 2,
-      "good_streak": 2,
+      "runs": 3,
+      "good_streak": 3,
       "fail_streak": 0,
       "history": [
         {
@@ -26,6 +26,13 @@
           "usable": 129,
           "unique_new": 24,
           "tamper": 1
+        },
+        {
+          "date": "2026-10-10",
+          "count": 11445,
+          "usable": 165,
+          "unique_new": 44,
+          "tamper": 0
         }
       ]
     },
@@ -38,8 +45,8 @@
       "required_runs": 3,
       "first_seen": "2026-10-09",
       "initial_nodes": 9069,
-      "runs": 2,
-      "good_streak": 2,
+      "runs": 3,
+      "good_streak": 3,
       "fail_streak": 0,
       "history": [
         {
@@ -55,63 +62,12 @@
           "usable": 128,
           "unique_new": 24,
           "tamper": 1
-        }
-      ]
-    },
-    "https://raw.githubusercontent.com/F0rc3Run/F0rc3Run/main/Best-Results/clash.yaml": {
-      "repo": "F0rc3Run/F0rc3Run",
-      "stars": 310,
-      "repo_created": "2025-07-09T01:22:05Z",
-      "reputation": "ok",
-      "reputation_note": "stars=310,age=457d",
-      "required_runs": 3,
-      "first_seen": "2026-10-09",
-      "initial_nodes": 437,
-      "runs": 2,
-      "good_streak": 2,
-      "fail_streak": 0,
-      "history": [
-        {
-          "date": "2026-10-09",
-          "count": 437,
-          "usable": 52,
-          "unique_new": 27,
-          "tamper": 1
         },
         {
           "date": "2026-10-10",
-          "count": 461,
-          "usable": 71,
-          "unique_new": 38,
-          "tamper": 0
-        }
-      ]
-    },
-    "https://raw.githubusercontent.com/F0rc3Run/F0rc3Run/main/Best-Results/clash-provider.yaml": {
-      "repo": "F0rc3Run/F0rc3Run",
-      "stars": 310,
-      "repo_created": "2025-07-09T01:22:05Z",
-      "reputation": "ok",
-      "reputation_note": "stars=310,age=457d",
-      "required_runs": 3,
-      "first_seen": "2026-10-09",
-      "initial_nodes": 437,
-      "runs": 2,
-      "good_streak": 2,
-      "fail_streak": 0,
-      "history": [
-        {
-          "date": "2026-10-09",
-          "count": 437,
-          "usable": 52,
-          "unique_new": 27,
-          "tamper": 1
-        },
-        {
-          "date": "2026-10-10",
-          "count": 461,
-          "usable": 71,
-          "unique_new": 38,
+          "count": 8885,
+          "usable": 159,
+          "unique_new": 41,
           "tamper": 0
         }
       ]
@@ -125,8 +81,8 @@
       "required_runs": 3,
       "first_seen": "2026-10-09",
       "initial_nodes": 9030,
-      "runs": 2,
-      "good_streak": 1,
+      "runs": 3,
+      "good_streak": 2,
       "fail_streak": 0,
       "history": [
         {
@@ -142,6 +98,13 @@
           "usable": 51,
           "unique_new": 7,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-10",
+          "count": 9030,
+          "usable": 72,
+          "unique_new": 16,
+          "tamper": 0
         }
       ]
     },
@@ -154,8 +117,8 @@
       "required_runs": 3,
       "first_seen": "2026-10-09",
       "initial_nodes": 1842,
-      "runs": 2,
-      "good_streak": 1,
+      "runs": 3,
+      "good_streak": 2,
       "fail_streak": 0,
       "history": [
         {
@@ -171,6 +134,13 @@
           "usable": 117,
           "unique_new": 16,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-10",
+          "count": 1838,
+          "usable": 171,
+          "unique_new": 15,
+          "tamper": 0
         }
       ]
     },
@@ -183,8 +153,8 @@
       "required_runs": 5,
       "first_seen": "2026-10-09",
       "initial_nodes": 1840,
-      "runs": 2,
-      "good_streak": 1,
+      "runs": 3,
+      "good_streak": 2,
       "fail_streak": 0,
       "history": [
         {
@@ -200,6 +170,13 @@
           "usable": 112,
           "unique_new": 20,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-10",
+          "count": 1786,
+          "usable": 180,
+          "unique_new": 29,
+          "tamper": 0
         }
       ]
     },
@@ -212,7 +189,7 @@
       "required_runs": 5,
       "first_seen": "2026-10-09",
       "initial_nodes": 100,
-      "runs": 2,
+      "runs": 3,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -229,6 +206,13 @@
           "usable": 1,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-10",
+          "count": 100,
+          "usable": 2,
+          "unique_new": 2,
+          "tamper": 0
         }
       ]
     },
@@ -241,8 +225,8 @@
       "required_runs": 3,
       "first_seen": "2026-10-10",
       "initial_nodes": 27,
-      "runs": 1,
-      "good_streak": 1,
+      "runs": 2,
+      "good_streak": 2,
       "fail_streak": 0,
       "history": [
         {
@@ -250,6 +234,13 @@
           "count": 27,
           "usable": 5,
           "unique_new": 5,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-10",
+          "count": 50,
+          "usable": 9,
+          "unique_new": 9,
           "tamper": 0
         }
       ]
@@ -263,10 +254,17 @@
       "required_runs": 3,
       "first_seen": "2026-10-10",
       "initial_nodes": 20,
-      "runs": 1,
+      "runs": 2,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
+        {
+          "date": "2026-10-10",
+          "count": 20,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
         {
           "date": "2026-10-10",
           "count": 20,
@@ -285,8 +283,8 @@
       "required_runs": 5,
       "first_seen": "2026-10-10",
       "initial_nodes": 145,
-      "runs": 1,
-      "good_streak": 1,
+      "runs": 2,
+      "good_streak": 2,
       "fail_streak": 0,
       "history": [
         {
@@ -294,6 +292,13 @@
           "count": 145,
           "usable": 11,
           "unique_new": 11,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-10",
+          "count": 203,
+          "usable": 7,
+          "unique_new": 7,
           "tamper": 0
         }
       ]
@@ -307,7 +312,7 @@
       "required_runs": 5,
       "first_seen": "2026-10-10",
       "initial_nodes": 220,
-      "runs": 1,
+      "runs": 2,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -315,6 +320,13 @@
           "date": "2026-10-10",
           "count": 220,
           "usable": 1,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-10",
+          "count": 218,
+          "usable": 5,
           "unique_new": 0,
           "tamper": 0
         }
@@ -329,7 +341,7 @@
       "required_runs": 5,
       "first_seen": "2026-10-10",
       "initial_nodes": 220,
-      "runs": 1,
+      "runs": 2,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -337,6 +349,13 @@
           "date": "2026-10-10",
           "count": 220,
           "usable": 1,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-10",
+          "count": 218,
+          "usable": 5,
           "unique_new": 0,
           "tamper": 0
         }
@@ -351,7 +370,7 @@
       "required_runs": 5,
       "first_seen": "2026-10-10",
       "initial_nodes": 112,
-      "runs": 1,
+      "runs": 2,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -361,8 +380,79 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-10",
+          "count": 112,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
+    },
+    "https://raw.githubusercontent.com/Barabama/FreeNodes/feat/ai-crawler-v2/nodes/clashnode.yaml": {
+      "repo": "Barabama/FreeNodes",
+      "stars": 3252,
+      "repo_created": "2023-07-30T06:01:09Z",
+      "reputation": "ok",
+      "reputation_note": "stars=3252,age=1168d",
+      "required_runs": 3,
+      "first_seen": "2026-10-10",
+      "initial_nodes": 7053,
+      "runs": 1,
+      "good_streak": 1,
+      "fail_streak": 0,
+      "history": [
+        {
+          "date": "2026-10-10",
+          "count": 7053,
+          "usable": 107,
+          "unique_new": 17,
+          "tamper": 0
+        }
+      ]
+    },
+    "https://raw.githubusercontent.com/Barabama/FreeNodes/feat/ai-crawler-v2/nodes/nodev2ray.yaml": {
+      "repo": "Barabama/FreeNodes",
+      "stars": 3252,
+      "repo_created": "2023-07-30T06:01:09Z",
+      "reputation": "ok",
+      "reputation_note": "stars=3252,age=1168d",
+      "required_runs": 3,
+      "first_seen": "2026-10-10",
+      "initial_nodes": 271,
+      "runs": 0,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": []
+    },
+    "https://raw.githubusercontent.com/ssrsub/ssr/master/clash.yaml": {
+      "repo": "ssrsub/ssr",
+      "stars": 657,
+      "repo_created": "2019-01-05T14:04:55Z",
+      "reputation": "ok",
+      "reputation_note": "stars=657,age=2834d",
+      "required_runs": 3,
+      "first_seen": "2026-10-10",
+      "initial_nodes": 185,
+      "runs": 0,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": []
+    },
+    "https://raw.githubusercontent.com/ReaJason/Clash-Butler/master/clash.yaml": {
+      "repo": "ReaJason/Clash-Butler",
+      "stars": 85,
+      "repo_created": "2024-03-31T16:48:40Z",
+      "reputation": "ok",
+      "reputation_note": "stars=85,age=922d",
+      "required_runs": 3,
+      "first_seen": "2026-10-10",
+      "initial_nodes": 99,
+      "runs": 0,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": []
     }
   },
   "rejected": {}

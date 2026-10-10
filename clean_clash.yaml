@@ -3,509 +3,23 @@ allow-lan: false
 mode: rule
 log-level: info
 proxies:
-- name: us|81c2|puddincat07@Telegram 15ms
-  password: 4291c983-c520-46ac-82cc-48f14bef573f
-  port: 35013
-  server: 129.213.91.185
-  skip-cert-verify: true
-  sni: www.bing.com
-  tls: false
-  type: hysteria2
-- name: 🇺🇸 US · North Bergen · Vless · 113ms | 035 34ms
-  type: vless
-  server: 159.89.87.21
-  port: 28190
-  uuid: 14c80e0e-f7ce-4991-94fc-99a1db4a9b1e
-  udp: true
-  flow: xtls-rprx-vision
-  tls: true
-  servername: aws.amazon.com
-  client-fingerprint: chrome
-  reality-opts:
-    public-key: ZJRnFU-1s1JOnO8E9uZ7b00l1fPEh63fGRbdBANFRno
-- name: 🇺🇸 US · Hillsboro · Vless · 168ms | 062 207ms
-  type: vless
-  server: 15.204.97.206
-  port: 23576
-  uuid: 48ff2b70-e180-582f-8866-d9a2edeed5f5
-  udp: true
-  flow: xtls-rprx-vision
-  tls: true
-  servername: fuck.rkn
-  client-fingerprint: chrome
-  reality-opts:
-    public-key: 1y5h2FGWKXTJ9xLPCqPo6Mw7RxoZzh6fGkEQKNxpZ3s
-    short-id: '01'
-- name: 🇺🇸 US · Hillsboro · Vless · 155ms | 055 208ms
-  type: vless
-  server: 15.204.97.195
-  port: 23576
-  uuid: 48ff2b70-e180-582f-8866-d9a2edeed5f5
-  udp: true
-  flow: xtls-rprx-vision
-  tls: true
-  servername: fuck.rkn
-  client-fingerprint: chrome
-  reality-opts:
-    public-key: 1y5h2FGWKXTJ9xLPCqPo6Mw7RxoZzh6fGkEQKNxpZ3s
-    short-id: '01'
-- name: 🇺🇸 US · Hillsboro · Vless · 164ms | 058 215ms
-  type: vless
-  server: 15.204.97.216
-  port: 23576
-  uuid: 48ff2b70-e180-582f-8866-d9a2edeed5f5
-  udp: true
-  flow: xtls-rprx-vision
-  tls: true
-  servername: fuck.rkn
-  client-fingerprint: chrome
-  reality-opts:
-    public-key: 1y5h2FGWKXTJ9xLPCqPo6Mw7RxoZzh6fGkEQKNxpZ3s
-    short-id: '01'
-- name: 🇺🇸 US · Hillsboro · Vless · 153ms | 054 219ms
-  type: vless
-  server: 15.204.97.198
-  port: 23576
-  uuid: 48ff2b70-e180-582f-8866-d9a2edeed5f5
-  udp: true
-  flow: xtls-rprx-vision
-  tls: true
-  servername: fuck.rkn
-  client-fingerprint: chrome
-  reality-opts:
-    public-key: 1y5h2FGWKXTJ9xLPCqPo6Mw7RxoZzh6fGkEQKNxpZ3s
-    short-id: '01'
-- name: 🇺🇸 US · Hillsboro · Vless · 156ms | 056 217ms
-  type: vless
-  server: 51.81.203.63
-  port: 443
-  uuid: cb2dbb6a-a1ea-4023-9ace-6466cee57241
-  udp: true
-  flow: xtls-rprx-vision
-  tls: true
-  servername: www.icloud.com
-  client-fingerprint: chrome
-  reality-opts:
-    public-key: nqwCf6oW49tEtmQ0EzxigZ0uu1pg0E30CS54G40Iti0
-    short-id: 4477382ff6d3d41c
-- name: US_speednode_0137 54ms
-  server: 155.117.199.13
-  port: 39399
-  type: vless
-  uuid: f06c6039-a489-3d78-a676-ed43be6deca3
-  flow: xtls-rprx-vision
-  tls: true
-  skip-cert-verify: false
-  client-fingerprint: chrome
-  servername: cdnjs.cloudflare.com
-  reality-opts:
-    public-key: JrWOojSFwFA93YjsiQkDydTItQzNAsXsHU24HuWGWjA
-    short-id: bc8e3658db7d1323
-  network: tcp
-  udp: true
-- name: US_speednode_0142 60ms
-  server: 155.117.199.13
-  port: 39211
-  type: vless
-  uuid: f06c6039-a489-3d78-a676-ed43be6deca3
-  flow: xtls-rprx-vision
-  tls: true
-  skip-cert-verify: false
-  client-fingerprint: chrome
-  servername: cdnjs.cloudflare.com
-  reality-opts:
-    public-key: JrWOojSFwFA93YjsiQkDydTItQzNAsXsHU24HuWGWjA
-    short-id: bc8e3658db7d1323
-  network: tcp
-  udp: true
-- name: US_speednode_0136 61ms
-  server: 155.117.199.13
-  port: 29893
-  type: vless
-  uuid: f06c6039-a489-3d78-a676-ed43be6deca3
-  flow: xtls-rprx-vision
-  tls: true
-  skip-cert-verify: false
-  client-fingerprint: chrome
-  servername: cdnjs.cloudflare.com
-  reality-opts:
-    public-key: JrWOojSFwFA93YjsiQkDydTItQzNAsXsHU24HuWGWjA
-    short-id: bc8e3658db7d1323
-  network: tcp
-  udp: true
-- name: '[free18#033] 🇺🇸_美国_56 62ms'
-  type: vless
-  server: 172.245.253.16
-  port: 443
-  uuid: b67422ff-101b-433b-8f66-4ab282960b36
-  servername: www.apple.com
-  tls: true
-  flow: xtls-rprx-vision
-  client-fingerprint: chrome
-  reality-opts:
-    public-key: Vh8dv6ENmfFd4JlPgj9-R1Fbet2m6JyRFukcVvDq5A8
-    short-id: e7dc2c820ba8bbd4
-  skip-cert-verify: true
-  udp: true
-- name: 🇺🇸 美国 07 63ms
-  server: 38.126.44.198
-  port: 443
-  uuid: 03881551-01a2-4b71-f8c6-6c69e958a1f0
-  tls: true
-  flow: xtls-rprx-vision
-  client-fingerprint: chrome
-  skip-cert-verify: true
-  reality-opts:
-    public-key: S-g0oP36DShii1uPOnZDSEhp_wQghX6h68PgMivOmD4
-  network: tcp
-  servername: 03881551.com
-  type: vless
-- name: '[free18#109] 🇺🇸_美国_132 99ms'
-  type: vless
-  server: 154.40.55.185
-  port: 443
-  uuid: 52919204-4ed9-42c8-97a0-0f01d007f898
-  servername: www.oracle.com
-  tls: true
-  flow: xtls-rprx-vision
-  client-fingerprint: chrome
-  reality-opts:
-    public-key: XY0OTrgnRWxHbqBC8u4qFWvZakjNZY83AAnL_lwHu1M
-    short-id: e726fb
-  skip-cert-verify: true
-  udp: true
-- auth: gf1:gfhysteria2024
-  name: us|7a73|puddincat07@Telegram 87ms
-  password: gf1:gfhysteria2024
-  port: 443
-  server: 66.94.121.46
-  skip-cert-verify: true
-  sni: www.broadcom.com
-  type: hysteria2
-- name: '[ermaozi#061] 🇦🇺 澳大利亚 | AUS 196ms'
-  server: 51.161.204.242
-  port: 443
-  type: vless
-  uuid: a14b736b-a92a-48d6-a596-5d31f7378ded
-  tls: true
-  flow: xtls-rprx-vision
-  reality-opts:
-    public-key: a2qGjvUPq6Nz5FTbn_MSHp-055q2h8YXqIL5VIJ5zwE
-    short-id: d15c17cef9b2e456
-  servername: www.cloudflare.com
-  client-fingerprint: chrome
-  network: tcp
-  udp: true
-- name: '[Pawdroid#003] 美国+V2CROSS.COM 175ms'
-  type: vless
-  server: distant.sugarcanecoffee.top
-  port: 10654
-  uuid: 397bdc3b-9204-48d7-9003-5360864eecff
-  udp: true
-  flow: xtls-rprx-vision
-  tls: true
-  skip-cert-verify: true
-  servername: www.icloud.com
-  client-fingerprint: chrome
-  reality-opts:
-    public-key: S-g0oP36DShii1uPOnZDSEhp_wQghX6h68PgMivOmD4
-- name: '[Eternity#017] 🇺🇸US-54.221.120.243-0240 | 64.954MB 11ms'
-  server: 54.221.120.243
-  port: 443
-  type: ss
-  cipher: aes-256-cfb
-  password: amazonskr05
-- name: '[Eternity#032] 🇺🇸US-37.19.198.244-0182 | 46.327MB 22ms'
-  server: 37.19.198.244
-  port: 443
-  type: ss
-  cipher: aes-128-gcm
-  password: shadowsocks
-- name: '[Eternity#038] 🇺🇸US-37.19.198.160-0190 | 30.416MB 23ms'
-  server: 37.19.198.160
-  port: 443
-  type: ss
-  cipher: aes-128-gcm
-  password: shadowsocks
-- name: '[Eternity#041] 🇺🇸US-37.19.198.243-0186 | 25.198MB 23ms'
-  server: 37.19.198.243
-  port: 443
-  type: ss
-  cipher: aes-128-gcm
-  password: shadowsocks
-- name: '[Eternity#001] 🇺🇸US-140.82.63.79-0202 | 111.78MB 24ms'
-  server: 140.82.63.79
-  port: 8388
-  type: ss
-  cipher: chacha20-ietf-poly1305
-  password: ZoZtfPOyVvmKARUN
-- name: '[Eternity#066] 🇺🇸US-15.204.247.206-0173 | 4.744MB 27ms'
-  server: 15.204.247.206
-  port: 4444
-  type: ss
-  cipher: aes-256-gcm
-  password: pKEW8JPByTVTLtM
-- name: '[Eternity#039] 🇺🇸US-37.19.198.236-0188 | 28.541MB 30ms'
-  server: 37.19.198.236
-  port: 443
-  type: ss
-  cipher: aes-128-gcm
-  password: shadowsocks
-- name: 🇺🇸US_16|1013KB/s 32ms
-  port: 443
-  server: 198.44.135.27
-  skip-cert-verify: true
-  tls: true
-  type: http
-  udp: true
-- name: '[Eternity#085] 🇺🇸US-198.98.53.130-0212 | 0.016MB 40ms'
-  server: 198.98.53.130
-  port: 443
-  type: ss
-  cipher: chacha20-ietf-poly1305
-  password: eDfN7SODQceIOmIAbtJJtK
-- name: '[ermaozi#082] 🇺🇸 美国 | USA 9 42ms'
-  server: 104.16.100.66
-  port: 8880
-  type: vless
-  uuid: 3fe8191f-52ae-4e38-8385-5869ab47fb70
-  tls: false
-  network: ws
-  ws-opts:
-    path: /pyip=ProxyIP.US.CMLiussss.net
-    headers:
-      Host: jolly-violet-a006.10-ae8.workers.dev
-  udp: true
-- name: '[Eternity#003] 🇺🇸US-138.199.42.68-0083 | 98.93MB 44ms'
-  server: 138.199.42.68
-  port: 8080
-  type: ss
-  cipher: rc4-md5
-  password: 14fFPrbezE3HDZzsMOr6
-- name: 🇺🇸US_17|1.5MB/s 52ms
-  port: 9443
-  server: 149.88.21.140
-  skip-cert-verify: true
-  tls: true
-  type: http
-  udp: true
-- name: '[free18#203] 🇺🇸_美国_266 54ms'
-  type: vless
-  server: 165.215.250.16
-  port: 443
-  uuid: e8d06b09-acd9-448c-9874-3c36151d36ee
-  network: ws
-  servername: icy-wildflower-2590.lihuifeng595.workers.dev
-  tls: true
-  ws-opts:
-    path: /?ed=2048
-    headers:
-      Host: icy-wildflower-2590.lihuifeng595.workers.dev
-  skip-cert-verify: true
-  udp: true
-- name: '[ermaozi#083] 🇺🇸 美国 | USA 11 58ms'
-  server: 172.66.170.53
-  port: 8880
-  type: vless
-  uuid: 9b14cdbe-bcfe-4178-a674-3ad88a7c6f6a
-  tls: false
-  network: ws
-  ws-opts:
-    path: /pyip=ProxyIP.KR.CMLiussss.net
-    headers:
-      Host: summer-snow-c151.320-3ef.workers.dev
-  udp: true
-- name: '[ermaozi#057] 🇺🇸 美国 | USA #7 60ms'
-  network: ws
-  port: 8080
-  server: 104.21.70.21
-  servername: ez-5faafb.esmaoi.workers.dev
-  tls: false
-  type: vless
-  udp: true
-  uuid: 518de0d4-6ce8-4404-80db-23c4a8806128
-  ws-opts:
-    headers:
-      Host: ez-5faafb.esmaoi.workers.dev
-    path: /eyJqdW5rIjoiQkFLTnhqM2tZTSIsInByb3RvY29sIjoidmwiLCJtb2RlIjoicHJveHlpcCIsInBhbmVsSVBzIjpbXX0=
-- name: '[Eternity#073] 🇺🇸US-156.146.38.167-0247 | 3.878MB 78ms'
-  server: 156.146.38.167
-  port: 443
-  type: ss
-  cipher: aes-128-gcm
-  password: shadowsocks
-- name: '[ermaozi#080] 🇺🇸 美国 | USA 89ms'
-  server: 104.21.74.189
-  port: 8880
-  type: vless
-  uuid: 94977b19-6720-48a6-92fd-00238757ea30
-  tls: false
-  network: ws
-  ws-opts:
-    path: /
-    headers:
-      Host: fragrant-credit-c4cf.148-e68.workers.dev
-  udp: true
-- name: '[Eternity#069] 🇺🇸US-156.146.38.168-0106 | 4.217MB 90ms'
-  server: 156.146.38.168
-  port: 443
-  type: ss
-  cipher: aes-128-gcm
-  password: shadowsocks
-- name: '[Eternity#070] 🇺🇸US-156.146.38.170-0178 | 4.15MB 93ms'
-  server: 156.146.38.170
-  port: 443
-  type: ss
-  cipher: aes-128-gcm
-  password: shadowsocks
-- name: '[Eternity#071] 🇺🇸US-156.146.38.169-0116 | 4.121MB 94ms'
-  server: 156.146.38.169
-  port: 443
-  type: ss
-  cipher: aes-128-gcm
-  password: shadowsocks
-- name: US - zhuhai.uk 06 46ms
-  type: http
-  server: 147.182.216.4
-  port: 443
-  username: testuser1
-  password: e4b72b531a2d10900519
-  tls: true
-  skip-cert-verify: true
-- name: '[Eternity#006] 🇺🇸US-18.208.223.39-0265 | 90.464MB 119ms'
-  server: 18.208.223.39
-  port: 443
-  type: ss
-  cipher: aes-256-cfb
-  password: amazonskr05
-- name: '[Eternity#047] 🇺🇸US-108.181.0.177-0080 | 23.31MB 122ms'
-  server: 108.181.0.177
-  port: 8388
-  type: ss
-  cipher: chacha20-ietf-poly1305
-  password: G5p6ww4o67HB
-- name: '[zhuhaiuk#005] US - zhuhai.uk 02 233ms'
-  type: http
-  server: 138.199.35.211
-  port: 9002
-  username: 'null'
-  password: 'null'
-  tls: true
-  skip-cert-verify: true
-- alpn:
-  - h2
-  - http/1.1
-  client-fingerprint: firefox
-  encryption: mlkem768x25519plus.native.0rtt.W_AAdj50NNta1or9xzKAkUP0MVxlMK6TfvShgRm9who
-  name: '🇺🇸 美国 | USA #15 178ms'
-  network: xhttp
-  port: 443
-  server: 167.82.76.31
-  servername: default.ssl.fastly.net
-  tls: true
-  type: vless
-  udp: true
-  uuid: e86d9264-a736-46c3-adcc-f5f0cc088a72
-  xhttp-opts:
-    host: Shhsheuq.global.ssl.fastly.net
-    mode: auto
-    path: /
-- name: '[NoMoreWalls#313] 🇺🇸US_14|1.2MB/s 234ms'
-  password: None
-  port: 9002
-  server: 138.199.35.205
-  skip-cert-verify: true
-  tls: true
-  type: http
-- name: US_speednode_0143 236ms
-  server: 138.199.35.198
-  port: 9002
-  type: http
-  tls: true
-  skip-cert-verify: true
-  udp: true
-- name: '[free18#129] 🇺🇸_美国_159 259ms'
-  type: vless
-  server: 128.241.25.11
-  port: 30021
-  uuid: c03bbba1-93ab-4781-8e8e-089cd257193f
-  network: ws
-  servername: jln31qtswdkut5.60kohcognywybguuq3ouc818oofnxfvn35daott.workers.dev
-  tls: true
-  client-fingerprint: chrome
-  ws-opts:
-    path: /@Marisa_kristi
-    headers:
-      Host: jln31qtswdkut5.60kohcognywybguuq3ouc818oofnxfvn35daott.workers.dev
-  skip-cert-verify: true
-  udp: true
-- name: '[free18#198] 🇺🇸_美国_257 271ms'
-  type: vless
-  server: 128.241.25.11
-  port: 30021
-  uuid: 339cda3d-79a5-4d37-8ad8-eddc130c992a
-  network: ws
-  servername: kqjifhg9rw.tradsc8p9xp7wxyqmc1wy0ah.workers.dev
-  tls: true
-  client-fingerprint: chrome
-  ws-opts:
-    path: /@Marisa_kristi
-    headers:
-      Host: kqjifhg9rw.tradsc8p9xp7wxyqmc1wy0ah.workers.dev
-  skip-cert-verify: true
-  udp: true
-- name: hysteria2-1668866009 15ms
+- name: hysteria2-1668866009 27ms
   password: 4291c983-c520-46ac-82cc-48f14bef573f
   port: 35013
   server: 129.213.91.185
   skip-cert-verify: true
   sni: ''
   type: hysteria2
+- name: hysteria2-1672410084 31ms
+  password: 4291c983-c520-46ac-82cc-48f14bef573f
+  port: 35013
+  server: 129.213.91.185
+  skip-cert-verify: true
+  sni: 129.213.91.185
+  type: hysteria2
 - client-fingerprint: chrome
   flow: xtls-rprx-vision
-  name: vless-1456823533 36ms
-  network: tcp
-  port: 36925
-  reality-opts:
-    public-key: lJ9INPpO4rdnm2Tek_yg0PGFyUrBB6MoKyvqt_Mfqm0
-    short-id: ''
-  server: 137.184.218.169
-  servername: www.cloudflare.com
-  tls: true
-  type: vless
-  udp: true
-  uuid: c9fd0fb1-8251-4106-b09a-f4b426736f67
-- client-fingerprint: chrome
-  flow: xtls-rprx-vision
-  name: vless-2295560 37ms
-  network: tcp
-  port: 28190
-  reality-opts:
-    public-key: ZJRnFU-1s1JOnO8E9uZ7b00l1fPEh63fGRbdBANFRno
-    short-id: ''
-  server: 159.89.87.21
-  servername: aws.amazon.com
-  tls: true
-  type: vless
-  udp: true
-  uuid: 14c80e0e-f7ce-4991-94fc-99a1db4a9b1e
-- client-fingerprint: firefox
-  flow: xtls-rprx-vision
-  name: vless-868400801 37ms
-  network: tcp
-  port: 443
-  reality-opts:
-    public-key: 8eXftARun6KH38UZhuqIfPR1VF2DLS9RMBZEnF5k6To
-    short-id: a3a578ab
-  server: 185.95.231.156
-  servername: www.apple.com
-  tls: true
-  type: vless
-  udp: true
-  uuid: 1f8cf47a-b66a-4916-979f-26edfcf44eea
-- client-fingerprint: chrome
-  flow: xtls-rprx-vision
-  name: vless-1108742512 38ms
+  name: vless-1108742512 47ms
   network: raw
   port: 36925
   reality-opts:
@@ -517,9 +31,37 @@ proxies:
   type: vless
   udp: true
   uuid: c9fd0fb1-8251-4106-b09a-f4b426736f67
+- client-fingerprint: firefox
+  flow: xtls-rprx-vision
+  name: vless-1469358978 53ms
+  network: raw
+  port: 28190
+  reality-opts:
+    public-key: ZJRnFU-1s1JOnO8E9uZ7b00l1fPEh63fGRbdBANFRno
+    short-id: ''
+  server: 159.89.87.21
+  servername: aws.amazon.com
+  tls: true
+  type: vless
+  udp: true
+  uuid: 14c80e0e-f7ce-4991-94fc-99a1db4a9b1e
 - client-fingerprint: chrome
   flow: xtls-rprx-vision
-  name: vless-46745 42ms
+  name: vless-1544881666 56ms
+  network: tcp
+  port: 28190
+  reality-opts:
+    public-key: ZJRnFU-1s1JOnO8E9uZ7b00l1fPEh63fGRbdBANFRno
+    short-id: ''
+  server: 159.89.87.21
+  servername: aws.amazon.com
+  tls: true
+  type: vless
+  udp: true
+  uuid: 14c80e0e-f7ce-4991-94fc-99a1db4a9b1e
+- client-fingerprint: chrome
+  flow: xtls-rprx-vision
+  name: vless-103961669 61ms
   network: raw
   port: 36925
   reality-opts:
@@ -533,7 +75,7 @@ proxies:
   uuid: c9fd0fb1-8251-4106-b09a-f4b426736f67
 - client-fingerprint: chrome
   flow: xtls-rprx-vision
-  name: vless-1047296933 55ms
+  name: vless-1047296933 64ms
   network: raw
   port: 443
   reality-opts:
@@ -545,15 +87,15 @@ proxies:
   type: vless
   udp: true
   uuid: 1f8cf47a-b66a-4916-979f-26edfcf44eea
-- client-fingerprint: firefox
+- client-fingerprint: chrome
   flow: xtls-rprx-vision
-  name: vless-659123959 58ms
-  network: tcp
+  name: vless-1599160519 67ms
+  network: raw
   port: 443
   reality-opts:
     public-key: e2RLf57Li_-MDZGE9ss1BWPgP54mqRb5PfXhW2jcVVg
     short-id: c39cc7310a
-  server: 169.40.42.89
+  server: 169.40.42.90
   servername: yahoo.com
   tls: true
   type: vless
@@ -561,41 +103,13 @@ proxies:
   uuid: d65cc14c-f53f-4fe2-b262-97856601319c
 - client-fingerprint: random
   flow: xtls-rprx-vision
-  name: vless-1183593998 58ms
-  network: tcp
-  port: 443
-  reality-opts:
-    public-key: 5B83otQ5ZQwtBFhR7xzsGJRXflkFKRJpQguYbE5JWGI
-    short-id: c85d029f5e8eb393
-  server: 195.123.235.177
-  servername: gateway.icloud.com
-  tls: true
-  type: vless
-  udp: true
-  uuid: 729dd5f2-f5ff-4070-8c10-863eceded0b1
-- client-fingerprint: chrome
-  flow: xtls-rprx-vision
-  name: vless-1746300989 59ms
+  name: vless-720888908 70ms
   network: tcp
   port: 443
   reality-opts:
     public-key: e2RLf57Li_-MDZGE9ss1BWPgP54mqRb5PfXhW2jcVVg
     short-id: c39cc7310a
-  server: 169.40.42.212
-  servername: yahoo.com
-  tls: true
-  type: vless
-  udp: true
-  uuid: d65cc14c-f53f-4fe2-b262-97856601319c
-- client-fingerprint: edge
-  flow: xtls-rprx-vision
-  name: vless-827037228 61ms
-  network: tcp
-  port: 443
-  reality-opts:
-    public-key: e2RLf57Li_-MDZGE9ss1BWPgP54mqRb5PfXhW2jcVVg
-    short-id: c39cc7310a
-  server: 169.40.42.173
+  server: 169.40.42.104
   servername: yahoo.com
   tls: true
   type: vless
@@ -603,36 +117,22 @@ proxies:
   uuid: d65cc14c-f53f-4fe2-b262-97856601319c
 - client-fingerprint: chrome
   flow: xtls-rprx-vision
-  name: vless-1531019487 62ms
+  name: vless-1664519192 71ms
   network: tcp
   port: 443
   reality-opts:
     public-key: e2RLf57Li_-MDZGE9ss1BWPgP54mqRb5PfXhW2jcVVg
     short-id: c39cc7310a
-  server: 169.40.42.202
+  server: 169.40.42.231
   servername: yahoo.com
   tls: true
   type: vless
   udp: true
   uuid: d65cc14c-f53f-4fe2-b262-97856601319c
-- client-fingerprint: firefox
-  flow: xtls-rprx-vision
-  name: vless-1469358978 64ms
-  network: raw
-  port: 28190
-  reality-opts:
-    public-key: ZJRnFU-1s1JOnO8E9uZ7b00l1fPEh63fGRbdBANFRno
-    short-id: ''
-  server: 159.89.87.21
-  servername: aws.amazon.com
-  tls: true
-  type: vless
-  udp: true
-  uuid: 14c80e0e-f7ce-4991-94fc-99a1db4a9b1e
 - client-fingerprint: ios
   flow: xtls-rprx-vision
-  name: vless-699213805 66ms
-  network: tcp
+  name: vless-970024033 75ms
+  network: raw
   port: 443
   reality-opts:
     public-key: e2RLf57Li_-MDZGE9ss1BWPgP54mqRb5PfXhW2jcVVg
@@ -643,15 +143,15 @@ proxies:
   type: vless
   udp: true
   uuid: d65cc14c-f53f-4fe2-b262-97856601319c
-- client-fingerprint: ios
+- client-fingerprint: qq
   flow: xtls-rprx-vision
-  name: vless-1510329155 67ms
+  name: vless-827037241 77ms
   network: tcp
   port: 443
   reality-opts:
     public-key: e2RLf57Li_-MDZGE9ss1BWPgP54mqRb5PfXhW2jcVVg
     short-id: c39cc7310a
-  server: 169.40.42.35
+  server: 169.40.42.16
   servername: yahoo.com
   tls: true
   type: vless
@@ -659,46 +159,20 @@ proxies:
   uuid: d65cc14c-f53f-4fe2-b262-97856601319c
 - client-fingerprint: ios
   flow: xtls-rprx-vision
-  name: vless-321083275 67ms
+  name: vless-1242264766 77ms
   network: raw
   port: 443
   reality-opts:
     public-key: e2RLf57Li_-MDZGE9ss1BWPgP54mqRb5PfXhW2jcVVg
     short-id: c39cc7310a
-  server: 169.40.42.173
+  server: 169.40.42.133
   servername: yahoo.com
   tls: true
   type: vless
   udp: true
   uuid: d65cc14c-f53f-4fe2-b262-97856601319c
-- client-fingerprint: edge
-  flow: xtls-rprx-vision
-  name: vless-775774632 68ms
-  network: tcp
-  port: 443
-  reality-opts:
-    public-key: e2RLf57Li_-MDZGE9ss1BWPgP54mqRb5PfXhW2jcVVg
-    short-id: c39cc7310a
-  server: 169.40.42.182
-  servername: yahoo.com
-  tls: true
-  type: vless
-  udp: true
-  uuid: d65cc14c-f53f-4fe2-b262-97856601319c
-- client-fingerprint: chrome
-  name: C🟠🇺🇸hos[🎬🤖📺🎭]_dokng.com_0af9a12a 72ms
-  network: tcp
-  port: 443
-  reality-opts:
-    public-key: L1S0DpFtHPBeyENZUvJPcrFZIct6kcHUPxuzNaGXIFY
-    short-id: 4c69c4b51c580d60
-  server: 136.107.170.196
-  servername: www.cloudflare.com
-  tls: true
-  type: vless
-  uuid: d6d58f01-b5ce-4d47-bce0-b8a806155852
-- client-fingerprint: chrome
-  name: vless-1443531684 86ms
+- client-fingerprint: firefox
+  name: vless-1260285703 82ms
   network: tcp
   port: 2053
   reality-opts:
@@ -710,9 +184,23 @@ proxies:
   type: vless
   udp: true
   uuid: dc620cd6-a9d8-4a0f-8f18-006b895db77e
+- client-fingerprint: chrome
+  flow: xtls-rprx-vision
+  name: vless-812343856 92ms
+  network: tcp
+  port: 443
+  reality-opts:
+    public-key: 8eXftARun6KH38UZhuqIfPR1VF2DLS9RMBZEnF5k6To
+    short-id: a3a578ab
+  server: 185.95.231.156
+  servername: www.apple.com
+  tls: true
+  type: vless
+  udp: true
+  uuid: 1f8cf47a-b66a-4916-979f-26edfcf44eea
 - client-fingerprint: random
   flow: xtls-rprx-vision
-  name: vless-1023674369 86ms
+  name: vless-1023674369 179ms
   network: tcp
   port: 443
   reality-opts:
@@ -724,36 +212,24 @@ proxies:
   type: vless
   udp: true
   uuid: 719b9354-45e2-4718-8709-d965b64554db
-- client-fingerprint: firefox
-  name: vless-1293658703 91ms
-  network: raw
-  port: 2053
-  reality-opts:
-    public-key: k4l6TxwkBbx9DhZAFpByq5rfCWFSgyOex3f_eFe9CWU
-    short-id: 83f8317a948bb769
-  server: 66.70.179.198
-  servername: www.cloudflare.com
-  tls: true
-  type: vless
-  udp: true
-  uuid: dc620cd6-a9d8-4a0f-8f18-006b895db77e
 - client-fingerprint: chrome
-  name: vless-1695403490 152ms
-  network: tcp
-  port: 2053
+  flow: xtls-rprx-vision
+  name: vless-1743394834 140ms
+  network: raw
+  port: 443
   reality-opts:
-    public-key: Uk5b-Wh_uxeCc7R8NS9iWE40xc0h9wWC04rSB9yhgAw
-    short-id: b5d625695ec82c7e
-  server: 198.251.78.29
-  servername: www.cloudflare.com
+    public-key: Vh8dv6ENmfFd4JlPgj9-R1Fbet2m6JyRFukcVvDq5A8
+    short-id: e7dc2c820ba8bbd4
+  server: 172.245.253.16
+  servername: www.apple.com
   tls: true
   type: vless
   udp: true
-  uuid: c423cc1b-f88e-421c-9a16-c480d84da20f
-- client-fingerprint: firefox
+  uuid: b67422ff-101b-433b-8f66-4ab282960b36
+- client-fingerprint: chrome
   flow: xtls-rprx-vision
-  name: vless-1003491287 153ms
-  network: raw
+  name: vless-909039620 151ms
+  network: tcp
   port: 443
   reality-opts:
     public-key: uTmb-ytXsx8p0fkBz7A76SHpWk7_oVutIA4LGTE8BQk
@@ -764,58 +240,23 @@ proxies:
   type: vless
   udp: true
   uuid: ca52e2b6-fb9f-4dac-b6dc-49da9923f251
-- name: hysteria2-1672410084 21ms
-  password: 4291c983-c520-46ac-82cc-48f14bef573f
-  port: 35013
-  server: 129.213.91.185
-  skip-cert-verify: true
-  sni: 129.213.91.185
-  type: hysteria2
-- client-fingerprint: chrome
-  flow: xtls-rprx-vision
-  name: vless-1065148222 88ms
-  network: raw
-  port: 443
-  reality-opts:
-    public-key: zpXR6Y36C8qUCIVk2p_j8C9KGeBk5xisLw66j3WFOls
-    short-id: 9f1fc5a631ef3126
-  server: 2.24.124.64
-  servername: www.cloudflare.com
-  tls: true
-  type: vless
-  udp: true
-  uuid: 719b9354-45e2-4718-8709-d965b64554db
-- client-fingerprint: edge
-  flow: xtls-rprx-vision
-  name: vless-833778080 56ms
-  network: tcp
-  port: 443
-  reality-opts:
-    public-key: ALT8hIGeZEhi0sQFbXP_ntBg8Xo-v7i0YCLrqTnBxRk
-    short-id: 0990d22f
-  server: 167.17.69.171
-  servername: www.cloudflare.com
-  tls: true
-  type: vless
-  udp: true
-  uuid: 00144519-7e0d-476b-8d28-435576af9262
 - client-fingerprint: random
   flow: xtls-rprx-vision
-  name: vless-913472676 126ms
+  name: vless-1752693013 156ms
   network: tcp
   port: 443
   reality-opts:
-    public-key: uTmb-ytXsx8p0fkBz7A76SHpWk7_oVutIA4LGTE8BQk
-    short-id: f98843107912e782
-  server: 209.200.246.148
-  servername: www.cloudflare.com
+    public-key: Vh8dv6ENmfFd4JlPgj9-R1Fbet2m6JyRFukcVvDq5A8
+    short-id: e7dc2c820ba8bbd4
+  server: 172.245.253.16
+  servername: www.apple.com
   tls: true
   type: vless
   udp: true
-  uuid: ca52e2b6-fb9f-4dac-b6dc-49da9923f251
+  uuid: b67422ff-101b-433b-8f66-4ab282960b36
 - client-fingerprint: chrome
-  name: vless-1259627592 216ms
-  network: tcp#5🔥@oneclickvpnkeys
+  name: vless-334967650 195ms
+  network: raw
   port: 8443
   reality-opts:
     public-key: D3ojIs3AUKP_tV0E4TEjh90HBVJp24Nq3qMfdxD30kc
@@ -826,1240 +267,277 @@ proxies:
   type: vless
   udp: true
   uuid: 1d39f715-2740-4d99-bc3b-197cc48dcee7
+- client-fingerprint: firefox
+  name: vless-1730804159 197ms
+  network: tcp
+  port: 8443
+  reality-opts:
+    public-key: D3ojIs3AUKP_tV0E4TEjh90HBVJp24Nq3qMfdxD30kc
+    short-id: ''
+  server: 107.173.237.146
+  servername: updates.cdn-apple.com
+  tls: true
+  type: vless
+  udp: true
+  uuid: 1d39f715-2740-4d99-bc3b-197cc48dcee7
+- client-fingerprint: chrome
+  flow: xtls-rprx-vision
+  name: vless-1747847962 202ms
+  network: raw
+  port: 443
+  reality-opts:
+    public-key: StPbcmBuzpuYUfa4oZ5SI3Bq1OSF_-oU1vp2AcyvQVE
+    short-id: 19296c9f1bf9c7b1
+  server: 195.123.240.65
+  servername: www.cloudflare.com
+  tls: true
+  type: vless
+  udp: true
+  uuid: ce18d0eb-5c71-41f9-96e5-1632e22456e4
+- client-fingerprint: chrome
+  flow: xtls-rprx-vision
+  name: vless-1518323798 208ms
+  network: raw
+  port: 30556
+  reality-opts:
+    public-key: EcmNQqZxyW4GCEQF-7nH54w3qgBkLzsfqFSgafGjB0E
+    short-id: d082f567
+  server: 137.175.82.40
+  servername: www.lovelive-anime.jp
+  tls: true
+  type: vless
+  udp: true
+  uuid: 949d278e-6d98-4014-84e9-59f1c6c93e0e
 - client-fingerprint: random
   flow: xtls-rprx-vision
-  name: vless-1182528378 220ms
+  name: vless-700289117 215ms
+  network: tcp
+  port: 23576
+  reality-opts:
+    public-key: 1y5h2FGWKXTJ9xLPCqPo6Mw7RxoZzh6fGkEQKNxpZ3s
+    short-id: ''
+  server: 15.204.97.195
+  servername: fuck.rkn
+  tls: true
+  type: vless
+  udp: true
+  uuid: 48ff2b70-e180-582f-8866-d9a2edeed5f5
+- client-fingerprint: random
+  flow: xtls-rprx-vision
+  name: vless-1499107355 218ms
+  network: tcp
+  port: 30556
+  reality-opts:
+    public-key: EcmNQqZxyW4GCEQF-7nH54w3qgBkLzsfqFSgafGjB0E
+    short-id: d082f567
+  server: 137.175.82.40
+  servername: www.lovelive-anime.jp
+  tls: true
+  type: vless
+  udp: true
+  uuid: 949d278e-6d98-4014-84e9-59f1c6c93e0e
+- client-fingerprint: firefox
+  flow: xtls-rprx-vision
+  name: vless-1685986921 302ms
   network: tcp
   port: 443
   reality-opts:
-    public-key: SmgYcFIvvFXW3xh4gvGhIJuQsaZvWkAylcjB6TEddEs
-    short-id: 896f52ba2cfca903
-  server: 47.251.108.158
-  servername: www.cloudflare.com
-  tls: true
-  type: vless
-  udp: true
-  uuid: 975fc322-6e38-434b-a53c-d39fed49b9a9
-- client-fingerprint: chrome
-  name: vless-1308217467 170ms
-  network: raw
-  port: 2053
-  reality-opts:
-    public-key: Uk5b-Wh_uxeCc7R8NS9iWE40xc0h9wWC04rSB9yhgAw
-    short-id: b5d625695ec82c7e
-  server: 198.251.78.29
-  servername: www.cloudflare.com
-  tls: true
-  type: vless
-  udp: true
-  uuid: c423cc1b-f88e-421c-9a16-c480d84da20f
-- name: NL - zhuhai.uk 97ms
-  type: vless
-  server: 157.228.160.166
-  port: 443
-  uuid: df53b6c2-8005-475c-9eb9-74e1be785dc8
-  flow: xtls-rprx-vision
-  tls: true
+    public-key: 5BDht3tAZdKEKpJymGlRK9JugOnieA-kMSWz_0FoE0I
+    short-id: 6f76ad09
+  server: 157.228.155.238
   servername: addons.mozilla.org
-  skip-cert-verify: true
+  tls: true
+  type: vless
+  udp: true
+  uuid: df53b6c2-8005-475c-9eb9-74e1be785dc8
+- client-fingerprint: random
+  flow: xtls-rprx-vision
+  name: vless-700289120 224ms
+  network: tcp
+  port: 23576
+  reality-opts:
+    public-key: 1y5h2FGWKXTJ9xLPCqPo6Mw7RxoZzh6fGkEQKNxpZ3s
+    short-id: ''
+  server: 15.204.97.206
+  servername: fuck.rkn
+  tls: true
+  type: vless
+  udp: true
+  uuid: 48ff2b70-e180-582f-8866-d9a2edeed5f5
+- client-fingerprint: random
+  flow: xtls-rprx-vision
+  name: vless-757488778 225ms
+  network: tcp
+  port: 23576
+  reality-opts:
+    public-key: 1y5h2FGWKXTJ9xLPCqPo6Mw7RxoZzh6fGkEQKNxpZ3s
+    short-id: ''
+  server: 15.204.97.209
+  servername: fuck.rkn
+  tls: true
+  type: vless
+  udp: true
+  uuid: 48ff2b70-e180-582f-8866-d9a2edeed5f5
+- client-fingerprint: random
+  flow: xtls-rprx-vision
+  name: vless-700289124 225ms
+  network: tcp
+  port: 23576
+  reality-opts:
+    public-key: 1y5h2FGWKXTJ9xLPCqPo6Mw7RxoZzh6fGkEQKNxpZ3s
+    short-id: ''
+  server: 15.204.97.216
+  servername: fuck.rkn
+  tls: true
+  type: vless
+  udp: true
+  uuid: 48ff2b70-e180-582f-8866-d9a2edeed5f5
+- client-fingerprint: chrome
+  flow: xtls-rprx-vision
+  name: vless-656231728 226ms
+  network: tcp
+  port: 23576
+  reality-opts:
+    public-key: 1y5h2FGWKXTJ9xLPCqPo6Mw7RxoZzh6fGkEQKNxpZ3s
+    short-id: '01'
+  server: 15.204.97.214
+  servername: fuck.rkn
+  tls: true
+  type: vless
+  udp: true
+  uuid: 48ff2b70-e180-582f-8866-d9a2edeed5f5
+- name: '[free18#027] 🇯🇵_日本_38 490ms'
+  type: vless
+  server: jpga01.xyy123.bid
+  port: 443
+  uuid: 05453546-201f-4e8d-97ae-fd70da0e951f
+  servername: shop.business.amazon.com
+  tls: true
+  flow: xtls-rprx-vision
   client-fingerprint: chrome
   reality-opts:
-    public-key: NOw-idkk3OCn-N0IRS93leujH4ik-E749O2T5BYJQ0M
-    short-id: 3cef317b
-- name: '[zhuhaiuk#008] TR - zhuhai.uk 126ms'
-  type: vless
-  server: 13.143.137.169
-  port: 9443
-  uuid: 953358cb-82ba-4296-960d-6d2ec3468f4c
-  flow: xtls-rprx-vision
-  tls: true
-  servername: plaincanvas.videoclothing.xyz
-  client-fingerprint: firefox
-  reality-opts:
-    public-key: dZ0rhO_PL67-Ciwc6CHQgtde3a5EUUuReA7M-lRNCDQ
-    short-id: e336c9a786fae301
-- name: 🇬🇧 英国+V2CROSS.COM 2163ms
-  server: pl-waw.dontblockmepls.com
-  port: 2063
-  type: vless
-  uuid: b18d5990-96eb-4587-a386-7f8ef7591e6a
-  tls: true
-  udp: true
-  servername: rusbid.de
-  flow: xtls-rprx-vision
-  client-fingerprint: firefox
-  network: tcp
-  reality-opts:
-    public-key: MMpt_jWc4J3oySBdf5sPDVRkiWlZmOObth6A1scM9BM
-- name: CA - zhuhai.uk 02 104ms
-  type: http
-  server: 198.44.157.19
-  port: 9443
-  tls: true
+    public-key: AgTktefiMM58y7f-KFgEtmVti_YJbd0GPSkxNeJ0RH4
+    short-id: cfffc6b65acb2ad3
   skip-cert-verify: true
-- name: CA - zhuhai.uk 115ms
-  type: http
-  server: 206.223.183.16
+  udp: true
+- name: '[free18#062] 🇯🇵_日本_88 712ms'
+  type: vless
+  server: japro02.xyy123.bid
   port: 443
+  uuid: 440f986b-9469-4d80-adf0-01ba37af73c5
+  servername: shop.business.amazon.com
   tls: true
+  flow: xtls-rprx-vision
+  client-fingerprint: chrome
+  reality-opts:
+    public-key: sDKrtAJk2VP_w1w7cFi2O86RdlvQ2E2An5xsRdJlgGE
+    short-id: 6d962e8d8a0dce
+  skip-cert-verify: true
+  udp: true
+- name: '🇯🇵[www.v2nodes.com] trojan-JP-... #3 478ms'
+  password: UX82473651
+  port: 443
+  server: warm-krill.rooster465.autos
+  skip-cert-verify: true
+  sni: warm-krill.rooster465.autos
+  type: trojan
+- name: '🇯🇵[www.v2nodes.com] trojan-JP-... #4 478ms'
+  password: UX82473651
+  port: 443
+  server: normal-macaque.rooster465.autos
+  skip-cert-verify: true
+  sni: normal-macaque.rooster465.autos
+  type: trojan
+- name: '🇯🇵[www.v2nodes.com] trojan-JP-... #5 480ms'
+  password: UX82473651
+  port: 443
+  server: optimal-penguin.rooster465.autos
+  skip-cert-verify: true
+  sni: optimal-penguin.rooster465.autos
+  type: trojan
+- name: 🇯🇵[www.v2nodes.com] trojan-JP-... 483ms
+  password: UX82473651
+  port: 443
+  server: legible-ram.rooster465.autos
+  skip-cert-verify: true
+  sni: legible-ram.rooster465.autos
+  type: trojan
+- name: '🇯🇵[www.v2nodes.com] trojan-JP-... #6 483ms'
+  password: UX82473651
+  port: 443
+  server: amazed-mako.rooster465.autos
+  skip-cert-verify: true
+  sni: amazed-mako.rooster465.autos
+  type: trojan
+- name: '🇯🇵[www.v2nodes.com] trojan-JP-... #7 502ms'
+  password: UX82473651
+  port: 443
+  server: equipped-stingray.rooster465.autos
+  skip-cert-verify: true
+  sni: equipped-stingray.rooster465.autos
+  type: trojan
+- name: 🇯🇵 日本 | JPN 632ms
+  server: ce0te2m4.zf-mix.9999231.xyz
+  port: 1001
+  type: anytls
+  password: a7c5d30b-ce9b-4e34-b5cb-66f8308790ef
+  udp: true
+  sni: tw01.9999231.xyz
   skip-cert-verify: true
 - alterId: 0
   cipher: auto
-  client-fingerprint: safari
-  name: U⚪🏳️ukn_dokng.com_9fff1298 435ms
-  network: ws
-  port: 443
-  server: www.shopify.com
-  servername: guanwang.awsno.com
-  skip-cert-verify: true
-  tls: true
-  type: vmess
-  uuid: 6a89a215-22bf-4bd7-9642-b95b2e09583a
-  ws-opts:
-    headers:
-      Host: guanwang.awsno.com
-    path: /hls/cctv5phd.m3u8
-- name: '[free18#179] 🇬🇧_英国_234 1ms'
-  type: vless
-  server: 194.36.55.146
-  port: 80
-  uuid: 964e6322-afad-4594-8508-86d634d732e6
-  network: ws
-  servername: 194.36.55.146
+  name: '🇯🇵 日本 | JPN #2 739ms'
+  network: tcp
+  port: 36011
+  server: gz1.polymarket.party
   tls: false
-  client-fingerprint: chrome
-  ws-opts:
-    path: /
-    headers:
-      Host: blacklegends.umc-mansur13.workers.dev
-  skip-cert-verify: true
-  udp: true
-- name: 🇬🇧+GB+英国+76 1ms
-  server: 94.247.142.245
-  port: 8443
-  type: vless
-  uuid: f775978b-6e22-41a8-ae5e-5f9779e6745f
-  tls: true
-  udp: true
-  servername: juzibaipiao.5112233.xyz
-  network: ws
-  ws-opts:
-    path: /?ed=2048
-- cipher: none
-  name: U⚪🏳️ukn[🎬🤖📺🎭]_dokng.com_34b61d6b 2ms
-  network: ws
-  port: 443
-  server: 172.64.150.1
-  servername: sub.mcgame.dpdns.org
-  tls: true
-  type: vless
-  uuid: 6896f806-e138-4734-87f9-73219697e4d0
-  ws-opts:
-    headers:
-      Host: sub.mcgame.dpdns.org
-    path: /ws
-- name: U⚪🏳️ukn[🎬🤖📺🎭]_dokng.com_646648d8 59ms
-  password: freeuser1
-  port: 9251
-  server: dl1-us.freeconnect.link
-  tls: true
-  type: http
-  username: freeuser1
-- name: U⚪🏳️ukn_dokng.com_fb80b349 72ms
-  port: 4040
-  server: 190.0.246.211
-  type: http
-- name: U⚪🏳️ukn_dokng.com_b9611de3 73ms
-  port: 8282
-  server: 208.95.20.33
-  type: http
-- name: U⚪🏳️ukn[🎬🤖📺🎭]_dokng.com_484dd5ac 75ms
-  port: 4040
-  server: 190.0.246.213
-  type: http
-- name: '[free18#115] 🇬🇧_英国_139 76ms'
-  type: vless
-  server: 57.129.130.34
-  port: 52014
-  uuid: 53367702-4b8d-431a-a193-34d7d057a065
-  network: ws
-  servername: jln31qtswdkut5.60kohcognywybguuq3ouc818oofnxfvn35daott.workers.dev
-  tls: true
-  client-fingerprint: chrome
-  ws-opts:
-    path: /@Marisa_kristi
-    headers:
-      Host: jln31qtswdkut5.60kohcognywybguuq3ouc818oofnxfvn35daott.workers.dev
-  skip-cert-verify: true
-  udp: true
-- name: '[zhuhaiuk#009] NL - zhuhai.uk 02 87ms'
-  type: http
-  server: 51.158.194.16
-  port: 14287
-  tls: true
-  skip-cert-verify: true
-- name: '[free18#110] 🇭🇰_香港_133 200ms'
-  type: vless
-  server: 82.29.36.250
-  port: 443
-  uuid: 41a7af38-0bb1-4493-aa8d-634af0c2548b
-  servername: aws.amazon.com
-  tls: true
-  flow: xtls-rprx-vision
-  client-fingerprint: chrome
-  reality-opts:
-    public-key: 09XPceP705hC-5sEDXDSLeL2eMOrF-mFISK8JaJ7q2g
-    short-id: ac3342a709db
-  skip-cert-verify: true
-  udp: true
-- name: '[ermaozi#067] 🇭🇰 香港 | HKG 9 202ms'
-  server: 47.238.210.5
-  port: 13779
-  type: vless
-  uuid: 928e6cce-8ced-4243-9a48-a6642edd09b0
-  tls: true
-  reality-opts:
-    public-key: llTyp52oRXnJmQ3I9UUrmlwbMA79B-wLCRHCu-8dLGg
-    short-id: af1bdd293097b664
-  servername: tesla.com
-  client-fingerprint: chrome
-  network: tcp
-  udp: true
-- name: HK - zhuhai.uk 212ms
-  type: vless
-  server: 34.92.19.135
-  port: 443
-  uuid: 90153538-ef08-4942-b8e1-41e7c523e659
-  tls: true
-  servername: www.cloudflare.com
-  client-fingerprint: chrome
-  reality-opts:
-    public-key: tSBJnEt6E1dy6UgX9gX5wUfvZ2KAXjGWVKsEq886OWM
-    short-id: 56d4e7ae4f86fa39
-- name: '[ermaozi#068] 🇭🇰 香港 | HKG 10 234ms'
-  server: t4.qifei.app
-  port: 443
-  type: vless
-  uuid: b98d4c6e-6770-4a31-8256-a4750cdea0e7
-  tls: true
-  flow: xtls-rprx-vision
-  reality-opts:
-    public-key: 0i_xAxYgSNx5NMpK2lOaWGS-CvAiD_LneYPO0MF0owo
-  servername: s3.ap-east-1.amazonaws.com
-  client-fingerprint: random
-  network: tcp
-  udp: true
-- alpn:
-  - http/1.1
-  client-fingerprint: chrome
-  encryption: none
-  name: '[NoMoreWalls#124] 🇭🇰[www.v2nodes.com] vless-HK-1... #1 51ms'
-  network: ws
-  port: 443
-  server: 188.114.97.6
-  servername: lucasjow.us.ci
-  skip-cert-verify: false
-  tls: true
-  type: vless
-  uuid: e6df2095-a73c-4043-8693-8d5a03686870
-  ws-opts:
-    headers:
-      Host: lucasjow.us.ci
-    path: /cart/docs/www/proxyip=108.160.132.132?ed#Telegram---PLANB_NET---PLANB_NET---PLANB_NET---PLANB_NET
-- name: 🇭🇰 HK-Hong Kong3 2ms
-  server: 45.80.111.38
-  port: 2096
-  type: vless
-  uuid: 2cd6ed0f-636e-4e6c-9449-5a263d7a0fa5
-  tls: true
-  udp: true
-  servername: cfed.tgzdyz2.top
-  client-fingerprint: random
-  network: ws
-  ws-opts:
-    path: TG@ZDYZ2
-- name: '[zhuhaiuk#007] HK - zhuhai.uk 02 72ms'
+  type: vmess
+  uuid: aec8e5e3-bb81-4b22-8802-0b88c54997b3
+- name: 🇯🇵 JP · Tokyo · Shadowsocks · 362ms | 171 1231ms
   type: ss
-  server: ruot.ayucloudservices.nl
-  port: 40004
-  cipher: aes-128-gcm
-  password: 70a5c510-d56d-43e7-b150-9c00c969bd50
-- alterId: 0
-  cipher: auto
-  name: '[ermaozi#047] 🇭🇰 香港 | HKG #5 201ms'
-  network: ws
-  port: 23026
-  server: 47.244.120.197
-  skip-cert-verify: true
-  tls: false
-  type: vmess
-  udp: true
-  uuid: b9de1bc9-baa7-41ac-86f7-ccd59695cb21
-  ws-opts:
-    path: /arki
-- alterId: 0
-  cipher: auto
-  name: '[ermaozi#045] 🇭🇰 香港 | HKG #2 201ms'
-  network: ws
+  server: 84.247.155.196
   port: 443
-  server: 47.83.207.148
-  skip-cert-verify: true
-  tls: true
-  type: vmess
+  cipher: aes-256-gcm
+  password: 3eOFeNssde7PYYMv
   udp: true
-  uuid: f23bb427-c1f9-4373-876c-2f43e9f790f3
-  ws-opts:
-    headers:
-      Host: VAH4URdZL3jDX5r2.v.3dns.vip
-    path: /ws-vmess
-- alterId: 0
-  cipher: auto
-  name: '[NoMoreWalls#323] 🇭🇰 香港 | HKG #1 202ms'
-  network: ws
-  port: 443
-  server: 8.218.195.61
-  skip-cert-verify: true
-  tls: true
+- name: 🇯🇵 日本 | JPN 3 740ms
+  server: gz1.polymarket.party
+  port: 36011
   type: vmess
-  udp: true
-  uuid: f23bb427-c1f9-4373-876c-2f43e9f790f3
-  ws-opts:
-    headers:
-      Host: EX1oGt73NzPQKAc2.v.3dns.vip
-    path: /ws-vmess
-- alpn:
-  - ''
-  alterId: 0
-  cipher: auto
-  name: '[ermaozi#044] 🇭🇰 香港 | HKG #1 202ms'
-  network: ws
-  port: 36703
-  server: 47.244.120.197
-  skip-cert-verify: true
-  tls: false
-  type: vmess
-  udp: true
-  uuid: 45b83519-9c4f-4052-a11b-02e017b636d4
-  ws-opts:
-    path: /arki
-- alpn:
-  - ''
-  alterId: 0
-  cipher: auto
-  name: '[ermaozi#046] 🇭🇰 香港 | HKG #3 202ms'
-  network: ws
-  port: 44867
-  server: 47.244.120.197
-  skip-cert-verify: true
-  tls: false
-  type: vmess
-  udp: true
-  uuid: 845e6b08-2919-4290-ade0-5dc7dcea59ca
-  ws-opts:
-    path: /arki
-- alpn:
-  - ''
-  alterId: 0
-  cipher: auto
-  name: '[NoMoreWalls#324] 🇭🇰 香港 | HKG #3 202ms'
-  network: ws
-  port: 443
-  server: 47.76.44.32
-  skip-cert-verify: true
-  tls: true
-  type: vmess
-  udp: true
-  uuid: f23bb427-c1f9-4373-876c-2f43e9f790f3
-  ws-opts:
-    headers:
-      Host: 93ucrn4i0pffuabk.v.3dns.vip
-    path: /ws-vmess
-- name: '[ermaozi#069] 🇭🇰 香港 | HKG 11 202ms'
-  server: 8.217.254.88
-  port: 443
-  type: vmess
-  uuid: f23bb427-c1f9-4373-876c-2f43e9f790f3
-  alterId: 0
-  cipher: auto
-  tls: true
-  skip-cert-verify: true
-  servername: 2b9hwy8ocx7q74nm.v.3dns.vip
-  network: ws
-  ws-opts:
-    path: /ws-vmess
-    headers:
-      Host: 2b9hwy8ocx7q74nm.v.3dns.vip
-  udp: true
-- name: '[ermaozi#064] 🇭🇰 香港 | HKG 3 208ms'
-  server: 47.86.167.194
-  port: 800
-  type: vmess
-  uuid: f2c67cae-c09d-4739-947d-f5302d87a3c0
+  uuid: aec8e5e3-bb81-4b22-8802-0b88c54997b3
   alterId: 0
   cipher: auto
   tls: false
   alpn:
   - ''
   skip-cert-verify: true
-  network: http
-  http-opts:
-    method: GET
-    path:
-    - /x
-    headers:
-      Host:
-      - sjskendn.dingtalk.com
   udp: true
-- client-fingerprint: chrome
-  name: '[NoMoreWalls#125] 🇭🇰 香港 | HKG #2 212ms'
-  network: ws
-  port: 8443
-  server: 103.148.73.173
-  servername: ty986gfazs.cainiaohub.xyz
-  tls: true
-  type: vless
-  udp: true
-  uuid: c1c04450-bf71-4049-ad0c-9cf6d94d9f1f
-  ws-opts:
-    headers:
-      Host: ty986gfazs.cainiaohub.xyz
-    path: /81574b6b-c9d7-44a0-b83d-dad56e8cb530
-- client-fingerprint: chrome
-  name: '[ermaozi#010] 🇭🇰[www.v2nodes.com] vless-HK-1... #3 215ms'
-  network: ws
-  port: 8443
-  server: 103.180.20.108
-  servername: ty986gfazs.cainiaohub.xyz
-  tls: true
-  type: vless
-  uuid: c1c04450-bf71-4049-ad0c-9cf6d94d9f1f
-  ws-opts:
-    headers:
-      Host: ty986gfazs.cainiaohub.xyz
-    path: /81574b6b-c9d7-44a0-b83d-dad56e8cb530
-- name: '[zhuhaiuk#004] HK - zhuhai.uk 215ms'
-  type: socks5
-  server: 61.142.113.42
-  port: 6666
-- name: '[free18#201] 🇭🇰_香港_264 223ms'
-  type: vless
-  server: 103.253.42.37
-  port: 8443
-  uuid: a1de0630-5786-48a0-84f6-dc6f2de10d6d
-  network: ws
-  servername: vlso5.1d.mom
-  tls: true
-  client-fingerprint: chrome
-  ws-opts:
-    path: /socks5=888:888@hkip.1d.mom:1080
-    headers:
-      Host: vlso5.1d.mom
-  skip-cert-verify: true
-  udp: true
-- name: '[Eternity#086] 🇭🇰HK-156.245.232.239-0216 | 0.005MB 228ms'
-  server: 156.245.232.239
-  port: 35043
+- name: 🇯🇵 日本 | JPN 4 3730ms
+  server: gz1.polymarket.party
+  port: 23801
   type: vmess
-  uuid: b15e481d-17e4-41a8-84c2-23d4f0514d9a
-  alterId: 0
-  cipher: auto
-  tls: false
-  skip-cert-verify: false
-  network: ws
-  ws-opts:
-    path: /
-- cipher: chacha20-ietf-poly1305
-  name: '[NoMoreWalls#181] 🇭🇰[www.v2nodes.com] ss-HK-1585... 237ms'
-  password: pno0e2keji2gsfea
-  port: 1080
-  server: telegram.khp25.com
-  type: ss
-- alterId: 2
-  cipher: auto
-  name: '[NoMoreWalls#279] 🇭🇰 香港|@ripaojiedian 251ms'
-  port: 30807
-  server: v10.hdacd.com
-  skip-cert-verify: false
-  tls: false
-  type: vmess
-  uuid: cbb3f877-d1fb-344c-87a9-d153bffd5484
-- alterId: 0
-  cipher: auto
-  name: '🇭🇰 香港 | HKG #2 202ms'
-  network: ws
-  port: 36703
-  server: 47.244.120.197
-  skip-cert-verify: true
-  tls: false
-  type: vmess
-  udp: true
-  uuid: 45b83519-9c4f-4052-a11b-02e017b636d4
-  ws-opts:
-    path: /arki
-- name: '[Eternity#090] 🇭🇰HK-47.243.65.243-0148 | 0.0MB 202ms'
-  server: 47.243.65.243
-  port: 443
-  type: vmess
-  uuid: f23bb427-c1f9-4373-876c-2f43e9f790f3
+  uuid: aec8e5e3-bb81-4b22-8802-0b88c54997b3
   alterId: 0
   cipher: auto
   tls: true
-  skip-cert-verify: false
-  servername: 🇭🇰HK-47.243.65.243-0148 | 0.0MB
-  network: ws
-  ws-opts:
-    path: /
-    headers:
-      Host: lcv8v9l7oyamxxfz.v.3dns.vip
-- alterId: 0
-  cipher: auto
-  name: '[NoMoreWalls#282] 🇭🇰 香港4|@ripaojiedian 269ms'
-  network: ws
-  port: 443
-  server: aZW0eunYVdvRe73k.v.3dns.vip
-  servername: aZW0eunYVdvRe73k.v.3dns.vip
-  skip-cert-verify: false
-  tls: true
-  type: vmess
-  uuid: 88888888-8888-8888-8888-888888888888
-  ws-opts:
-    headers:
-      Host: aZW0eunYVdvRe73k.v.3dns.vip
-    path: /ws-vmess
-- alterId: 0
-  cipher: auto
-  name: '[NoMoreWalls#280] 🇭🇰 香港3|@ripaojiedian 274ms'
-  network: ws
-  port: 443
-  server: ADncdOvLHR4M1P36.v.3dns.vip
-  servername: ADncdOvLHR4M1P36.v.3dns.vip
-  skip-cert-verify: false
-  tls: true
-  type: vmess
-  uuid: 88888888-8888-8888-8888-888888888888
-  ws-opts:
-    headers:
-      Host: ADncdOvLHR4M1P36.v.3dns.vip
-    path: /ws-vmess
-- alterId: 0
-  cipher: auto
-  name: '[NoMoreWalls#283] 🇭🇰 香港5|@ripaojiedian 276ms'
-  network: ws
-  port: 443
-  server: syJ2gGUgMwBwQwQx.v.3dns.vip
-  servername: syJ2gGUgMwBwQwQx.v.3dns.vip
-  skip-cert-verify: false
-  tls: true
-  type: vmess
-  uuid: 88888888-8888-8888-8888-888888888888
-  ws-opts:
-    headers:
-      Host: syJ2gGUgMwBwQwQx.v.3dns.vip
-    path: /ws-vmess
-- alterId: 0
-  cipher: auto
-  name: '[NoMoreWalls#281] 🇭🇰 香港2|@ripaojiedian 281ms'
-  network: ws
-  port: 443
-  server: kBONDXW9liFCi4h4.v.3dns.vip
-  servername: kBONDXW9liFCi4h4.v.3dns.vip
-  skip-cert-verify: false
-  tls: true
-  type: vmess
-  uuid: 88888888-8888-8888-8888-888888888888
-  ws-opts:
-    headers:
-      Host: kBONDXW9liFCi4h4.v.3dns.vip
-    path: /ws-vmess
-- cipher: chacha20-ietf-poly1305
-  name: '[NoMoreWalls#182] 🇭🇰[www.v2nodes.com] ss-HK-1576... 316ms'
-  password: m5nsedvdczx6x06e
-  port: 1080
-  server: telegramx.khp25.com
-  type: ss
-- alterId: 2
-  cipher: auto
-  name: 香港|@ripaojiedian 332ms
-  network: tcp
-  port: 30807
-  server: v10.hdacd.com
-  servername: ''
-  tls: false
-  type: vmess
-  uuid: cbb3f877-d1fb-344c-87a9-d153bffd5484
-- name: '[ermaozi#004] 🇭🇰_HK_中国香港->🇮🇪_IE_爱尔兰 414ms'
-  type: vmess
-  server: v4.hdacd.com
-  port: 30804
-  uuid: cbb3f877-d1fb-344c-87a9-d153bffd5484
-  alterId: 2
-  cipher: auto
-  tls: false
+  alpn:
+  - ''
   skip-cert-verify: true
+  network: ws
+  ws-opts:
+    path: /vmess
+    headers:
+      Host: us4.australiacaregroup.site
   udp: true
-- name: HK - zhuhai.uk 02 449ms
-  type: ss
-  server: ruot.ayucloudservices.nl
-  port: 40014
-  cipher: aes-128-gcm
-  password: bd962c9a-d6f2-4561-bd80-34206c4d5279
-- alpn:
-  - h2
-  - http/1.1
-  client-fingerprint: chrome
-  encryption: none
-  name: '[NoMoreWalls#123] 🇭🇰[www.v2nodes.com] vless-HK-1... 1616ms'
-  network: tcp
-  port: 11907
-  server: 195.58.144.56
-  skip-cert-verify: false
-  tls: true
-  type: vless
-  uuid: 07cb07b9-0c4d-46c1-a15a-b147511b6b07
-- auth: 7e68e32f-8015-4f37-9082-70e8b0b58043
-  name: '🇸🇬 新加坡 | SGP #4 223ms'
-  password: 7e68e32f-8015-4f37-9082-70e8b0b58043
+- name: 🇰🇷 韩国 | KOR 2 2397ms
+  server: 52.79.212.191
   port: 443
-  server: 47.129.227.153
-  skip-cert-verify: true
-  sni: www.bing.com
-  tls: false
   type: hysteria2
-- name: 🇸🇬 新加坡 | SGP 230ms
-  server: 20.212.105.115
-  port: 41202
-  type: vless
-  uuid: f0e2feb9-cbe0-49fc-a148-8ec97cb0f948
-  tls: true
-  flow: xtls-rprx-vision
-  reality-opts:
-    public-key: Qy3mbHGSK-cWrJ_Dsaj-R8ydGtWo4lr3EtAvrEWv3mo
-  servername: aws.amazon.com
-  client-fingerprint: chrome
-  network: tcp
-  udp: true
-- name: '[AutoMerge#007] 🇸🇬[www.v2nodes.com] vless-SG #1 38ms'
-  network: ws
-  port: 8880
-  server: 103.116.7.30
-  tls: false
-  type: vless
-  uuid: 6202b230-417c-4d8e-b624-0f71afa9c75d
-  ws-opts:
-    headers:
-      Host: vms.lifetime35.workers.dev
-    path: /
-- encryption: none
-  name: '[NoMoreWalls#078] 🇸🇬[www.v2nodes.com] vless-SG #1 45ms'
-  network: ws
-  port: 80
-  server: 141.193.27.4
-  tls: false
-  type: vless
-  uuid: e403856e-4e50-49e6-9edc-d9536a803a6a
-  ws-opts:
-    headers:
-      Host: proud-cloud-5c50.113-8dc.workers.dev
-    path: /pyip=Telegram🇨🇳+@WangCai2
-- alpn:
-  - http/1.1
-  client-fingerprint: chrome
-  encryption: none
-  name: '[ermaozi#009] 🇸🇬[www.v2nodes.com] vless-SG #4 64ms'
-  network: ws
-  port: 2083
-  server: 66.81.247.155
-  servername: testmikonim.hydrymhmdamyn7.workers.dev
-  skip-cert-verify: false
-  tls: true
-  type: vless
-  uuid: 6cc29a05-4828-4e48-a34a-20b7ada60e85
-  ws-opts:
-    headers:
-      Host: testmikonim.hydrymhmdamyn7.workers.dev
-    path: /OAZko425kNFF0PpQ
-- client-fingerprint: chrome
-  encryption: none
-  name: '[NoMoreWalls#077] 🇸🇬[www.v2nodes.com] vless-SG 42ms'
-  network: ws
-  port: 443
-  server: cf.877774.xyz
-  servername: ccc.010304.xyz
-  tls: true
-  type: vless
-  uuid: d342d11e-d224-4463-b982-532309285094
-  ws-opts:
-    headers:
-      Host: ccc.010304.xyz
-    path: /
-- name: '[ermaozi#008] 🇸🇬[www.v2nodes.com] vless-SG #3 61ms'
-  network: ws
-  port: 8880
-  server: 66.235.200.30
-  tls: false
-  type: vless
-  uuid: 6202b230-417c-4d8e-b624-0f71afa9c75d
-  ws-opts:
-    headers:
-      Host: vms.lifetime47.workers.dev
-    path: /
-- client-fingerprint: chrome
-  name: '[NoMoreWalls#082] 🇸🇬[www.v2nodes.com] vless-SG #4 64ms'
-  network: ws
-  port: 2083
-  server: 27.50.49.154
-  servername: proxy-34l.pages.dev
-  tls: true
-  type: vless
-  uuid: 40af9131-d540-448a-bc56-5bba147a1dc3
-  ws-opts:
-    headers:
-      Host: proxy-34l.pages.dev
-    path: /
-- name: '[AutoMerge#014] 🇸🇬[www.v2nodes.com] vless-SG-1... #6 830ms'
-  network: ws
-  port: 8880
-  server: 45.80.111.45
-  tls: false
-  type: vless
-  uuid: 5ffd914e-9594-4198-8327-145f096f8e4c
-  ws-opts:
-    headers:
-      Host: cnd.singapure.mygold.stream
-    path: /cdn/assets/stream
-- encryption: none
-  name: '[NoMoreWalls#153] 🇸🇬[www.v2nodes.com] vless-SG-1... #2 9ms'
-  network: ws
-  port: 80
-  server: support.zoom.us
-  tls: false
-  type: vless
-  uuid: 9b0025a3-3a36-4915-b4e1-89c5cd65c9cb
-  ws-opts:
-    headers:
-      Host: onhit.shalana.shop
-    path: /shalana
-- name: '[NoMoreWalls#152] 🇸🇬[www.v2nodes.com] vless-SG-1... 25ms'
-  port: 8443
-  server: support.zoom.us
-  tls: false
-  type: vless
-  uuid: ba9ba1d3-19c8-4792-9d3f-ddd2cdcc2e65
-  ws-opts:
-    path: /xprolk-primeline
-- name: '[free18#183] 🇸🇬_新加坡_239 150ms'
-  type: vless
-  server: 43.174.195.1
-  port: 443
-  uuid: 24916ad0-847d-4522-9e17-f4347dee57fd
-  network: ws
-  servername: kv.074167.xyz
-  tls: true
-  client-fingerprint: chrome
-  ws-opts:
-    path: /
-    headers:
-      Host: kv.074167.xyz
+  password: 7e68e32f-8015-4f37-9082-70e8b0b58043
+  auth: 7e68e32f-8015-4f37-9082-70e8b0b58043
+  sni: www.bing.com
   skip-cert-verify: true
-  udp: true
-- name: '[ermaozi#053] 🇸🇬 新加坡 | SGP 4 170ms'
-  password: a7c5d30b-ce9b-4e34-b5cb-66f8308790ef
-  port: 1019
-  server: q7mtpgxo.zf-mix.9999231.xyz
-  skip-cert-verify: true
-  sni: pl-house.9999231.xyz
-  type: anytls
-  udp: true
-- name: '[NoMoreWalls#154] 🇸🇬[www.v2nodes.com] vless-SG-1... #3 223ms'
-  port: 16263
-  server: 47.237.74.17
-  tls: false
-  type: vless
-  uuid: c538c9dd-2e3f-488f-a8ca-ac5b7c0773f3
-- name: 🇸🇬+SG+新加坡+51 223ms
-  server: 13.250.131.37
-  port: 443
-  type: vless
-  uuid: 2cd6ed0f-636e-4e6c-9449-5a263d7a0fa5
-  tls: true
-  udp: true
-  servername: cfed.tgzdyz2.top
-  network: ws
-  ws-opts:
-    path: tg@zdyz2
-- name: '[free18#118] 🇸🇬_新加坡_143 223ms'
-  type: vless
-  server: 175.41.179.37
-  port: 51262
-  uuid: 6c6ea474-0cf5-4a3d-bc81-aa2eeb6516d6
-  network: ws
-  servername: jln31qtswdkut5.60kohcognywybguuq3ouc818oofnxfvn35daott.workers.dev
-  tls: true
-  client-fingerprint: chrome
-  ws-opts:
-    path: /@Marisa_kristi
-    headers:
-      Host: jln31qtswdkut5.60kohcognywybguuq3ouc818oofnxfvn35daott.workers.dev
-  skip-cert-verify: true
-  udp: true
-- client-fingerprint: chrome
-  name: '[AutoMerge#013] 🇸🇬[www.v2nodes.com] vless-SG-1... #4 223ms'
-  network: tcp
-  port: 49289
-  server: 129.150.51.127
-  servername: www.microsoft.com
-  tls: true
-  type: vless
-  uuid: 0590ab38-cb22-41d3-8312-6f396a5cec58
-  ws-opts:
-    path: /
-- name: '[NoMoreWalls#269] 🇸🇬[www.v2nodes.com] trojan-SG-... #8 224ms'
-  password: e26a229d-e8f2-4ff9-8c7d-58a9d83ee437
-  port: 8886
-  server: 139.180.146.200
-  skip-cert-verify: true
-  sni: 139.180.146.200
-  type: trojan
-- name: '[free18#184] 🇸🇬_新加坡_240 228ms'
-  type: vless
-  server: 142.91.101.39
-  port: 627
-  uuid: aff1ffd0-594c-44c9-9f79-4096fde005ea
-  network: ws
-  servername: 9qohadlkywguh.hlf9x1796lkopyju2kplt9c9smz1vyuv0u8azzk.workers.dev
-  tls: true
-  client-fingerprint: chrome
-  ws-opts:
-    path: /@Marisa_kristi
-    headers:
-      Host: 9qohadlkywguh.hlf9x1796lkopyju2kplt9c9smz1vyuv0u8azzk.workers.dev
-  skip-cert-verify: true
-  udp: true
-- name: '[free18#185] 🇸🇬_新加坡_241 228ms'
-  type: vless
-  server: 142.91.101.39
-  port: 627
-  uuid: 8199228b-e84b-42a2-9268-e400391e483a
-  network: ws
-  servername: 9qohadlkywguh.hlf9x1796lkopyju2kplt9c9smz1vyuv0u8azzk.workers.dev
-  tls: true
-  client-fingerprint: chrome
-  ws-opts:
-    path: /@Marisa_kristi
-    headers:
-      Host: 9qohadlkywguh.hlf9x1796lkopyju2kplt9c9smz1vyuv0u8azzk.workers.dev
-  skip-cert-verify: true
-  udp: true
-- name: SG - zhuhai.uk 229ms
-  type: http
-  server: 146.70.29.45
-  port: 443
-  username: testuser1
-  password: e4b72b531a2d10900519
-  tls: true
-  sni: 92461d2d.acsnet.co
-  skip-cert-verify: true
-- name: '[ermaozi#052] 🇸🇬 新加坡 | SGP 3 231ms'
-  password: 6cdc1a00-e9e7-4ef2-8d53-541688f9324c
-  port: 1023
-  server: e7fis6ij.zf-mix.9999231.xyz
-  skip-cert-verify: true
-  sni: sg-sjy.9999231.xyz
-  type: anytls
-  udp: true
-- cipher: aes-128-gcm
-  name: '[NoMoreWalls#192] 🇸🇬[www.v2nodes.com] ss-SG-1592... 324ms'
-  password: 85590bd2-807b-49b9-af20-1101c18b9eda
-  port: 40022
-  server: ruot.ayucloudservices.nl
-  type: ss
-- name: '[Eternity#114] 🇸🇬SG-18.141.9.245-0060 | 0.0MB 614ms'
-  server: sh-cn-1.dnspro.icu
-  port: 20025
-  type: vmess
-  uuid: 16c20891-f9f2-3caa-a7fd-9b482c755538
-  alterId: 0
-  cipher: auto
-  tls: false
-  skip-cert-verify: false
-  network: ws
-  ws-opts:
-    path: /
-    headers:
-      Host: sh-cn-1.dnspro.icu
-- name: '[Eternity#109] 🇸🇬SG-18.141.9.245-0067 | 0.0MB 615ms'
-  server: cu-hn.dnspro.icu
-  port: 4000
-  type: vmess
-  uuid: 16c20891-f9f2-3caa-a7fd-9b482c755538
-  alterId: 0
-  cipher: auto
-  tls: false
-  skip-cert-verify: false
-  network: ws
-  ws-opts:
-    path: /
-    headers:
-      Host: cu-hn.dnspro.icu
-- cipher: chacha20-ietf-poly1305
-  name: '[NoMoreWalls#193] 🇸🇬[www.v2nodes.com] ss-SG-1581... 723ms'
-  password: 9epp3o9ng8ej59uv
-  port: 14249
-  server: 45.128.12.20
-  type: ss
-- name: '[ermaozi#073] 🇯🇵 日本 | JPN 7 382ms'
-  server: japro02.xyy123.bid
-  port: 443
-  type: vless
-  uuid: 23af32ca-bea1-4a5e-bebb-04d1b1b633bc
-  tls: true
-  flow: xtls-rprx-vision
-  reality-opts:
-    public-key: sDKrtAJk2VP_w1w7cFi2O86RdlvQ2E2An5xsRdJlgGE
-    short-id: 6d962e8d8a0dce
-  servername: p-nt-www-amazon-com-kalias.amazon.com
-  client-fingerprint: chrome
-  network: tcp
-- name: 🇯🇵日本 01 3ms
-  server: linode.appleid.bf
-  port: 2086
-  type: vmess
-  uuid: 3960f128-1163-40a3-8dd7-7c91176e14a5
-  alterId: 0
-  cipher: auto
-  network: ws
-  tls: false
-  sni: null
-  udp: true
-  ws-opts:
-    path: /CAT
-    headers:
-      Host: gw.alicdn.com
-- name: '[ermaozi#072] 🇯🇵 日本 | JPN 5 81ms'
-  server: f3mlugfv.zf-mix.9999231.xyz
-  port: 1015
-  type: anytls
-  password: a7c5d30b-ce9b-4e34-b5cb-66f8308790ef
-  udp: true
-  sni: id-house.9999231.xyz
-  skip-cert-verify: true
-- client-fingerprint: chrome
-  encryption: none
-  name: '[AutoMerge#030] 🇯🇵JP_1|3.4MB/s 110ms'
-  network: ws
-  port: 443
-  server: saas.sin.fan
-  servername: snip.edgeoneai.cc.cd
-  tls: true
-  type: vless
-  udp: true
-  uuid: 495c7195-85b8-498a-bf20-2ea9ce9175b5
-  ws-opts:
-    headers:
-      Host: snip.edgeoneai.cc.cd
-      User-Agent: Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML,
-        like Gecko) Chrome/70.0.3538.67 Safari/537.36
-    path: /fdip=sstp://vpn:vpn@public-vpn-200.opengw.net:443?ed=2560fp=chrome
-  xudp: true
-- name: '[free18#133] 🇯🇵_日本_164 156ms'
-  type: vless
-  server: 154.31.112.237
-  port: 26418
-  uuid: ab2a5cc0-11d1-4bc4-a9d4-b5654ad18dc4
-  network: ws
-  servername: jln31qtswdkut5.60kohcognywybguuq3ouc818oofnxfvn35daott.workers.dev
-  tls: true
-  client-fingerprint: chrome
-  ws-opts:
-    path: /@Marisa_kristi
-    headers:
-      Host: jln31qtswdkut5.60kohcognywybguuq3ouc818oofnxfvn35daott.workers.dev
-  skip-cert-verify: true
-  udp: true
-- name: '[free18#119] 🇯🇵_日本_144 156ms'
-  type: vless
-  server: 107.191.53.86
-  port: 4798
-  uuid: 16a5e4f6-246f-406d-9787-1b5686a97cbc
-  network: ws
-  servername: jln31qtswdkut5.60kohcognywybguuq3ouc818oofnxfvn35daott.workers.dev
-  tls: true
-  client-fingerprint: chrome
-  ws-opts:
-    path: /@Marisa_kristi
-    headers:
-      Host: jln31qtswdkut5.60kohcognywybguuq3ouc818oofnxfvn35daott.workers.dev
-  skip-cert-verify: true
-  udp: true
-- name: '[NoMoreWalls#228] 🇯🇵[www.v2nodes.com] trojan-JP-... #9 158ms'
-  password: e26a229d-e8f2-4ff9-8c7d-58a9d83ee437
-  port: 8886
-  server: 45.32.52.173
-  sni: 45.32.52.173
-  type: trojan
-- name: '[Eternity#077] 🇯🇵JP-84.247.155.196-0192 | 2.02MB 167ms'
-  server: 84.247.155.196
-  port: 80
-  type: ss
-  cipher: aes-256-gcm
-  password: 3eOFeNssde7PYYMv
-- name: '[Eternity#072] 🇯🇵JP-84.247.155.196-0172 | 3.885MB 168ms'
-  server: 84.247.155.196
-  port: 443
-  type: ss
-  cipher: aes-256-gcm
-  password: 3eOFeNssde7PYYMv
-- client-fingerprint: unsafe
-  name: '[NoMoreWalls#326] 🇯🇵 日本 | JPN #2 208ms'
-  network: ws
-  port: 443
-  server: 143.20.156.116
-  servername: jp3.yohototo.top
-  tls: true
-  type: vless
-  udp: true
-  uuid: 4e4f1f70-5e56-4a76-bb9d-db087f4690c4
-  ws-opts:
-    headers:
-      Host: jp3.yohototo.top
-    path: /tyxyws
-- alpn:
-  - h3
-  - h2
-  client-fingerprint: chrome
-  encryption: none
-  name: 🇯🇵JP_1|5.1MB/s 216ms
-  network: ws
-  port: 443
-  server: saas.sin.fan
-  tls: true
-  type: vless
-  udp: true
-  uuid: 495c7195-85b8-498a-bf20-2ea9ce9175b5
-  ws-opts:
-    headers:
-      Host: snip.edgeoneai.cc.cd
-      User-Agent: Mozilla/5.0 (Windows NT 5.1) AppleWebKit/537.36 (KHTML, like Gecko)
-        Chrome/46.0.2490.71 Safari/537.36
-    path: /fdip=sstp://vpn:vpn@vpn748359672.opengw.net:1458
-    early-data-header-name: Sec-WebSocket-Protocol
-    max-early-data: 2560
-  xudp: true
-  packet-encoding: xudp
-  servername: snip.edgeoneai.cc.cd
-- name: '🇯🇵 日本 | JPN #1 168ms'
-  password: 0400697c-b581-4575-9d2f-0bbd4659312d
-  port: 20230
-  server: jp005.421421.xyz
-  skip-cert-verify: true
-  sni: www.alibaba.com
-  type: trojan
-- name: '🇯🇵 日本 | JPN #2 170ms'
-  password: aec8e5e3-bb81-4b22-8802-0b88c54997b3
-  port: 10003
-  server: jp17.vatilon.cc
-  skip-cert-verify: true
-  sni: jp17.vatilon.cc
-  type: trojan
-  udp: true
-- alterId: 0
-  cipher: auto
-  name: '[NoMoreWalls#285] 🇯🇵 日本2|@ripaojiedian 228ms'
-  network: ws
-  port: 443
-  server: kQov7UKaDknXb8a3.v.3dns.vip
-  servername: kQov7UKaDknXb8a3.v.3dns.vip
-  skip-cert-verify: false
-  tls: true
-  type: vmess
-  uuid: 88888888-8888-8888-8888-888888888888
-  ws-opts:
-    headers:
-      Host: kQov7UKaDknXb8a3.v.3dns.vip
-    path: /ws-vmess
-- alterId: 0
-  cipher: auto
-  name: '[NoMoreWalls#284] 🇯🇵 日本|@ripaojiedian 230ms'
-  network: ws
-  port: 443
-  server: Z9FfBx3zs2q5O0BG.v.3dns.vip
-  servername: Z9FfBx3zs2q5O0BG.v.3dns.vip
-  skip-cert-verify: false
-  tls: true
-  type: vmess
-  uuid: 88888888-8888-8888-8888-888888888888
-  ws-opts:
-    headers:
-      Host: Z9FfBx3zs2q5O0BG.v.3dns.vip
-    path: /ws-vmess
-- name: 🇯🇵 日本 | JPN 182ms
-  network: ws
-  password: 0400697c-b581-4575-9d2f-0bbd4659312d
-  port: 20230
-  server: jp005.421421.xyz
-  skip-cert-verify: true
-  sni: www.alibaba.com
-  type: trojan
-  udp: true
-  ws-opts:
-    headers:
-      Host: www.alibaba.com
-    path: /
-- name: 🇯🇵 日本 | JPN 3 193ms
-  password: 81c4547b-e5d8-4af8-baf0-91c5c0c05a9b
-  port: 1892
-  server: tyo-a-02.auuas.com
-  skip-cert-verify: true
-  sni: images.apple.com
-  type: anytls
-  udp: true
-- name: '[zhuhaiuk#002] JP - zhuhai.uk 02 386ms'
-  type: vmess
-  server: cdn.sfacg.uk
-  port: 2083
-  uuid: ac251237-576f-40c8-a543-554960c958b1
-  alterId: 0
-  cipher: auto
-  tls: true
-  network: ws
-  ws-opts:
-    path: /or3
-    headers:
-      Host: or3.sfacg.uk
-- name: 🇯🇵 免费-日本4-Ver.8 410ms
-  server: qo6ah0f-g06.jp04-1d-vm0.entry.fr0528.art
-  port: 449
-  type: vmess
-  uuid: a3b5a6fc-0b92-3b66-beda-eb2a49361a21
-  alterId: 1
-  cipher: auto
-  tls: false
-  skip-cert-verify: false
-  udp: true
-- name: JP - zhuhai.uk 02 442ms
-  type: ss
-  server: ruot.ayucloudservices.nl
-  port: 22034
-  cipher: aes-256-gcm
-  password: 9c51ca33-a332-4de5-8677-5624e940097c
-- name: JP - zhuhai.uk 446ms
-  type: ss
-  server: ruot.ayucloudservices.nl
-  port: 22069
-  cipher: aes-256-gcm
-  password: 9c51ca33-a332-4de5-8677-5624e940097c
-- name: JP - zhuhai.uk 03 480ms
-  type: ss
-  server: ruot.ayucloudservices.nl
-  port: 22073
-  cipher: aes-256-gcm
-  password: 2581cebb-e452-4ee3-8849-3cd358bf9394
-- name: 🇹🇼 TW4 2ms
-  server: 89.116.161.250
-  port: 8443
-  type: vless
-  uuid: 2cd6ed0f-636e-4e6c-9449-5a263d7a0fa5
-  tls: true
-  udp: true
-  servername: cfed.tgzdyz2.top
-  client-fingerprint: random
-  network: ws
-  ws-opts:
-    path: TG@ZDYZ2
-- encryption: none
-  name: '[NoMoreWalls#158] 🇹🇼[www.v2nodes.com] vless-TW-1... #1 2ms'
-  network: ws
-  port: 443
-  server: argo6.5671234.xyz
-  servername: argo6.5671234.xyz
-  skip-cert-verify: false
-  tls: true
-  type: vless
-  uuid: 08aaab35-a42d-4755-a03e-20c18cb1b3e8
-  ws-opts:
-    headers:
-      Host: argo6.5671234.xyz
-    path: /e8e2cecb6188f7fb
-- name: 🇫🇷 claude gpt tw grok fb yt S42_62 600ms
-  server: 164.68.114.118
-  type: socks5
-  country: 🇫🇷
-  port: 1080
-  udp: true
-- client-fingerprint: chrome
-  name: '[NoMoreWalls#159] 🇹🇼[www.v2nodes.com] vless-TW-1... #7 193ms'
-  network: ws
-  port: 443
-  server: 60.248.219.53
-  servername: ty986gfazs.cainiaohub.xyz
-  tls: true
-  type: vless
-  uuid: c1c04450-bf71-4049-ad0c-9cf6d94d9f1f
-  ws-opts:
-    headers:
-      Host: ty986gfazs.cainiaohub.xyz
-    path: /81574b6b-c9d7-44a0-b83d-dad56e8cb530
-- name: 🇰🇷 grok tw yt S48_83 870ms
-  server: 203.231.242.81
-  type: socks5
-  country: 🇰🇷
-  port: 1080
-  udp: true
-- name: 🇨🇳 gpt yt grok tw fb claude S51_26 1444ms
-  server: 120.232.204.58
-  type: http
-  country: 🇨🇳
-  port: 52200
-  tls: true
-  skip-cert-verify: true
-- name: '[NoMoreWalls#276] 🇹🇼[www.v2nodes.com] trojan-TW-... 1213ms'
-  password: i99Cef
-  port: 28101
-  server: 209.248.32.116
-  type: trojan
-- name: 🇲🇩 yt grok tw gpt claude fb S42_94 2270ms
-  server: 217.156.65.66
-  type: socks5
-  country: 🇲🇩
-  port: 1080
-  udp: true
-- name: 🇩🇪 fb yt tw S36_38 3795ms
-  server: 167.233.243.116
-  type: http
-  country: 🇩🇪
-  port: 3128
-  skip-cert-verify: true
-- name: '[free18#195] 🇰🇷_韩国_253 2ms'
-  type: vless
-  server: 49.238.238.154
-  port: 2053
-  uuid: 573c6482-37db-454a-8c31-5b45a338a580
-  network: ws
-  servername: and-75r.pages.dev
-  tls: true
-  client-fingerprint: chrome
-  ws-opts:
-    path: /
-    headers:
-      Host: and-75r.pages.dev
-  skip-cert-verify: true
-  udp: true
-- name: '[free18#189] 🇰🇷_韩国_246 2ms'
-  type: vless
-  server: 49.238.238.156
-  port: 2096
-  uuid: 573c6482-37db-454a-8c31-5b45a338a580
-  network: ws
-  servername: and-75r.pages.dev
-  tls: true
-  client-fingerprint: chrome
-  ws-opts:
-    path: /
-    headers:
-      Host: and-75r.pages.dev
-  skip-cert-verify: true
-  udp: true
-- name: 🇰🇷 韩国 05 183ms
+- name: 🇰🇷 韩国 05 420ms
   type: vmess
   server: 217.142.138.61
   port: 80
@@ -2072,103 +550,522 @@ proxies:
     path:
     - /
     headers: {}
-- name: 🇰🇷 KR5 183ms
-  server: 129.154.198.48
-  port: 443
-  type: vless
-  uuid: 2cd6ed0f-636e-4e6c-9449-5a263d7a0fa5
-  tls: true
-  udp: true
-  servername: cfed.tgzdyz2.top
-  client-fingerprint: random
-  network: ws
-  ws-opts:
-    path: TG@ZDYZ2
-- name: '[free18#124] 🇰🇷_韩国_152 199ms'
-  type: vless
-  server: 220.71.172.2
-  port: 16034
-  uuid: bfa5cd1f-1465-4850-b7c9-08e1a63dac2c
-  network: ws
-  servername: jln31qtswdkut5.60kohcognywybguuq3ouc818oofnxfvn35daott.workers.dev
-  tls: true
-  client-fingerprint: chrome
-  ws-opts:
-    path: /@Marisa_kristi
-    headers:
-      Host: jln31qtswdkut5.60kohcognywybguuq3ouc818oofnxfvn35daott.workers.dev
-  skip-cert-verify: true
-  udp: true
-- name: '[Eternity#065] 🇰🇷KR-211.178.105.134-0162 | 5.741MB 203ms'
+- name: '[Eternity#096] 🇰🇷KR-211.178.105.134-0171 | 0.032MB 532ms'
   server: 211.178.105.134
   port: 6123
   type: ss
   cipher: aes-256-cfb
   password: qwerREWQ@@
-- cipher: aes-256-gcm
-  name: '[AutoMerge#017] 🇰🇷[www.v2nodes.com] ss-KR-1580... 205ms'
-  password: ac9c0a7b
-  port: 49642
-  server: 211.174.113.172
-  type: ss
-- name: KR - zhuhai.uk 209ms
+- name: KR - zhuhai.uk 783ms
   type: socks5
   server: 121.169.46.116
   port: 1090
-  username: Og%3D%3D
-- cipher: aes-256-gcm
-  name: '[NoMoreWalls#186] 🇰🇷[www.v2nodes.com] ss-KR-1580... 228ms'
-  password: ac9c0a7b
-  port: 49642
-  server: ce1fc2d8.krkt.hkssip.com
-  type: ss
-- name: '[Eternity#083] 🇰🇷KR-141.164.45.187-5066 | 0.033MB 183ms'
-  server: 141.164.45.187
-  port: 6679
-  type: ss
-  cipher: aes-256-gcm
-  password: TEzjfAYq2IjtuoS
-- name: '[Eternity#081] 🇰🇷KR-141.164.45.187-0444 | 0.262MB 191ms'
-  server: 141.164.45.187
-  port: 8000
-  type: ss
-  cipher: aes-256-gcm
-  password: KixLvKzwjekG00rm
-- name: '[zhuhaiuk#011] KR - zhuhai.uk 192ms'
-  type: anytls
-  server: icn-a-02.auuas.com
-  port: 1892
-  password: 81c4547b-e5d8-4af8-baf0-91c5c0c05a9b
-  udp: true
-  sni: images.apple.com
-  skip-cert-verify: true
-- name: '[Eternity#122] 🇰🇷KR-141.164.45.187-0209 | 0.0MB 192ms'
-  server: 141.164.45.187
-  port: 9101
-  type: ss
-  cipher: aes-256-gcm
-  password: e4FCWrgpkji3QY
-- alterId: 0
-  cipher: auto
-  name: '[NoMoreWalls#289] 🇰🇷 韩国|@ripaojiedian 263ms'
-  network: ws
-  port: 443
-  server: 8nTzyR5KNivfabaT.v.3dns.vip
-  servername: 8nTzyR5KNivfabaT.v.3dns.vip
-  skip-cert-verify: false
-  tls: true
-  type: vmess
-  uuid: 88888888-8888-8888-8888-888888888888
-  ws-opts:
-    headers:
-      Host: 8nTzyR5KNivfabaT.v.3dns.vip
-    path: /ws-vmess
-- name: '[Eternity#067] 🇰🇷KR-218.237.185.234-5152 | 4.367MB 376ms'
+  username: Vm0xMFUxTXlSbkpQVm1SU1lrWmFjRnBYY0VKTmF6bHVVRlF3TmpvPTo=
+- name: '[Eternity#094] 🇰🇷KR-218.237.185.234-0177 | 0.094MB 1015ms'
   server: p141.panda001.net
   port: 4652
   type: ss
   cipher: aes-256-cfb
   password: qwerREWQ@@
+- name: 🇰🇷 韩国 | KOR 847ms
+  password: 13f0acfa-38c1-4e82-a758-583aa31740df
+  port: 60005
+  server: svip.skycon808.com
+  skip-cert-verify: true
+  sni: xjp18.2uuzhe.com
+  type: anytls
+  udp: true
+- cipher: aes-256-gcm
+  name: 🇰🇷[www.v2nodes.com] ss-KR-1580... 2127ms
+  password: ac9c0a7b
+  port: 49642
+  server: ce1fc2d8.krkt.hkssip.com
+  type: ss
+- name: US - zhuhai.uk 06 62ms
+  type: http
+  server: 43.166.187.191
+  port: 8443
+  tls: true
+  skip-cert-verify: true
+- name: US_speednode_0143 212ms
+  server: 138.199.35.198
+  port: 9002
+  type: http
+  tls: true
+  skip-cert-verify: true
+  udp: true
+- name: US_speednode_0131 216ms
+  server: 138.199.35.216
+  port: 9002
+  type: http
+  username: 'null'
+  password: 'null'
+  tls: true
+  skip-cert-verify: true
+  udp: true
+- name: US - zhuhai.uk 08 213ms
+  type: http
+  server: 138.199.35.211
+  port: 9002
+  tls: true
+  skip-cert-verify: true
+- name: US_speednode_0133 296ms
+  server: fan.365747.xyz
+  port: 443
+  type: http
+  tls: true
+  skip-cert-verify: true
+  udp: true
+- name: '[Eternity#062] 🇺🇸US-138.199.42.68-0081 | 16.318MB 57ms'
+  server: 138.199.42.68
+  port: 8080
+  type: ss
+  cipher: rc4-md5
+  password: 14fFPrbezE3HDZzsMOr6
+- name: US - zhuhai.uk 07 218ms
+  type: http
+  server: 138.199.35.195
+  port: 9002
+  tls: true
+  skip-cert-verify: true
+- name: '[Eternity#091] 🇺🇸US-216.105.168.18-0224 | 0.481MB 120ms'
+  server: 216.105.168.18
+  port: 443
+  type: ss
+  cipher: chacha20-ietf-poly1305
+  password: hCCWOcIsK5wrFz4OX70rWf
+- name: US - zhuhai.uk 04 281ms
+  type: http
+  server: 173.42.49.102
+  port: 8090
+  tls: true
+  skip-cert-verify: true
+- name: '[free18#013] 🇺🇸_美国_22 174ms'
+  type: vless
+  server: 198.12.124.74
+  port: 10829
+  uuid: 30e52776-55ac-3cb4-8d36-e2910f07e2c3
+  servername: u695098u5e20ed1cs709.gogocs.xyz
+  tls: true
+  flow: xtls-rprx-vision
+  skip-cert-verify: true
+  udp: true
+- name: US - zhuhai.uk 11 438ms
+  type: http
+  server: 162.217.114.50
+  port: 443
+  tls: true
+  skip-cert-verify: true
+- name: 🇺🇸US_115|727KB/s|P002-260618 01 224ms
+  password: None
+  port: 9002
+  server: 138.199.35.205
+  skip-cert-verify: true
+  sub_tag: P002-260618
+  tls: true
+  type: http
+  udp: true
+- name: '[Eternity#093] 🇺🇸US-198.98.53.130-0228 | 0.166MB 966ms'
+  server: 198.98.53.130
+  port: 443
+  type: ss
+  cipher: chacha20-ietf-poly1305
+  password: eDfN7SODQceIOmIAbtJJtK
+- name: 🇺🇸 US · Dallas · Vless · 115ms | 041 284ms
+  type: vless
+  server: 3h-unitedstates1.09vpn.com
+  port: 80
+  uuid: 18cf8db1-9f86-43f7-baa0-382efb7f2dfa
+  udp: true
+  network: ws
+  ws-opts:
+    path: /vless/
+    headers:
+      Host: 3h-unitedstates1.09vpn.com
+- client-fingerprint: unsafe
+  name: '🇺🇸 美国 | USA #6 1522ms'
+  network: ws
+  port: 443
+  server: 104.21.0.87
+  servername: jp3.yohototo.top
+  tls: true
+  type: vless
+  udp: true
+  uuid: 4e4f1f70-5e56-4a76-bb9d-db087f4690c4
+  ws-opts:
+    headers:
+      Host: jp3.yohototo.top
+    path: /tyxyws
+- name: '[Eternity#078] 🇺🇸US-15.204.247.206-0175 | 4.657MB 1652ms'
+  server: 15.204.247.206
+  port: 4444
+  type: ss
+  cipher: aes-256-gcm
+  password: pKEW8JPByTVTLtM
+- name: US 🇺🇸 | @Raydikalx | E4B6CE 1613ms
+  server: 15.204.247.175
+  port: 8008
+  type: ss
+  cipher: aes-256-gcm
+  password: XKFKl2rULjIp74
+  udp: true
+- name: 🇺🇸 US · East Los Angeles · Vless · 85ms | 023 61ms
+  type: vless
+  server: 172.66.0.162
+  port: 443
+  uuid: d342d11e-d224-4463-b982-532309285094
+  udp: true
+  tls: true
+  servername: ccc.010304.xyz
+  client-fingerprint: chrome
+  network: ws
+  ws-opts:
+    path: /
+    headers:
+      Host: ccc.010304.xyz
+- name: 🇺🇸 US · East Los Angeles · Vless · 41ms | 004 45ms
+  type: vless
+  server: 104.18.0.181
+  port: 2082
+  uuid: e5cc16a6-ea42-46b2-82ae-ad2157e1641b
+  udp: true
+  network: ws
+  ws-opts:
+    path: /fp
+    headers:
+      Host: hhlfy.twiladaphne.ndjp.net
+- name: 🇺🇸 US · East Los Angeles · Vless · 70ms | 017 70ms
+  type: vless
+  server: 188.164.248.216
+  port: 443
+  uuid: d342d11e-d224-4463-b982-532309285094
+  udp: true
+  tls: true
+  servername: ccc.010304.xyz
+  client-fingerprint: chrome
+  network: ws
+  ws-opts:
+    path: /
+    headers:
+      Host: ccc.010304.xyz
+- name: 🇺🇸 US · South Fulton · Vless · 73ms | 018 80ms
+  type: vless
+  server: 172.64.158.170
+  port: 443
+  uuid: d342d11e-d224-4463-b982-532309285094
+  udp: true
+  tls: true
+  servername: ccc.010304.xyz
+  client-fingerprint: chrome
+  network: ws
+  ws-opts:
+    path: /
+    headers:
+      Host: ccc.010304.xyz
+- alpn:
+  - http/1.1
+  client-fingerprint: chrome
+  encryption: none
+  name: '🇭🇰[www.v2nodes.com] vless-HK-1... #1 48ms'
+  network: ws
+  port: 443
+  server: 188.114.97.6
+  servername: lucasjow.us.ci
+  skip-cert-verify: false
+  tls: true
+  type: vless
+  uuid: e6df2095-a73c-4043-8693-8d5a03686870
+  ws-opts:
+    headers:
+      Host: lucasjow.us.ci
+    path: /cart/docs/www/proxyip=108.160.132.132?ed#Telegram---PLANB_NET---PLANB_NET---PLANB_NET---PLANB_NET
+- name: 🇭🇰 香港 | HKG 612ms
+  server: 47.244.120.197
+  port: 23026
+  type: vmess
+  uuid: b9de1bc9-baa7-41ac-86f7-ccd59695cb21
+  alterId: 0
+  cipher: auto
+  tls: false
+  skip-cert-verify: true
+  network: ws
+  ws-opts:
+    path: /arki
+    headers:
+      Host: 47.244.120.197
+  udp: true
+- name: HK - zhuhai.uk 886ms
+  type: http
+  server: fan.240104.xyz
+  port: 443
+  tls: true
+  sni: fan.240104.xyz
+  skip-cert-verify: true
+- alterId: 0
+  cipher: auto
+  name: 🇭🇰 Hong Kong_Hong Kong_vmess_10166 613ms
+  network: ws
+  port: 36703
+  server: 47.244.120.197
+  skip-cert-verify: true
+  tls: false
+  type: vmess
+  udp: true
+  uuid: 45b83519-9c4f-4052-a11b-02e017b636d4
+  ws-opts:
+    path: /arki
+- name: 🇭🇰 HK · Hong Kong · Vmess · 1265ms | 417 1053ms
+  type: vmess
+  server: yg1.ygkkk.dpdns.org
+  port: 443
+  uuid: b2ba4a73-3123-479e-aa96-5973a9ecd0c0
+  alterId: 0
+  cipher: auto
+  udp: true
+  tls: true
+  servername: jmp1.907737.xyz
+  network: ws
+  ws-opts:
+    path: /b2ba4a73-3123-479e-aa96-5973a9ecd0c0-vm
+    headers:
+      Host: jmp1.907737.xyz
+- name: HK - zhuhai.uk 02 877ms
+  type: http
+  server: fan.240104.xyz
+  port: 443
+  tls: true
+- name: 🇭🇰 香港 | HKG 4 1471ms
+  server: 143.20.156.116
+  port: 443
+  type: vless
+  uuid: 4e4f1f70-5e56-4a76-bb9d-db087f4690c4
+  tls: true
+  servername: jp3.yohototo.top
+  client-fingerprint: unsafe
+  network: ws
+  ws-opts:
+    path: /tyxyws
+    headers:
+      Host: jp3.yohototo.top
+  udp: true
+- name: 🇭🇰 HK · Hong Kong · Vmess · 852ms | 375 5138ms
+  type: vmess
+  server: 156.245.232.239
+  port: 35043
+  uuid: b15e481d-17e4-41a8-84c2-23d4f0514d9a
+  alterId: 0
+  cipher: auto
+  udp: true
+  network: ws
+  ws-opts:
+    path: /
+    headers:
+      Host: 156.245.232.239
+- alterId: 2
+  cipher: auto
+  name: 🇭🇰 香港|@ripaojiedian 5767ms
+  port: 30807
+  server: v10.hdacd.com
+  skip-cert-verify: false
+  tls: false
+  type: vmess
+  uuid: cbb3f877-d1fb-344c-87a9-d153bffd5484
+- alterId: 2
+  cipher: auto
+  name: 香港|@ripaojiedian 5776ms
+  network: tcp
+  port: 30807
+  server: v10.hdacd.com
+  servername: ''
+  tls: false
+  type: vmess
+  uuid: cbb3f877-d1fb-344c-87a9-d153bffd5484
+- alpn:
+  - h2
+  - http/1.1
+  client-fingerprint: chrome
+  encryption: none
+  name: 🇭🇰[www.v2nodes.com] vless-HK-1... 7702ms
+  network: tcp
+  port: 11907
+  server: 195.58.144.56
+  skip-cert-verify: false
+  tls: true
+  type: vless
+  uuid: 07cb07b9-0c4d-46c1-a15a-b147511b6b07
+- name: NL - zhuhai.uk 353ms
+  type: http
+  server: 51.159.225.197
+  port: 19362
+  tls: true
+  skip-cert-verify: true
+- name: AT - zhuhai.uk 449ms
+  type: http
+  server: 146.70.244.2
+  port: 443
+  tls: true
+  skip-cert-verify: true
+- name: LT - zhuhai.uk 495ms
+  type: http
+  server: 89.124.11.9
+  port: 443
+  tls: true
+  skip-cert-verify: true
+- name: U⚪🏳️ukn[📺]_dokng.com_f0a480e9 479ms
+  password: ''
+  port: 8888
+  server: 195.13.182.212
+  skip-cert-verify: true
+  sub_tag: S001-260618
+  type: socks5
+  udp: true
+  username: ''
+- name: U⚪🏳️ukn[✈️🔍]_dokng.com_ae946cf9 689ms
+  password: null
+  port: 9090
+  server: 128.199.254.13
+  type: http
+  username: null
+- name: ID - zhuhai.uk 992ms
+  type: http
+  server: 103.86.117.202
+  port: 443
+  tls: true
+  skip-cert-verify: true
+- alterId: 0
+  cipher: auto
+  client-fingerprint: safari
+  name: U⚪🏳️ukn_dokng.com_9fff1298 4372ms
+  network: ws
+  port: 443
+  server: www.shopify.com
+  servername: guanwang.awsno.com
+  skip-cert-verify: true
+  tls: true
+  type: vmess
+  uuid: 6a89a215-22bf-4bd7-9642-b95b2e09583a
+  ws-opts:
+    headers:
+      Host: guanwang.awsno.com
+    path: /hls/cctv5phd.m3u8
+- client-fingerprint: chrome
+  name: U⚪🏳️ukn_dokng.com_79f3708c 632ms
+  network: ws
+  password: HutaoCloud
+  port: 11543
+  server: 185.220.238.77
+  skip-cert-verify: true
+  sni: 185.220.238.77
+  type: trojan
+  udp: true
+  ws-opts:
+    headers:
+      User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36
+        (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36
+    path: /api
+- client-fingerprint: chrome
+  encryption: none
+  name: U⚪🏳️ukn[✈️]_dokng.com_e8cbdc9d 681ms
+  network: ws
+  port: 443
+  server: 200.165.231.209
+  servername: wstg.datasynctrue.online
+  tls: true
+  type: vless
+  udp: true
+  uuid: ff0b6ba8-bed0-4c4d-bbc9-23af47582615
+  ws-opts:
+    headers:
+      Host: wstg.datasynctrue.online
+      User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
+        like Gecko) Chrome/64.0.3282.167 Safari/537.36
+    path: /api/connect
+  xudp: true
+- name: '🇸🇬[www.v2nodes.com] vless-SG-1... #3 459ms'
+  port: 16263
+  server: 47.237.74.17
+  tls: false
+  type: vless
+  uuid: c538c9dd-2e3f-488f-a8ca-ac5b7c0773f3
+- name: '🇸🇬[www.v2nodes.com] trojan-SG-... #8 683ms'
+  password: e26a229d-e8f2-4ff9-8c7d-58a9d83ee437
+  port: 8886
+  server: 139.180.146.200
+  skip-cert-verify: true
+  sni: 139.180.146.200
+  type: trojan
+- name: '[NoMoreWalls#308] 🇸🇬SG_2|2.0MB/s 676ms'
+  password: '1234'
+  port: 2080
+  server: 54.169.52.51
+  skip-cert-verify: true
+  type: http
+  username: '1234'
+- name: '[NoMoreWalls#310] 🇸🇬SG_3|4.2MB/s 1595ms'
+  password: '1234'
+  port: 2080
+  server: 18.143.169.187
+  skip-cert-verify: true
+  type: http
+  username: '1234'
+- cipher: chacha20-ietf-poly1305
+  name: 🇸🇬[www.v2nodes.com] ss-SG-1581... 3955ms
+  password: 9epp3o9ng8ej59uv
+  port: 14249
+  server: 45.128.12.20
+  type: ss
+- name: '[NoMoreWalls#075] 🇸🇬[www.v2nodes.com] vless-SG 45ms'
+  network: ws
+  port: 443
+  server: 104.26.4.2
+  servername: ccc.010304.xyz
+  tls: true
+  type: vless
+  uuid: d342d11e-d224-4463-b982-532309285094
+  ws-opts:
+    headers:
+      Host: ccc.010304.xyz
+    path: /fp=chrome
+- name: 🇩🇪 fb tw yt S36_42 408ms
+  server: 167.233.243.116
+  type: http
+  country: 🇩🇪
+  port: 3128
+  skip-cert-verify: true
+- name: 🇺🇸 yt fb nf tw grok S40_177 867ms
+  server: 172.247.27.29
+  type: socks5
+  country: 🇺🇸
+  port: 11080
+  udp: true
+- name: 🇨🇳 gpt grok fb yt tw claude S51_39 1427ms
+  server: 120.232.204.58
+  type: http
+  country: 🇨🇳
+  port: 52200
+  tls: true
+  skip-cert-verify: true
+- name: 🇨🇳 yt nf tw claude grok S40_35 1777ms
+  server: 118.25.131.160
+  type: http
+  country: 🇨🇳
+  port: 10057
+  tls: true
+  skip-cert-verify: true
+- name: 🇹🇼 🇨🇳 台湾 | TWN 4046ms
+  server: 98416548.df6h451rh.xin
+  port: 443
+  type: anytls
+  password: 6725d134ee80
+  udp: true
+  sni: images.ctfassets.net
+  skip-cert-verify: true
+- name: 🇰🇷 claude tw S46_98 3913ms
+  server: 203.231.242.81
+  type: socks5
+  country: 🇰🇷
+  port: 1080
+  udp: true
 proxy-groups:
 - name: 🚀 节点选择
   type: select
@@ -2187,201 +1084,109 @@ proxy-groups:
 - name: ♻️ 自动选择
   type: url-test
   proxies: &id001
-  - us|81c2|puddincat07@Telegram 15ms
-  - 🇺🇸 US · North Bergen · Vless · 113ms | 035 34ms
-  - 🇺🇸 US · Hillsboro · Vless · 168ms | 062 207ms
-  - 🇺🇸 US · Hillsboro · Vless · 155ms | 055 208ms
-  - 🇺🇸 US · Hillsboro · Vless · 164ms | 058 215ms
-  - 🇺🇸 US · Hillsboro · Vless · 153ms | 054 219ms
-  - 🇺🇸 US · Hillsboro · Vless · 156ms | 056 217ms
-  - US_speednode_0137 54ms
-  - US_speednode_0142 60ms
-  - US_speednode_0136 61ms
-  - '[free18#033] 🇺🇸_美国_56 62ms'
-  - 🇺🇸 美国 07 63ms
-  - '[free18#109] 🇺🇸_美国_132 99ms'
-  - us|7a73|puddincat07@Telegram 87ms
-  - '[ermaozi#061] 🇦🇺 澳大利亚 | AUS 196ms'
-  - '[Pawdroid#003] 美国+V2CROSS.COM 175ms'
-  - '[Eternity#017] 🇺🇸US-54.221.120.243-0240 | 64.954MB 11ms'
-  - '[Eternity#032] 🇺🇸US-37.19.198.244-0182 | 46.327MB 22ms'
-  - '[Eternity#038] 🇺🇸US-37.19.198.160-0190 | 30.416MB 23ms'
-  - '[Eternity#041] 🇺🇸US-37.19.198.243-0186 | 25.198MB 23ms'
-  - '[Eternity#001] 🇺🇸US-140.82.63.79-0202 | 111.78MB 24ms'
-  - '[Eternity#066] 🇺🇸US-15.204.247.206-0173 | 4.744MB 27ms'
-  - '[Eternity#039] 🇺🇸US-37.19.198.236-0188 | 28.541MB 30ms'
-  - 🇺🇸US_16|1013KB/s 32ms
-  - '[Eternity#085] 🇺🇸US-198.98.53.130-0212 | 0.016MB 40ms'
-  - '[ermaozi#082] 🇺🇸 美国 | USA 9 42ms'
-  - '[Eternity#003] 🇺🇸US-138.199.42.68-0083 | 98.93MB 44ms'
-  - 🇺🇸US_17|1.5MB/s 52ms
-  - '[free18#203] 🇺🇸_美国_266 54ms'
-  - '[ermaozi#083] 🇺🇸 美国 | USA 11 58ms'
-  - '[ermaozi#057] 🇺🇸 美国 | USA #7 60ms'
-  - '[Eternity#073] 🇺🇸US-156.146.38.167-0247 | 3.878MB 78ms'
-  - '[ermaozi#080] 🇺🇸 美国 | USA 89ms'
-  - '[Eternity#069] 🇺🇸US-156.146.38.168-0106 | 4.217MB 90ms'
-  - '[Eternity#070] 🇺🇸US-156.146.38.170-0178 | 4.15MB 93ms'
-  - '[Eternity#071] 🇺🇸US-156.146.38.169-0116 | 4.121MB 94ms'
-  - US - zhuhai.uk 06 46ms
-  - '[Eternity#006] 🇺🇸US-18.208.223.39-0265 | 90.464MB 119ms'
-  - '[Eternity#047] 🇺🇸US-108.181.0.177-0080 | 23.31MB 122ms'
-  - '[zhuhaiuk#005] US - zhuhai.uk 02 233ms'
-  - '🇺🇸 美国 | USA #15 178ms'
-  - '[NoMoreWalls#313] 🇺🇸US_14|1.2MB/s 234ms'
-  - US_speednode_0143 236ms
-  - '[free18#129] 🇺🇸_美国_159 259ms'
-  - '[free18#198] 🇺🇸_美国_257 271ms'
-  - hysteria2-1668866009 15ms
-  - vless-1456823533 36ms
-  - vless-2295560 37ms
-  - vless-868400801 37ms
-  - vless-1108742512 38ms
-  - vless-46745 42ms
-  - vless-1047296933 55ms
-  - vless-659123959 58ms
-  - vless-1183593998 58ms
-  - vless-1746300989 59ms
-  - vless-827037228 61ms
-  - vless-1531019487 62ms
-  - vless-1469358978 64ms
-  - vless-699213805 66ms
-  - vless-1510329155 67ms
-  - vless-321083275 67ms
-  - vless-775774632 68ms
-  - C🟠🇺🇸hos[🎬🤖📺🎭]_dokng.com_0af9a12a 72ms
-  - vless-1443531684 86ms
-  - vless-1023674369 86ms
-  - vless-1293658703 91ms
-  - vless-1695403490 152ms
-  - vless-1003491287 153ms
-  - hysteria2-1672410084 21ms
-  - vless-1065148222 88ms
-  - vless-833778080 56ms
-  - vless-913472676 126ms
-  - vless-1259627592 216ms
-  - vless-1182528378 220ms
-  - vless-1308217467 170ms
-  - NL - zhuhai.uk 97ms
-  - '[zhuhaiuk#008] TR - zhuhai.uk 126ms'
-  - 🇬🇧 英国+V2CROSS.COM 2163ms
-  - CA - zhuhai.uk 02 104ms
-  - CA - zhuhai.uk 115ms
-  - U⚪🏳️ukn_dokng.com_9fff1298 435ms
-  - '[free18#179] 🇬🇧_英国_234 1ms'
-  - 🇬🇧+GB+英国+76 1ms
-  - U⚪🏳️ukn[🎬🤖📺🎭]_dokng.com_34b61d6b 2ms
-  - U⚪🏳️ukn[🎬🤖📺🎭]_dokng.com_646648d8 59ms
-  - U⚪🏳️ukn_dokng.com_fb80b349 72ms
-  - U⚪🏳️ukn_dokng.com_b9611de3 73ms
-  - U⚪🏳️ukn[🎬🤖📺🎭]_dokng.com_484dd5ac 75ms
-  - '[free18#115] 🇬🇧_英国_139 76ms'
-  - '[zhuhaiuk#009] NL - zhuhai.uk 02 87ms'
-  - '[free18#110] 🇭🇰_香港_133 200ms'
-  - '[ermaozi#067] 🇭🇰 香港 | HKG 9 202ms'
-  - HK - zhuhai.uk 212ms
-  - '[ermaozi#068] 🇭🇰 香港 | HKG 10 234ms'
-  - '[NoMoreWalls#124] 🇭🇰[www.v2nodes.com] vless-HK-1... #1 51ms'
-  - 🇭🇰 HK-Hong Kong3 2ms
-  - '[zhuhaiuk#007] HK - zhuhai.uk 02 72ms'
-  - '[ermaozi#047] 🇭🇰 香港 | HKG #5 201ms'
-  - '[ermaozi#045] 🇭🇰 香港 | HKG #2 201ms'
-  - '[NoMoreWalls#323] 🇭🇰 香港 | HKG #1 202ms'
-  - '[ermaozi#044] 🇭🇰 香港 | HKG #1 202ms'
-  - '[ermaozi#046] 🇭🇰 香港 | HKG #3 202ms'
-  - '[NoMoreWalls#324] 🇭🇰 香港 | HKG #3 202ms'
-  - '[ermaozi#069] 🇭🇰 香港 | HKG 11 202ms'
-  - '[ermaozi#064] 🇭🇰 香港 | HKG 3 208ms'
-  - '[NoMoreWalls#125] 🇭🇰 香港 | HKG #2 212ms'
-  - '[ermaozi#010] 🇭🇰[www.v2nodes.com] vless-HK-1... #3 215ms'
-  - '[zhuhaiuk#004] HK - zhuhai.uk 215ms'
-  - '[free18#201] 🇭🇰_香港_264 223ms'
-  - '[Eternity#086] 🇭🇰HK-156.245.232.239-0216 | 0.005MB 228ms'
-  - '[NoMoreWalls#181] 🇭🇰[www.v2nodes.com] ss-HK-1585... 237ms'
-  - '[NoMoreWalls#279] 🇭🇰 香港|@ripaojiedian 251ms'
-  - '🇭🇰 香港 | HKG #2 202ms'
-  - '[Eternity#090] 🇭🇰HK-47.243.65.243-0148 | 0.0MB 202ms'
-  - '[NoMoreWalls#282] 🇭🇰 香港4|@ripaojiedian 269ms'
-  - '[NoMoreWalls#280] 🇭🇰 香港3|@ripaojiedian 274ms'
-  - '[NoMoreWalls#283] 🇭🇰 香港5|@ripaojiedian 276ms'
-  - '[NoMoreWalls#281] 🇭🇰 香港2|@ripaojiedian 281ms'
-  - '[NoMoreWalls#182] 🇭🇰[www.v2nodes.com] ss-HK-1576... 316ms'
-  - 香港|@ripaojiedian 332ms
-  - '[ermaozi#004] 🇭🇰_HK_中国香港->🇮🇪_IE_爱尔兰 414ms'
-  - HK - zhuhai.uk 02 449ms
-  - '[NoMoreWalls#123] 🇭🇰[www.v2nodes.com] vless-HK-1... 1616ms'
-  - '🇸🇬 新加坡 | SGP #4 223ms'
-  - 🇸🇬 新加坡 | SGP 230ms
-  - '[AutoMerge#007] 🇸🇬[www.v2nodes.com] vless-SG #1 38ms'
-  - '[NoMoreWalls#078] 🇸🇬[www.v2nodes.com] vless-SG #1 45ms'
-  - '[ermaozi#009] 🇸🇬[www.v2nodes.com] vless-SG #4 64ms'
-  - '[NoMoreWalls#077] 🇸🇬[www.v2nodes.com] vless-SG 42ms'
-  - '[ermaozi#008] 🇸🇬[www.v2nodes.com] vless-SG #3 61ms'
-  - '[NoMoreWalls#082] 🇸🇬[www.v2nodes.com] vless-SG #4 64ms'
-  - '[AutoMerge#014] 🇸🇬[www.v2nodes.com] vless-SG-1... #6 830ms'
-  - '[NoMoreWalls#153] 🇸🇬[www.v2nodes.com] vless-SG-1... #2 9ms'
-  - '[NoMoreWalls#152] 🇸🇬[www.v2nodes.com] vless-SG-1... 25ms'
-  - '[free18#183] 🇸🇬_新加坡_239 150ms'
-  - '[ermaozi#053] 🇸🇬 新加坡 | SGP 4 170ms'
-  - '[NoMoreWalls#154] 🇸🇬[www.v2nodes.com] vless-SG-1... #3 223ms'
-  - 🇸🇬+SG+新加坡+51 223ms
-  - '[free18#118] 🇸🇬_新加坡_143 223ms'
-  - '[AutoMerge#013] 🇸🇬[www.v2nodes.com] vless-SG-1... #4 223ms'
-  - '[NoMoreWalls#269] 🇸🇬[www.v2nodes.com] trojan-SG-... #8 224ms'
-  - '[free18#184] 🇸🇬_新加坡_240 228ms'
-  - '[free18#185] 🇸🇬_新加坡_241 228ms'
-  - SG - zhuhai.uk 229ms
-  - '[ermaozi#052] 🇸🇬 新加坡 | SGP 3 231ms'
-  - '[NoMoreWalls#192] 🇸🇬[www.v2nodes.com] ss-SG-1592... 324ms'
-  - '[Eternity#114] 🇸🇬SG-18.141.9.245-0060 | 0.0MB 614ms'
-  - '[Eternity#109] 🇸🇬SG-18.141.9.245-0067 | 0.0MB 615ms'
-  - '[NoMoreWalls#193] 🇸🇬[www.v2nodes.com] ss-SG-1581... 723ms'
-  - '[ermaozi#073] 🇯🇵 日本 | JPN 7 382ms'
-  - 🇯🇵日本 01 3ms
-  - '[ermaozi#072] 🇯🇵 日本 | JPN 5 81ms'
-  - '[AutoMerge#030] 🇯🇵JP_1|3.4MB/s 110ms'
-  - '[free18#133] 🇯🇵_日本_164 156ms'
-  - '[free18#119] 🇯🇵_日本_144 156ms'
-  - '[NoMoreWalls#228] 🇯🇵[www.v2nodes.com] trojan-JP-... #9 158ms'
-  - '[Eternity#077] 🇯🇵JP-84.247.155.196-0192 | 2.02MB 167ms'
-  - '[Eternity#072] 🇯🇵JP-84.247.155.196-0172 | 3.885MB 168ms'
-  - '[NoMoreWalls#326] 🇯🇵 日本 | JPN #2 208ms'
-  - 🇯🇵JP_1|5.1MB/s 216ms
-  - '🇯🇵 日本 | JPN #1 168ms'
-  - '🇯🇵 日本 | JPN #2 170ms'
-  - '[NoMoreWalls#285] 🇯🇵 日本2|@ripaojiedian 228ms'
-  - '[NoMoreWalls#284] 🇯🇵 日本|@ripaojiedian 230ms'
-  - 🇯🇵 日本 | JPN 182ms
-  - 🇯🇵 日本 | JPN 3 193ms
-  - '[zhuhaiuk#002] JP - zhuhai.uk 02 386ms'
-  - 🇯🇵 免费-日本4-Ver.8 410ms
-  - JP - zhuhai.uk 02 442ms
-  - JP - zhuhai.uk 446ms
-  - JP - zhuhai.uk 03 480ms
-  - 🇹🇼 TW4 2ms
-  - '[NoMoreWalls#158] 🇹🇼[www.v2nodes.com] vless-TW-1... #1 2ms'
-  - 🇫🇷 claude gpt tw grok fb yt S42_62 600ms
-  - '[NoMoreWalls#159] 🇹🇼[www.v2nodes.com] vless-TW-1... #7 193ms'
-  - 🇰🇷 grok tw yt S48_83 870ms
-  - 🇨🇳 gpt yt grok tw fb claude S51_26 1444ms
-  - '[NoMoreWalls#276] 🇹🇼[www.v2nodes.com] trojan-TW-... 1213ms'
-  - 🇲🇩 yt grok tw gpt claude fb S42_94 2270ms
-  - 🇩🇪 fb yt tw S36_38 3795ms
-  - '[free18#195] 🇰🇷_韩国_253 2ms'
-  - '[free18#189] 🇰🇷_韩国_246 2ms'
-  - 🇰🇷 韩国 05 183ms
-  - 🇰🇷 KR5 183ms
-  - '[free18#124] 🇰🇷_韩国_152 199ms'
-  - '[Eternity#065] 🇰🇷KR-211.178.105.134-0162 | 5.741MB 203ms'
-  - '[AutoMerge#017] 🇰🇷[www.v2nodes.com] ss-KR-1580... 205ms'
-  - KR - zhuhai.uk 209ms
-  - '[NoMoreWalls#186] 🇰🇷[www.v2nodes.com] ss-KR-1580... 228ms'
-  - '[Eternity#083] 🇰🇷KR-141.164.45.187-5066 | 0.033MB 183ms'
-  - '[Eternity#081] 🇰🇷KR-141.164.45.187-0444 | 0.262MB 191ms'
-  - '[zhuhaiuk#011] KR - zhuhai.uk 192ms'
-  - '[Eternity#122] 🇰🇷KR-141.164.45.187-0209 | 0.0MB 192ms'
-  - '[NoMoreWalls#289] 🇰🇷 韩国|@ripaojiedian 263ms'
-  - '[Eternity#067] 🇰🇷KR-218.237.185.234-5152 | 4.367MB 376ms'
+  - hysteria2-1668866009 27ms
+  - hysteria2-1672410084 31ms
+  - vless-1108742512 47ms
+  - vless-1469358978 53ms
+  - vless-1544881666 56ms
+  - vless-103961669 61ms
+  - vless-1047296933 64ms
+  - vless-1599160519 67ms
+  - vless-720888908 70ms
+  - vless-1664519192 71ms
+  - vless-970024033 75ms
+  - vless-827037241 77ms
+  - vless-1242264766 77ms
+  - vless-1260285703 82ms
+  - vless-812343856 92ms
+  - vless-1023674369 179ms
+  - vless-1743394834 140ms
+  - vless-909039620 151ms
+  - vless-1752693013 156ms
+  - vless-334967650 195ms
+  - vless-1730804159 197ms
+  - vless-1747847962 202ms
+  - vless-1518323798 208ms
+  - vless-700289117 215ms
+  - vless-1499107355 218ms
+  - vless-1685986921 302ms
+  - vless-700289120 224ms
+  - vless-757488778 225ms
+  - vless-700289124 225ms
+  - vless-656231728 226ms
+  - '[free18#027] 🇯🇵_日本_38 490ms'
+  - '[free18#062] 🇯🇵_日本_88 712ms'
+  - '🇯🇵[www.v2nodes.com] trojan-JP-... #3 478ms'
+  - '🇯🇵[www.v2nodes.com] trojan-JP-... #4 478ms'
+  - '🇯🇵[www.v2nodes.com] trojan-JP-... #5 480ms'
+  - 🇯🇵[www.v2nodes.com] trojan-JP-... 483ms
+  - '🇯🇵[www.v2nodes.com] trojan-JP-... #6 483ms'
+  - '🇯🇵[www.v2nodes.com] trojan-JP-... #7 502ms'
+  - 🇯🇵 日本 | JPN 632ms
+  - '🇯🇵 日本 | JPN #2 739ms'
+  - 🇯🇵 JP · Tokyo · Shadowsocks · 362ms | 171 1231ms
+  - 🇯🇵 日本 | JPN 3 740ms
+  - 🇯🇵 日本 | JPN 4 3730ms
+  - 🇰🇷 韩国 | KOR 2 2397ms
+  - 🇰🇷 韩国 05 420ms
+  - '[Eternity#096] 🇰🇷KR-211.178.105.134-0171 | 0.032MB 532ms'
+  - KR - zhuhai.uk 783ms
+  - '[Eternity#094] 🇰🇷KR-218.237.185.234-0177 | 0.094MB 1015ms'
+  - 🇰🇷 韩国 | KOR 847ms
+  - 🇰🇷[www.v2nodes.com] ss-KR-1580... 2127ms
+  - US - zhuhai.uk 06 62ms
+  - US_speednode_0143 212ms
+  - US_speednode_0131 216ms
+  - US - zhuhai.uk 08 213ms
+  - US_speednode_0133 296ms
+  - '[Eternity#062] 🇺🇸US-138.199.42.68-0081 | 16.318MB 57ms'
+  - US - zhuhai.uk 07 218ms
+  - '[Eternity#091] 🇺🇸US-216.105.168.18-0224 | 0.481MB 120ms'
+  - US - zhuhai.uk 04 281ms
+  - '[free18#013] 🇺🇸_美国_22 174ms'
+  - US - zhuhai.uk 11 438ms
+  - 🇺🇸US_115|727KB/s|P002-260618 01 224ms
+  - '[Eternity#093] 🇺🇸US-198.98.53.130-0228 | 0.166MB 966ms'
+  - 🇺🇸 US · Dallas · Vless · 115ms | 041 284ms
+  - '🇺🇸 美国 | USA #6 1522ms'
+  - '[Eternity#078] 🇺🇸US-15.204.247.206-0175 | 4.657MB 1652ms'
+  - US 🇺🇸 | @Raydikalx | E4B6CE 1613ms
+  - 🇺🇸 US · East Los Angeles · Vless · 85ms | 023 61ms
+  - 🇺🇸 US · East Los Angeles · Vless · 41ms | 004 45ms
+  - 🇺🇸 US · East Los Angeles · Vless · 70ms | 017 70ms
+  - 🇺🇸 US · South Fulton · Vless · 73ms | 018 80ms
+  - '🇭🇰[www.v2nodes.com] vless-HK-1... #1 48ms'
+  - 🇭🇰 香港 | HKG 612ms
+  - HK - zhuhai.uk 886ms
+  - 🇭🇰 Hong Kong_Hong Kong_vmess_10166 613ms
+  - 🇭🇰 HK · Hong Kong · Vmess · 1265ms | 417 1053ms
+  - HK - zhuhai.uk 02 877ms
+  - 🇭🇰 香港 | HKG 4 1471ms
+  - 🇭🇰 HK · Hong Kong · Vmess · 852ms | 375 5138ms
+  - 🇭🇰 香港|@ripaojiedian 5767ms
+  - 香港|@ripaojiedian 5776ms
+  - 🇭🇰[www.v2nodes.com] vless-HK-1... 7702ms
+  - NL - zhuhai.uk 353ms
+  - AT - zhuhai.uk 449ms
+  - LT - zhuhai.uk 495ms
+  - U⚪🏳️ukn[📺]_dokng.com_f0a480e9 479ms
+  - U⚪🏳️ukn[✈️🔍]_dokng.com_ae946cf9 689ms
+  - ID - zhuhai.uk 992ms
+  - U⚪🏳️ukn_dokng.com_9fff1298 4372ms
+  - U⚪🏳️ukn_dokng.com_79f3708c 632ms
+  - U⚪🏳️ukn[✈️]_dokng.com_e8cbdc9d 681ms
+  - '🇸🇬[www.v2nodes.com] vless-SG-1... #3 459ms'
+  - '🇸🇬[www.v2nodes.com] trojan-SG-... #8 683ms'
+  - '[NoMoreWalls#308] 🇸🇬SG_2|2.0MB/s 676ms'
+  - '[NoMoreWalls#310] 🇸🇬SG_3|4.2MB/s 1595ms'
+  - 🇸🇬[www.v2nodes.com] ss-SG-1581... 3955ms
+  - '[NoMoreWalls#075] 🇸🇬[www.v2nodes.com] vless-SG 45ms'
+  - 🇩🇪 fb tw yt S36_42 408ms
+  - 🇺🇸 yt fb nf tw grok S40_177 867ms
+  - 🇨🇳 gpt grok fb yt tw claude S51_39 1427ms
+  - 🇨🇳 yt nf tw claude grok S40_35 1777ms
+  - 🇹🇼 🇨🇳 台湾 | TWN 4046ms
+  - 🇰🇷 claude tw S46_98 3913ms
   url: http://www.gstatic.com/generate_204
   interval: 150
   tolerance: 50
@@ -2393,236 +1198,144 @@ proxy-groups:
 - name: 🇭🇰 香港
   type: url-test
   proxies:
-  - '[free18#110] 🇭🇰_香港_133 200ms'
-  - '[ermaozi#067] 🇭🇰 香港 | HKG 9 202ms'
-  - HK - zhuhai.uk 212ms
-  - '[ermaozi#068] 🇭🇰 香港 | HKG 10 234ms'
-  - '[NoMoreWalls#124] 🇭🇰[www.v2nodes.com] vless-HK-1... #1 51ms'
-  - 🇭🇰 HK-Hong Kong3 2ms
-  - '[zhuhaiuk#007] HK - zhuhai.uk 02 72ms'
-  - '[ermaozi#047] 🇭🇰 香港 | HKG #5 201ms'
-  - '[ermaozi#045] 🇭🇰 香港 | HKG #2 201ms'
-  - '[NoMoreWalls#323] 🇭🇰 香港 | HKG #1 202ms'
-  - '[ermaozi#044] 🇭🇰 香港 | HKG #1 202ms'
-  - '[ermaozi#046] 🇭🇰 香港 | HKG #3 202ms'
-  - '[NoMoreWalls#324] 🇭🇰 香港 | HKG #3 202ms'
-  - '[ermaozi#069] 🇭🇰 香港 | HKG 11 202ms'
-  - '[ermaozi#064] 🇭🇰 香港 | HKG 3 208ms'
-  - '[NoMoreWalls#125] 🇭🇰 香港 | HKG #2 212ms'
-  - '[ermaozi#010] 🇭🇰[www.v2nodes.com] vless-HK-1... #3 215ms'
-  - '[zhuhaiuk#004] HK - zhuhai.uk 215ms'
-  - '[free18#201] 🇭🇰_香港_264 223ms'
-  - '[Eternity#086] 🇭🇰HK-156.245.232.239-0216 | 0.005MB 228ms'
-  - '[NoMoreWalls#181] 🇭🇰[www.v2nodes.com] ss-HK-1585... 237ms'
-  - '[NoMoreWalls#279] 🇭🇰 香港|@ripaojiedian 251ms'
-  - '🇭🇰 香港 | HKG #2 202ms'
-  - '[Eternity#090] 🇭🇰HK-47.243.65.243-0148 | 0.0MB 202ms'
-  - '[NoMoreWalls#282] 🇭🇰 香港4|@ripaojiedian 269ms'
-  - '[NoMoreWalls#280] 🇭🇰 香港3|@ripaojiedian 274ms'
-  - '[NoMoreWalls#283] 🇭🇰 香港5|@ripaojiedian 276ms'
-  - '[NoMoreWalls#281] 🇭🇰 香港2|@ripaojiedian 281ms'
-  - '[NoMoreWalls#182] 🇭🇰[www.v2nodes.com] ss-HK-1576... 316ms'
-  - 香港|@ripaojiedian 332ms
-  - '[ermaozi#004] 🇭🇰_HK_中国香港->🇮🇪_IE_爱尔兰 414ms'
-  - HK - zhuhai.uk 02 449ms
-  - '[NoMoreWalls#123] 🇭🇰[www.v2nodes.com] vless-HK-1... 1616ms'
+  - '🇭🇰[www.v2nodes.com] vless-HK-1... #1 48ms'
+  - 🇭🇰 香港 | HKG 612ms
+  - HK - zhuhai.uk 886ms
+  - 🇭🇰 Hong Kong_Hong Kong_vmess_10166 613ms
+  - 🇭🇰 HK · Hong Kong · Vmess · 1265ms | 417 1053ms
+  - HK - zhuhai.uk 02 877ms
+  - 🇭🇰 香港 | HKG 4 1471ms
+  - 🇭🇰 HK · Hong Kong · Vmess · 852ms | 375 5138ms
+  - 🇭🇰 香港|@ripaojiedian 5767ms
+  - 香港|@ripaojiedian 5776ms
+  - 🇭🇰[www.v2nodes.com] vless-HK-1... 7702ms
   url: http://www.gstatic.com/generate_204
   interval: 150
 - name: 🇺🇸 美国
   type: url-test
   proxies:
-  - us|81c2|puddincat07@Telegram 15ms
-  - 🇺🇸 US · North Bergen · Vless · 113ms | 035 34ms
-  - 🇺🇸 US · Hillsboro · Vless · 168ms | 062 207ms
-  - 🇺🇸 US · Hillsboro · Vless · 155ms | 055 208ms
-  - 🇺🇸 US · Hillsboro · Vless · 164ms | 058 215ms
-  - 🇺🇸 US · Hillsboro · Vless · 153ms | 054 219ms
-  - 🇺🇸 US · Hillsboro · Vless · 156ms | 056 217ms
-  - US_speednode_0137 54ms
-  - US_speednode_0142 60ms
-  - US_speednode_0136 61ms
-  - '[free18#033] 🇺🇸_美国_56 62ms'
-  - 🇺🇸 美国 07 63ms
-  - '[free18#109] 🇺🇸_美国_132 99ms'
-  - us|7a73|puddincat07@Telegram 87ms
-  - '[ermaozi#061] 🇦🇺 澳大利亚 | AUS 196ms'
-  - '[Pawdroid#003] 美国+V2CROSS.COM 175ms'
-  - '[Eternity#017] 🇺🇸US-54.221.120.243-0240 | 64.954MB 11ms'
-  - '[Eternity#032] 🇺🇸US-37.19.198.244-0182 | 46.327MB 22ms'
-  - '[Eternity#038] 🇺🇸US-37.19.198.160-0190 | 30.416MB 23ms'
-  - '[Eternity#041] 🇺🇸US-37.19.198.243-0186 | 25.198MB 23ms'
-  - '[Eternity#001] 🇺🇸US-140.82.63.79-0202 | 111.78MB 24ms'
-  - '[Eternity#066] 🇺🇸US-15.204.247.206-0173 | 4.744MB 27ms'
-  - '[Eternity#039] 🇺🇸US-37.19.198.236-0188 | 28.541MB 30ms'
-  - 🇺🇸US_16|1013KB/s 32ms
-  - '[Eternity#085] 🇺🇸US-198.98.53.130-0212 | 0.016MB 40ms'
-  - '[ermaozi#082] 🇺🇸 美国 | USA 9 42ms'
-  - '[Eternity#003] 🇺🇸US-138.199.42.68-0083 | 98.93MB 44ms'
-  - 🇺🇸US_17|1.5MB/s 52ms
-  - '[free18#203] 🇺🇸_美国_266 54ms'
-  - '[ermaozi#083] 🇺🇸 美国 | USA 11 58ms'
-  - '[ermaozi#057] 🇺🇸 美国 | USA #7 60ms'
-  - '[Eternity#073] 🇺🇸US-156.146.38.167-0247 | 3.878MB 78ms'
-  - '[ermaozi#080] 🇺🇸 美国 | USA 89ms'
-  - '[Eternity#069] 🇺🇸US-156.146.38.168-0106 | 4.217MB 90ms'
-  - '[Eternity#070] 🇺🇸US-156.146.38.170-0178 | 4.15MB 93ms'
-  - '[Eternity#071] 🇺🇸US-156.146.38.169-0116 | 4.121MB 94ms'
-  - US - zhuhai.uk 06 46ms
-  - '[Eternity#006] 🇺🇸US-18.208.223.39-0265 | 90.464MB 119ms'
-  - '[Eternity#047] 🇺🇸US-108.181.0.177-0080 | 23.31MB 122ms'
-  - '[zhuhaiuk#005] US - zhuhai.uk 02 233ms'
-  - '🇺🇸 美国 | USA #15 178ms'
-  - '[NoMoreWalls#313] 🇺🇸US_14|1.2MB/s 234ms'
-  - US_speednode_0143 236ms
-  - '[free18#129] 🇺🇸_美国_159 259ms'
-  - '[free18#198] 🇺🇸_美国_257 271ms'
+  - US - zhuhai.uk 06 62ms
+  - US_speednode_0143 212ms
+  - US_speednode_0131 216ms
+  - US - zhuhai.uk 08 213ms
+  - US_speednode_0133 296ms
+  - '[Eternity#062] 🇺🇸US-138.199.42.68-0081 | 16.318MB 57ms'
+  - US - zhuhai.uk 07 218ms
+  - '[Eternity#091] 🇺🇸US-216.105.168.18-0224 | 0.481MB 120ms'
+  - US - zhuhai.uk 04 281ms
+  - '[free18#013] 🇺🇸_美国_22 174ms'
+  - US - zhuhai.uk 11 438ms
+  - 🇺🇸US_115|727KB/s|P002-260618 01 224ms
+  - '[Eternity#093] 🇺🇸US-198.98.53.130-0228 | 0.166MB 966ms'
+  - 🇺🇸 US · Dallas · Vless · 115ms | 041 284ms
+  - '🇺🇸 美国 | USA #6 1522ms'
+  - '[Eternity#078] 🇺🇸US-15.204.247.206-0175 | 4.657MB 1652ms'
+  - US 🇺🇸 | @Raydikalx | E4B6CE 1613ms
+  - 🇺🇸 US · East Los Angeles · Vless · 85ms | 023 61ms
+  - 🇺🇸 US · East Los Angeles · Vless · 41ms | 004 45ms
+  - 🇺🇸 US · East Los Angeles · Vless · 70ms | 017 70ms
+  - 🇺🇸 US · South Fulton · Vless · 73ms | 018 80ms
   url: http://www.gstatic.com/generate_204
   interval: 150
 - name: 🇸🇬 新加坡
   type: url-test
   proxies:
-  - '🇸🇬 新加坡 | SGP #4 223ms'
-  - 🇸🇬 新加坡 | SGP 230ms
-  - '[AutoMerge#007] 🇸🇬[www.v2nodes.com] vless-SG #1 38ms'
-  - '[NoMoreWalls#078] 🇸🇬[www.v2nodes.com] vless-SG #1 45ms'
-  - '[ermaozi#009] 🇸🇬[www.v2nodes.com] vless-SG #4 64ms'
-  - '[NoMoreWalls#077] 🇸🇬[www.v2nodes.com] vless-SG 42ms'
-  - '[ermaozi#008] 🇸🇬[www.v2nodes.com] vless-SG #3 61ms'
-  - '[NoMoreWalls#082] 🇸🇬[www.v2nodes.com] vless-SG #4 64ms'
-  - '[AutoMerge#014] 🇸🇬[www.v2nodes.com] vless-SG-1... #6 830ms'
-  - '[NoMoreWalls#153] 🇸🇬[www.v2nodes.com] vless-SG-1... #2 9ms'
-  - '[NoMoreWalls#152] 🇸🇬[www.v2nodes.com] vless-SG-1... 25ms'
-  - '[free18#183] 🇸🇬_新加坡_239 150ms'
-  - '[ermaozi#053] 🇸🇬 新加坡 | SGP 4 170ms'
-  - '[NoMoreWalls#154] 🇸🇬[www.v2nodes.com] vless-SG-1... #3 223ms'
-  - 🇸🇬+SG+新加坡+51 223ms
-  - '[free18#118] 🇸🇬_新加坡_143 223ms'
-  - '[AutoMerge#013] 🇸🇬[www.v2nodes.com] vless-SG-1... #4 223ms'
-  - '[NoMoreWalls#269] 🇸🇬[www.v2nodes.com] trojan-SG-... #8 224ms'
-  - '[free18#184] 🇸🇬_新加坡_240 228ms'
-  - '[free18#185] 🇸🇬_新加坡_241 228ms'
-  - SG - zhuhai.uk 229ms
-  - '[ermaozi#052] 🇸🇬 新加坡 | SGP 3 231ms'
-  - '[NoMoreWalls#192] 🇸🇬[www.v2nodes.com] ss-SG-1592... 324ms'
-  - '[Eternity#114] 🇸🇬SG-18.141.9.245-0060 | 0.0MB 614ms'
-  - '[Eternity#109] 🇸🇬SG-18.141.9.245-0067 | 0.0MB 615ms'
-  - '[NoMoreWalls#193] 🇸🇬[www.v2nodes.com] ss-SG-1581... 723ms'
+  - '🇸🇬[www.v2nodes.com] vless-SG-1... #3 459ms'
+  - '🇸🇬[www.v2nodes.com] trojan-SG-... #8 683ms'
+  - '[NoMoreWalls#308] 🇸🇬SG_2|2.0MB/s 676ms'
+  - '[NoMoreWalls#310] 🇸🇬SG_3|4.2MB/s 1595ms'
+  - 🇸🇬[www.v2nodes.com] ss-SG-1581... 3955ms
+  - '[NoMoreWalls#075] 🇸🇬[www.v2nodes.com] vless-SG 45ms'
   url: http://www.gstatic.com/generate_204
   interval: 150
 - name: 🇯🇵 日本
   type: url-test
   proxies:
-  - '[ermaozi#073] 🇯🇵 日本 | JPN 7 382ms'
-  - 🇯🇵日本 01 3ms
-  - '[ermaozi#072] 🇯🇵 日本 | JPN 5 81ms'
-  - '[AutoMerge#030] 🇯🇵JP_1|3.4MB/s 110ms'
-  - '[free18#133] 🇯🇵_日本_164 156ms'
-  - '[free18#119] 🇯🇵_日本_144 156ms'
-  - '[NoMoreWalls#228] 🇯🇵[www.v2nodes.com] trojan-JP-... #9 158ms'
-  - '[Eternity#077] 🇯🇵JP-84.247.155.196-0192 | 2.02MB 167ms'
-  - '[Eternity#072] 🇯🇵JP-84.247.155.196-0172 | 3.885MB 168ms'
-  - '[NoMoreWalls#326] 🇯🇵 日本 | JPN #2 208ms'
-  - 🇯🇵JP_1|5.1MB/s 216ms
-  - '🇯🇵 日本 | JPN #1 168ms'
-  - '🇯🇵 日本 | JPN #2 170ms'
-  - '[NoMoreWalls#285] 🇯🇵 日本2|@ripaojiedian 228ms'
-  - '[NoMoreWalls#284] 🇯🇵 日本|@ripaojiedian 230ms'
-  - 🇯🇵 日本 | JPN 182ms
-  - 🇯🇵 日本 | JPN 3 193ms
-  - '[zhuhaiuk#002] JP - zhuhai.uk 02 386ms'
-  - 🇯🇵 免费-日本4-Ver.8 410ms
-  - JP - zhuhai.uk 02 442ms
-  - JP - zhuhai.uk 446ms
-  - JP - zhuhai.uk 03 480ms
+  - '[free18#027] 🇯🇵_日本_38 490ms'
+  - '[free18#062] 🇯🇵_日本_88 712ms'
+  - '🇯🇵[www.v2nodes.com] trojan-JP-... #3 478ms'
+  - '🇯🇵[www.v2nodes.com] trojan-JP-... #4 478ms'
+  - '🇯🇵[www.v2nodes.com] trojan-JP-... #5 480ms'
+  - 🇯🇵[www.v2nodes.com] trojan-JP-... 483ms
+  - '🇯🇵[www.v2nodes.com] trojan-JP-... #6 483ms'
+  - '🇯🇵[www.v2nodes.com] trojan-JP-... #7 502ms'
+  - 🇯🇵 日本 | JPN 632ms
+  - '🇯🇵 日本 | JPN #2 739ms'
+  - 🇯🇵 JP · Tokyo · Shadowsocks · 362ms | 171 1231ms
+  - 🇯🇵 日本 | JPN 3 740ms
+  - 🇯🇵 日本 | JPN 4 3730ms
   url: http://www.gstatic.com/generate_204
   interval: 150
 - name: 🇰🇷 韩国
   type: url-test
   proxies:
-  - '[free18#195] 🇰🇷_韩国_253 2ms'
-  - '[free18#189] 🇰🇷_韩国_246 2ms'
-  - 🇰🇷 韩国 05 183ms
-  - 🇰🇷 KR5 183ms
-  - '[free18#124] 🇰🇷_韩国_152 199ms'
-  - '[Eternity#065] 🇰🇷KR-211.178.105.134-0162 | 5.741MB 203ms'
-  - '[AutoMerge#017] 🇰🇷[www.v2nodes.com] ss-KR-1580... 205ms'
-  - KR - zhuhai.uk 209ms
-  - '[NoMoreWalls#186] 🇰🇷[www.v2nodes.com] ss-KR-1580... 228ms'
-  - '[Eternity#083] 🇰🇷KR-141.164.45.187-5066 | 0.033MB 183ms'
-  - '[Eternity#081] 🇰🇷KR-141.164.45.187-0444 | 0.262MB 191ms'
-  - '[zhuhaiuk#011] KR - zhuhai.uk 192ms'
-  - '[Eternity#122] 🇰🇷KR-141.164.45.187-0209 | 0.0MB 192ms'
-  - '[NoMoreWalls#289] 🇰🇷 韩国|@ripaojiedian 263ms'
-  - '[Eternity#067] 🇰🇷KR-218.237.185.234-5152 | 4.367MB 376ms'
+  - 🇰🇷 韩国 | KOR 2 2397ms
+  - 🇰🇷 韩国 05 420ms
+  - '[Eternity#096] 🇰🇷KR-211.178.105.134-0171 | 0.032MB 532ms'
+  - KR - zhuhai.uk 783ms
+  - '[Eternity#094] 🇰🇷KR-218.237.185.234-0177 | 0.094MB 1015ms'
+  - 🇰🇷 韩国 | KOR 847ms
+  - 🇰🇷[www.v2nodes.com] ss-KR-1580... 2127ms
   url: http://www.gstatic.com/generate_204
   interval: 150
 - name: 🇹🇼 台湾
   type: url-test
   proxies:
-  - 🇹🇼 TW4 2ms
-  - '[NoMoreWalls#158] 🇹🇼[www.v2nodes.com] vless-TW-1... #1 2ms'
-  - 🇫🇷 claude gpt tw grok fb yt S42_62 600ms
-  - '[NoMoreWalls#159] 🇹🇼[www.v2nodes.com] vless-TW-1... #7 193ms'
-  - 🇰🇷 grok tw yt S48_83 870ms
-  - 🇨🇳 gpt yt grok tw fb claude S51_26 1444ms
-  - '[NoMoreWalls#276] 🇹🇼[www.v2nodes.com] trojan-TW-... 1213ms'
-  - 🇲🇩 yt grok tw gpt claude fb S42_94 2270ms
-  - 🇩🇪 fb yt tw S36_38 3795ms
+  - 🇩🇪 fb tw yt S36_42 408ms
+  - 🇺🇸 yt fb nf tw grok S40_177 867ms
+  - 🇨🇳 gpt grok fb yt tw claude S51_39 1427ms
+  - 🇨🇳 yt nf tw claude grok S40_35 1777ms
+  - 🇹🇼 🇨🇳 台湾 | TWN 4046ms
+  - 🇰🇷 claude tw S46_98 3913ms
   url: http://www.gstatic.com/generate_204
   interval: 150
 - name: 🇬🇧 英国
   type: url-test
   proxies:
-  - NL - zhuhai.uk 97ms
-  - '[zhuhaiuk#008] TR - zhuhai.uk 126ms'
-  - 🇬🇧 英国+V2CROSS.COM 2163ms
-  - CA - zhuhai.uk 02 104ms
-  - CA - zhuhai.uk 115ms
-  - U⚪🏳️ukn_dokng.com_9fff1298 435ms
-  - '[free18#179] 🇬🇧_英国_234 1ms'
-  - 🇬🇧+GB+英国+76 1ms
-  - U⚪🏳️ukn[🎬🤖📺🎭]_dokng.com_34b61d6b 2ms
-  - U⚪🏳️ukn[🎬🤖📺🎭]_dokng.com_646648d8 59ms
-  - U⚪🏳️ukn_dokng.com_fb80b349 72ms
-  - U⚪🏳️ukn_dokng.com_b9611de3 73ms
-  - U⚪🏳️ukn[🎬🤖📺🎭]_dokng.com_484dd5ac 75ms
-  - '[free18#115] 🇬🇧_英国_139 76ms'
-  - '[zhuhaiuk#009] NL - zhuhai.uk 02 87ms'
+  - NL - zhuhai.uk 353ms
+  - AT - zhuhai.uk 449ms
+  - LT - zhuhai.uk 495ms
+  - U⚪🏳️ukn[📺]_dokng.com_f0a480e9 479ms
+  - U⚪🏳️ukn[✈️🔍]_dokng.com_ae946cf9 689ms
+  - ID - zhuhai.uk 992ms
+  - U⚪🏳️ukn_dokng.com_9fff1298 4372ms
+  - U⚪🏳️ukn_dokng.com_79f3708c 632ms
+  - U⚪🏳️ukn[✈️]_dokng.com_e8cbdc9d 681ms
   url: http://www.gstatic.com/generate_204
   interval: 150
 - name: 🌐 其他
   type: url-test
   proxies:
-  - hysteria2-1668866009 15ms
-  - vless-1456823533 36ms
-  - vless-2295560 37ms
-  - vless-868400801 37ms
-  - vless-1108742512 38ms
-  - vless-46745 42ms
-  - vless-1047296933 55ms
-  - vless-659123959 58ms
-  - vless-1183593998 58ms
-  - vless-1746300989 59ms
-  - vless-827037228 61ms
-  - vless-1531019487 62ms
-  - vless-1469358978 64ms
-  - vless-699213805 66ms
-  - vless-1510329155 67ms
-  - vless-321083275 67ms
-  - vless-775774632 68ms
-  - C🟠🇺🇸hos[🎬🤖📺🎭]_dokng.com_0af9a12a 72ms
-  - vless-1443531684 86ms
-  - vless-1023674369 86ms
-  - vless-1293658703 91ms
-  - vless-1695403490 152ms
-  - vless-1003491287 153ms
-  - hysteria2-1672410084 21ms
-  - vless-1065148222 88ms
-  - vless-833778080 56ms
-  - vless-913472676 126ms
-  - vless-1259627592 216ms
-  - vless-1182528378 220ms
-  - vless-1308217467 170ms
+  - hysteria2-1668866009 27ms
+  - hysteria2-1672410084 31ms
+  - vless-1108742512 47ms
+  - vless-1469358978 53ms
+  - vless-1544881666 56ms
+  - vless-103961669 61ms
+  - vless-1047296933 64ms
+  - vless-1599160519 67ms
+  - vless-720888908 70ms
+  - vless-1664519192 71ms
+  - vless-970024033 75ms
+  - vless-827037241 77ms
+  - vless-1242264766 77ms
+  - vless-1260285703 82ms
+  - vless-812343856 92ms
+  - vless-1023674369 179ms
+  - vless-1743394834 140ms
+  - vless-909039620 151ms
+  - vless-1752693013 156ms
+  - vless-334967650 195ms
+  - vless-1730804159 197ms
+  - vless-1747847962 202ms
+  - vless-1518323798 208ms
+  - vless-700289117 215ms
+  - vless-1499107355 218ms
+  - vless-1685986921 302ms
+  - vless-700289120 224ms
+  - vless-757488778 225ms
+  - vless-700289124 225ms
+  - vless-656231728 226ms
   url: http://www.gstatic.com/generate_204
   interval: 150
 rules:
