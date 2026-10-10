@@ -9,7 +9,7 @@
       "required_runs": 5,
       "first_seen": "2026-10-09",
       "initial_nodes": 100,
-      "runs": 5,
+      "runs": 6,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -47,6 +47,13 @@
           "usable": 1,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-10",
+          "count": 100,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -59,7 +66,7 @@
       "required_runs": 3,
       "first_seen": "2026-10-10",
       "initial_nodes": 20,
-      "runs": 4,
+      "runs": 5,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -90,48 +97,12 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
-        }
-      ]
-    },
-    "https://raw.githubusercontent.com/xiaocongyu66/proxypool/main/output/clash.yml": {
-      "repo": "xiaocongyu66/proxypool",
-      "stars": 2,
-      "repo_created": "2026-08-20T15:03:32Z",
-      "reputation": "low",
-      "reputation_note": "stars=2,age=50d",
-      "required_runs": 5,
-      "first_seen": "2026-10-10",
-      "initial_nodes": 145,
-      "runs": 4,
-      "good_streak": 4,
-      "fail_streak": 0,
-      "history": [
-        {
-          "date": "2026-10-10",
-          "count": 145,
-          "usable": 11,
-          "unique_new": 11,
-          "tamper": 0
         },
         {
           "date": "2026-10-10",
-          "count": 203,
-          "usable": 7,
-          "unique_new": 7,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-10",
-          "count": 203,
-          "usable": 6,
-          "unique_new": 6,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-10",
-          "count": 203,
-          "usable": 10,
-          "unique_new": 10,
+          "count": 20,
+          "usable": 0,
+          "unique_new": 0,
           "tamper": 0
         }
       ]
@@ -145,7 +116,7 @@
       "required_runs": 5,
       "first_seen": "2026-10-10",
       "initial_nodes": 220,
-      "runs": 4,
+      "runs": 5,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -169,6 +140,13 @@
           "usable": 4,
           "unique_new": 0,
           "tamper": 1
+        },
+        {
+          "date": "2026-10-10",
+          "count": 218,
+          "usable": 5,
+          "unique_new": 0,
+          "tamper": 0
         },
         {
           "date": "2026-10-10",
@@ -188,7 +166,7 @@
       "required_runs": 5,
       "first_seen": "2026-10-10",
       "initial_nodes": 220,
-      "runs": 4,
+      "runs": 5,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -219,6 +197,13 @@
           "usable": 5,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-10",
+          "count": 218,
+          "usable": 5,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -231,10 +216,17 @@
       "required_runs": 5,
       "first_seen": "2026-10-10",
       "initial_nodes": 112,
-      "runs": 4,
+      "runs": 5,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
+        {
+          "date": "2026-10-10",
+          "count": 112,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
         {
           "date": "2026-10-10",
           "count": 112,
@@ -274,10 +266,17 @@
       "required_runs": 3,
       "first_seen": "2026-10-10",
       "initial_nodes": 271,
-      "runs": 2,
+      "runs": 3,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
+        {
+          "date": "2026-10-10",
+          "count": 271,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
         {
           "date": "2026-10-10",
           "count": 271,
@@ -303,8 +302,8 @@
       "required_runs": 3,
       "first_seen": "2026-10-10",
       "initial_nodes": 99,
-      "runs": 1,
-      "good_streak": 1,
+      "runs": 2,
+      "good_streak": 2,
       "fail_streak": 0,
       "history": [
         {
@@ -312,6 +311,13 @@
           "count": 99,
           "usable": 15,
           "unique_new": 15,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-10",
+          "count": 99,
+          "usable": 20,
+          "unique_new": 20,
           "tamper": 0
         }
       ]
