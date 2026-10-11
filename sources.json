@@ -13,11 +13,6 @@
       "added": "2026-10-10"
     },
     {
-      "url": "https://raw.githubusercontent.com/PuddinCat/BestClash/refs/heads/main/proxies.yaml",
-      "origin": "manual",
-      "added": "2026-10-10"
-    },
-    {
       "url": "https://raw.githubusercontent.com/yy1588133/proxy-pool/main/clash.yaml",
       "origin": "manual",
       "added": "2026-10-10"
@@ -103,6 +98,11 @@
       "url": "https://raw.githubusercontent.com/zhuhaiuk/free-nodes/main/clash_config.yaml",
       "reason": "honeypot_tamper:4/9",
       "date": "2026-10-10"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/PuddinCat/BestClash/refs/heads/main/proxies.yaml",
+      "reason": "cf_blocked:4/12",
+      "date": "2026-10-11"
     }
   ],
   "deny_repos": []

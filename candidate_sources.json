@@ -9,17 +9,10 @@
       "required_runs": 5,
       "first_seen": "2026-10-09",
       "initial_nodes": 100,
-      "runs": 9,
+      "runs": 10,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-10-10",
-          "count": 100,
-          "usable": 1,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-10-10",
           "count": 100,
@@ -68,6 +61,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-11",
+          "count": 1,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -80,7 +80,7 @@
       "required_runs": 3,
       "first_seen": "2026-10-10",
       "initial_nodes": 20,
-      "runs": 8,
+      "runs": 9,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -134,7 +134,7 @@
           "tamper": 0
         },
         {
-          "date": "2026-10-10",
+          "date": "2026-10-11",
           "count": 20,
           "usable": 0,
           "unique_new": 0,
@@ -151,17 +151,10 @@
       "required_runs": 5,
       "first_seen": "2026-10-10",
       "initial_nodes": 220,
-      "runs": 8,
+      "runs": 9,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-10-10",
-          "count": 220,
-          "usable": 1,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-10-10",
           "count": 218,
@@ -208,6 +201,13 @@
           "date": "2026-10-10",
           "count": 215,
           "usable": 9,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-11",
+          "count": 206,
+          "usable": 8,
           "unique_new": 0,
           "tamper": 0
         }
@@ -222,17 +222,10 @@
       "required_runs": 5,
       "first_seen": "2026-10-10",
       "initial_nodes": 220,
-      "runs": 8,
+      "runs": 9,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-10-10",
-          "count": 220,
-          "usable": 1,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-10-10",
           "count": 218,
@@ -281,6 +274,13 @@
           "usable": 9,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-11",
+          "count": 206,
+          "usable": 8,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -293,17 +293,10 @@
       "required_runs": 5,
       "first_seen": "2026-10-10",
       "initial_nodes": 112,
-      "runs": 8,
+      "runs": 9,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-10-10",
-          "count": 112,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-10-10",
           "count": 112,
@@ -352,6 +345,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-11",
+          "count": 112,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -364,7 +364,7 @@
       "required_runs": 3,
       "first_seen": "2026-10-10",
       "initial_nodes": 271,
-      "runs": 6,
+      "runs": 7,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -409,6 +409,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-11",
+          "count": 271,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -421,7 +428,7 @@
       "required_runs": 3,
       "first_seen": "2026-10-10",
       "initial_nodes": 99,
-      "runs": 5,
+      "runs": 6,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -459,6 +466,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-11",
+          "count": 99,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -471,8 +485,8 @@
       "required_runs": 5,
       "first_seen": "2026-10-10",
       "initial_nodes": 204,
-      "runs": 2,
-      "good_streak": 2,
+      "runs": 3,
+      "good_streak": 3,
       "fail_streak": 0,
       "history": [
         {
@@ -488,6 +502,13 @@
           "usable": 25,
           "unique_new": 17,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-11",
+          "count": 204,
+          "usable": 31,
+          "unique_new": 21,
+          "tamper": 0
         }
       ]
     },
@@ -500,8 +521,8 @@
       "required_runs": 5,
       "first_seen": "2026-10-10",
       "initial_nodes": 40,
-      "runs": 2,
-      "good_streak": 2,
+      "runs": 3,
+      "good_streak": 3,
       "fail_streak": 0,
       "history": [
         {
@@ -517,6 +538,13 @@
           "usable": 13,
           "unique_new": 10,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-11",
+          "count": 40,
+          "usable": 15,
+          "unique_new": 12,
+          "tamper": 0
         }
       ]
     },
@@ -529,8 +557,8 @@
       "required_runs": 3,
       "first_seen": "2026-10-10",
       "initial_nodes": 50,
-      "runs": 1,
-      "good_streak": 1,
+      "runs": 2,
+      "good_streak": 2,
       "fail_streak": 0,
       "history": [
         {
@@ -538,6 +566,13 @@
           "count": 50,
           "usable": 13,
           "unique_new": 13,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-11",
+          "count": 50,
+          "usable": 8,
+          "unique_new": 8,
           "tamper": 0
         }
       ]
@@ -588,6 +623,11 @@
       "reason": "cf_blocked:13/20",
       "date": "2026-10-10",
       "repo": "share-daily/node"
+    },
+    "https://raw.githubusercontent.com/marshall888666/free_clash_subscribe/main/source/clash-meta-2.yaml": {
+      "reason": "honeypot_structure:shared_cred:56/57",
+      "date": "2026-10-11",
+      "repo": "marshall888666/free_clash_subscribe"
     }
   }
 }
