@@ -9,17 +9,10 @@
       "required_runs": 5,
       "first_seen": "2026-10-09",
       "initial_nodes": 100,
-      "runs": 10,
+      "runs": 11,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-10-10",
-          "count": 100,
-          "usable": 2,
-          "unique_new": 2,
-          "tamper": 0
-        },
         {
           "date": "2026-10-10",
           "count": 100,
@@ -68,6 +61,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-11",
+          "count": 100,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -80,7 +80,7 @@
       "required_runs": 3,
       "first_seen": "2026-10-10",
       "initial_nodes": 20,
-      "runs": 9,
+      "runs": 10,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -127,7 +127,7 @@
           "tamper": 0
         },
         {
-          "date": "2026-10-10",
+          "date": "2026-10-11",
           "count": 20,
           "usable": 0,
           "unique_new": 0,
@@ -151,17 +151,10 @@
       "required_runs": 5,
       "first_seen": "2026-10-10",
       "initial_nodes": 220,
-      "runs": 9,
+      "runs": 10,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-10-10",
-          "count": 218,
-          "usable": 5,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-10-10",
           "count": 218,
@@ -208,6 +201,13 @@
           "date": "2026-10-11",
           "count": 206,
           "usable": 8,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-11",
+          "count": 206,
+          "usable": 7,
           "unique_new": 0,
           "tamper": 0
         }
@@ -222,17 +222,10 @@
       "required_runs": 5,
       "first_seen": "2026-10-10",
       "initial_nodes": 220,
-      "runs": 9,
+      "runs": 10,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-10-10",
-          "count": 218,
-          "usable": 5,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-10-10",
           "count": 218,
@@ -281,6 +274,13 @@
           "usable": 8,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-11",
+          "count": 206,
+          "usable": 7,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -293,17 +293,10 @@
       "required_runs": 5,
       "first_seen": "2026-10-10",
       "initial_nodes": 112,
-      "runs": 9,
+      "runs": 10,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-10-10",
-          "count": 112,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-10-10",
           "count": 112,
@@ -352,6 +345,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-11",
+          "count": 112,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -364,7 +364,7 @@
       "required_runs": 3,
       "first_seen": "2026-10-10",
       "initial_nodes": 271,
-      "runs": 7,
+      "runs": 8,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -416,6 +416,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-11",
+          "count": 271,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -428,7 +435,7 @@
       "required_runs": 3,
       "first_seen": "2026-10-10",
       "initial_nodes": 99,
-      "runs": 6,
+      "runs": 7,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -473,6 +480,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-11",
+          "count": 99,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -485,8 +499,8 @@
       "required_runs": 5,
       "first_seen": "2026-10-10",
       "initial_nodes": 204,
-      "runs": 3,
-      "good_streak": 3,
+      "runs": 4,
+      "good_streak": 4,
       "fail_streak": 0,
       "history": [
         {
@@ -509,6 +523,13 @@
           "usable": 31,
           "unique_new": 21,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-11",
+          "count": 351,
+          "usable": 45,
+          "unique_new": 25,
+          "tamper": 0
         }
       ]
     },
@@ -521,8 +542,8 @@
       "required_runs": 5,
       "first_seen": "2026-10-10",
       "initial_nodes": 40,
-      "runs": 3,
-      "good_streak": 3,
+      "runs": 4,
+      "good_streak": 4,
       "fail_streak": 0,
       "history": [
         {
@@ -545,34 +566,100 @@
           "usable": 15,
           "unique_new": 12,
           "tamper": 0
-        }
-      ]
-    },
-    "https://raw.githubusercontent.com/ovmvo/FreeSub/main/sub/permanent/mihomo.yaml": {
-      "repo": "ovmvo/FreeSub",
-      "stars": 321,
-      "repo_created": "2025-09-23T08:58:50Z",
-      "reputation": "ok",
-      "reputation_note": "stars=321,age=382d",
-      "required_runs": 3,
-      "first_seen": "2026-10-10",
-      "initial_nodes": 50,
-      "runs": 2,
-      "good_streak": 2,
-      "fail_streak": 0,
-      "history": [
-        {
-          "date": "2026-10-10",
-          "count": 50,
-          "usable": 13,
-          "unique_new": 13,
-          "tamper": 0
         },
         {
           "date": "2026-10-11",
-          "count": 50,
-          "usable": 8,
-          "unique_new": 8,
+          "count": 60,
+          "usable": 22,
+          "unique_new": 18,
+          "tamper": 0
+        }
+      ]
+    },
+    "https://raw.githubusercontent.com/dongchengjie/airport/main/subs/clashfree.yaml": {
+      "repo": "dongchengjie/airport",
+      "stars": 706,
+      "repo_created": "2024-01-28T14:46:33Z",
+      "reputation": "ok",
+      "reputation_note": "stars=706,age=986d",
+      "required_runs": 3,
+      "first_seen": "2026-10-11",
+      "initial_nodes": 533,
+      "runs": 1,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": [
+        {
+          "date": "2026-10-11",
+          "count": 533,
+          "usable": 1,
+          "unique_new": 1,
+          "tamper": 0
+        }
+      ]
+    },
+    "https://raw.githubusercontent.com/dongchengjie/airport/main/subs/clashnodev2ray.yaml": {
+      "repo": "dongchengjie/airport",
+      "stars": 706,
+      "repo_created": "2024-01-28T14:46:33Z",
+      "reputation": "ok",
+      "reputation_note": "stars=706,age=986d",
+      "required_runs": 3,
+      "first_seen": "2026-10-11",
+      "initial_nodes": 108,
+      "runs": 1,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": [
+        {
+          "date": "2026-10-11",
+          "count": 108,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        }
+      ]
+    },
+    "https://raw.githubusercontent.com/svinakraft-maker/FlareFeed/main/public/clash.yaml": {
+      "repo": "svinakraft-maker/FlareFeed",
+      "stars": 21,
+      "repo_created": "2026-07-11T19:51:44Z",
+      "reputation": "ok",
+      "reputation_note": "stars=21,age=91d",
+      "required_runs": 3,
+      "first_seen": "2026-10-11",
+      "initial_nodes": 400,
+      "runs": 1,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": [
+        {
+          "date": "2026-10-11",
+          "count": 400,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        }
+      ]
+    },
+    "https://raw.githubusercontent.com/oversizexl/FreeSubsCheck/main/mihomo.yaml": {
+      "repo": "oversizexl/FreeSubsCheck",
+      "stars": 5,
+      "repo_created": "2026-09-02T05:08:24Z",
+      "reputation": "low",
+      "reputation_note": "stars=5,age=39d",
+      "required_runs": 5,
+      "first_seen": "2026-10-11",
+      "initial_nodes": 90,
+      "runs": 1,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": [
+        {
+          "date": "2026-10-11",
+          "count": 90,
+          "usable": 1,
+          "unique_new": 1,
           "tamper": 0
         }
       ]
