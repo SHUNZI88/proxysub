@@ -20,6 +20,7 @@ import base64
 import hashlib
 import json
 import os
+import random
 import re
 import socket
 import subprocess
@@ -581,8 +582,17 @@ def fetch_one(url: str) -> tuple[str, list[dict], str | None]:
                 headers={"User-Agent": "proxysub-cleaner/2.0"},
             )
             r.raise_for_status()
-            # prefer text; some feeds mislabel encoding
-            content = r.content.decode(r.encoding or "utf-8", errors="ignore")
+            # 编码：requests 对未声明 charset 的 text/* 响应按 HTTP/1.1 规定默认
+            # ISO-8859-1，会导致中文节点名乱码、地区正则全部失配。
+            # 显式声明了合法 charset 就用它；未声明（默认 iso-8859-1）时用
+            # apparent_encoding 探测，仍失败退 utf-8。
+            charset = r.encoding
+            if not charset or charset.lower() in ("iso-8859-1", "latin-1", "latin1"):
+                charset = r.apparent_encoding or "utf-8"
+            try:
+                content = r.content.decode(charset, errors="ignore")
+            except (LookupError, UnicodeDecodeError):
+                content = r.content.decode("utf-8", errors="ignore")
             proxies = parse_subscription_text(content)
             if not proxies:
                 # try raw bytes as base64
@@ -760,8 +770,9 @@ def _probe_through(port: int) -> dict:
         if re.search(r"CERTIFICATE_VERIFY_FAILED|certificate verify failed|hostname mismatch|doesn't match", msg, re.I):
             m = re.search(r"(certificate verify failed[^)'\"]*|hostname mismatch[^)'\"]*)", msg, re.I)
             return {"status": "tls_mitm", "detail": (m.group(1) if m else msg[-120:])[:120]}
-    except Exception:
-        pass
+    except Exception as e:
+        # 排障可见性：egress 探测失败不再静默吞掉（soft 信号，不影响死活判定）
+        print(f"  [debug] egress trace 失败: {type(e).__name__}: {str(e)[:80]}")
     # Soft purity: flag CF blocks; keep node (China-usable nodes are often CF-risked).
     if PURITY_URL:
         try:
@@ -788,7 +799,10 @@ def _probe_through(port: int) -> dict:
 
 def _mihomo_batch(batch: list[dict], bin_path: str) -> dict[int, dict] | None:
     """Start one mihomo with one listener per node; probe concurrently. None => config rejected."""
-    base_port, controller = 21000, "127.0.0.1:19090"
+    # 每批随机化本地端口：固定端口在上一批进程意外残留（terminate 超时后仍占端口）
+    # 时会让下一批启动冲突，导致整批被误判为「配置无法加载」而进入二分重试
+    base_port = random.randint(30000, 45000)
+    controller = f"127.0.0.1:{random.randint(46000, 60000)}"
     named = []
     for i, p in enumerate(batch):
         q = dict(p)
