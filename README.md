@@ -4,6 +4,34 @@
 
 订阅地址：`https://raw.githubusercontent.com/SHUNZI88/proxysub/main/clean_clash.yaml`
 
+### 多格式订阅地址
+
+| 格式 | 地址 | 适用客户端 |
+|---|---|---|
+| Clash / mihomo | `https://raw.githubusercontent.com/SHUNZI88/proxysub/main/clean_clash.yaml` | FlClash、Clash Verge Rev、mihomo |
+| 仅 proxies 段 | `https://raw.githubusercontent.com/SHUNZI88/proxysub/main/clean_proxies_only.yaml` | 客户端 `proxy-providers` 引用 |
+| sing-box | `https://raw.githubusercontent.com/SHUNZI88/proxysub/main/clean_singbox.json` | sing-box（outbounds 列表） |
+| v2ray 分享链接 | `https://raw.githubusercontent.com/SHUNZI88/proxysub/main/clean_v2ray.txt` | v2rayN、NekoBox（base64 整段导入） |
+| 健康报告 | `https://raw.githubusercontent.com/SHUNZI88/proxysub/main/stats.md` | 浏览器查看 |
+
+> 中国大陆直连 `raw.githubusercontent.com` 常不稳定，可换用 jsDelivr 镜像：
+> `https://cdn.jsdelivr.net/gh/SHUNZI88/proxysub@main/clean_clash.yaml`（有 CDN 缓存延迟）。
+
+### 更新时效与外部心跳
+
+- 定时触发为 **UTC 17 分（北京 0:17 / 6:17 / 12:17 / 18:17）**，刻意避开整点高峰以降低 GitHub 队列延迟；
+- GitHub 对公共仓库的 `schedule` 存在固有延迟甚至偶发跳过，属平台行为。若需更准时，可配置外部心跳（如 cron-job.org）每 6 小时调用一次：
+
+```
+POST https://api.github.com/repos/SHUNZI88/proxysub/dispatches
+Authorization: token <你的 PAT（repo 权限）>
+Content-Type: application/json
+
+{"event_type": "external-trigger"}
+```
+
+工作流已声明 `repository_dispatch: [external-trigger]`，收到即立刻运行。
+
 ## 设计定位（重要）
 
 **云端探测只做「死活闸门」，不做「延迟排序」；测速与优选由你的本地客户端完成。**
@@ -43,16 +71,28 @@
 
 | 文件 | 作用 |
 |---|---|
-| `filter_clash.py` | 主流程：抓取 → 静态门槛过滤 → TCP 存活检查 → 打分 → 输出 |
-| `sources_manager.py` | 订阅源生命周期：自动发现、试用、晋升、淘汰、上限 |
+| `filter_clash.py` | 主流程：抓取 → 静态门槛过滤 → 两阶段探活/拨测 → 打分 → 多格式输出 |
+| `sources_manager.py` | 订阅源生命周期：自动发现、试用、晋升、淘汰、上限、长期评分 |
 | `honeypot.py` | 防蜜罐过滤：地址校验、DNS 校验、黑名单、源结构检测 |
 | `safe_io.py` | JSON 原子化读写：临时文件 + `os.replace` + filelock，损坏自愈 |
+| `clean_clash.yaml` | **主订阅**（Clash / mihomo 完整配置） |
+| `clean_proxies_only.yaml` | 仅 `proxies` 段，供客户端 `proxy-providers` 引用 |
+| `clean_singbox.json` | sing-box `outbounds` 列表 |
+| `clean_v2ray.txt` | base64 编码的分享链接（v2rayN / NekoBox 可导入） |
+| `stats.md` | 每次运行生成的健康报告（协议/区域分布、源贡献、警告） |
 | `sources.json` | 正式源列表（可手工编辑；`deny_repos` 填永不收录的 `owner/repo`） |
 | `candidate_sources.json` | 候选（试用期）源及被拒记录 |
 | `honeypot_blocklist.json` | 黑名单：手工 `domains/ips/cidrs/keywords` + 自动条目（14 天过期） |
-| `source_stats.json` / `bad_sources.json` / `survival.json` | 源统计、失败计数、节点跨天存活 |
+| `source_stats.json` / `bad_sources.json` / `survival.json` | 源统计、失败计数、节点跨天存活与真实通过率 |
+| `source_scores.json` | 源长期评分（成功率 / 独有贡献 / 真实通过 / 蜜罐惩罚的指数滑动平均） |
 | `requirements.txt` | Python 依赖（requests / PyYAML / filelock / pytest） |
-| `tests/` | 单元测试：指纹去重、地区识别、静态门槛、订阅解析、原子写入 |
+| `tests/` | 单元测试：指纹去重、地区识别、静态门槛、订阅解析、原子写入、两阶段探测、多格式输出、源评分 |
+
+## 探测流程（两阶段）
+
+1. **阶段 1｜轻量探活**：高并发（180）、短超时（4s）的 TCP 可达性粗筛，快速砍掉已下线节点，避免把拨测预算浪费在明显死掉的节点上；UDP 协议（hy2/tuic）豁免，交由阶段 2 的 QUIC 拨测验证。
+2. **阶段 2｜真实拨测（死活闸门）**：mihomo 通过节点发起真实代理请求（中国友好 `generate_204`），无法完成代理的僵尸节点直接淘汰。拨测样本优先纳入**跨天存活 ≥3 天的历史稳定节点**，并按区域配额分层抽样。
+3. **打分排序**：协议层级 / 跨天存活 / 历史真实通过率 / 多源出现 / 亚洲路径偏好；美西测得延迟不进名称、贡献设上限。
 
 ## 订阅源自动发现与淘汰
 
