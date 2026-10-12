@@ -2,18 +2,21 @@ name: Daily Clean Clash Subscription
 
 on:
   schedule:
-    # 每 6 小时（北京时间 0/6/12/18，UTC 16/22/4/10）
-    - cron: '0 4,10,16,22 * * *'
+    # 非整点触发，避开 GitHub 队列整点高峰造成的大幅延迟
+    # （UTC 17 分 ≈ 北京时间 0:17 / 6:17 / 12:17 / 18:17）
+    - cron: '17 4,10,16,22 * * *'
   workflow_dispatch:
+  repository_dispatch:
+    types: [external-trigger]   # 供外部 cron 心跳（cron-job.org 等）调用
 
 permissions:
   contents: write
+  issues: write                 # 失败时自动开 issue 告警
 
-# 修订 1：并发互斥。
-# 此前定时运行与手动 workflow_dispatch 运行可能同时进行：手动运行先 push 了
-# 新提交，定时运行结束时仍基于旧 checkout 去 push，被 GitHub 以
-# non-fast-forward 拒绝 → 定时运行在 "Commit and Push" 步骤失败、更新丢失。
-# 加 concurrency 组让运行排队串行执行；再配合下方 push 前的 rebase 兜底。
+# 并发互斥：同一时刻只允许一个更新任务。注意这里刻意使用
+# cancel-in-progress: false —— 更新任务运行上限 50 分钟，若为新触发的运行
+# 而取消进行中的运行，会白白浪费已跑完的抓取/拨测并导致该时段无更新产出。
+# （此前的定时失败正是并发竞态导致 push 被拒，见下方 rebase 重试。）
 concurrency:
   group: proxysub-update
   cancel-in-progress: false
@@ -21,14 +24,14 @@ concurrency:
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 50
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 0   # 修订 2：完整历史，push 前才能 rebase 到最新远端
+          fetch-depth: 0   # 完整历史，push 前才能 rebase 到最新远端
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -41,29 +44,28 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Install mihomo (liveness gate probe)
+      - name: Install mihomo (liveness gate)
         env:
-          # 固定版本，避免 latest 接口偶发失败；下载带重试
           MIHOMO_VERSION: v1.19.32
         run: |
           set -euo pipefail
           VER="${MIHOMO_VERSION}"
           URL="https://github.com/MetaCubeX/mihomo/releases/download/${VER}/mihomo-linux-amd64-${VER}.gz"
           ok=0
-          for i in 1 2 3; do
+          for i in 1 2 3 4 5; do
             if curl -fsSL --retry 3 --retry-all-errors -o /tmp/mihomo.gz -L "$URL"; then
               ok=1; break
             fi
-            echo "download attempt $i failed, retrying in 5s..."
-            sleep 5
+            echo "download attempt $i failed, retrying in $((i * 3))s..."
+            sleep $((i * 3))
           done
           if [ "$ok" != "1" ]; then
             echo "ERROR: mihomo download failed after retries" >&2
             exit 1
           fi
-          # 校验：确认解压产物是可执行的 ELF 二进制（防止下载到截断/HTML 错误页）
           gunzip -c /tmp/mihomo.gz > /usr/local/bin/mihomo
           chmod +x /usr/local/bin/mihomo
+          # 校验解压产物确为可执行 ELF，防止下载到截断文件/错误页后带坏内核跑完全程
           if ! file /usr/local/bin/mihomo | grep -q ELF; then
             echo "ERROR: downloaded mihomo is not a valid ELF binary" >&2
             exit 1
@@ -81,15 +83,20 @@ jobs:
           # 仅用于只读 GitHub 搜索（源发现）；sources_manager.py 内部已做限流
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PROXYSUB_DISCOVERY: '1'
+          # 调试用：PROXYSUB_DISABLE_PROBE=1 可跳过真实拨测（输出会混入僵尸节点）
         run: python filter_clash.py
 
-      - name: Commit and Push
+      - name: Commit and Push (with rebase retry)
+        id: commit
         run: |
+          set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add clean_clash.yaml survival.json source_stats.json bad_sources.json \
-            sources.json candidate_sources.json honeypot_blocklist.json || true
+          git add clean_clash.yaml clean_singbox.json clean_v2ray.txt \
+                  clean_proxies_only.yaml stats.md survival.json \
+                  source_stats.json source_scores.json bad_sources.json \
+                  sources.json candidate_sources.json honeypot_blocklist.json || true
           # remove accidental duplicate if still tracked
           if [ -f .github/workflows/filter_clash.py ]; then
             git rm -f .github/workflows/filter_clash.py || true
@@ -97,22 +104,51 @@ jobs:
 
           if git diff --staged --quiet; then
             echo "没有变化，跳过提交"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
           git commit -m "Update subscription: $(date -u +'%Y-%m-%d %H:%M UTC')"
-
-          # 修订 3：push 前先 rebase 到最新远端，带重试，彻底解决与并行运行的
-          # non-fast-forward 冲突（此前 3 次定时失败中有 2 次因此丢失更新）
-          ok=0
-          for i in 1 2 3; do
-            if git pull --rebase --autostash origin main; then
-              if git push origin main; then ok=1; break; fi
+          # push 前先 rebase 到最新远端（带重试），解决与并行运行的 non-fast-forward 冲突
+          for i in 1 2 3 4 5; do
+            if git pull --rebase --autostash origin main && git push origin main; then
+              echo "changed=true" >> "$GITHUB_OUTPUT"
+              exit 0
             fi
-            echo "push attempt $i failed, retrying in 10s..."
-            sleep 10
+            echo "push attempt $i failed, retrying in $((i * 8))s..."
+            sleep $((i * 8))
           done
-          if [ "$ok" != "1" ]; then
-            echo "ERROR: push failed after rebase retries" >&2
-            exit 1
-          fi
+          echo "最终推送失败" >&2
+          exit 1
+
+      - name: Create issue on failure
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const now = new Date().toISOString();
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const title = `Update failed: ${now}`;
+            const body = [
+              '本次更新任务失败，请检查日志。',
+              '',
+              `- 触发方式: \`${context.eventName}\``,
+              `- 运行链接: ${runUrl}`,
+            ].join('\n');
+            try {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body,
+                labels: ['ci-failure'],
+              });
+            } catch (e) {
+              // label 不存在时不阻塞：不带 label 再建一次
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body,
+              });
+            }
