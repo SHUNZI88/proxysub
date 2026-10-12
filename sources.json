@@ -28,11 +28,6 @@
       "added": "2026-10-10"
     },
     {
-      "url": "https://raw.githubusercontent.com/zhangkaiitugithub/passcro/main/speednodes.yaml",
-      "origin": "manual",
-      "added": "2026-10-10"
-    },
-    {
       "url": "https://blog.ermao.net/sub/clash/ermao.net",
       "origin": "manual",
       "added": "2026-10-10"
@@ -123,6 +118,11 @@
     {
       "url": "https://raw.githubusercontent.com/snakem982/proxypool/main/source/clash-meta-2.yaml",
       "reason": "cf_blocked:8/23",
+      "date": "2026-10-12"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/zhangkaiitugithub/passcro/main/speednodes.yaml",
+      "reason": "zero_unique_contribution:16runs",
       "date": "2026-10-12"
     }
   ],
