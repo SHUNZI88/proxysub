@@ -31,7 +31,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any
-from urllib.parse import parse_qs, unquote, urlparse
+from urllib.parse import parse_qs, quote, quote_plus, unquote, urlparse
 
 import requests
 import yaml
@@ -130,6 +130,12 @@ URLTEST_INTERVAL = 150
 FALLBACK_INTERVAL = 180
 
 OUTPUT_FILE = "clean_clash.yaml"
+# 多格式输出（由 write_outputs() 统一生成；均为同一份最终节点列表的不同封装）
+OUTPUT_SINGBOX = "clean_singbox.json"          # sing-box outbounds 列表
+OUTPUT_V2RAY = "clean_v2ray.txt"               # base64 分享链接（v2ray/nekobox 等可导入）
+OUTPUT_PROXIES_ONLY = "clean_proxies_only.yaml"  # 仅 proxies 段，供客户端 proxy-providers 使用
+STATS_MD = "stats.md"                          # 健康报告
+SOURCE_SCORES_FILE = "source_scores.json"      # 源评分
 SURVIVAL_FILE = "survival.json"
 SOURCE_STATS_FILE = "source_stats.json"
 BAD_SOURCES_FILE = "bad_sources.json"
@@ -288,6 +294,196 @@ def _truthy(v: Any) -> bool:
 
 def _sni_of(proxy: dict) -> str:
     return str(proxy.get("servername") or proxy.get("sni") or "").strip()
+
+
+# ==================== 多格式输出：协议转换 ====================
+# 目标：把清洗后的 mihomo 节点转换为分享链接 / sing-box outbound。
+# 仅支持白名单协议；无法可靠转换的一律返回 None 并跳过（宁缺毋滥）。
+
+
+def _link_query(params: dict) -> str:
+    from urllib.parse import urlencode
+    return urlencode({k: v for k, v in params.items() if v not in (None, "", False)},
+                     quote_via=quote_plus)
+
+
+def proxy_to_share_link(p: dict) -> str | None:
+    """mihomo proxy dict -> 标准分享链接（vless/trojan/hysteria2/tuic/ss）。"""
+    ptype = str(p.get("type", "")).lower().strip()
+    server = str(p.get("server") or "").strip()
+    try:
+        port = int(p.get("port"))
+    except (TypeError, ValueError):
+        return None
+    if not server or not (0 < port < 65536):
+        return None
+    name = quote(str(p.get("name") or "node"), safe="")
+    sni = _sni_of(p) or server
+
+    if ptype == "vless":
+        uuid_v = str(p.get("uuid") or "").strip()
+        if not uuid_v:
+            return None
+        params: dict = {"type": str(p.get("network") or "tcp"), "security": "none"}
+        if _has_reality(p) or p.get("reality-opts"):
+            ro = p.get("reality-opts") or {}
+            params["security"] = "reality"
+            params["pbk"] = ro.get("public-key") or ""
+            params["sid"] = ro.get("short-id") or ""
+            params["sni"] = sni
+            if p.get("flow"):
+                params["flow"] = p["flow"]
+        elif _truthy(p.get("tls")):
+            params["security"] = "tls"
+            params["sni"] = sni
+            if p.get("flow"):
+                params["flow"] = p["flow"]
+            if p.get("alpn"):
+                params["alpn"] = ",".join(p["alpn"]) if isinstance(p["alpn"], list) else str(p["alpn"])
+            if p.get("client-fingerprint"):
+                params["fp"] = p["client-fingerprint"]
+        net = str(p.get("network") or "tcp").lower()
+        if net == "ws":
+            wo = p.get("ws-opts") or {}
+            params["path"] = wo.get("path") or "/"
+            host = (wo.get("headers") or {}).get("Host")
+            if host:
+                params["host"] = host
+        elif net == "grpc":
+            go = p.get("grpc-opts") or {}
+            params["serviceName"] = go.get("grpc-service-name") or ""
+        elif net == "h2":
+            params["path"] = (p.get("h2-opts") or {}).get("path") or "/"
+        return f"vless://{uuid_v}@{server}:{port}?{_link_query(params)}#{name}"
+
+    if ptype == "trojan":
+        pw = str(p.get("password") or "").strip()
+        if not pw:
+            return None
+        params = {"security": "tls", "sni": sni}
+        if p.get("alpn"):
+            params["alpn"] = ",".join(p["alpn"]) if isinstance(p["alpn"], list) else str(p["alpn"])
+        if p.get("client-fingerprint"):
+            params["fp"] = p["client-fingerprint"]
+        net = str(p.get("network") or "tcp").lower()
+        if net == "ws":
+            wo = p.get("ws-opts") or {}
+            params["type"] = "ws"
+            params["path"] = wo.get("path") or "/"
+            host = (wo.get("headers") or {}).get("Host")
+            if host:
+                params["host"] = host
+        return f"trojan://{quote(pw, safe='')}@{server}:{port}?{_link_query(params)}#{name}"
+
+    if ptype in ("hysteria2", "hy2"):
+        pw = str(p.get("password") or "").strip()
+        if not pw:
+            return None
+        params = {"sni": sni}
+        if p.get("obfs"):
+            params["obfs"] = p["obfs"]
+            if p.get("obfs-password"):
+                params["obfs-password"] = p["obfs-password"]
+        if p.get("skip-cert-verify"):
+            params["insecure"] = "1"
+        # hysteria2 的 auth 位即密码
+        return f"hysteria2://{quote(pw, safe='')}@{server}:{port}?{_link_query(params)}#{name}"
+
+    if ptype == "tuic":
+        uuid_v = str(p.get("uuid") or "").strip()
+        if not uuid_v:
+            return None
+        params = {"sni": sni}
+        if p.get("password"):
+            params["password"] = p["password"]
+        if p.get("congestion-controller"):
+            params["congestion_control"] = p["congestion-controller"]
+        return f"tuic://{uuid_v}:{quote(str(p.get('password') or ''), safe='')}@{server}:{port}?{_link_query(params)}#{name}"
+
+    return None
+
+
+def proxy_to_singbox(p: dict) -> dict | None:
+    """mihomo proxy dict -> sing-box outbound（支持 vless/trojan/hysteria2/tuic）。"""
+    ptype = str(p.get("type", "")).lower().strip()
+    server = str(p.get("server") or "").strip()
+    try:
+        port = int(p.get("port"))
+    except (TypeError, ValueError):
+        return None
+    if not server or not (0 < port < 65536):
+        return None
+    name = str(p.get("name") or "node")
+    sni = _sni_of(p) or server
+    tls: dict = {"enabled": True, "server_name": sni}
+    if p.get("alpn"):
+        tls["alpn"] = p["alpn"] if isinstance(p["alpn"], list) else [str(p["alpn"])]
+    if _truthy(p.get("skip-cert-verify")):
+        tls["insecure"] = True
+
+    if ptype == "vless":
+        uuid_v = str(p.get("uuid") or "").strip()
+        if not uuid_v:
+            return None
+        ob: dict = {"type": "vless", "tag": name, "server": server, "server_port": port, "uuid": uuid_v}
+        if p.get("flow"):
+            ob["flow"] = p["flow"]
+        net = str(p.get("network") or "tcp").lower()
+        if _has_reality(p) or p.get("reality-opts"):
+            ro = p.get("reality-opts") or {}
+            tls["reality"] = {"enabled": True, "public_key": ro.get("public-key") or "",
+                              "short_id": ro.get("short-id") or ""}
+            if p.get("client-fingerprint"):
+                tls["utls"] = {"enabled": True, "fingerprint": p["client-fingerprint"]}
+            ob["tls"] = tls
+        elif _truthy(p.get("tls")):
+            if p.get("client-fingerprint"):
+                tls["utls"] = {"enabled": True, "fingerprint": p["client-fingerprint"]}
+            ob["tls"] = tls
+        if net == "ws":
+            wo = p.get("ws-opts") or {}
+            host = (wo.get("headers") or {}).get("Host")
+            ob["transport"] = {"type": "ws", "path": wo.get("path") or "/",
+                               **({"headers": {"Host": host}} if host else {})}
+        elif net == "grpc":
+            ob["transport"] = {"type": "grpc",
+                               "service_name": (p.get("grpc-opts") or {}).get("grpc-service-name") or ""}
+        return ob
+
+    if ptype == "trojan":
+        pw = str(p.get("password") or "").strip()
+        if not pw:
+            return None
+        ob = {"type": "trojan", "tag": name, "server": server, "server_port": port,
+              "password": pw, "tls": tls}
+        if str(p.get("network") or "").lower() == "ws":
+            wo = p.get("ws-opts") or {}
+            host = (wo.get("headers") or {}).get("Host")
+            ob["transport"] = {"type": "ws", "path": wo.get("path") or "/",
+                               **({"headers": {"Host": host}} if host else {})}
+        return ob
+
+    if ptype in ("hysteria2", "hy2"):
+        pw = str(p.get("password") or "").strip()
+        if not pw:
+            return None
+        ob = {"type": "hysteria2", "tag": name, "server": server, "server_port": port,
+              "password": pw, "tls": tls}
+        if p.get("obfs") == "salamander" and p.get("obfs-password"):
+            ob["obfs"] = {"type": "salamander", "password": p["obfs-password"]}
+        return ob
+
+    if ptype == "tuic":
+        uuid_v = str(p.get("uuid") or "").strip()
+        if not uuid_v:
+            return None
+        ob = {"type": "tuic", "tag": name, "server": server, "server_port": port,
+              "uuid": uuid_v, "password": str(p.get("password") or ""), "tls": tls}
+        if p.get("congestion-controller"):
+            ob["congestion_control"] = p["congestion-controller"]
+        return ob
+
+    return None
 
 
 def _bad_sni_reason(proxy: dict) -> str | None:
@@ -627,6 +823,32 @@ UDP_PROTOCOLS = {"hysteria2", "hy2", "tuic", "hysteria", "quic"}
 
 def is_udp_protocol(proxy: dict) -> bool:
     return str(proxy.get("type", "")).lower().strip() in UDP_PROTOCOLS
+
+
+# 两阶段探测：阶段 1 用高并发短超时的 TCP 轻量探活，快速砍掉大批已下线节点，
+# 避免把有限的 mihomo 拨测预算浪费在明显不存活的节点上；阶段 2 才做真实拨测。
+LIGHT_PROBE_CONCURRENCY = 180
+LIGHT_PROBE_TIMEOUT = 4.0
+# 跨天存活达到此天数的节点，强制优先进入真实拨测样本（历史稳定性强绑定）
+SURVIVAL_STREAK_FORCE_PROBE = 3
+# 历史真实通过率加成（过去 N 次运行的 real_ok 比率，见 update_survival）
+HISTORY_PASS_RATE_BONUS = 150.0
+SURVIVAL_PASS_WINDOW = 7
+
+
+def light_http_probe(proxy: dict) -> bool:
+    """阶段 1 轻量探活：TCP 可达性粗筛（UDP 协议豁免，交阶段 2 的 QUIC 拨测）。"""
+    if is_udp_protocol(proxy):
+        return True
+    server = proxy.get("server")
+    port = proxy.get("port")
+    if not server or not port:
+        return False
+    try:
+        with socket.create_connection((server, int(port)), timeout=LIGHT_PROBE_TIMEOUT):
+            return True
+    except Exception:
+        return False
 
 
 def tcp_probe(proxy: dict) -> tuple[bool, float]:
@@ -1029,7 +1251,13 @@ def classify_proxy(name: str) -> str:
     return "🌐 其他"
 
 
-def update_survival(alive_fps: set[str], survival: dict) -> dict:
+def update_survival(alive_fps: set[str], survival: dict,
+                    real_ok_fps: set[str] | None = None) -> dict:
+    """更新跨天存活与「真实拨测通过率」滑动窗口。
+
+    alive_fps: 本轮 TCP 存活（含 UDP 豁免）节点指纹。
+    real_ok_fps: 本轮真实拨测通过的节点指纹（None 表示本轮未做拨测，跳过通过率统计）。
+    """
     today = _today()
     updated = dict(survival)
     for fp in list(updated.keys()):
@@ -1052,6 +1280,11 @@ def update_survival(alive_fps: set[str], survival: dict) -> dict:
                     rec["streak"] = 1
                 rec["last_seen"] = today
                 rec["seen_days"] = int(rec.get("seen_days", 0)) + (0 if last == today else 1)
+                # 真实拨测结果按「运行次数」计入滑动窗口（同一天多次运行也计）
+                if real_ok_fps is not None:
+                    hist = list(rec.get("real_hist", []))
+                    hist.append(1 if fp in real_ok_fps else 0)
+                    rec["real_hist"] = hist[-SURVIVAL_PASS_WINDOW:]
             updated[fp] = rec
         else:
             # decay: if missing > 2 days, reset streak
@@ -1065,7 +1298,10 @@ def update_survival(alive_fps: set[str], survival: dict) -> dict:
 
     for fp in alive_fps:
         if fp not in updated:
-            updated[fp] = {"streak": 1, "last_seen": today, "seen_days": 1}
+            rec = {"streak": 1, "last_seen": today, "seen_days": 1}
+            if real_ok_fps is not None:
+                rec["real_hist"] = [1 if fp in real_ok_fps else 0]
+            updated[fp] = rec
     return updated
 
 
@@ -1077,6 +1313,131 @@ def survival_bonus_ms(fp: str, survival: dict) -> float:
     seen = max(0, min(seen, MAX_SURVIVAL_DAYS))
     # higher streak / lifetime => lower effective score (prefer long-lived nodes)
     return -SURVIVAL_WEIGHT * streak - SEEN_DAYS_WEIGHT * seen
+
+
+def history_bonus(fp: str, survival: dict) -> float:
+    """历史真实通过率加成：过去若干次拨测中持续通过的节点更可信（负值 = 排更前）。
+
+    与 survival_bonus_ms 互补：后者看「存活天数」，本函数看「真实拨测通过率」。
+    """
+    rec = survival.get(fp, {})
+    hist = rec.get("real_hist") or []
+    if not hist:
+        return 0.0
+    pass_rate = sum(hist) / len(hist)
+    # 全部通过 → 满额加成；从不通过 → 无加成（不惩罚，交由拨测闸门裁决）
+    return -HISTORY_PASS_RATE_BONUS * pass_rate
+
+
+def write_outputs(final_proxies: list[dict]) -> dict:
+    """生成多格式输出：proxies-only / sing-box / v2ray 分享链接。返回统计信息。"""
+    stat = {"proxies_only": 0, "singbox": 0, "links": 0}
+
+    # 1) proxies-only（供客户端 proxy-providers 直接引用）
+    with open(OUTPUT_PROXIES_ONLY, "w", encoding="utf-8") as f:
+        yaml.dump({"proxies": final_proxies}, f, allow_unicode=True, sort_keys=False)
+    stat["proxies_only"] = len(final_proxies)
+
+    # 2) sing-box outbounds
+    outbounds = []
+    for p in final_proxies:
+        ob = proxy_to_singbox(p)
+        if ob:
+            outbounds.append(ob)
+    # 末尾补一个 direct，便于用户直接组合使用
+    outbounds.append({"type": "direct", "tag": "direct"})
+    with open(OUTPUT_SINGBOX, "w", encoding="utf-8") as f:
+        json.dump({"outbounds": outbounds}, f, ensure_ascii=False, indent=2)
+    stat["singbox"] = len(outbounds) - 1
+
+    # 3) v2ray/nekobox 分享链接（base64 整段）
+    links = []
+    for p in final_proxies:
+        link = proxy_to_share_link(p)
+        if link:
+            links.append(link)
+    payload = base64.b64encode("\n".join(links).encode("utf-8")).decode("ascii")
+    with open(OUTPUT_V2RAY, "w", encoding="utf-8") as f:
+        f.write(payload + "\n")
+    stat["links"] = len(links)
+
+    print(f"多格式输出: proxies-only {stat['proxies_only']} | sing-box {stat['singbox']} | "
+          f"分享链接 {stat['links']}")
+    return stat
+
+
+def write_stats_md(info: dict) -> None:
+    """生成人可读的健康报告 stats.md。"""
+    final_proxies = info.get("final_proxies", [])
+    real_probe_ok = max(0, int(info.get("real", 0)))
+    probed = max(0, int(info.get("probed_total", 0)))
+    rate = (real_probe_ok / probed) if probed else 0.0
+
+    proto_n: dict[str, int] = defaultdict(int)
+    region_n: dict[str, int] = defaultdict(int)
+    for p in final_proxies:
+        t = str(p.get("type", "")).lower()
+        proto_n["Hysteria2" if t in ("hysteria2", "hy2") else
+                "VLESS-Reality" if (t == "vless" and _has_reality(p)) else
+                "VLESS-TLS" if t == "vless" else t.capitalize()] += 1
+        region_n[classify_proxy(p.get("name", ""))] += 1
+
+    per_src = info.get("per_src", {})
+    src_ranked = sorted(
+        ((u, m) for u, m in per_src.items() if m.get("role") == "official"),
+        key=lambda kv: (kv[1].get("real_ok", 0), kv[1].get("unique_alive", 0)),
+        reverse=True,
+    )[:10]
+
+    L = [
+        "# proxysub 健康报告",
+        "",
+        f"更新时间：{datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}",
+        f"运行模式：**{info.get('probe_mode', 'n/a')}**",
+        "",
+        "## 概览",
+        "",
+        f"- 最终节点：**{info.get('final', 0)}**"
+        f"（合规 {info.get('compliant', 0)}，高风险隔离 {info.get('insecure', 0)}）",
+        f"- 真实拨测通过率：**{rate:.1%}**（{real_probe_ok}/{probed}）",
+        f"- TCP 存活：{info.get('tcp', 0)} | 正式源 {info.get('n_official', 0)} 个 | "
+        f"候选源 {info.get('n_cands', 0)} 个",
+        "",
+        "## 协议分布",
+        "",
+        "| 协议 | 数量 |",
+        "|---|---|",
+    ]
+    for k in sorted(proto_n, key=lambda x: -proto_n[x]):
+        L.append(f"| {k} | {proto_n[k]} |")
+
+    L += ["", "## 区域分布", "", "| 区域 | 数量 |", "|---|---|"]
+    for k in sorted(region_n, key=lambda x: -region_n[x]):
+        L.append(f"| {k} | {region_n[k]} |")
+
+    L += ["", "## 源贡献 Top 10（正式源）", "",
+          "| 源 | 真实通过 | 独有存活 | 存活 |", "|---|---|---|---|"]
+    for u, m in src_ranked:
+        short = u.split("/")[3] + "/" + u.split("/")[4] if u.count("/") >= 4 else u
+        L.append(f"| `{short}` | {m.get('real_ok', 0)} | {m.get('unique_alive', 0)} | {m.get('alive', 0)} |")
+
+    L += ["", "## 警告", ""]
+    demoted = info.get("off_rep", {}).get("demoted", {})
+    if demoted:
+        for u, why in list(demoted.items())[:10]:
+            L.append(f"- 淘汰源 `{u}`：{why}")
+    else:
+        L.append("- 本轮无源被淘汰")
+    flags = info.get("flags") or ""
+    if flags:
+        L.append(f"- 可疑源结构：{flags}")
+    if info.get("final", 0) < MIN_FINAL:
+        L.append(f"- ⚠️ 最终节点数 {info.get('final')} 低于下限 {MIN_FINAL}（候选池不足）")
+    L.append("")
+
+    with open(STATS_MD, "w", encoding="utf-8") as f:
+        f.write("\n".join(L))
+    print(f"健康报告已生成: {STATS_MD}")
 
 
 def write_github_summary(info: dict) -> None:
@@ -1255,13 +1616,28 @@ def main() -> None:
     if not real_probe_enabled():
         sample: list[str] = []
     else:
+        # ---- 阶段 1：轻量探活（高并发 TCP 粗筛）----
+        # tcp_lat 中仅含 TCP 存活 + UDP 豁免节点；此处再做一次统一的高并发复筛，
+        # 结果用于在拨测样本有限时优先保留真正可达的节点。
+        print(f"阶段1：轻量探活 {len(tcp_lat)} 个节点（并发 {LIGHT_PROBE_CONCURRENCY}）...")
+        light_ok: set[str] = set()
+        with ThreadPoolExecutor(max_workers=LIGHT_PROBE_CONCURRENCY) as ex:
+            futs = {ex.submit(light_http_probe, unique[fp]): fp for fp in tcp_lat}
+            for fut in as_completed(futs):
+                if fut.result():
+                    light_ok.add(futs[fut])
+        print(f"阶段1完成：轻量探活通过 {len(light_ok)}/{len(tcp_lat)}，进入阶段2真实拨测")
+
         def _probe_rank(fp: str) -> tuple:
-            # Preferred protocols first, then survivors, then low TCP latency.
+            # 历史稳定节点（streak >= 阈值）强制优先进入拨测样本；
+            # 其次轻量探活通过者；再看协议层级/存活时长/TCP 延迟。
             rec = survival_pre.get(fp, {})
             streak = int(rec.get("streak", 0))
             seen = int(rec.get("seen_days", 0))
             tier = protocol_tier(unique[fp])
-            return (tier, -streak, -seen, tcp_lat[fp])
+            stable = 0 if streak >= SURVIVAL_STREAK_FORCE_PROBE else 1
+            light = 0 if fp in light_ok else 1
+            return (stable, light, tier, -streak, -seen, tcp_lat[fp])
 
         alive_sorted = sorted(tcp_lat, key=_probe_rank)
         # Stratify: fill per-region reserves first so Asia is actually probed.
@@ -1408,6 +1784,7 @@ def main() -> None:
         penalty += china_feature_bonus(unique[fp])
         penalty += us_china_penalty(unique[fp], r)
         bonus = survival_bonus_ms(fp, survival)
+        bonus += history_bonus(fp, survival)  # 历史真实通过率（持续通过的节点排更前）
         if is_preferred(unique[fp]):
             bonus *= 1.5  # keep long-lived hy2/reality even harder
         # TCP 延迟（美西 Runner 测得，≠国内真实路径）仅作粗排信号：贡献设上限，
@@ -1417,7 +1794,9 @@ def main() -> None:
 
     scored.sort(key=lambda x: (x[5], not x[3], x[1]))
     alive_fps = {fingerprint(p) for p, *_ in scored}
-    survival = update_survival(alive_fps, survival)
+    # 传入本轮真实拨测通过集合，用于维护「真实通过率滑动窗口」（real_hist）
+    survival = update_survival(alive_fps, survival,
+                               set(real_ok.keys()) if (bin_path or real_probe_enabled()) else None)
 
     # diversity caps: one credential / one egress IP must not dominate the output
     cred_n: dict[str, int] = defaultdict(int)
@@ -1670,15 +2049,23 @@ def main() -> None:
     # ---- 8. persist ----
     with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
         yaml.dump(config, f, allow_unicode=True, sort_keys=False)
+    # 多格式输出 + 健康报告（同一份最终节点列表的不同封装）
+    write_outputs(final_proxies + insecure_proxies)
     save_json(SURVIVAL_FILE, survival)
     save_json(BAD_SOURCES_FILE, bad_sources)
     save_json(SOURCE_STATS_FILE, {"date": _today(), "sources": per_src, "history": history})
     sm.save_json(sm.SOURCES_FILE, sources)
     sm.save_json(sm.CANDIDATES_FILE, cands)
     sm.save_json(hp.BLOCKLIST_FILE, blocklist.data)
+    # 源评分（单调递增/衰减，独立文件，向后兼容）
+    try:
+        scores = sm.update_source_scores(sources, per_src, history)
+        sm.save_json(SOURCE_SCORES_FILE, scores)
+    except Exception as e:  # 评分失败不应影响主产出
+        print(f"警告: 源评分更新失败（不影响输出）: {type(e).__name__}: {e}")
 
     print(f"\n✅ 已生成: {OUTPUT_FILE}")
-    write_github_summary({
+    summary_info = {
         "final": total_final, "compliant": len(final_proxies), "insecure": len(insecure_proxies),
         "tcp": len(tcp_lat), "real": len(real_ok),
         "probe_mode": ("disabled (client-side testing)" if not real_probe_enabled()
@@ -1691,7 +2078,11 @@ def main() -> None:
         "diversity_dropped": diversity_dropped,
         "flags": "; ".join(f"{u.split('/')[3] if '//' in u else u}: {','.join(f)}" for u, f in src_flags.items()),
         "per_src": per_src,
-    })
+        "final_proxies": final_proxies + insecure_proxies,
+        "probed_total": len(probe),
+    }
+    write_stats_md(summary_info)
+    write_github_summary(summary_info)
 
 
 if __name__ == "__main__":

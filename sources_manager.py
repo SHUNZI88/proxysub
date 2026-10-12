@@ -21,6 +21,7 @@ from safe_io import load_json, save_json  # 原子化读写，防止 JSON 截断
 
 SOURCES_FILE = "sources.json"
 CANDIDATES_FILE = "candidate_sources.json"
+SOURCE_SCORES_FILE = "source_scores.json"
 
 # ---- lifecycle knobs ----
 MAX_OFFICIAL = 30
@@ -404,10 +405,19 @@ def update_official(sources: dict, stats_hist: dict, run: dict[str, dict]) -> di
             rep["demoted"][url] = reason
 
     def score(entry: dict) -> float:
+        """综合评分：实时历史 EMA + 持久化 source_scores（含蜜罐/独有贡献维度）。"""
         h = stats_hist.get(entry["url"], {})
-        return (100 * h.get("ok_rate_ema", 1.0) + h.get("unique_ema", 0.0)
+        base = (100 * h.get("ok_rate_ema", 1.0) + h.get("unique_ema", 0.0)
                 + 2.0 * h.get("real_ema", 0.0)
                 + (25 if entry.get("origin") == "manual" else 0))
+        # 持久化评分（source_scores.json）作为长期维度：与实时 EMA 相加，
+        # 使「长期稳定但近期波动」的源不会被瞬时数据误伤。
+        try:
+            persisted = load_json(SOURCE_SCORES_FILE, {})
+            base += float(persisted.get(entry["url"], {}).get("score", 0.0)) * 0.5
+        except Exception:
+            pass
+        return base
 
     keep = [e for e in sources["official"] if e["url"] not in rep["demoted"]]
     cap = int(sources.get("max_official", MAX_OFFICIAL))
@@ -424,3 +434,39 @@ def update_official(sources: dict, stats_hist: dict, run: dict[str, dict]) -> di
             sources["removed"].append({"url": url, "reason": why, "date": _today()})
         sources["removed"] = sources["removed"][-100:]
     return rep
+
+
+def update_source_scores(sources: dict, per_src: dict, history: dict) -> dict:
+    """维护长期源评分 source_scores.json（指数滑动平均，0-100）。
+
+    评分维度：
+      - 拉取成功率 success
+      - 独有贡献比 unique_ratio（避免纯聚合源刷分）
+      - 真实拨测通过比 real_ratio（质量核心）
+      - 蜜罐/篡改比例 tamper_ratio（强惩罚）
+
+    该文件为纯增量信息，不参与既有流程的强制判定，读不到时按默认值起算，
+    因此对现有状态文件完全向后兼容。
+    """
+    scores = load_json(SOURCE_SCORES_FILE, {})
+    if not isinstance(scores, dict):
+        scores = {}
+    for url, m in per_src.items():
+        prev = scores.get(url) or {"score": 50.0, "runs": 0}
+        success = 1.0 if m.get("ok") else 0.0
+        alive = max(int(m.get("alive", 0)), 1)
+        probed = max(int(m.get("probed", 0)), 1)
+        unique_ratio = min(int(m.get("unique_alive", 0)) / alive, 1.0)
+        real_ratio = min(int(m.get("real_ok", 0)) / alive, 1.0)
+        tamper_ratio = min(int(m.get("tamper", 0)) / probed, 1.0)
+        # delta 采用「围绕 50 分」的加权偏移，使好源趋近 100、坏源趋近 0
+        delta = (success * 15.0 + unique_ratio * 25.0 + real_ratio * 30.0
+                 - tamper_ratio * 40.0 - (0.0 if success else 25.0))
+        new_score = float(prev.get("score", 50.0)) * 0.85 + delta
+        scores[url] = {
+            "score": round(max(0.0, min(100.0, new_score)), 2),
+            "runs": int(prev.get("runs", 0)) + 1,
+            "role": m.get("role", "official"),
+            "last": _today(),
+        }
+    return scores
