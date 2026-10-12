@@ -13,11 +13,6 @@
       "added": "2026-10-10"
     },
     {
-      "url": "https://raw.githubusercontent.com/snakem982/proxypool/main/source/clash-meta-2.yaml",
-      "origin": "manual",
-      "added": "2026-10-10"
-    },
-    {
       "url": "https://raw.githubusercontent.com/chengaopan/AutoMergePublicNodes/master/list.meta.yml",
       "origin": "manual",
       "added": "2026-10-10"
@@ -124,6 +119,11 @@
       "url": "https://raw.githubusercontent.com/Ruk1ng001/freeSub/main/clash.yaml",
       "reason": "cf_blocked:4/12",
       "date": "2026-10-11"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/snakem982/proxypool/main/source/clash-meta-2.yaml",
+      "reason": "cf_blocked:8/23",
+      "date": "2026-10-12"
     }
   ],
   "deny_repos": []
