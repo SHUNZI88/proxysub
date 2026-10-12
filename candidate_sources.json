@@ -9,20 +9,13 @@
       "required_runs": 5,
       "first_seen": "2026-10-09",
       "initial_nodes": 100,
-      "runs": 12,
+      "runs": 13,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
         {
           "date": "2026-10-10",
           "count": 100,
-          "usable": 1,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-10",
-          "count": 100,
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
@@ -64,6 +57,13 @@
         },
         {
           "date": "2026-10-11",
+          "count": 100,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-12",
           "count": 100,
           "usable": 0,
           "unique_new": 0,
@@ -80,7 +80,7 @@
       "required_runs": 3,
       "first_seen": "2026-10-10",
       "initial_nodes": 20,
-      "runs": 11,
+      "runs": 12,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -113,13 +113,6 @@
           "tamper": 0
         },
         {
-          "date": "2026-10-10",
-          "count": 20,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
           "date": "2026-10-11",
           "count": 20,
           "usable": 0,
@@ -135,6 +128,13 @@
         },
         {
           "date": "2026-10-11",
+          "count": 20,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-12",
           "count": 20,
           "usable": 0,
           "unique_new": 0,
@@ -151,17 +151,10 @@
       "required_runs": 5,
       "first_seen": "2026-10-10",
       "initial_nodes": 220,
-      "runs": 11,
+      "runs": 12,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-10-10",
-          "count": 218,
-          "usable": 5,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-10-10",
           "count": 218,
@@ -208,6 +201,13 @@
           "date": "2026-10-11",
           "count": 203,
           "usable": 7,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-12",
+          "count": 204,
+          "usable": 8,
           "unique_new": 0,
           "tamper": 0
         }
@@ -222,17 +222,10 @@
       "required_runs": 5,
       "first_seen": "2026-10-10",
       "initial_nodes": 220,
-      "runs": 11,
+      "runs": 12,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-10-10",
-          "count": 218,
-          "usable": 5,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-10-10",
           "count": 218,
@@ -281,6 +274,13 @@
           "usable": 7,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-12",
+          "count": 204,
+          "usable": 8,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -293,17 +293,10 @@
       "required_runs": 5,
       "first_seen": "2026-10-10",
       "initial_nodes": 112,
-      "runs": 11,
+      "runs": 12,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-10-10",
-          "count": 112,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-10-10",
           "count": 112,
@@ -352,6 +345,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-12",
+          "count": 112,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -364,17 +364,10 @@
       "required_runs": 3,
       "first_seen": "2026-10-10",
       "initial_nodes": 271,
-      "runs": 9,
+      "runs": 10,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-10-10",
-          "count": 271,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-10-10",
           "count": 271,
@@ -423,6 +416,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-12",
+          "count": 271,
+          "usable": 2,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -435,17 +435,10 @@
       "required_runs": 3,
       "first_seen": "2026-10-10",
       "initial_nodes": 99,
-      "runs": 8,
+      "runs": 9,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-10-10",
-          "count": 99,
-          "usable": 15,
-          "unique_new": 15,
-          "tamper": 0
-        },
         {
           "date": "2026-10-10",
           "count": 99,
@@ -494,6 +487,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-12",
+          "count": 99,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -506,7 +506,7 @@
       "required_runs": 3,
       "first_seen": "2026-10-11",
       "initial_nodes": 533,
-      "runs": 2,
+      "runs": 3,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -519,6 +519,13 @@
         },
         {
           "date": "2026-10-11",
+          "count": 533,
+          "usable": 1,
+          "unique_new": 1,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-12",
           "count": 533,
           "usable": 1,
           "unique_new": 1,
@@ -535,7 +542,7 @@
       "required_runs": 3,
       "first_seen": "2026-10-11",
       "initial_nodes": 108,
-      "runs": 2,
+      "runs": 3,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -548,6 +555,13 @@
         },
         {
           "date": "2026-10-11",
+          "count": 108,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-12",
           "count": 108,
           "usable": 0,
           "unique_new": 0,
@@ -564,7 +578,7 @@
       "required_runs": 3,
       "first_seen": "2026-10-11",
       "initial_nodes": 400,
-      "runs": 2,
+      "runs": 3,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -577,6 +591,13 @@
         },
         {
           "date": "2026-10-11",
+          "count": 400,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-12",
           "count": 400,
           "usable": 0,
           "unique_new": 0,
@@ -593,7 +614,7 @@
       "required_runs": 5,
       "first_seen": "2026-10-11",
       "initial_nodes": 90,
-      "runs": 2,
+      "runs": 3,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -606,6 +627,13 @@
         },
         {
           "date": "2026-10-11",
+          "count": 90,
+          "usable": 2,
+          "unique_new": 2,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-12",
           "count": 90,
           "usable": 2,
           "unique_new": 2,

@@ -586,6 +586,12 @@
       "added": "2026-10-10",
       "expires": "2026-10-24",
       "source": "https://raw.githubusercontent.com/freenodess/freenodess/main/nodes/clash.yaml"
+    },
+    "172.64.154.211": {
+      "reason": "tls_mitm:certificate verify failed: Hostname mismatch, certificate is not valid for ",
+      "added": "2026-10-12",
+      "expires": "2026-10-26",
+      "source": "https://blog.ermao.net/sub/clash/ermao.net"
     }
   }
 }
