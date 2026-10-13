@@ -751,8 +751,8 @@ def main() -> None:
             # 交接文档（中国出口实测接力）：待测集 = 拨测样本 ∪ 最终输出；
             # 救援集 = 静态可行但未入样节点（RESCUE_QUOTA，lost-and-found）。
             # 随 .publish/* 发布为 Release 资产——上传顺序上订阅资产
-            # （p_* 随机名）字母序先于 pending_*，沙箱的新鲜度闸门读到
-            # 新 pending_probe.json 时订阅资产必已就绪（见工作流注释）。
+            # （candidates_* 先于 pending_*，见工作流 files 清单）保证
+            # 沙箱轮次闸门读到新 pending_probe.json 时订阅内容必已就绪。
             handoff_rid, handoff_now = handoff.round_stamp()
             handoff_stat = handoff.write_handoff_docs(
                 anti_crawl.PUBLISH_DIR,
