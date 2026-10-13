@@ -1,289 +1,5 @@
 {
   "candidates": {
-    "https://raw.githubusercontent.com/wenxig/free-nodes-sub/main/data/sub.yaml": {
-      "repo": "wenxig/free-nodes-sub",
-      "stars": 105,
-      "repo_created": "2025-12-24T14:54:18Z",
-      "reputation": "ok",
-      "reputation_note": "stars=105,age=289d",
-      "required_runs": 3,
-      "first_seen": "2026-10-10",
-      "initial_nodes": 20,
-      "runs": 15,
-      "good_streak": 0,
-      "fail_streak": 0,
-      "history": [
-        {
-          "date": "2026-10-10",
-          "count": 20,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-11",
-          "count": 20,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-11",
-          "count": 20,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-11",
-          "count": 20,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-12",
-          "count": 20,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-12",
-          "count": 20,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-12",
-          "count": 20,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-12",
-          "count": 20,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        }
-      ]
-    },
-    "https://raw.githubusercontent.com/BiliRumble/NoMoreRules/master/list.meta.yml": {
-      "repo": "BiliRumble/NoMoreRules",
-      "stars": 1,
-      "repo_created": "2025-06-17T20:00:38Z",
-      "reputation": "low",
-      "reputation_note": "stars=1,age=479d",
-      "required_runs": 5,
-      "first_seen": "2026-10-10",
-      "initial_nodes": 220,
-      "runs": 15,
-      "good_streak": 0,
-      "fail_streak": 0,
-      "history": [
-        {
-          "date": "2026-10-10",
-          "count": 215,
-          "usable": 9,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-11",
-          "count": 206,
-          "usable": 8,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-11",
-          "count": 206,
-          "usable": 7,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-11",
-          "count": 203,
-          "usable": 7,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-12",
-          "count": 204,
-          "usable": 8,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-12",
-          "count": 205,
-          "usable": 6,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-12",
-          "count": 205,
-          "usable": 6,
-          "unique_new": 1,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-12",
-          "count": 206,
-          "usable": 6,
-          "unique_new": 0,
-          "tamper": 0
-        }
-      ]
-    },
-    "https://raw.githubusercontent.com/BiliRumble/NoMoreRules/master/snippets/nodes.meta.yml": {
-      "repo": "BiliRumble/NoMoreRules",
-      "stars": 1,
-      "repo_created": "2025-06-17T20:00:38Z",
-      "reputation": "low",
-      "reputation_note": "stars=1,age=479d",
-      "required_runs": 5,
-      "first_seen": "2026-10-10",
-      "initial_nodes": 220,
-      "runs": 15,
-      "good_streak": 0,
-      "fail_streak": 0,
-      "history": [
-        {
-          "date": "2026-10-10",
-          "count": 215,
-          "usable": 9,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-11",
-          "count": 206,
-          "usable": 8,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-11",
-          "count": 206,
-          "usable": 7,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-11",
-          "count": 203,
-          "usable": 7,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-12",
-          "count": 204,
-          "usable": 8,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-12",
-          "count": 205,
-          "usable": 6,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-12",
-          "count": 205,
-          "usable": 6,
-          "unique_new": 1,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-12",
-          "count": 206,
-          "usable": 6,
-          "unique_new": 0,
-          "tamper": 0
-        }
-      ]
-    },
-    "https://raw.githubusercontent.com/MyLeiH/ClashMeta/main/list.meta.yml": {
-      "repo": "MyLeiH/ClashMeta",
-      "stars": 0,
-      "repo_created": "2025-06-05T06:22:12Z",
-      "reputation": "low",
-      "reputation_note": "stars=0,age=491d",
-      "required_runs": 5,
-      "first_seen": "2026-10-10",
-      "initial_nodes": 112,
-      "runs": 15,
-      "good_streak": 0,
-      "fail_streak": 0,
-      "history": [
-        {
-          "date": "2026-10-10",
-          "count": 112,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-11",
-          "count": 112,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-11",
-          "count": 112,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-11",
-          "count": 112,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-12",
-          "count": 112,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-12",
-          "count": 112,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-12",
-          "count": 112,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-12",
-          "count": 112,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        }
-      ]
-    },
     "https://raw.githubusercontent.com/Barabama/FreeNodes/feat/ai-crawler-v2/nodes/nodev2ray.yaml": {
       "repo": "Barabama/FreeNodes",
       "stars": 3252,
@@ -293,17 +9,10 @@
       "required_runs": 3,
       "first_seen": "2026-10-10",
       "initial_nodes": 271,
-      "runs": 13,
+      "runs": 14,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-10-10",
-          "count": 271,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-10-11",
           "count": 271,
@@ -352,6 +61,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-13",
+          "count": 271,
+          "usable": 2,
+          "unique_new": 1,
+          "tamper": 0
         }
       ]
     },
@@ -364,18 +80,11 @@
       "required_runs": 3,
       "first_seen": "2026-10-10",
       "initial_nodes": 99,
-      "runs": 12,
+      "runs": 13,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
         {
-          "date": "2026-10-10",
-          "count": 99,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
           "date": "2026-10-11",
           "count": 99,
           "usable": 0,
@@ -419,6 +128,13 @@
         },
         {
           "date": "2026-10-12",
+          "count": 99,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-13",
           "count": 99,
           "usable": 0,
           "unique_new": 0,
@@ -435,7 +151,7 @@
       "required_runs": 3,
       "first_seen": "2026-10-11",
       "initial_nodes": 533,
-      "runs": 6,
+      "runs": 7,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -479,6 +195,13 @@
           "count": 533,
           "usable": 1,
           "unique_new": 1,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-13",
+          "count": 533,
+          "usable": 2,
+          "unique_new": 2,
           "tamper": 0
         }
       ]
@@ -492,7 +215,7 @@
       "required_runs": 3,
       "first_seen": "2026-10-11",
       "initial_nodes": 108,
-      "runs": 6,
+      "runs": 7,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -533,6 +256,13 @@
         },
         {
           "date": "2026-10-12",
+          "count": 108,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-13",
           "count": 108,
           "usable": 0,
           "unique_new": 0,
@@ -549,7 +279,7 @@
       "required_runs": 3,
       "first_seen": "2026-10-11",
       "initial_nodes": 400,
-      "runs": 6,
+      "runs": 7,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -594,6 +324,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-13",
+          "count": 400,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -606,7 +343,7 @@
       "required_runs": 5,
       "first_seen": "2026-10-11",
       "initial_nodes": 90,
-      "runs": 6,
+      "runs": 7,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -647,6 +384,13 @@
         },
         {
           "date": "2026-10-12",
+          "count": 90,
+          "usable": 2,
+          "unique_new": 2,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-13",
           "count": 90,
           "usable": 2,
           "unique_new": 2,
@@ -710,6 +454,26 @@
       "reason": "no_stable_contribution",
       "date": "2026-10-12",
       "repo": "freenodess/freenodess"
+    },
+    "https://raw.githubusercontent.com/wenxig/free-nodes-sub/main/data/sub.yaml": {
+      "reason": "no_stable_contribution",
+      "date": "2026-10-13",
+      "repo": "wenxig/free-nodes-sub"
+    },
+    "https://raw.githubusercontent.com/BiliRumble/NoMoreRules/master/list.meta.yml": {
+      "reason": "no_stable_contribution",
+      "date": "2026-10-13",
+      "repo": "BiliRumble/NoMoreRules"
+    },
+    "https://raw.githubusercontent.com/BiliRumble/NoMoreRules/master/snippets/nodes.meta.yml": {
+      "reason": "no_stable_contribution",
+      "date": "2026-10-13",
+      "repo": "BiliRumble/NoMoreRules"
+    },
+    "https://raw.githubusercontent.com/MyLeiH/ClashMeta/main/list.meta.yml": {
+      "reason": "no_stable_contribution",
+      "date": "2026-10-13",
+      "repo": "MyLeiH/ClashMeta"
     }
   }
 }
