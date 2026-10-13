@@ -735,6 +735,19 @@ def main() -> None:
                 yaml.dump(config, f, allow_unicode=True, sort_keys=False)
             write_outputs(final_proxies + insecure_proxies, namer=lambda b: paths[b])
             decoy_stat = anti_crawl.write_decoy_outputs(ac)
+            # 候选集固定名副本（candidates_*）：主资产（p_* 随机名，订阅永久
+            # 地址）在实测验证新鲜时归沙箱实测集所有（CI 不覆盖，见工作流
+            # 发布步骤的所有权切换逻辑）；候选集以固定名常驻发布，供透明
+            # 备查、CI 兜底与沙箱侧交叉核对。
+            cand_names = {OUTPUT_PROXIES_ONLY: CANDIDATES_PROXIES_ONLY,
+                          OUTPUT_SINGBOX: CANDIDATES_SINGBOX,
+                          OUTPUT_V2RAY: CANDIDATES_V2RAY}
+            with open(os.path.join(anti_crawl.PUBLISH_DIR, CANDIDATES_CLASH),
+                      "w", encoding="utf-8") as f:
+                yaml.dump(config, f, allow_unicode=True, sort_keys=False)
+            write_outputs(final_proxies + insecure_proxies,
+                          namer=lambda b: os.path.join(
+                              anti_crawl.PUBLISH_DIR, cand_names.get(b, b)))
             # 交接文档（中国出口实测接力）：待测集 = 拨测样本 ∪ 最终输出；
             # 救援集 = 静态可行但未入样节点（RESCUE_QUOTA，lost-and-found）。
             # 随 .publish/* 发布为 Release 资产——上传顺序上订阅资产
@@ -758,6 +771,8 @@ def main() -> None:
             ac_report.update({
                 "mode": "release",
                 "real_outputs": list(paths.values()),
+                "candidates": [CANDIDATES_CLASH, CANDIDATES_SINGBOX,
+                               CANDIDATES_V2RAY, CANDIDATES_PROXIES_ONLY],
                 "release_urls": anti_crawl.release_urls(ac),
             })
             print(f"反爬: 真实输出 -> {anti_crawl.PUBLISH_DIR}/（发布为滚动 Release 永久地址；"

@@ -1,0 +1,607 @@
+#!/usr/bin/env python3
+"""中国出口节点实测（沙箱侧）——Phase 1 核心工作者。
+
+定时任务（北京 01:02/07:02，CI 后 ~45min）启动本脚本：
+
+  1. 自检：沙箱自身网络必须直连可用（否则节点全挂是冤枉的）；
+  2. 下载 CI 交接文档 pending_probe.json / pending_rescue.json，按
+     generated_at 做新鲜度闸门（≤3h 直接测；否则轮询等待至多 --max-wait
+     分钟；仍陈旧则退化为仅测 carryover，保订阅新鲜度）；
+  3. carryover：解析当前主资产（p_*_c.yaml，上一轮发布集）——实测集滚动
+     携带，本轮未通过的节点自然淘汰（免费节点寿命以小时计，自清洁）；
+  4. mihomo 并发拨测（external-controller delay API，gstatic generate_204，
+     HTTPS+204 双信号），通过节点逐个取出口 IP/地区证据；
+  5. 合并发布：通过节点构建验证集（clash + sing-box + v2ray + proxies-only），
+     覆盖发布到主资产 p_*（订阅永久地址不变），并发布
+     verification_report.json（证据 + 统计，CI 据此切换主资产所有权）；
+  6. 熔断：自检失败/mihomo 起不来/通过数 < VERIFICATION_MIN_PASSED 时
+     绝不发布主资产（保留上一轮验证集或 CI 兜底候选集），仅出报告。
+
+所有权约定（与 CI 工作流联动）：
+  - 验证新鲜时主资产归本脚本；CI 只发布 candidates_* 与 pending_*；
+  - 验证陈旧（连续未产出）时 CI 兜底把候选集发布到主资产。
+
+用法：
+  GH_TOKEN=... python3 scripts/cn_probe.py [--dry-run] [--max-wait 20]
+  GH_TOKEN 由调度 prompt 先 source github-connector get_token.sh 注入。
+"""
+
+from __future__ import annotations
+
+import argparse
+import datetime
+import json
+import os
+import re
+import shutil
+import socket
+import subprocess
+import sys
+import tempfile
+import time
+import urllib.parse
+import urllib.request
+from concurrent.futures import ThreadPoolExecutor
+
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, REPO_ROOT)
+
+import common  # noqa: E402
+import yaml  # noqa: E402
+
+try:
+    from output import write_outputs  # noqa: E402
+    from score import classify_proxy  # noqa: E402
+except Exception:  # 仓库模块缺失时明确失败（脚本与仓库同版本发布）
+    write_outputs = None
+    classify_proxy = None
+
+GENERATE_204 = "https://www.gstatic.com/generate_204"
+GEO_URLS = ["https://cip.cc", "https://myip.ipip.net", "http://ip-api.com/json"]
+MIHOMO_VERSION = os.environ.get("MIHOMO_VERSION", "v1.19.32")
+DELAY_TIMEOUT_MS = 5000
+DELAY_CONCURRENCY = 12
+GEO_TIMEOUT_S = 8
+GEO_MAX_NODES = 120
+SELFCHECK_URLS = ["https://www.baidu.com", "https://api.github.com"]
+ASSET_RE = re.compile(r"^p_[0-9a-f]+_([cpsv])\.(yaml|json|txt)$")
+ASSET_FORMAT = {"c": "clash", "p": "proxies_only", "s": "singbox", "v": "v2ray"}
+VERIFIED_FILE = {
+    "clash": "verified_clash.yaml",
+    "proxies_only": "verified_proxies_only.yaml",
+    "singbox": "verified_singbox.json",
+    "v2ray": "verified_v2ray.txt",
+}
+PENDING_MAX_AGE_S = 3 * 3600  # 新鲜度闸门：超过视为 CI 未完成/故障
+
+
+ASSET_FORMAT_REV = {"clean_proxies_only.yaml": "proxies_only",
+                    "clean_singbox.json": "singbox",
+                    "clean_v2ray.txt": "v2ray"}
+
+
+def default_tag() -> str:
+    """Release tag：与 CI 工作流同源（anti_crawl.json 的 release_tag）。"""
+    try:
+        with open(os.path.join(REPO_ROOT, "anti_crawl.json"), encoding="utf-8") as f:
+            return json.load(f).get("release_tag") or "sub"
+    except Exception:
+        return "sub"
+
+
+def log(msg: str) -> None:
+    print(f"[cn-probe {datetime.datetime.now().strftime('%H:%M:%S')}] {msg}", flush=True)
+
+
+def run(cmd: list[str], timeout: int = 120, **kw) -> subprocess.CompletedProcess:
+    return subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, **kw)
+
+
+def gh_download(tag: str, pattern: str, dest: str) -> bool:
+    r = run(["gh", "release", "download", tag, "-p", pattern, "-O", dest, "--clobber"])
+    return r.returncode == 0 and os.path.exists(dest)
+
+
+def release_assets(tag: str) -> list[dict]:
+    r = run(["gh", "release", "view", tag, "--json", "assets"])
+    if r.returncode != 0:
+        return []
+    try:
+        return json.loads(r.stdout).get("assets", [])
+    except Exception:
+        return []
+
+
+def parse_ts(s: str) -> datetime.datetime | None:
+    try:
+        dt = datetime.datetime.fromisoformat(str(s).replace("Z", "+00:00"))
+        return dt if dt.tzinfo else dt.replace(tzinfo=datetime.timezone.utc)
+    except Exception:
+        return None
+
+
+# ---------------------------------------------------------------- 自检
+def sandbox_selfcheck() -> bool:
+    for url in SELFCHECK_URLS:
+        try:
+            req = urllib.request.Request(url, method="HEAD")
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                if resp.status < 400:
+                    return True
+        except Exception:
+            continue
+    return False
+
+
+# ---------------------------------------------------------------- 节点装载
+def load_doc_nodes(path: str, origin: str) -> list[dict]:
+    """交接文档 -> 节点记录（clash 原生 proxies 直接可用）。"""
+    if not os.path.exists(path):
+        return []
+    try:
+        with open(path, encoding="utf-8") as f:
+            doc = json.load(f)
+    except Exception as e:
+        log(f"警告: 解析 {os.path.basename(path)} 失败: {e}")
+        return []
+    nodes = []
+    for n in doc.get("nodes", []):
+        proxy = n.get("proxy")
+        if not isinstance(proxy, dict) or not proxy.get("server"):
+            continue
+        nodes.append({
+            "fp": n.get("fp") or common.fingerprint(proxy),
+            "name": str(n.get("name") or proxy.get("name") or "node"),
+            "proxy": proxy,
+            "origin": origin,
+            "final": bool(n.get("final")),
+            "us_ok": bool(n.get("us_ok")),
+        })
+    return nodes
+
+
+def load_carryover(main_clash: str) -> list[dict]:
+    """当前主资产（上一轮发布集）-> carryover 节点（滚动携带+自清洁）。"""
+    if not os.path.exists(main_clash):
+        return []
+    try:
+        with open(main_clash, encoding="utf-8") as f:
+            cfg = yaml.safe_load(f) or {}
+    except Exception as e:
+        log(f"警告: 解析主资产失败: {e}")
+        return []
+    nodes = []
+    for p in cfg.get("proxies", []) or []:
+        if not isinstance(p, dict) or not p.get("server"):
+            continue
+        nodes.append({
+            "fp": common.fingerprint(p),
+            "name": str(p.get("name") or "node"),
+            "proxy": dict(p),
+            "origin": "carryover",
+            "final": True,
+            "us_ok": False,  # 上一轮是美国视角，未知；仅作参考
+        })
+    return nodes
+
+
+def dedup_nodes(groups: list[tuple[str, list[dict]]]) -> list[dict]:
+    """按 (origin 优先级, 出现顺序) 去重；探测名保证唯一（mihomo 要求）。"""
+    seen_fp: dict[str, dict] = {}
+    for _origin, nodes in groups:
+        for n in nodes:
+            seen_fp.setdefault(n["fp"], n)
+    out: list[dict] = []
+    used_names: dict[str, int] = {}
+    for n in seen_fp.values():
+        name = n["name"]
+        if name in used_names:
+            used_names[name] += 1
+            name = f"{name}#{used_names[name]}"
+        else:
+            used_names[name] = 1
+        n["probe_name"] = name
+        out.append(n)
+    return out
+
+
+# ---------------------------------------------------------------- mihomo
+def ensure_mihomo(workdir: str) -> str | None:
+    local = "/usr/local/bin/mihomo"
+    if os.path.exists(local):
+        v = run([local, "-v"])
+        if v.returncode == 0 and MIHOMO_VERSION.lstrip("v") in v.stdout + v.stderr:
+            return local
+    dest = os.path.join(workdir, "mihomo")
+    url = (f"https://github.com/MetaCubeX/mihomo/releases/download/"
+           f"{MIHOMO_VERSION}/mihomo-linux-amd64-{MIHOMO_VERSION}.gz")
+    for i in range(3):
+        r = run(["curl", "-fsSL", "--retry", "2", "-o", f"{dest}.gz", url], timeout=180)
+        if r.returncode == 0 and run(["gunzip", "-f", f"{dest}.gz"]).returncode == 0:
+            os.chmod(dest, 0o755)
+            return dest
+        time.sleep(3 * (i + 1))
+    return None
+
+
+def free_port(start: int) -> int:
+    for p in range(start, start + 20):
+        with socket.socket() as s:
+            try:
+                s.bind(("127.0.0.1", p))
+                return p
+            except OSError:
+                continue
+    return start
+
+
+def wait_controller(port: int, timeout: int = 30) -> bool:
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        try:
+            with urllib.request.urlopen(f"http://127.0.0.1:{port}/version", timeout=3) as r:
+                if r.status == 200:
+                    return True
+        except Exception:
+            time.sleep(0.5)
+    return False
+
+
+def api_get(port: int, path: str, timeout: int = 10) -> dict | None:
+    try:
+        with urllib.request.urlopen(f"http://127.0.0.1:{port}{path}", timeout=timeout) as r:
+            return json.loads(r.read().decode())
+    except Exception:
+        return None
+
+
+def api_put(port: int, path: str, body: dict) -> bool:
+    try:
+        req = urllib.request.Request(
+            f"http://127.0.0.1:{port}{path}", data=json.dumps(body).encode(),
+            method="PUT", headers={"Content-Type": "application/json"})
+        with urllib.request.urlopen(req, timeout=10) as r:
+            return r.status == 204
+    except Exception:
+        return False
+
+
+def delay_test(port: int, name: str) -> dict:
+    """单节点延迟测试：HTTPS generate_204，失败重试一次。"""
+    quoted = urllib.parse.quote(name, safe="")
+    for attempt, timeout in enumerate((DELAY_TIMEOUT_MS, 8000)):
+        data = api_get(port, f"/proxies/{quoted}/delay"
+                             f"?url={urllib.parse.quote(GENERATE_204, safe='')}"
+                             f"&timeout={timeout}", timeout=timeout / 1000 + 5)
+        if data and isinstance(data.get("delay"), (int, float)):
+            return {"ok": True, "latency_ms": int(data["delay"])}
+        if attempt == 0:
+            continue
+    return {"ok": False, "latency_ms": None}
+
+
+def exit_evidence(port: int, selector: str, name: str) -> dict:
+    """把流量切到指定节点，取出口 IP/地区（证据留痕，不构成闸门）。"""
+    if not api_put(port, f"/proxies/{urllib.parse.quote(selector, safe='')}",
+                   {"name": name}):
+        return {}
+    for url in GEO_URLS:
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "curl/8"})
+            with urllib.request.urlopen(req, timeout=GEO_TIMEOUT_S) as r:
+                text = r.read().decode("utf-8", "replace")
+            ev = _parse_geo(text)
+            if ev:
+                ev["via"] = url
+                return ev
+        except Exception:
+            continue
+    return {}
+
+
+def _parse_geo(text: str) -> dict:
+    ip = re.search(r"(\d{1,3}(?:\.\d{1,3}){3})", text)
+    loc = re.search(r"(?:地址|来自于|来自|country)\s*[:：]\s*([^\n]{2,60})", text)
+    ev: dict = {}
+    if ip:
+        ev["exit_ip"] = ip.group(1)
+    if loc:
+        ev["exit_loc"] = loc.group(1).strip()
+    return ev if ev.get("exit_ip") else {}
+
+
+# ---------------------------------------------------------------- 输出构建
+def _truthy(v) -> bool:
+    return str(v).lower() in ("1", "true", "yes", "on")
+
+
+def build_verified_config(nodes: list[dict]) -> dict:
+    """验证集 clash 配置：合规节点进自动/地区组，Insecure 独立隔离组。"""
+    proxies = [dict(n["proxy"]) for n in nodes]
+    compliant = [p for p in proxies if not _truthy(p.get("skip-cert-verify"))]
+    insecure = [p for p in proxies if _truthy(p.get("skip-cert-verify"))]
+    names = [p["name"] for p in compliant]
+    insecure_names = [p["name"] for p in insecure]
+    groups = [
+        {"name": "🚀 节点选择", "type": "select",
+         "proxies": ["♻️ 自动选择", "DIRECT"] + names},
+        {"name": "♻️ 自动选择", "type": "url-test", "proxies": names,
+         "url": common.PROBE_URL, "interval": 300, "tolerance": 50},
+    ]
+    if classify_proxy is not None:
+        regions: dict[str, list[str]] = {}
+        for p in compliant:
+            regions.setdefault(classify_proxy(str(p.get("name", ""))), []).append(p["name"])
+        for region, rnames in regions.items():
+            if len(rnames) >= 2:
+                groups.append({"name": region, "type": "url-test", "proxies": rnames,
+                               "url": common.PROBE_URL, "interval": 300})
+                groups[0]["proxies"].append(region)
+    if insecure_names:
+        groups.append({"name": common.INSECURE_GROUP, "type": "select",
+                       "proxies": insecure_names})
+        groups[0]["proxies"].append(common.INSECURE_GROUP)
+    return {
+        "mixed-port": 7890,
+        "allow-lan": False,
+        "mode": "rule",
+        "log-level": "info",
+        "proxies": proxies,
+        "proxy-groups": groups,
+        "rules": ["GEOIP,CN,DIRECT", "MATCH,🚀 节点选择"],
+    }
+
+
+def write_verified_outputs(nodes: list[dict], workdir: str) -> dict[str, str]:
+    paths = {}
+    cfg = build_verified_config(nodes)
+    clash_path = os.path.join(workdir, VERIFIED_FILE["clash"])
+    with open(clash_path, "w", encoding="utf-8") as f:
+        yaml.dump(cfg, f, allow_unicode=True, sort_keys=False)
+    paths["clash"] = clash_path
+    if write_outputs is not None:
+        proxies = [dict(n["proxy"]) for n in nodes]
+        write_outputs(proxies, namer=lambda b: os.path.join(
+            workdir, VERIFIED_FILE[ASSET_FORMAT_REV.get(b, b)]))
+        for fmt, fname in VERIFIED_FILE.items():
+            if fmt != "clash":
+                paths[fmt] = os.path.join(workdir, fname)
+    return paths
+
+
+# ---------------------------------------------------------------- 主流程
+def main() -> int:
+    ap = argparse.ArgumentParser(description="中国出口节点实测（沙箱侧）")
+    ap.add_argument("--tag", default=default_tag())
+    ap.add_argument("--workdir", default=os.environ.get("CN_PROBE_WORKDIR", "/tmp/cn_probe"))
+    ap.add_argument("--max-wait", type=int, default=20, help="新鲜度闸门最长等待分钟")
+    ap.add_argument("--dry-run", action="store_true", help="不发布，仅本地验证")
+    args = ap.parse_args()
+
+    tag = args.tag
+    workdir = args.workdir
+    os.makedirs(workdir, exist_ok=True)
+    stamp = datetime.datetime.now(datetime.timezone.utc)
+    round_id = stamp.strftime("%Y%m%dT%H%MZ")
+
+    # 1) 自检：沙箱自身网络
+    if not sandbox_selfcheck():
+        log("熔断: 沙箱自身网络不可用（直连探测失败），中止——避免把自身故障"
+            "误判为节点全失效")
+        return 2
+    log("自检通过: 沙箱直连可用")
+
+    # 2) 交接文档 + 新鲜度闸门
+    pend_path = os.path.join(workdir, common.PENDING_PROBE_FILE)
+    rescue_path = os.path.join(workdir, common.PENDING_RESCUE_FILE)
+    fresh = False
+    if gh_download(tag, common.PENDING_PROBE_FILE, pend_path):
+        doc_ts = None
+        try:
+            with open(pend_path, encoding="utf-8") as f:
+                doc_ts = parse_ts(json.load(f).get("generated_at", ""))
+        except Exception:
+            doc_ts = None
+        if doc_ts and (stamp - doc_ts).total_seconds() <= PENDING_MAX_AGE_S:
+            fresh = True
+        else:
+            log(f"pending_probe.json 陈旧（{doc_ts}），轮询等待至多 {args.max_wait} 分钟…")
+            deadline = time.time() + args.max_wait * 60
+            while time.time() < deadline:
+                time.sleep(60)
+                if gh_download(tag, common.PENDING_PROBE_FILE, pend_path):
+                    try:
+                        with open(pend_path, encoding="utf-8") as f:
+                            doc_ts = parse_ts(json.load(f).get("generated_at", ""))
+                    except Exception:
+                        doc_ts = None
+                    if doc_ts and (stamp - doc_ts).total_seconds() <= PENDING_MAX_AGE_S:
+                        fresh = True
+                        break
+    else:
+        log("未找到 pending_probe.json（CI 可能尚未发布交接文档）")
+    if fresh:
+        gh_download(tag, common.PENDING_RESCUE_FILE, rescue_path)
+        log(f"交接文档新鲜（{doc_ts}），进入实测")
+    else:
+        log("无新鲜待测文档：退化为仅测 carryover（保订阅新鲜度）")
+
+    # 3) 测试集 = carryover ∪ pending ∪ rescue
+    assets = release_assets(tag)
+    main_clash = next((a["name"] for a in assets if ASSET_RE.match(a.get("name", ""))
+                       and a["name"].endswith("_c.yaml")), None)
+    carry = load_carryover(os.path.join(workdir, "main_clash.yaml")) if (
+        main_clash and gh_download(tag, main_clash, os.path.join(workdir, "main_clash.yaml"))
+    ) else []
+    pend = load_doc_nodes(pend_path, "pending") if fresh else []
+    resc = load_doc_nodes(rescue_path, "rescue") if fresh else []
+    nodes = dedup_nodes([("pending", pend), ("rescue", resc), ("carryover", carry)])
+    if not nodes:
+        log("无任何可测节点（无待测文档且主资产为空），退出")
+        return 4
+    log(f"测试集: {len(nodes)}（pending {len(pend)} / rescue {len(resc)} / "
+        f"carryover {len(carry)}）")
+
+    # 4) mihomo 拨测
+    mihomo = ensure_mihomo(workdir)
+    if not mihomo:
+        log("熔断: mihomo 不可用，不发布")
+        return 3
+    mixed_port, api_port = free_port(7897), free_port(9097)
+    probe_names = [n["probe_name"] for n in nodes]
+    cfg = {
+        "mixed-port": mixed_port,
+        "allow-lan": False,
+        "mode": "rule",
+        "log-level": "warning",
+        "external-controller": f"127.0.0.1:{api_port}",
+        "proxies": [dict(n["proxy"], name=n["probe_name"]) for n in nodes],
+        "proxy-groups": [{"name": "PROBE", "type": "select",
+                          "proxies": probe_names + ["DIRECT"]}],
+        "rules": ["MATCH,PROBE"],
+    }
+    cfg_path = os.path.join(workdir, "probe_config.yaml")
+    with open(cfg_path, "w", encoding="utf-8") as f:
+        yaml.dump(cfg, f, allow_unicode=True, sort_keys=False)
+    proc = subprocess.Popen([mihomo, "-d", workdir, "-f", cfg_path],
+                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    try:
+        if not wait_controller(api_port):
+            log("熔断: mihomo 控制器未就绪，不发布")
+            return 3
+        log(f"mihomo 就绪（mixed {mixed_port} / api {api_port}），开始拨测 "
+            f"{len(nodes)} 个节点…")
+        try:
+            t0 = time.time()
+            results: dict[str, dict] = {}
+            with ThreadPoolExecutor(max_workers=DELAY_CONCURRENCY) as ex:
+                futs = {ex.submit(delay_test, api_port, n["probe_name"]): n["probe_name"]
+                        for n in nodes}
+                for fut in futs:
+                    name = futs[fut]
+                    try:
+                        results[name] = fut.result()
+                    except Exception:
+                        results[name] = {"ok": False, "latency_ms": None}
+            log(f"拨测完成: 通过 {sum(1 for r in results.values() if r['ok'])}/{len(nodes)}"
+                f"（{time.time() - t0:.0f}s）")
+
+            # 5) 出口证据（仅通过节点，限量顺序执行）
+            passed = [n for n in nodes if results.get(n["probe_name"], {}).get("ok")]
+            for i, n in enumerate(passed[:GEO_MAX_NODES]):
+                ev = exit_evidence(api_port, "PROBE", n["probe_name"])
+                if ev:
+                    results[n["probe_name"]].update(ev)
+        except Exception as e:
+            log(f"熔断: 拨测过程异常（{type(e).__name__}: {e}），不发布")
+            return 3
+    finally:
+        proc.terminate()
+        try:
+            proc.wait(timeout=10)
+        except Exception:
+            proc.kill()
+
+    # 6) 合并：通过即留、败即汰（自清洁）；双 vantage 强者排前
+    def rank(n: dict) -> tuple:
+        r = results.get(n["probe_name"], {})
+        return (0 if (n["us_ok"] and n["final"]) else 1,
+                r.get("latency_ms") if r.get("latency_ms") is not None else 99999)
+
+    verified = sorted(passed, key=rank)
+    by_origin = {o: sum(1 for n in verified if n["origin"] == o)
+                 for o in ("pending", "rescue", "carryover")}
+    log(f"验证集: {len(verified)} 个（pending {by_origin['pending']} / "
+        f"rescue {by_origin['rescue']} / carryover {by_origin['carryover']}）")
+
+    report = {
+        "round_id": round_id,
+        "generated_at": stamp.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "vantage": "cn-hn-sandbox",
+        "exit_ip": _sandbox_ip(),
+        "counts": {
+            "tested": len(nodes),
+            "passed": len(verified),
+            "by_origin": {"pending": len(pend), "rescue": len(resc),
+                          "carryover": len(carry)},
+            "passed_by_origin": by_origin,
+        },
+        "nodes": [{
+            "fp": n["fp"], "name": n["name"], "origin": n["origin"],
+            "final": n["final"], "us_ok": n["us_ok"],
+            "cn": results.get(n["probe_name"], {}),
+        } for n in nodes],
+        "published": False,
+    }
+    report_path = os.path.join(workdir, common.VERIFICATION_REPORT_FILE)
+    with open(report_path, "w", encoding="utf-8") as f:
+        json.dump(report, f, ensure_ascii=False, indent=1)
+
+    # 7) 熔断：通过数不足 → 不碰主资产（保留上轮验证集/CI 兜底）
+    if len(verified) < common.VERIFICATION_MIN_PASSED:
+        log(f"熔断: 通过数 {len(verified)} < 下限 {common.VERIFICATION_MIN_PASSED}，"
+            f"不发布主资产（保留上一轮验证集），仅更新报告")
+        if not args.dry_run:
+            run(["gh", "release", "upload", tag, "--clobber", report_path])
+        return 0
+
+    # 8) 发布验证集到主资产（p_* 随机名，订阅永久地址不变）
+    paths = write_verified_outputs(verified, workdir)
+    asset_by_fmt = {}
+    for a in assets:
+        m = ASSET_RE.match(a.get("name", ""))
+        if m:
+            asset_by_fmt[ASSET_FORMAT[m.group(1)]] = a["name"]
+    log(f"验证集输出: " + ", ".join(f"{k}={os.path.basename(v)}"
+                                    for k, v in paths.items()))
+    if args.dry_run:
+        log("dry-run: 跳过发布。产物在 " + workdir)
+        return 0
+    uploaded = []
+    for fmt, path in paths.items():
+        target = asset_by_fmt.get(fmt)
+        if not target:
+            log(f"警告: 未找到 {fmt} 对应的主资产名，跳过")
+            continue
+        # gh release upload 的资产名只能取文件基名（'#' 后缀是显示标签而非
+        # 改名），故先复制成目标资产名再传，保证永久订阅地址内容被原地刷新。
+        staged = os.path.join(workdir, target)
+        shutil.copyfile(path, staged)
+        r = run(["gh", "release", "upload", tag, "--clobber", staged])
+        if r.returncode == 0:
+            uploaded.append(target)
+        else:
+            log(f"警告: 上传 {target} 失败: {r.stderr.strip()[:200]}")
+    run(["gh", "release", "upload", tag, "--clobber", report_path])
+    report["published"] = bool(uploaded)
+    report["main_assets"] = uploaded
+    with open(report_path, "w", encoding="utf-8") as f:
+        json.dump(report, f, ensure_ascii=False, indent=1)
+    run(["gh", "release", "upload", tag, "--clobber", report_path])
+    # 轮转：保留本轮消费的待测文档一个世代（pending_probe.prev.json）
+    if fresh and os.path.exists(pend_path):
+        prev_path = os.path.join(workdir, "pending_probe.prev.json")
+        shutil.copyfile(pend_path, prev_path)
+        run(["gh", "release", "upload", tag, "--clobber",
+             f"{prev_path}#pending_probe.prev.json"])
+    log(f"发布完成: 主资产 {len(uploaded)} 个 + {common.VERIFICATION_REPORT_FILE}"
+        f"（round {round_id}）")
+    return 0
+
+
+def _sandbox_ip() -> str:
+    for url in ("https://cip.cc", "https://myip.ipip.net"):
+        try:
+            with urllib.request.urlopen(urllib.request.Request(
+                    url, headers={"User-Agent": "curl/8"}), timeout=8) as r:
+                m = re.search(r"(\d{1,3}(?:\.\d{1,3}){3})",
+                              r.read().decode("utf-8", "replace"))
+                if m:
+                    return m.group(1)
+        except Exception:
+            continue
+    return ""
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -97,21 +97,23 @@ jobs:
         # 资产名为随机字符串（首次生成后不变），订阅地址永久有效。
         # 未开启反爬或 publish_release=false 时跳过。
         #
-          # 步骤顺序：发布必须先于「Commit and Push」。发布失败（网络/gh 故障）时
-          # 绝不能先提交——否则仓库状态文件（survival/source_scores）已前进而永久
-          # 地址仍指向旧资产，下一轮将基于失同步状态选样，质量继续漂移。
-          #
-          # 上传顺序（隐式契约，勿改文件名破坏）：.publish/* 按字母序上传，
-          # 订阅资产（p_<hex>_<fmt> 随机名）先于 pending_probe.json /
-          # pending_rescue.json（'p_' < 'pe'）。沙箱实测定时任务以
-          # pending_probe.json 的 generated_at 作新鲜度闸门——读到新文档时
-          # 订阅资产必已就绪，不会拿到半成品。
-          #
-          # 发布前 sanity 检查：.publish/ 里不得出现诱饵标记（bait_host/[BAIT]），
-          # 且每个文件必须非空——2026-10 曾因运行成功但 glob 只捕获到固定名诱饵
-          # 文件，险些让永久地址服务纯诱饵内容；此处作为最后一道闸门。
-          # 另要求至少一个非交接文档文件（订阅资产）在场，防止只发布
-          # pending_*.json 而订阅资产缺失。
+        # 步骤顺序：发布必须先于「Commit and Push」。发布失败（网络/gh 故障）时
+        # 绝不能先提交——否则仓库状态文件（survival/source_scores）已前进而永久
+        # 地址仍指向旧资产，下一轮将基于失同步状态选样，质量继续漂移。
+        #
+        # 上传顺序（隐式契约，勿改文件名破坏）：files 清单里 candidates_* 先于
+        # pending_*（'can' < 'pen'），p_* 主资产在最前。沙箱实测定时任务以
+        # pending_probe.json 的 generated_at 作新鲜度闸门——读到新文档时订阅
+        # 内容必已就绪，不会拿到半成品。
+        #
+        # 主资产所有权切换：实测验证新鲜时主资产归沙箱实测集（CI 不覆盖），
+        # 陈旧/缺失时 CI 兜底发布候选集到主资产。详见 run 内注释与 common.py
+        # 的 VERIFICATION_* 阈值。
+        #
+        # 发布前 sanity 检查：待发布文件不得包含诱饵标记（bait_host/[BAIT]）
+        # 且必须非空——2026-10 曾因运行成功但 glob 只捕获到固定名诱饵文件，
+        # 险些让永久地址服务纯诱饵内容；此处作为最后一道闸门。另要求至少
+        # 一个候选集副本在场，防止只发布 pending_*.json 而订阅内容缺失。
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -129,18 +131,47 @@ jobs:
           fi
           tag="$(python3 -c "import json; print(json.load(open('anti_crawl.json', encoding='utf-8')).get('release_tag') or 'sub')")"
           compgen -G ".publish/*" >/dev/null || { echo "ERROR: .publish/ 下没有待发布文件" >&2; exit 1; }
-          # 订阅资产在位检查：至少一个非交接文档文件（防只有 pending_*.json）
+          # ---- 主资产所有权切换（CI 候选集 vs 沙箱实测集）----
+          # 实测验证新鲜（report <12h 且通过数 ≥15，阈值见 common.py）时，
+          # 主资产（p_* 随机名，订阅永久地址）归沙箱实测集所有：CI 只发布
+          # 候选集固定名副本（candidates_*）与交接文档（pending_*），避免
+          # 发布后即被下一轮 CI 覆盖的抖动，订阅者长时间拿到优选集。
+          # 验证陈旧/缺失（沙箱连续未产出）时 CI 兜底：候选集发布到主资产，
+          # 保证订阅永不枯竭。
+          ver_fresh=0
+          if gh release download "$tag" -p verification_report.json \
+               -O /tmp/verification_report.json --clobber >/dev/null 2>&1 \
+             && python3 scripts/verification_fresh.py /tmp/verification_report.json; then
+            ver_fresh=1
+          fi
+          if [ "$ver_fresh" = "1" ]; then
+            echo "实测验证新鲜：主资产归沙箱实测集，CI 仅发布候选集副本与交接文档"
+          else
+            echo "实测验证陈旧/缺失：CI 兜底发布候选集到主资产"
+          fi
+          # 上传清单：候选集副本 + 交接文档总是发布；主资产仅兜底时发布。
+          files=()
+          for f in .publish/candidates_* .publish/pending_*; do
+            [ -f "$f" ] && files+=("$f")
+          done
+          if [ "$ver_fresh" != "1" ]; then
+            for f in .publish/p_*; do
+              [ -f "$f" ] && files+=("$f")
+            done
+          fi
+          [ "${#files[@]}" -ge 1 ] || { echo "ERROR: 没有可发布文件" >&2; exit 1; }
+          # 订阅内容在场检查：至少一个候选集副本（防只有交接文档）
           n_sub=0
-          for f in .publish/*; do
+          for f in "${files[@]}"; do
             case "$(basename "$f")" in
               pending_probe.json|pending_rescue.json) ;;
               *) n_sub=$((n_sub + 1)) ;;
             esac
           done
-          [ "$n_sub" -ge 1 ] || { echo "ERROR: .publish/ 缺少订阅资产（只有交接文档）" >&2; exit 1; }
+          [ "$n_sub" -ge 1 ] || { echo "ERROR: 缺少订阅内容（候选集副本）" >&2; exit 1; }
           # 诱饵污染检查：真实输出绝不包含 bait_host / [BAIT] 标记
           bait_host="$(python3 -c "import json; print((json.load(open('anti_crawl.json', encoding='utf-8')).get('bait_host') or 'bait.invalid'))")"
-          for f in .publish/*; do
+          for f in "${files[@]}"; do
             [ -s "$f" ] || { echo "ERROR: 待发布文件为空: $f" >&2; exit 1; }
             if grep -qF "$bait_host" "$f" || grep -qF "[BAIT]" "$f"; then
               echo "ERROR: 待发布文件疑似诱饵内容（含 $bait_host / [BAIT]）: $f" >&2
@@ -148,13 +179,13 @@ jobs:
             fi
           done
           if gh release view "$tag" >/dev/null 2>&1; then
-            gh release upload "$tag" --clobber .publish/*
+            gh release upload "$tag" --clobber "${files[@]}"
           else
             gh release create "$tag" --title "subscription" \
               --notes "Auto-updated rolling release. Permanent subscription URLs (random asset names) are shown only in the Actions run Step Summary (repo owner)." \
-              .publish/*
+              "${files[@]}"
           fi
-          echo "已发布滚动 Release: $tag"
+          echo "已发布滚动 Release: $tag（主资产归属: $([ "$ver_fresh" = "1" ] && echo 实测集 || echo 候选集兜底)）"
 
       - name: Commit and Push (with rebase retry)
         id: commit

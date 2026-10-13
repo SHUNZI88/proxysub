@@ -122,7 +122,7 @@ def test_parse_subscription_text_parses_vless_line():
 # ---------------- 渠道发现（mock） ----------------
 
 def test_discover_telegram_adds_candidate_and_nodes(tmp_path, fake_get, monkeypatch):
-    os.chdir(tmp_path)
+    monkeypatch.chdir(tmp_path)
     _write_channels(tmp_path, {"enabled": True, "telegram": ["FreeNodes"], "web": [], "static_sources": []})
     sources = {"official": [], "removed": [], "deny_repos": []}
     cands = {"candidates": {}, "rejected": {}}
@@ -140,7 +140,7 @@ def test_discover_telegram_adds_candidate_and_nodes(tmp_path, fake_get, monkeypa
 
 
 def test_discover_web_adds_candidate(tmp_path, fake_get, monkeypatch):
-    os.chdir(tmp_path)
+    monkeypatch.chdir(tmp_path)
     _write_channels(tmp_path, {"enabled": True, "telegram": [], "web": ["https://blog.example.com/nodes"], "static_sources": []})
     sources = {"official": [], "removed": [], "deny_repos": []}
     cands = {"candidates": {}, "rejected": {}}
@@ -150,7 +150,7 @@ def test_discover_web_adds_candidate(tmp_path, fake_get, monkeypatch):
 
 
 def test_discover_channels_discovery_off(tmp_path, monkeypatch):
-    os.chdir(tmp_path)
+    monkeypatch.chdir(tmp_path)
     monkeypatch.setenv("PROXYSUB_DISCOVERY", "0")
     _write_channels(tmp_path, {"enabled": True, "telegram": ["X"], "web": [], "static_sources": []})
     sources = {"official": [], "removed": [], "deny_repos": []}
@@ -161,7 +161,7 @@ def test_discover_channels_discovery_off(tmp_path, monkeypatch):
 
 
 def test_static_sources_promoted_to_official(tmp_path, fake_get, monkeypatch):
-    os.chdir(tmp_path)
+    monkeypatch.chdir(tmp_path)
     static_url = "https://raw.githubusercontent.com/static/feed/main/clash.yaml"
     _write_channels(tmp_path, {"enabled": True, "telegram": [], "web": [], "static_sources": [static_url]})
     sources = {"official": [], "removed": [], "deny_repos": []}
@@ -172,7 +172,7 @@ def test_static_sources_promoted_to_official(tmp_path, fake_get, monkeypatch):
 
 
 def test_recently_removed_and_deny_respected(tmp_path, fake_get, monkeypatch):
-    os.chdir(tmp_path)
+    monkeypatch.chdir(tmp_path)
     removed_url = "https://raw.githubusercontent.com/foo/bar/main/clash.yaml"
     _write_channels(tmp_path, {"enabled": True, "telegram": ["FreeNodes"], "web": [], "static_sources": []})
     sources = {

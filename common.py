@@ -172,6 +172,20 @@ PENDING_RESCUE_FILE = "pending_rescue.json"
 RESCUE_QUOTA = 100
 # 交接文档 schema 版本：变更节点字段/语义时递增，沙箱侧据此兼容。
 HANDOFF_GENERATOR = "proxysub-handoff/1"
+# ---- 主资产归属：CI 候选集 vs 沙箱实测集 ----
+# 主资产（p_* 随机名，订阅永久地址指向）的所有权按验证新鲜度切换：
+#   verification_report.json 新鲜（<12h 且通过数 ≥15）→ 主资产归沙箱实测
+#     集所有，CI 只发布候选集固定名副本与交接文档（避免发布后即被覆盖的
+#     抖动，订阅者长时间拿到实测优选集）；
+#   否则（无验证/验证陈旧/沙箱连续未产出）→ CI 兜底把候选集发布到主资产，
+#     保证订阅永不枯竭。两侧阈值由此处统一，工作流发布步骤 import 使用。
+CANDIDATES_CLASH = "candidates_clash.yaml"
+CANDIDATES_SINGBOX = "candidates_singbox.json"
+CANDIDATES_V2RAY = "candidates_v2ray.txt"
+CANDIDATES_PROXIES_ONLY = "candidates_proxies_only.yaml"
+VERIFICATION_REPORT_FILE = "verification_report.json"
+VERIFICATION_MAX_AGE_S = 12 * 3600
+VERIFICATION_MIN_PASSED = 15
 PROBE_BATCH = 100
 PROBE_CONCURRENCY = 32
 # Reserve real-probe slots: Asia heavy, US light.
