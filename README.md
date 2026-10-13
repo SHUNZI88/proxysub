@@ -2,22 +2,24 @@
 
 **高纯度订阅清洗与结构规范化工具**：每 6 小时（北京时间 0/6/12/18，GitHub Actions 定时 + 可手动 `workflow_dispatch`）自动抓取公开免费订阅源，经「协议白名单 + 关键参数校验 + 深度指纹去重 + 防蜜罐静态检测」清洗后，输出干净、格式标准、结构统一的节点列表。
 
-订阅地址：`https://raw.githubusercontent.com/SHUNZI88/proxysub/main/clean_clash.yaml`
+> **本仓库已开启反爬（anti-crawl）**：固定名 raw 地址（`.../main/clean_clash.yaml` 等）现为**诱饵内容**，请勿订阅。
+> 真实订阅通过滚动 GitHub Release 分发，地址形如
+> `https://github.com/SHUNZI88/proxysub/releases/latest/download/p_<随机资产名>`，
+> **永久有效、无需更换**；具体地址仅仓库所有者可见（Actions 运行页 Step Summary），不在此公开悬挂。
+> 机制与效果边界详见「反爬与防搜索」一节。
 
-### 多格式订阅地址
+### 多格式订阅地址（反爬开启后，固定名地址为诱饵，仅列出格式对应关系）
 
-| 格式 | 地址 | 适用客户端 |
+| 格式 | Release 资产名规则 | 适用客户端 |
 |---|---|---|
-| Clash / mihomo | `https://raw.githubusercontent.com/SHUNZI88/proxysub/main/clean_clash.yaml` | FlClash、Clash Verge Rev、mihomo |
-| 仅 proxies 段 | `https://raw.githubusercontent.com/SHUNZI88/proxysub/main/clean_proxies_only.yaml` | 客户端 `proxy-providers` 引用 |
-| sing-box | `https://raw.githubusercontent.com/SHUNZI88/proxysub/main/clean_singbox.json` | sing-box（outbounds 列表） |
-| v2ray 分享链接 | `https://raw.githubusercontent.com/SHUNZI88/proxysub/main/clean_v2ray.txt` | v2rayN、NekoBox（base64 整段导入） |
-| 健康报告 | `https://raw.githubusercontent.com/SHUNZI88/proxysub/main/stats.md` | 浏览器查看 |
+| Clash / mihomo | `releases/latest/download/p_*_c.yaml` | FlClash、Clash Verge Rev、mihomo |
+| 仅 proxies 段 | `releases/latest/download/p_*_p.yaml` | 客户端 `proxy-providers` 引用 |
+| sing-box | `releases/latest/download/p_*_s.json` | sing-box（outbounds 列表） |
+| v2ray 分享链接 | `releases/latest/download/p_*_v.txt` | v2rayN、NekoBox（base64 整段导入） |
+| 健康报告 | `stats.md`（仓库内，公开） | 浏览器查看 |
 
-> 中国大陆直连 `raw.githubusercontent.com` 常不稳定，可换用 jsDelivr 镜像：
-> `https://cdn.jsdelivr.net/gh/SHUNZI88/proxysub@main/clean_clash.yaml`（有 CDN 缓存延迟）。
->
-> ⚠️ 若在 `anti_crawl.json` 开启了反爬（`"enabled": true`），上表固定名地址将变为**诱饵内容**，真实永久订阅地址见 Actions 运行页 Step Summary（详见「反爬与防搜索」）。
+> 关闭反爬（`anti_crawl.json` 的 `"enabled": false`）后，固定名 raw 地址即恢复为真实内容：
+> `https://raw.githubusercontent.com/SHUNZI88/proxysub/main/clean_clash.yaml` 等（jsDelivr 镜像同理）。
 
 ### 更新时效与外部心跳
 
@@ -153,7 +155,9 @@ Content-Type: application/json
 
 ## 反爬与防搜索（anti-crawl）
 
-> **默认关闭**（`anti_crawl.json` 的 `"enabled": false`），开启后行为才变化；也可用环境变量 `PROXYSUB_ANTI_CRAWL=0` 临时强制关闭。
+> **当前状态：已开启**（`anti_crawl.json` 的 `"enabled": true`，`publish_release: true` 永久地址模式）。
+> 固定名 raw 地址为诱饵内容；真实订阅经滚动 Release 分发，地址永久不变（见页首）。
+> 关闭方式：`"enabled": false`，或工作流环境变量 `PROXYSUB_ANTI_CRAWL: '0'` 临时强制关闭。
 
 public 仓库的订阅文件对任何人可读，且会被「按固定路径扫描」的爬虫 / 聚合站收录。在 `anti_crawl.json` 设 `"enabled": true` 后：
 
