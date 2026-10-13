@@ -92,6 +92,53 @@ jobs:
           # 调试用：PROXYSUB_DISABLE_PROBE=1 可跳过真实拨测（输出会混入僵尸节点）
         run: python filter_clash.py
 
+      - name: Publish rolling release (anti-crawl permanent URLs)
+        # 反爬 release 模式：把 .publish/ 下的真实输出发布为滚动 Release（tag sub），
+        # 资产名为随机字符串（首次生成后不变），订阅地址永久有效。
+        # 未开启反爬或 publish_release=false 时跳过。
+        #
+        # 步骤顺序：发布必须先于「Commit and Push」。发布失败（网络/gh 故障）时
+        # 绝不能先提交——否则仓库状态文件（survival/source_scores）已前进而永久
+        # 地址仍指向旧资产，下一轮将基于失同步状态选样，质量继续漂移。
+        #
+        # 发布前 sanity 检查：.publish/ 里不得出现诱饵标记（bait_host/[BAIT]），
+        # 且每个文件必须非空——2026-10 曾因运行成功但 glob 只捕获到固定名诱饵
+        # 文件，险些让永久地址服务纯诱饵内容；此处作为最后一道闸门。
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          if ! python3 -c "
+          import json, sys
+          try:
+              cfg = json.load(open('anti_crawl.json', encoding='utf-8'))
+          except Exception:
+              sys.exit(1)
+          sys.exit(0 if cfg.get('enabled') and cfg.get('publish_release', True) else 1)
+          "; then
+            echo "反爬 Release 发布未启用，跳过"
+            exit 0
+          fi
+          tag="$(python3 -c "import json; print(json.load(open('anti_crawl.json', encoding='utf-8')).get('release_tag') or 'sub')")"
+          compgen -G ".publish/*" >/dev/null || { echo "ERROR: .publish/ 下没有待发布文件" >&2; exit 1; }
+          # 诱饵污染检查：真实输出绝不包含 bait_host / [BAIT] 标记
+          bait_host="$(python3 -c "import json; print((json.load(open('anti_crawl.json', encoding='utf-8')).get('bait_host') or 'bait.invalid'))")"
+          for f in .publish/*; do
+            [ -s "$f" ] || { echo "ERROR: 待发布文件为空: $f" >&2; exit 1; }
+            if grep -qF "$bait_host" "$f" || grep -qF "[BAIT]" "$f"; then
+              echo "ERROR: 待发布文件疑似诱饵内容（含 $bait_host / [BAIT]）: $f" >&2
+              exit 1
+            fi
+          done
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" --clobber .publish/*
+          else
+            gh release create "$tag" --title "subscription" \
+              --notes "Auto-updated rolling release. Permanent subscription URLs (random asset names) are shown only in the Actions run Step Summary (repo owner)." \
+              .publish/*
+          fi
+          echo "已发布滚动 Release: $tag"
+
       - name: Commit and Push (with rebase retry)
         id: commit
         run: |
@@ -99,11 +146,17 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add clean_clash.yaml clean_singbox.json clean_v2ray.txt \
-                  clean_proxies_only.yaml stats.md survival.json \
-                  source_stats.json source_scores.json bad_sources.json \
-                  sources.json candidate_sources.json honeypot_blocklist.json \
-                  collected_nodes.txt anti_crawl.json robots.txt || true
+          # 逐文件 add：任一文件缺失（如 collected_nodes.txt 未被生成）不影响其余文件。
+          # 曾经的坑：整单 `git add a b c ... || true` 是原子操作，一个缺失路径使
+          # 整个 add 失败被 || true 吞掉，导致 survival/source_scores 等状态文件
+          # 连续多轮停更（排名历史与源管理状态冻结），节点质量随之下滑。
+          for f in clean_clash.yaml clean_singbox.json clean_v2ray.txt \
+                   clean_proxies_only.yaml stats.md survival.json \
+                   source_stats.json source_scores.json bad_sources.json \
+                   sources.json candidate_sources.json honeypot_blocklist.json \
+                   collected_nodes.txt anti_crawl.json robots.txt; do
+            [ -f "$f" ] && git add "$f" || true
+          done
           # 反爬轮换文件名（clean_clash.<token>.yaml 等）：-A 同时捕获新增与
           # 被程序删除的过期文件；无匹配时静默跳过。
           git add -A -- 'clean_clash.*' 'clean_singbox.*' 'clean_v2ray.*' \
@@ -131,36 +184,6 @@ jobs:
           done
           echo "最终推送失败" >&2
           exit 1
-
-      - name: Publish rolling release (anti-crawl permanent URLs)
-        # 反爬 release 模式：把 .publish/ 下的真实输出发布为滚动 Release（tag sub），
-        # 资产名为随机字符串（首次生成后不变），订阅地址永久有效。
-        # 未开启反爬或 publish_release=false 时跳过。
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -euo pipefail
-          if ! python3 -c "
-          import json, sys
-          try:
-              cfg = json.load(open('anti_crawl.json', encoding='utf-8'))
-          except Exception:
-              sys.exit(1)
-          sys.exit(0 if cfg.get('enabled') and cfg.get('publish_release', True) else 1)
-          "; then
-            echo "反爬 Release 发布未启用，跳过"
-            exit 0
-          fi
-          tag="$(python3 -c "import json; print(json.load(open('anti_crawl.json', encoding='utf-8')).get('release_tag') or 'sub')")"
-          compgen -G ".publish/*" >/dev/null || { echo "ERROR: .publish/ 下没有待发布文件" >&2; exit 1; }
-          if gh release view "$tag" >/dev/null 2>&1; then
-            gh release upload "$tag" --clobber .publish/*
-          else
-            gh release create "$tag" --title "subscription" \
-              --notes "Auto-updated rolling release. Permanent subscription URLs (random asset names) are shown only in the Actions run Step Summary (repo owner)." \
-              .publish/*
-          fi
-          echo "已发布滚动 Release: $tag"
 
       - name: Create issue on failure
         # 反爬：失败详情默认不再开公开 Issue（会在仓库 Issues 页暴露运行信息），
