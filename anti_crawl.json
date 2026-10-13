@@ -1,6 +1,6 @@
 {
   "_doc": "反爬与防搜索配置（默认关闭）。enabled=true 后：固定名订阅文件改写为诱饵内容，真实输出发布到滚动 GitHub Release（资产名为随机字符串、永久不变，publish_release=true，默认）；publish_release=false 则退回轮换文件名模式（链接定期失效）。token_seed/token/current_outputs/stale_outputs/bait_nodes/bait_history/asset_names 由程序自动维护，请勿手工编辑；PROXYSUB_ANTI_CRAWL=0 可临时强制关闭；PROXYSUB_ASSET_NAMES 可指定 Release 资产名（JSON，指定后不写入本文件）。效果边界见 README「反爬与防搜索」。",
-  "enabled": false,
+  "enabled": true,
   "publish_release": true,
   "release_tag": "sub",
   "rotate_days": 3,
