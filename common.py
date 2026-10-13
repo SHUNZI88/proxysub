@@ -159,6 +159,19 @@ PROBE_FRESH_QUOTA = 250
 CHANNEL_NODES_KEY = "__channel_nodes__"
 # 多渠道节点保底拨测配额：与候选源同等参与「通过拨测方可入榜」机制。
 CHANNEL_PROBE_QUOTA = 60
+# ---- CI → 沙箱交接文档（中国出口实测接力，Phase 1）----
+# 每轮把待测节点集/救援集写入 .publish/，随滚动 Release 发布为资产；
+# 沙箱定时任务下载后用中国出口实测筛选，通过者覆盖发布为主资产。
+# 交接走 Release 资产而非 git 提交：无提交竞态、无仓库膨胀，两侧解耦。
+# 上传顺序依赖：订阅资产（p_* 随机名）字母序先于 pending_*，即新鲜
+# pending_probe.json 上架时订阅资产必已就绪（见工作流发布步骤注释）。
+PENDING_PROBE_FILE = "pending_probe.json"
+PENDING_RESCUE_FILE = "pending_rescue.json"
+# 救援集上限：静态可行但未入拨测样本的节点（「美国不通、中国通」
+# lost-and-found 池——样本有配额上限，被挤出的节点仍可能中国可用）。
+RESCUE_QUOTA = 100
+# 交接文档 schema 版本：变更节点字段/语义时递增，沙箱侧据此兼容。
+HANDOFF_GENERATOR = "proxysub-handoff/1"
 PROBE_BATCH = 100
 PROBE_CONCURRENCY = 32
 # Reserve real-probe slots: Asia heavy, US light.

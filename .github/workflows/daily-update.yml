@@ -97,13 +97,21 @@ jobs:
         # 资产名为随机字符串（首次生成后不变），订阅地址永久有效。
         # 未开启反爬或 publish_release=false 时跳过。
         #
-        # 步骤顺序：发布必须先于「Commit and Push」。发布失败（网络/gh 故障）时
-        # 绝不能先提交——否则仓库状态文件（survival/source_scores）已前进而永久
-        # 地址仍指向旧资产，下一轮将基于失同步状态选样，质量继续漂移。
-        #
-        # 发布前 sanity 检查：.publish/ 里不得出现诱饵标记（bait_host/[BAIT]），
-        # 且每个文件必须非空——2026-10 曾因运行成功但 glob 只捕获到固定名诱饵
-        # 文件，险些让永久地址服务纯诱饵内容；此处作为最后一道闸门。
+          # 步骤顺序：发布必须先于「Commit and Push」。发布失败（网络/gh 故障）时
+          # 绝不能先提交——否则仓库状态文件（survival/source_scores）已前进而永久
+          # 地址仍指向旧资产，下一轮将基于失同步状态选样，质量继续漂移。
+          #
+          # 上传顺序（隐式契约，勿改文件名破坏）：.publish/* 按字母序上传，
+          # 订阅资产（p_<hex>_<fmt> 随机名）先于 pending_probe.json /
+          # pending_rescue.json（'p_' < 'pe'）。沙箱实测定时任务以
+          # pending_probe.json 的 generated_at 作新鲜度闸门——读到新文档时
+          # 订阅资产必已就绪，不会拿到半成品。
+          #
+          # 发布前 sanity 检查：.publish/ 里不得出现诱饵标记（bait_host/[BAIT]），
+          # 且每个文件必须非空——2026-10 曾因运行成功但 glob 只捕获到固定名诱饵
+          # 文件，险些让永久地址服务纯诱饵内容；此处作为最后一道闸门。
+          # 另要求至少一个非交接文档文件（订阅资产）在场，防止只发布
+          # pending_*.json 而订阅资产缺失。
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -121,6 +129,15 @@ jobs:
           fi
           tag="$(python3 -c "import json; print(json.load(open('anti_crawl.json', encoding='utf-8')).get('release_tag') or 'sub')")"
           compgen -G ".publish/*" >/dev/null || { echo "ERROR: .publish/ 下没有待发布文件" >&2; exit 1; }
+          # 订阅资产在位检查：至少一个非交接文档文件（防只有 pending_*.json）
+          n_sub=0
+          for f in .publish/*; do
+            case "$(basename "$f")" in
+              pending_probe.json|pending_rescue.json) ;;
+              *) n_sub=$((n_sub + 1)) ;;
+            esac
+          done
+          [ "$n_sub" -ge 1 ] || { echo "ERROR: .publish/ 缺少订阅资产（只有交接文档）" >&2; exit 1; }
           # 诱饵污染检查：真实输出绝不包含 bait_host / [BAIT] 标记
           bait_host="$(python3 -c "import json; print((json.load(open('anti_crawl.json', encoding='utf-8')).get('bait_host') or 'bait.invalid'))")"
           for f in .publish/*; do

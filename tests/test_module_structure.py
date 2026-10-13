@@ -6,7 +6,7 @@ import filter_clash as fc
 
 
 def test_submodules_importable():
-    for mod in ("common", "probe", "score", "output"):
+    for mod in ("common", "probe", "score", "output", "handoff"):
         m = importlib.import_module(mod)
         assert m.__name__ == mod
 

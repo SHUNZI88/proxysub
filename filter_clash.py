@@ -17,6 +17,7 @@ from collections import defaultdict
 
 import anti_crawl
 import common
+import handoff
 import output
 import probe
 import score
@@ -31,7 +32,7 @@ def _reexport(*mods) -> None:
                 ns.setdefault(name, val)
 
 
-_reexport(common, probe, score, output)
+_reexport(common, probe, score, output, handoff)
 
 
 def detect_bait_reuse(staged: dict[str, list[dict]], bait_fps: set[str],
@@ -677,6 +678,10 @@ def main() -> None:
     if total_final < MIN_FINAL:
         print(f"警告: 最终 {total_final} < 下限 {MIN_FINAL}（候选池不足）")
 
+    # fp -> 最终发布名（含 [Insecure] 标签与去重后缀）：交接文档用它与
+    # 已发布资产对齐——沙箱据通过名单按此名过滤各格式候选资产。
+    final_name_by_fp = {fingerprint(p): p["name"] for p in final_proxies + insecure_proxies}
+
     print(f"\n最终精简节点数: {total_final}（合规 {len(final_proxies)}，高风险隔离 {len(insecure_proxies)}）")
     # 自动选择/故障转移仅包含合规节点；url-test 由客户端本地动态测速
     names = [p["name"] for p in final_proxies]
@@ -730,6 +735,26 @@ def main() -> None:
                 yaml.dump(config, f, allow_unicode=True, sort_keys=False)
             write_outputs(final_proxies + insecure_proxies, namer=lambda b: paths[b])
             decoy_stat = anti_crawl.write_decoy_outputs(ac)
+            # 交接文档（中国出口实测接力）：待测集 = 拨测样本 ∪ 最终输出；
+            # 救援集 = 静态可行但未入样节点（RESCUE_QUOTA，lost-and-found）。
+            # 随 .publish/* 发布为 Release 资产——上传顺序上订阅资产
+            # （p_* 随机名）字母序先于 pending_*，沙箱的新鲜度闸门读到
+            # 新 pending_probe.json 时订阅资产必已就绪（见工作流注释）。
+            handoff_rid, handoff_now = handoff.round_stamp()
+            handoff_stat = handoff.write_handoff_docs(
+                anti_crawl.PUBLISH_DIR,
+                handoff.build_pending_doc(
+                    round_id=handoff_rid, generated_at=handoff_now,
+                    sample_fps=sample, final_names=final_name_by_fp,
+                    unique=unique, real_ok=real_ok),
+                handoff.build_rescue_doc(
+                    round_id=handoff_rid, generated_at=handoff_now,
+                    rescue_fps=handoff.select_rescue(
+                        tcp_lat=tcp_lat, unique=unique, tampered=tampered,
+                        excluded=set(sample) | set(final_name_by_fp),
+                        is_preferred=is_preferred, protocol_tier=protocol_tier),
+                    unique=unique),
+            )
             ac_report.update({
                 "mode": "release",
                 "real_outputs": list(paths.values()),
@@ -737,6 +762,9 @@ def main() -> None:
             })
             print(f"反爬: 真实输出 -> {anti_crawl.PUBLISH_DIR}/（发布为滚动 Release 永久地址；"
                   f"固定名文件已写为诱饵 {decoy_stat.get('total', 0)} 个节点）")
+            print(f"交接: 待测 {handoff_stat[common.PENDING_PROBE_FILE]} 个 | "
+                  f"救援 {handoff_stat[common.PENDING_RESCUE_FILE]} 个 "
+                  f"（round {handoff_rid}，交沙箱中国出口实测）")
         else:
             namer = anti_crawl.make_namer(ac)
             real_main = namer(OUTPUT_FILE)
