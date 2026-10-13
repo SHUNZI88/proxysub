@@ -43,20 +43,6 @@
       "added": "2026-10-10"
     },
     {
-      "url": "https://raw.githubusercontent.com/F0rc3Run/F0rc3Run/main/Best-Results/clash.yaml",
-      "origin": "discovered",
-      "added": "2026-10-10",
-      "repo": "F0rc3Run/F0rc3Run",
-      "probation_runs": 3
-    },
-    {
-      "url": "https://raw.githubusercontent.com/F0rc3Run/F0rc3Run/main/Best-Results/clash-provider.yaml",
-      "origin": "discovered",
-      "added": "2026-10-10",
-      "repo": "F0rc3Run/F0rc3Run",
-      "probation_runs": 3
-    },
-    {
       "url": "https://raw.githubusercontent.com/awesome-vpn/awesome-vpn/master/clash.yaml",
       "origin": "discovered",
       "added": "2026-10-10",
@@ -124,6 +110,16 @@
       "url": "https://raw.githubusercontent.com/zhangkaiitugithub/passcro/main/speednodes.yaml",
       "reason": "zero_unique_contribution:16runs",
       "date": "2026-10-12"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/F0rc3Run/F0rc3Run/main/Best-Results/clash.yaml",
+      "reason": "zero_unique_contribution:16runs",
+      "date": "2026-10-13"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/F0rc3Run/F0rc3Run/main/Best-Results/clash-provider.yaml",
+      "reason": "zero_unique_contribution:16runs",
+      "date": "2026-10-13"
     }
   ],
   "deny_repos": []
