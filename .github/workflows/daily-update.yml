@@ -202,7 +202,9 @@ jobs:
                    clean_proxies_only.yaml stats.md survival.json \
                    source_stats.json source_scores.json bad_sources.json \
                    sources.json candidate_sources.json honeypot_blocklist.json \
-                   collected_nodes.txt anti_crawl.json robots.txt; do
+                   collected_nodes.txt anti_crawl.json robots.txt \
+                   cn_history.json learned_thresholds.json threshold_history.json \
+                   probe_history.jsonl; do
             [ -f "$f" ] && git add "$f" || true
           done
           # 反爬轮换文件名（clean_clash.<token>.yaml 等）：-A 同时捕获新增与

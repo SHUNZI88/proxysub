@@ -131,6 +131,11 @@ SOURCE_SCORES_FILE = "source_scores.json"      # 源评分
 SURVIVAL_FILE = "survival.json"
 SOURCE_STATS_FILE = "source_stats.json"
 BAD_SOURCES_FILE = "bad_sources.json"
+# Phase 2 进化引擎数据落盘
+CN_HISTORY_FILE = "cn_history.json"          # 节点级中国通过史（fp -> 通过/失败/延迟/出口）
+PROBE_HISTORY_FILE = "probe_history.jsonl"  # 每轮审计行（可 grep、随 CI 进 git）
+LEARNED_THRESHOLDS_FILE = "learned_thresholds.json"  # 静态门槛自学习结果
+THRESHOLD_HISTORY_FILE = "threshold_history.json"    # 门槛变更审计（旧值/新值/样本/理由）
 # China-client connectivity URLs first (Asia egress reaches them more easily from US runners).
 # Runner probe: China-client-ish URLs first (any 1 pass). US runner≠China path,
 # so HTTP ok is a soft quality signal — NOT the sole admission gate.
@@ -728,3 +733,24 @@ def _has_reality(proxy: dict) -> bool:
     if proxy.get("flow") and "reality" in sni:
         return True
     return False
+
+
+# -------------------------------------------------- Phase 2 进化引擎基础工具
+def src_key(url: str) -> str:
+    """订阅源稳定短键：GitHub raw/owner/repo -> 'owner/repo'；其它 -> 域名+路径前段。
+
+    作为 source_scores.json 的 cn 维度键与报告 by_source 聚合键，须与 CI
+    侧一致。长度受控（避免 1081 节点交接文档体积膨胀）。
+    """
+    if not url:
+        return "?"
+    try:
+        p = urlparse(url)
+        path = p.path.strip("/")
+        if "github" in p.netloc and path.count("/") >= 2:
+            return "/".join(path.split("/")[:2])      # owner/repo（含 raw.githubusercontent.com）
+        if path:
+            return f"{p.netloc}/{path[:32]}"
+        return p.netloc or "?"
+    except Exception:
+        return str(url)[:48]

@@ -213,6 +213,23 @@ def cap_test_set(nodes: list[dict], budget_s: float,
     return kept, len(nodes) - len(kept)
 
 
+def _agg_two(nodes: list[dict], verified: list[dict], key_fn) -> dict:
+    """按 key_fn 聚合 tested/passed 双口径（Phase 2.2，分源/分协议）。
+
+    返回 {key: {"tested": N, "passed": M}}，按通过数降序、再按待测数降序。
+    """
+    tested: dict[str, int] = {}
+    passed: dict[str, int] = {}
+    for n in nodes:
+        k = key_fn(n)
+        tested[k] = tested.get(k, 0) + 1
+    for n in verified:
+        k = key_fn(n)
+        passed[k] = passed.get(k, 0) + 1
+    keys = sorted(tested, key=lambda k: (-passed.get(k, 0), -tested[k]))
+    return {k: {"tested": tested[k], "passed": passed.get(k, 0)} for k in keys}
+
+
 # ---------------------------------------------------------------- 自检
 def sandbox_selfcheck() -> bool:
     for url in SELFCHECK_URLS:
@@ -249,6 +266,7 @@ def load_doc_nodes(path: str, origin: str) -> list[dict]:
             "origin": origin,
             "final": bool(n.get("final")),
             "us_ok": bool(n.get("us_ok")),
+            "src": str(n["src"]) if n.get("src") else None,
         })
     return nodes
 
@@ -648,6 +666,10 @@ def main() -> int:
     verified = sorted(passed, key=rank)
     by_origin = {o: sum(1 for n in verified if n["origin"] == o)
                  for o in ("pending", "rescue", "carryover")}
+    # 分源/分协议聚合（Phase 2.2）：tested/passed 双口径，供 CI 源级评分与门槛自学习
+    by_source = _agg_two(nodes, verified, key_fn=lambda n: n.get("src") or "?")
+    by_protocol = _agg_two(nodes, verified,
+                           key_fn=lambda n: str(n["proxy"].get("type", "?")))
     log(f"验证集: {len(verified)} 个（pending {by_origin['pending']} / "
         f"rescue {by_origin['rescue']} / carryover {by_origin['carryover']}）")
 
@@ -664,6 +686,8 @@ def main() -> int:
             "by_origin": {"pending": n_pend, "rescue": n_resc,
                           "carryover": n_carry},
             "passed_by_origin": by_origin,
+            "by_source": by_source,
+            "by_protocol": by_protocol,
         },
         "nodes": [{
             "fp": n["fp"], "name": n["name"], "origin": n["origin"],

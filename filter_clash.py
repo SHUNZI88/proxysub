@@ -10,17 +10,75 @@ common / probe / score / output 四个模块。运行方式不变：
 
 from __future__ import annotations
 
+import json
 import os
 import re
+import subprocess
 import sys
 from collections import defaultdict
 
 import anti_crawl
 import common
+import evolution
 import handoff
 import output
 import probe
 import score
+
+
+REPO_ROOT = os.path.dirname(os.path.abspath(__file__))
+
+
+def _download_verification_report(repo_root: str) -> dict | None:
+    """下载上轮沙箱实测报告（Release 资产），失败返回 None（不影响主线）。
+
+    写入系统临时目录（非仓库根），避免被 CI 提交步骤误纳入版本库。
+    """
+    import tempfile
+    path = os.path.join(tempfile.gettempdir(), "_verification_report.json")
+    if os.path.exists(path):
+        os.remove(path)
+    rc = subprocess.run(
+        ["gh", "release", "download", "sub", "-p", common.VERIFICATION_REPORT_FILE,
+         "-O", path, "--clobber"], capture_output=True, text=True, timeout=120).returncode
+    if rc != 0 or not os.path.exists(path):
+        return None
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return None
+
+
+def load_evolution_inputs(repo_root: str) -> tuple[dict, dict, dict]:
+    """Phase 2 进化引擎入口：下载上轮报告 -> 4 闭环反哺 -> 返回 (cn_hist, learned, source_scores_cn)。
+
+    返回的三份数据供评分阶段复用（中国稳定性加成 / 自学习门槛 / 源级加成）。
+    报告缺失或陈旧时返回安全默认值（不信任历史）。
+    """
+    cn_hist: dict = {}
+    source_scores_cn: dict = {}
+    learned = {k: v["default"] for k, v in evolution.LEARNED_PARAMS.items()}
+    report = _download_verification_report(repo_root)
+    if report:
+        summary = evolution.run_evolution(report, repo_root)
+        print(f"进化引擎: cn_history={summary['cn_history_nodes']} "
+              f"源评分带cn维度={summary['source_scores_with_cn']} "
+              f"自学习={summary['learned']}")
+        cn_hist = _load_json_safe(os.path.join(repo_root, common.CN_HISTORY_FILE), {})
+        source_scores_cn = _load_json_safe(os.path.join(repo_root, common.SOURCE_SCORES_FILE), {})
+        learned = summary["learned"]
+    return cn_hist, learned, source_scores_cn
+
+
+def _load_json_safe(path: str, default):
+    if not os.path.exists(path):
+        return default
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return default
 
 
 def _reexport(*mods) -> None:
@@ -404,6 +462,10 @@ def main() -> None:
     for u, why in {**cand_rep["rejected"], **off_rep["demoted"]}.items():
         print(f"移除源: {u} -> {why}")
 
+    # ---- 6.5 进化引擎（Phase 2）：下载上轮沙箱实测报告，反哺本地数据/门槛 ----
+    cn_hist, learned_params, source_scores_cn = load_evolution_inputs(REPO_ROOT)
+    cn_latency_cap = learned_params.get("CN_LATENCY_CAP_MS", MAX_ACCEPT_LATENCY_MS)
+
     # ---- 7. scoring ----
     # Real-probe OK ranks first; TCP-alive (esp. Asia / Hy2/Reality) stays eligible
     # so China-path quotas and MIN_FINAL can be filled when US-runner probe is sparse.
@@ -428,7 +490,7 @@ def main() -> None:
             continue  # AI/CF sites need working HTTPS egress
         display = r["latency"] if r else tlat
         us_like = is_us_node(unique[fp], r)
-        lat_cap = MAX_ACCEPT_LATENCY_MS_US if us_like else MAX_ACCEPT_LATENCY_MS
+        lat_cap = MAX_ACCEPT_LATENCY_MS_US if us_like else cn_latency_cap
         if r and display > lat_cap:
             continue  # extreme outlier on runner RTT
         # Drop open http/socks from final when we have mihomo purity path
@@ -454,8 +516,12 @@ def main() -> None:
         penalty += protocol_penalty(unique[fp])
         penalty += china_feature_bonus(unique[fp])
         penalty += us_china_penalty(unique[fp], r)
+        # Phase 2.2 源级中国通过率加成：中国通过率高的源排更前、拿更多配额
+        _src = common.src_key(sorted(prov[fp])[0]) if prov.get(fp) else None
+        penalty += evolution.cn_source_bonus(_src, source_scores_cn)
         bonus = survival_bonus_ms(fp, score_survival)
         bonus += history_bonus(fp, score_survival)  # 历史真实通过率（持续通过的节点排更前）
+        bonus += evolution.cn_stability_bonus_ms(fp, cn_hist)  # Phase 2.1 中国稳定性加成
         if is_preferred(unique[fp]):
             bonus *= 1.5  # keep long-lived hy2/reality even harder
         # TCP 延迟（美西 Runner 测得，≠国内真实路径）仅作粗排信号：贡献设上限，
@@ -759,14 +825,14 @@ def main() -> None:
                 handoff.build_pending_doc(
                     round_id=handoff_rid, generated_at=handoff_now,
                     sample_fps=sample, final_names=final_name_by_fp,
-                    unique=unique, real_ok=real_ok),
+                    unique=unique, real_ok=real_ok, prov=prov),
                 handoff.build_rescue_doc(
                     round_id=handoff_rid, generated_at=handoff_now,
                     rescue_fps=handoff.select_rescue(
                         tcp_lat=tcp_lat, unique=unique, tampered=tampered,
                         excluded=set(sample) | set(final_name_by_fp),
                         is_preferred=is_preferred, protocol_tier=protocol_tier),
-                    unique=unique),
+                    unique=unique, prov=prov),
             )
             ac_report.update({
                 "mode": "release",

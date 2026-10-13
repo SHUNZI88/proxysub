@@ -19,7 +19,7 @@ import json
 import os
 from collections import defaultdict
 
-from common import HANDOFF_GENERATOR, PENDING_PROBE_FILE, PENDING_RESCUE_FILE, RESCUE_QUOTA
+from common import HANDOFF_GENERATOR, PENDING_PROBE_FILE, PENDING_RESCUE_FILE, RESCUE_QUOTA, src_key
 
 
 def round_stamp(now: datetime.datetime | None = None) -> tuple[str, str]:
@@ -40,12 +40,13 @@ def _by_protocol(nodes: list[dict]) -> dict[str, int]:
 
 def build_pending_doc(*, round_id: str, generated_at: str, sample_fps: list[str],
                       final_names: dict[str, str], unique: dict[str, dict],
-                      real_ok: dict[str, dict]) -> dict:
+                      real_ok: dict[str, dict], prov: dict[str, set] | None = None) -> dict:
     """待测集 = 拨测样本 ∪ 最终输出。
 
     最终输出必须并入：它是已发布的候选集，沙箱要能验证「已发布节点在
     中国是否可用」（双 vantage 差分的基准面）。入选节点携带最终发布名
     （跨格式匹配键）；未入选者携带原始名，仅供沙箱侧配置内标识。
+    prov 提供 fp→源URL集合映射，写入 src 短键供 Phase 2 源级中国通过率聚合。
     """
     fps = list(dict.fromkeys([*sample_fps, *final_names]))
     nodes: list[dict] = []
@@ -54,11 +55,15 @@ def build_pending_doc(*, round_id: str, generated_at: str, sample_fps: list[str]
         if proxy is None:
             continue
         published = final_names.get(fp)
+        src = None
+        if prov and fp in prov and prov[fp]:
+            src = src_key(sorted(prov[fp])[0])
         nodes.append({
             "fp": fp,
             "name": published or str(proxy.get("name", "node")),
             "final": published is not None,
             "us_ok": fp in real_ok,
+            "src": src,
             "proxy": proxy,
         })
     return {
@@ -95,10 +100,15 @@ def select_rescue(*, tcp_lat: dict[str, float], unique: dict[str, dict],
 
 
 def build_rescue_doc(*, round_id: str, generated_at: str, rescue_fps: list[str],
-                     unique: dict[str, dict]) -> dict:
-    """救援集文档：未入样本节点，us_ok 恒 False（本轮未经美国出口拨测）。"""
+                     unique: dict[str, dict], prov: dict[str, set] | None = None) -> dict:
+    """救援集文档：未入样本节点，us_ok 恒 False（本轮未经美国出口拨测）。
+
+    prov 提供源短键（src），与待测集同源级键体系，供 Phase 2 聚合。
+    """
     nodes = [{"fp": fp, "name": str(unique[fp].get("name", "node")),
-              "final": False, "us_ok": False, "proxy": unique[fp]}
+              "final": False, "us_ok": False,
+              "src": src_key(sorted(prov[fp])[0]) if prov and fp in prov and prov[fp] else None,
+              "proxy": unique[fp]}
              for fp in rescue_fps]
     return {
         "round_id": round_id,
