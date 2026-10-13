@@ -99,7 +99,7 @@ Content-Type: application/json
 | `honeypot_blocklist.json` | 黑名单：手工 `domains/ips/cidrs/keywords` + 自动条目（14 天过期） |
 | `source_stats.json` / `bad_sources.json` / `survival.json` | 源统计、失败计数、节点跨天存活与真实通过率 |
 | `source_scores.json` | 源长期评分（成功率 / 独有贡献 / 真实通过 / 蜜罐惩罚的指数滑动平均） |
-| `requirements.txt` | Python 依赖（requests / PyYAML / filelock / pytest） |
+| `requirements.txt` | Python 依赖（requests / PyYAML / filelock / pytest / pyflakes） |
 | `tests/` | 单元测试：指纹去重、地区识别、静态门槛、订阅解析、原子写入、两阶段探测、多格式输出、源评分 |
 
 ## 探测流程（两阶段）
@@ -194,7 +194,7 @@ public 仓库的订阅文件对任何人可读，且会被「按固定路径扫�
 
 - **原子化 JSON 读写**（`safe_io.py`）：所有状态文件（sources.json / survival.json / source_stats.json 等）通过「临时文件 + fsync + `os.replace` + filelock」写入，进程中断不会产生截断/空文件；损坏文件自动备份为 `.corrupt` 并自愈重启，不会导致流水线崩溃。
 - **工作流健壮性**：无文件变动时通过 `git diff --staged --quiet` 安全跳过提交（不会非零退出报错）；不再在 CI 中安装 mihomo（该步骤已随云端拨测一并移除）；依赖通过 `requirements.txt` 固定安装并启用 pip 缓存。
-- **回归测试**：`tests/` 覆盖订阅解析、指纹去重（嵌套参数变更不被误判）、地区识别（Russia 不误判为美国等边界用例）、协议门槛、原子写入（并发/截断/失败场景）、多渠道搜集、反爬（诱饵形态/永久地址/轮换/回流检测）。CI 在每次代码变更时自动运行（`.github/workflows/tests.yml`）。
+- **回归测试**：`tests/` 覆盖订阅解析、指纹去重（嵌套参数变更不被误判）、地区识别（Russia 不误判为美国等边界用例）、协议门槛、原子写入（并发/截断/失败场景）、多渠道搜集、反爬（诱饵形态/永久地址/轮换/回流检测）、评分函数全分支（含 pyflakes「未定义名字」静态门禁，防拆模块后漏 import 常量——2026-10-13 daily 崩溃事故的回归防线）。CI 在每次代码变更时自动运行（`.github/workflows/tests.yml`）。
 
 本地运行测试：
 

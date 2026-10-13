@@ -4,6 +4,7 @@ filelock>=3.12,<4
 
 # 测试
 pytest>=8.0,<9
+pyflakes>=3.2,<4
 
 # 可选：ASN 支持（未安装时 honeypot.py 自动跳过 ASN 检查）
 # maxminddb>=2.6,<3

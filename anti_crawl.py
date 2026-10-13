@@ -211,9 +211,12 @@ def publish_paths(cfg: dict) -> dict[str, str]:
 
 
 def release_urls(cfg: dict, repo: str | None = None) -> list[str]:
-    """永久订阅地址：https://github.com/<repo>/releases/latest/download/<资产名>。"""
+    """永久订阅地址：https://github.com/<repo>/releases/latest/download/<资产名>。
+
+    注意：用 releases/latest/download 而非具体 tag，保证地址永久不变
+    （tag 仅在工作流内用于 gh release upload/create）。
+    """
     repo = repo or os.environ.get("GITHUB_REPOSITORY") or "OWNER/REPO"
-    tag = str(cfg.get("release_tag") or DEFAULT_RELEASE_TAG)
     return [f"https://github.com/{repo}/releases/latest/download/{asset_name(cfg, b)}"
             for b in OUTPUT_BASENAMES]
 
