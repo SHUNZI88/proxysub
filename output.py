@@ -7,6 +7,7 @@ import json
 import os
 from collections import defaultdict
 from datetime import datetime, timezone
+from typing import Callable
 from urllib.parse import quote, quote_plus
 
 import yaml
@@ -206,12 +207,17 @@ def proxy_to_singbox(p: dict) -> dict | None:
 
     return None
 
-def write_outputs(final_proxies: list[dict]) -> dict:
-    """生成多格式输出：proxies-only / sing-box / v2ray 分享链接。返回统计信息。"""
+def write_outputs(final_proxies: list[dict], namer: Callable[[str], str] | None = None) -> dict:
+    """生成多格式输出：proxies-only / sing-box / v2ray 分享链接。返回统计信息。
+
+    namer：可选的 basename -> 实际文件名 映射（反爬文件名轮换时由 anti_crawl 提供；
+    不传则使用固定名，行为与原来完全一致）。
+    """
     stat = {"proxies_only": 0, "singbox": 0, "links": 0}
+    _name = namer or (lambda b: b)
 
     # 1) proxies-only（供客户端 proxy-providers 直接引用）
-    with open(OUTPUT_PROXIES_ONLY, "w", encoding="utf-8") as f:
+    with open(_name(OUTPUT_PROXIES_ONLY), "w", encoding="utf-8") as f:
         yaml.dump({"proxies": final_proxies}, f, allow_unicode=True, sort_keys=False)
     stat["proxies_only"] = len(final_proxies)
 
@@ -223,7 +229,7 @@ def write_outputs(final_proxies: list[dict]) -> dict:
             outbounds.append(ob)
     # 末尾补一个 direct，便于用户直接组合使用
     outbounds.append({"type": "direct", "tag": "direct"})
-    with open(OUTPUT_SINGBOX, "w", encoding="utf-8") as f:
+    with open(_name(OUTPUT_SINGBOX), "w", encoding="utf-8") as f:
         json.dump({"outbounds": outbounds}, f, ensure_ascii=False, indent=2)
     stat["singbox"] = len(outbounds) - 1
 
@@ -234,7 +240,7 @@ def write_outputs(final_proxies: list[dict]) -> dict:
         if link:
             links.append(link)
     payload = base64.b64encode("\n".join(links).encode("utf-8")).decode("ascii")
-    with open(OUTPUT_V2RAY, "w", encoding="utf-8") as f:
+    with open(_name(OUTPUT_V2RAY), "w", encoding="utf-8") as f:
         f.write(payload + "\n")
     stat["links"] = len(links)
 
@@ -354,6 +360,26 @@ def write_github_summary(info: dict) -> None:
         f"- Diversity caps dropped: {info['diversity_dropped']}",
         f"- Suspicious source structure: {info['flags'] or '-'}",
         "",
+    ]
+
+    # 反爬状态：真实订阅地址只写在本页（仅仓库所有者可见），不进入任何公开文件
+    ac = info.get("anti_crawl") or {}
+    if ac.get("enabled"):
+        repo = os.environ.get("GITHUB_REPOSITORY", "OWNER/REPO")
+        lines += [
+            "## Anti-crawl (real URLs are ONLY shown here — do not share)",
+            "",
+            f"- Fixed-name files (`clean_clash.yaml` etc.) are **decoy content** "
+            f"({(ac.get('decoy') or {}).get('total', 0)} bait nodes); rotation every "
+            f"{ac.get('rotate_days', '?')} days",
+        ]
+        lines += [f"- `https://raw.githubusercontent.com/{repo}/main/{p}`"
+                  for p in ac.get("real_outputs", []) if p]
+        if ac.get("stale_outputs"):
+            lines.append(f"- Expired (deleted): {', '.join(ac['stale_outputs'])}")
+        lines.append("")
+
+    lines += [
         "## Sources",
         "",
         "| Source | Role | OK | Count | Alive | Unique | Real ok | Tamper | Error |",

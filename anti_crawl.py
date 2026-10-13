@@ -1,0 +1,371 @@
+#!/usr/bin/env python3
+"""proxysub 反爬与防搜索模块（anti-crawl）。
+
+威胁模型：public 仓库的订阅文件通过 raw.githubusercontent.com 对任何人可读，
+且会被「按固定路径扫描」的爬虫 / 聚合站 / 搜索引擎收录。本模块提供一层
+「诱饵分流 + 文件名轮换 + 回流检测」，显著提高爬虫成本：
+
+  1. 诱饵分流（decoy）：开启后，固定名订阅文件（clean_clash.yaml 等）改写为
+     **诱饵内容**——大量形态合法但必定不可用的诱饵节点（名称带 [BAIT] 标记，
+     服务器指向保留域 .invalid，任何客户端都无法连通）。
+  2. 文件名轮换（rotate）：真实输出改写入轮换文件名
+     （clean_clash.<token>.yaml，token 每 rotate_days 天确定性更换一次，
+     过期文件自动删除）。大众爬虫只认固定路径，扫到的永远是诱饵。
+  3. 诱饵回流检测（bait feedback）：若某个订阅源收录了我们生成的诱饵节点
+     （指纹比对），该源会被自动标记 bait_reuse —— 候选源直接拒绝、
+     正式源自动淘汰。爬虫转载诱饵即自我暴露。
+  4. robots.txt：生成 Disallow: / 声明，劝阻合规爬虫。
+  5. 真实订阅地址只写入 GitHub Actions Step Summary（仅仓库所有者可见），
+     不进入任何公开文件。
+
+效果边界（如实说明，详见 README「反爬与防搜索」）：
+  - public 仓库无法从根本上避免被 GitHub 站内搜索 / 代码索引 / 外部搜索引擎收录；
+  - 轮换 token 与当前文件名记录在公开的 anti_crawl.json 中，可防御大众爬虫，
+    无法防御针对性人工分析；要彻底隐藏只有转 private 仓库（代价见 README）。
+
+默认关闭：anti_crawl.json 的 "enabled": false 时本模块完全不改变原有行为
+（不写诱饵、不轮换、不删文件），也可用环境变量 PROXYSUB_ANTI_CRAWL=0 强制关闭。
+
+依赖分层：本模块可 import common / output（filter_clash 已同时依赖它们，
+不构成循环）；不 import probe / score / sources_manager。
+"""
+
+from __future__ import annotations
+
+import base64
+import hashlib
+import os
+import re
+import secrets
+import uuid
+from datetime import date
+from typing import Any, Callable
+
+import yaml
+
+from safe_io import load_json, save_json  # 原子化读写，防止 JSON 截断损坏
+
+CONFIG_FILE = "anti_crawl.json"
+ROBOTS_FILE = "robots.txt"
+
+# 固定名文件 = 诱饵；真实输出 = 轮换名（见 rotated_name）
+OUTPUT_BASENAMES = (
+    "clean_clash.yaml",
+    "clean_proxies_only.yaml",
+    "clean_singbox.json",
+    "clean_v2ray.txt",
+)
+
+BAIT_TAG = "[BAIT]"
+DEFAULT_BAIT_HOST = "bait.invalid"   # RFC 2606 保留域：任何客户端都无法连通
+DEFAULT_ROTATE_DAYS = 3
+DEFAULT_DECOY_COUNT = 60
+BAIT_HISTORY_KEEP = 3                # 保留最近 N 轮诱饵节点指纹用于回流检测
+
+
+# ====================== 配置 ======================
+
+def default_config() -> dict:
+    return {
+        "_doc": (
+            "反爬与防搜索配置（默认关闭）。enabled=true 后：固定名订阅文件改写为诱饵内容，"
+            "真实输出改用轮换文件名（每 rotate_days 天更换，过期自动删除）；"
+            "token_seed/token/current_outputs/stale_outputs/bait_nodes/bait_history 由程序自动维护，请勿手工编辑；"
+            "PROXYSUB_ANTI_CRAWL=0 可临时强制关闭。效果边界见 README「反爬与防搜索」。"
+        ),
+        "enabled": False,
+        "rotate_days": DEFAULT_ROTATE_DAYS,
+        "decoy_count": DEFAULT_DECOY_COUNT,
+        "bait_host": DEFAULT_BAIT_HOST,
+        "token_seed": "",
+        "token": "",
+        "rotated_at": "",
+        "current_outputs": [],
+        "stale_outputs": [],
+        "bait_nodes": [],
+        "bait_history": [],
+    }
+
+
+def load_config() -> dict:
+    cfg = load_json(CONFIG_FILE, None)
+    base = default_config()
+    if not isinstance(cfg, dict):
+        return base
+    base.update({k: v for k, v in cfg.items() if k in base})
+    # 类型兜底：损坏/手误的字段回退到默认值，绝不让流水线崩溃
+    base["enabled"] = bool(base.get("enabled"))
+    for k, lo, hi, dflt in (("rotate_days", 1, 30, DEFAULT_ROTATE_DAYS),
+                            ("decoy_count", 5, 500, DEFAULT_DECOY_COUNT)):
+        try:
+            base[k] = max(lo, min(hi, int(base.get(k, dflt))))
+        except (TypeError, ValueError):
+            base[k] = dflt
+    base["bait_host"] = str(base.get("bait_host") or DEFAULT_BAIT_HOST).strip().lower().rstrip(".")
+    for k in ("current_outputs", "stale_outputs", "bait_nodes", "bait_history"):
+        if not isinstance(base.get(k), list):
+            base[k] = []
+    return base
+
+
+def save_config(cfg: dict) -> None:
+    save_json(CONFIG_FILE, cfg)
+
+
+def is_enabled(cfg: dict | None = None) -> bool:
+    """配置开启且未被环境变量击杀。PROXYSUB_ANTI_CRAWL=0 可临时强制关闭。"""
+    if os.environ.get("PROXYSUB_ANTI_CRAWL", "1") == "0":
+        return False
+    cfg = cfg if cfg is not None else load_config()
+    return bool(cfg.get("enabled"))
+
+
+# ====================== 轮换 token 与文件名 ======================
+
+def epoch_of(day: date, rotate_days: int) -> int:
+    return day.toordinal() // max(1, int(rotate_days))
+
+
+def rotate_token(cfg: dict, today: date | None = None) -> str:
+    """确定性派生轮换 token：同一周期内稳定，跨周期必变（seed + epoch 的哈希）。"""
+    today = today or date.today()
+    seed = str(cfg.get("token_seed") or "unseeded")
+    epoch = epoch_of(today, int(cfg.get("rotate_days", DEFAULT_ROTATE_DAYS) or DEFAULT_ROTATE_DAYS))
+    return hashlib.sha256(f"proxysub-bait:{seed}:{epoch}".encode()).hexdigest()[:10]
+
+
+def rotated_name(basename: str, token: str) -> str:
+    """clean_clash.yaml -> clean_clash.<token>.yaml（保留扩展名，客户端按 URL 识别格式）。"""
+    root, ext = os.path.splitext(basename)
+    return f"{root}.{token}{ext}"
+
+
+def make_namer(cfg: dict) -> Callable[[str], str]:
+    """返回 basename -> 当前真实输出文件名 的映射函数（供 output 层使用）。"""
+    token = str(cfg.get("token") or "")
+    return lambda base: rotated_name(base, token) if token else base
+
+
+def real_output_urls(cfg: dict, repo: str | None = None) -> list[str]:
+    repo = repo or os.environ.get("GITHUB_REPOSITORY") or "OWNER/REPO"
+    return [f"https://raw.githubusercontent.com/{repo}/main/{p}"
+            for p in cfg.get("current_outputs", []) if p]
+
+
+# ====================== 诱饵节点与诱饵订阅 ======================
+
+def _rand_public_key() -> str:
+    """43 字符 base64url（X25519 公钥形态，满足 X25519_PUBLIC_KEY_RE）。"""
+    return base64.urlsafe_b64encode(secrets.token_bytes(32)).decode().rstrip("=")
+
+
+def gen_decoy_nodes(n: int, token: str, cfg: dict) -> list[dict]:
+    """生成 n 个形态合法但必定不可用的诱饵节点（混合 vless-reality / trojan / hysteria2）。"""
+    host = str(cfg.get("bait_host") or DEFAULT_BAIT_HOST).strip().lower().rstrip(".") or DEFAULT_BAIT_HOST
+    nodes: list[dict] = []
+    for i in range(max(0, int(n))):
+        name = f"{BAIT_TAG}{token}-{i:03d}"
+        sub = secrets.token_hex(6)
+        kind = i % 3
+        if kind == 0:  # VLESS + Reality（当前最主流的优质协议形态）
+            nodes.append({
+                "name": name,
+                "type": "vless",
+                "server": f"{sub}.{host}",
+                "port": 443,
+                "uuid": str(uuid.uuid4()),
+                "network": "tcp",
+                "tls": True,
+                "flow": "xtls-rprx-vision",
+                "servername": f"{secrets.token_hex(6)}.{host}",
+                "client-fingerprint": "chrome",
+                "reality-opts": {
+                    "public-key": _rand_public_key(),
+                    "short-id": secrets.token_hex(4),
+                },
+            })
+        elif kind == 1:  # Trojan
+            nodes.append({
+                "name": name,
+                "type": "trojan",
+                "server": f"{sub}.{host}",
+                "port": 443,
+                "password": secrets.token_urlsafe(24),
+                "sni": f"{secrets.token_hex(6)}.{host}",
+                "network": "tcp",
+                "client-fingerprint": "chrome",
+            })
+        else:  # Hysteria2
+            nodes.append({
+                "name": name,
+                "type": "hysteria2",
+                "server": f"{sub}.{host}",
+                "port": 443,
+                "password": secrets.token_urlsafe(24),
+                "sni": f"{secrets.token_hex(6)}.{host}",
+            })
+    return nodes
+
+
+def build_decoy_config(nodes: list[dict]) -> dict:
+    """与真实输出同构的 Clash 配置（proxies + proxy-groups + rules）。"""
+    names = [p["name"] for p in nodes]
+    return {
+        "mixed-port": 7890,
+        "allow-lan": False,
+        "mode": "rule",
+        "log-level": "info",
+        "proxies": nodes,
+        "proxy-groups": [
+            {"name": "🚀 节点选择", "type": "select",
+             "proxies": (["♻️ 自动选择", "DIRECT"] + names)[:200]},
+            {"name": "♻️ 自动选择", "type": "url-test", "proxies": names,
+             "url": "http://www.gstatic.com/generate_204", "interval": 150, "tolerance": 50},
+        ],
+        "rules": ["GEOIP,CN,DIRECT", "MATCH,🚀 节点选择"],
+    }
+
+
+def write_decoy_outputs(cfg: dict) -> dict:
+    """把诱饵内容写入 4 个固定名文件（与真实输出完全同构，仅节点不可用）。
+
+    多格式转换复用 output 层的 proxy_to_singbox / proxy_to_share_link，
+    保证诱饵文件的形态与真实输出一致（base64 / json / yaml 均可被正常解析）。
+    """
+    import output  # 延迟导入：避免模块加载期拉起整条依赖链（测试可单独 import 本模块）
+
+    token = str(cfg.get("token") or "notoken")
+    nodes = cfg.get("bait_nodes") or gen_decoy_nodes(
+        int(cfg.get("decoy_count", DEFAULT_DECOY_COUNT)), token, cfg)
+    cfg["bait_nodes"] = nodes
+
+    stat = {"proxies_only": 0, "singbox": 0, "links": 0, "total": len(nodes)}
+
+    with open("clean_clash.yaml", "w", encoding="utf-8") as f:
+        yaml.dump(build_decoy_config(nodes), f, allow_unicode=True, sort_keys=False)
+
+    with open("clean_proxies_only.yaml", "w", encoding="utf-8") as f:
+        yaml.dump({"proxies": nodes}, f, allow_unicode=True, sort_keys=False)
+    stat["proxies_only"] = len(nodes)
+
+    outbounds = []
+    for p in nodes:
+        ob = output.proxy_to_singbox(p)
+        if ob:
+            outbounds.append(ob)
+    outbounds.append({"type": "direct", "tag": "direct"})
+    with open("clean_singbox.json", "w", encoding="utf-8") as f:
+        import json
+        json.dump({"outbounds": outbounds}, f, ensure_ascii=False, indent=2)
+    stat["singbox"] = len(outbounds) - 1
+
+    links = []
+    for p in nodes:
+        link = output.proxy_to_share_link(p)
+        if link:
+            links.append(link)
+    payload = base64.b64encode("\n".join(links).encode("utf-8")).decode("ascii")
+    with open("clean_v2ray.txt", "w", encoding="utf-8") as f:
+        f.write(payload + "\n")
+    stat["links"] = len(links)
+    return stat
+
+
+# ====================== 每轮推进 ======================
+
+def begin_run(cfg: dict | None = None, today: date | None = None) -> dict:
+    """每轮更新开始时调用：按需轮换 token / 重生成诱饵 / 清理过期文件 / 写配置。
+
+    未启用时原样返回（不落盘、不产生任何文件变化）。
+    """
+    cfg = cfg if cfg is not None else load_config()
+    if not is_enabled(cfg):
+        return cfg
+    today = today or date.today()
+
+    if not cfg.get("token_seed"):
+        cfg["token_seed"] = secrets.token_hex(16)  # 首次启用：随机种子（之后保持不变）
+
+    token = rotate_token(cfg, today)
+    if token != cfg.get("token"):
+        # 新轮换周期：记录待删旧文件、重生成诱饵、切换真实输出名
+        cfg["stale_outputs"] = [p for p in cfg.get("current_outputs", []) if p]
+        nodes = gen_decoy_nodes(int(cfg.get("decoy_count", DEFAULT_DECOY_COUNT)), token, cfg)
+        cfg["bait_nodes"] = nodes
+        history = [h for h in cfg.get("bait_history", []) if isinstance(h, dict)]
+        history = history[-(BAIT_HISTORY_KEEP - 1):] + [{"token": token, "nodes": nodes}]
+        cfg["bait_history"] = history
+        cfg["token"] = token
+        cfg["current_outputs"] = [rotated_name(b, token) for b in OUTPUT_BASENAMES]
+        cfg["rotated_at"] = today.isoformat()
+    else:
+        cfg["stale_outputs"] = []
+
+    # 删除上一轮换周期的真实输出文件（爬虫收藏的旧链接随之失效）
+    for f in cfg.get("stale_outputs", []):
+        try:
+            if os.path.exists(f):
+                os.remove(f)
+        except OSError:
+            pass
+
+    save_config(cfg)
+    return cfg
+
+
+def bait_fingerprints(cfg: dict, fingerprint_fn: Callable[[dict], str]) -> set[str]:
+    """最近若干轮全部诱饵节点的指纹集合（供主流程比对源内节点）。"""
+    fps: set[str] = set()
+    for h in cfg.get("bait_history", []):
+        for p in h.get("nodes", []) if isinstance(h, dict) else []:
+            try:
+                fps.add(fingerprint_fn(p))
+            except Exception:
+                continue
+    return fps
+
+
+# ====================== robots.txt ======================
+
+ROBOTS_TEMPLATE = """# proxysub anti-crawl
+# 本仓库内容为个人自用的节点聚合，请勿抓取、索引或镜像。
+User-agent: *
+Disallow: /
+"""
+
+
+def robots_text() -> str:
+    return ROBOTS_TEMPLATE
+
+
+def write_robots(directory: str = ".") -> str:
+    path = os.path.join(directory, ROBOTS_FILE)
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(robots_text())
+    return path
+
+
+# ====================== Step Summary ======================
+
+def summary_lines(cfg: dict) -> list[str]:
+    """GitHub Actions Step Summary 用（仅仓库所有者可见，真实地址只出现在这里）。"""
+    lines = [
+        "## 反爬状态（真实地址仅本页可见，请勿外传）",
+        "",
+        f"- 模式：诱饵分流 + 文件名轮换（每 {cfg.get('rotate_days', DEFAULT_ROTATE_DAYS)} 天，"
+        f"当前 token `{cfg.get('token', '')}`）",
+        f"- 固定名订阅文件（`clean_clash.yaml` 等）为**诱饵内容**（{len(cfg.get('bait_nodes', []))} 个诱饵节点）",
+    ]
+    lines += [f"- 订阅地址：`{u}`" for u in real_output_urls(cfg)]
+    if cfg.get("stale_outputs"):
+        lines.append(f"- 已过期的旧地址（已删除）：{', '.join(cfg['stale_outputs'])}")
+    return lines
+
+
+__all__: list[Any] = [
+    "CONFIG_FILE", "ROBOTS_FILE", "OUTPUT_BASENAMES", "BAIT_TAG",
+    "default_config", "load_config", "save_config", "is_enabled",
+    "rotate_token", "rotated_name", "make_namer", "real_output_urls", "epoch_of",
+    "gen_decoy_nodes", "build_decoy_config", "write_decoy_outputs",
+    "begin_run", "bait_fingerprints", "robots_text", "write_robots", "summary_lines",
+]

@@ -221,6 +221,9 @@ def discover(
     known = set(official_urls(sources)) | set(cands["candidates"]) | set(cands["rejected"])
     known_repos = {_repo_of(u) for u in known if _repo_of(u)}
     deny = {d.lower() for d in sources.get("deny_repos", [])}
+    # 排除自己：搜索可能命中本仓库（反爬开启时固定名文件是诱饵，自收录会触发
+    # bait_reuse 拒绝而浪费发现名额），直接跳过。
+    own = (os.environ.get("GITHUB_REPOSITORY") or "").lower()
     since = (date.today() - timedelta(days=DISCOVERY_PUSHED_DAYS)).isoformat()
 
     # rotate queries across runs so each run spends few search calls
@@ -253,7 +256,7 @@ def discover(
     for full, repo in ranked:
         if added >= DISCOVERY_MAX_NEW or looked >= DISCOVERY_MAX_REPOS or gh.exhausted:
             break
-        if full in known_repos or full in deny:
+        if full in known_repos or full in deny or (own and full == own):
             continue
         if repo.get("_needs_meta"):
             repo = gh.get(f"/repos/{repo['full_name']}") or {}
@@ -346,7 +349,10 @@ def evaluate_candidates(cands: dict, run: dict[str, dict], sources: dict) -> dic
         reason = None
         tamper, probed = r.get("tamper", 0), max(1, r.get("probed", 0))
         if r.get("flags"):
-            reason = "honeypot_structure:" + ";".join(r["flags"])
+            # 转载我们诱饵节点的源（爬虫/聚合站）直接拒绝，与蜜罐结构区分原因
+            bait = [f for f in r["flags"] if "bait_reuse" in f]
+            reason = ("redistributes_bait:" + ";".join(bait)) if bait \
+                else ("honeypot_structure:" + ";".join(r["flags"]))
         elif tamper >= 3 or (tamper >= 1 and tamper / probed >= 0.2):
             reason = f"honeypot_tamper:{tamper}/{probed}"
         elif int(r.get("cf_blocked", 0)) >= 2 and int(r.get("cf_blocked", 0)) / probed >= 0.25:
@@ -403,7 +409,10 @@ def update_official(sources: dict, stats_hist: dict, run: dict[str, dict]) -> di
 
         reason = None
         tamper, probed = int(r.get("tamper", 0)), max(1, int(r.get("probed", 0)))
-        if tamper >= 3 and tamper / probed >= 0.25:
+        # 转载我们诱饵节点的源（爬虫/聚合站盗用成果）立即淘汰
+        if any("bait_reuse" in f for f in r.get("flags", [])):
+            reason = "redistributes_bait"
+        elif tamper >= 3 and tamper / probed >= 0.25:
             reason = f"honeypot_tamper:{tamper}/{probed}"
         elif int(r.get("cf_blocked", 0)) >= 4 and int(r.get("cf_blocked", 0)) / probed >= 0.3:
             reason = f"cf_blocked:{r.get('cf_blocked')}/{probed}"

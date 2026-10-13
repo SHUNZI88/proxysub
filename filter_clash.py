@@ -15,6 +15,7 @@ import re
 import sys
 from collections import defaultdict
 
+import anti_crawl
 import common
 import output
 import probe
@@ -32,6 +33,27 @@ def _reexport(*mods) -> None:
 
 _reexport(common, probe, score, output)
 
+
+def detect_bait_reuse(staged: dict[str, list[dict]], bait_fps: set[str],
+                      fingerprint_fn) -> dict[str, list[str]]:
+    """检测「源收录了我们生成的诱饵节点」——爬虫/聚合站转载诱饵即自我暴露。
+
+    返回 {url: [flag...]}，flag 为 "bait_reuse"。按源粒度：一个源只要出现过
+    诱饵节点即标记（无需逐节点罗列）。调用方按节点粒度丢弃诱饵、按源粒度处置。
+    """
+    flags: dict[str, list[str]] = {}
+    if not bait_fps:
+        return flags
+    for url, plist in staged.items():
+        for p in plist:
+            try:
+                if fingerprint_fn(p) in bait_fps:
+                    flags[url] = ["bait_reuse"]
+                    break
+            except Exception:
+                continue
+    return flags
+
 def main() -> None:
     sources = sm.load_sources()
     cands = sm.load_candidates()
@@ -39,6 +61,21 @@ def main() -> None:
     expired = blocklist.prune_expired()
     stats_file = load_json(SOURCE_STATS_FILE, {})
     history = stats_file.get("history", {}) if isinstance(stats_file, dict) else {}
+
+    # ---- 0. 反爬与防搜索（默认关闭；开启后固定名写诱饵、真实输出用轮换文件名）----
+    ac = anti_crawl.load_config()
+    ac_enabled = anti_crawl.is_enabled(ac)
+    ac_report: dict = {"enabled": ac_enabled}
+    if ac_enabled:
+        ac = anti_crawl.begin_run(ac)          # 轮换 token / 重生成诱饵 / 删过期文件
+        anti_crawl.write_robots()              # robots.txt（Disallow: /）
+        ac_report.update({
+            "real_outputs": ac.get("current_outputs", []),
+            "rotate_days": ac.get("rotate_days"),
+            "stale_outputs": ac.get("stale_outputs", []),
+        })
+        print(f"反爬已开启: 固定名订阅文件为诱饵内容；真实输出 -> {ac.get('current_outputs')}")
+    bait_fps = anti_crawl.bait_fingerprints(ac, fingerprint) if ac_enabled else set()
 
     # ---- 1. discovery ----
     disc = sm.discover(sources, cands, parse_subscription_text, os.environ.get("GITHUB_TOKEN"))
@@ -91,9 +128,21 @@ def main() -> None:
     exclude_re = re.compile(EXCLUDE_KEYWORDS, re.IGNORECASE)
     pre_reasons: dict[str, int] = defaultdict(int)
     staged: dict[str, list[dict]] = {}
+    # 诱饵回流检测：源中一旦出现我们生成的诱饵节点（指纹比对），说明该源在
+    # 转载我们的诱饵——候选源将被拒绝、正式源将被淘汰（src_flags -> bait_reuse）。
+    # 按节点粒度丢弃诱饵（其余节点照常处理）；标记在静态门槛与 DNS 之前完成，
+    # 因为诱饵服务器指向保留域 .invalid，过不了后面的关。
+    bait_reuse = detect_bait_reuse(per_source, bait_fps, fingerprint)
     for url, plist in per_source.items():
         keep = []
         for p in plist:
+            if bait_fps:
+                try:
+                    if fingerprint(p) in bait_fps:
+                        pre_reasons["bait_reuse"] += 1
+                        continue
+                except Exception:
+                    pass
             if not p.get("server") or not p.get("port") or exclude_re.search(str(p.get("name", ""))):
                 continue
             why = hp.static_reject_reason(p)
@@ -124,7 +173,8 @@ def main() -> None:
     prov: dict[str, set] = defaultdict(set)
     src_flags: dict[str, list[str]] = {}
     for url, plist in staged.items():
-        flags = hp.source_cluster_flags(plist, resolved) if dns_trusted else []
+        # 合并诱饵回流标记与源网段聚集标记（两者都可能触发拒绝/淘汰）
+        flags = bait_reuse.get(url, []) + (hp.source_cluster_flags(plist, resolved) if dns_trusted else [])
         if flags:
             src_flags[url] = flags
         for p in plist:
@@ -611,10 +661,21 @@ def main() -> None:
     }
 
     # ---- 8. persist ----
-    with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
-        yaml.dump(config, f, allow_unicode=True, sort_keys=False)
-    # 多格式输出 + 健康报告（同一份最终节点列表的不同封装）
-    write_outputs(final_proxies + insecure_proxies)
+    # 反爬开启时：真实输出写轮换文件名，固定名文件写诱饵内容（见 anti_crawl）。
+    if ac_enabled:
+        namer = anti_crawl.make_namer(ac)
+        real_main = namer(OUTPUT_FILE)
+        with open(real_main, "w", encoding="utf-8") as f:
+            yaml.dump(config, f, allow_unicode=True, sort_keys=False)
+        write_outputs(final_proxies + insecure_proxies, namer=namer)
+        decoy_stat = anti_crawl.write_decoy_outputs(ac)
+        ac_report["decoy"] = decoy_stat
+        print(f"反爬: 真实输出 -> {real_main}（固定名文件已写为诱饵 {decoy_stat.get('total', 0)} 个节点）")
+    else:
+        with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
+            yaml.dump(config, f, allow_unicode=True, sort_keys=False)
+        # 多格式输出 + 健康报告（同一份最终节点列表的不同封装）
+        write_outputs(final_proxies + insecure_proxies)
     save_json(SURVIVAL_FILE, survival)
     save_json(BAD_SOURCES_FILE, bad_sources)
     save_json(SOURCE_STATS_FILE, {"date": _today(), "sources": per_src, "history": history})
@@ -628,7 +689,8 @@ def main() -> None:
     except Exception as e:  # 评分失败不应影响主产出
         print(f"警告: 源评分更新失败（不影响输出）: {type(e).__name__}: {e}")
 
-    print(f"\n✅ 已生成: {OUTPUT_FILE}")
+    print(f"\n✅ 已生成: {real_main if ac_enabled else OUTPUT_FILE}"
+          + ("（固定名文件为诱饵内容；真实地址见 Actions Step Summary）" if ac_enabled else ""))
     summary_info = {
         "final": total_final, "compliant": len(final_proxies), "insecure": len(insecure_proxies),
         "tcp": len(tcp_lat), "real": len(real_ok),
@@ -644,6 +706,7 @@ def main() -> None:
         "per_src": per_src,
         "final_proxies": final_proxies + insecure_proxies,
         "probed_total": len(probe),
+        "anti_crawl": ac_report,
     }
     write_stats_md(summary_info)
     write_github_summary(summary_info)

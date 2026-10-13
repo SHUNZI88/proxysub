@@ -1,0 +1,14 @@
+{
+  "_doc": "反爬与防搜索配置（默认关闭）。enabled=true 后：固定名订阅文件改写为诱饵内容，真实输出改用轮换文件名（每 rotate_days 天更换，过期自动删除）；token_seed/token/current_outputs/stale_outputs/bait_nodes/bait_history 由程序自动维护，请勿手工编辑；PROXYSUB_ANTI_CRAWL=0 可临时强制关闭。效果边界见 README「反爬与防搜索」。",
+  "enabled": false,
+  "rotate_days": 3,
+  "decoy_count": 60,
+  "bait_host": "bait.invalid",
+  "token_seed": "",
+  "token": "",
+  "rotated_at": "",
+  "current_outputs": [],
+  "stale_outputs": [],
+  "bait_nodes": [],
+  "bait_history": []
+}
