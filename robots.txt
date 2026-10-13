@@ -1,0 +1,4 @@
+# proxysub anti-crawl
+# 本仓库内容为个人自用的节点聚合，请勿抓取、索引或镜像。
+User-agent: *
+Disallow: /
