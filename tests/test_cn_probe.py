@@ -175,3 +175,61 @@ def test_resolve_tested_round_carries_forward():
     assert cn_probe.resolve_tested_round("R2", "R1") == "R2"
     assert cn_probe.resolve_tested_round(None, "R1") == "R1"
     assert cn_probe.resolve_tested_round(None, None) is None
+
+
+# ----------------------------------------------------------- 测试集预算裁剪
+def _mk(origin, n):
+    return [{"fp": f"{origin}-{i}", "name": f"{origin}{i}",
+             "proxy": {"server": "1.2.3.4"}, "origin": origin,
+             "final": False, "us_ok": False} for i in range(n)]
+
+
+def test_cap_test_set_under_budget_unchanged():
+    nodes = _mk("pending", 100) + _mk("rescue", 20) + _mk("carryover", 10)
+    kept, dropped = cn_probe.cap_test_set(nodes, budget_s=1000.0, per_node_s=1.0)
+    assert dropped == 0
+    assert len(kept) == len(nodes)
+
+
+def test_cap_test_set_trims_rescue_before_pending():
+    # 预算只够 60 节点：carryover 全留(10)，剩 50 名额给 pending(100)，
+    # rescue(20) 因排在 pending 之后被全部裁掉
+    nodes = _mk("pending", 100) + _mk("rescue", 20) + _mk("carryover", 10)
+    kept, dropped = cn_probe.cap_test_set(nodes, budget_s=60.0, per_node_s=1.0)
+    assert dropped == 70  # 100-50 pending + 20 rescue
+    origins = {n["origin"] for n in kept}
+    assert origins == {"pending", "carryover"}
+    assert sum(1 for n in kept if n["origin"] == "pending") == 50
+    assert sum(1 for n in kept if n["origin"] == "carryover") == 10
+
+
+def test_cap_test_set_keeps_all_carryover():
+    nodes = _mk("pending", 50) + _mk("rescue", 30) + _mk("carryover", 21)
+    kept, dropped = cn_probe.cap_test_set(nodes, budget_s=35.0, per_node_s=1.0)
+    # 35 名额：carryover 21 最高优先全留，剩 14 给 pending，rescue 全裁
+    assert sum(1 for n in kept if n["origin"] == "carryover") == 21
+    assert sum(1 for n in kept if n["origin"] == "rescue") == 0
+    assert sum(1 for n in kept if n["origin"] == "pending") == 14
+    assert dropped == 66  # 101 - 35
+
+
+def test_cap_test_set_zero_budget_returns_empty():
+    # 预算耗尽：硬保 1800s 不击穿，返回空集；main() 据此跳过本轮、
+    # 保留上一轮已发布验证集（不发布失控规模的拨测）
+    nodes = _mk("pending", 80) + _mk("rescue", 20) + _mk("carryover", 5)
+    kept, dropped = cn_probe.cap_test_set(nodes, budget_s=0.0, per_node_s=1.0)
+    assert kept == []
+    assert dropped == 105
+
+
+def test_cap_test_set_carryover_over_cap_trims_carryover():
+    nodes = _mk("carryover", 200)
+    kept, dropped = cn_probe.cap_test_set(nodes, budget_s=50.0, per_node_s=1.0)
+    assert len(kept) == 50
+    assert dropped == 150
+
+
+def test_cap_test_set_negative_budget_no_negative_index():
+    nodes = _mk("pending", 10)
+    kept, dropped = cn_probe.cap_test_set(nodes, budget_s=-100.0, per_node_s=1.0)
+    assert kept == [] and dropped == 10

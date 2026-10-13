@@ -12,12 +12,15 @@
      至下一实测轮测试，不丢失；
   3. carryover：解析当前主资产（p_*_c.yaml，上一轮发布集）——实测集滚动
      携带，本轮未通过的节点自然淘汰（免费节点寿命以小时计，自清洁）；
-  4. mihomo 并发拨测（external-controller delay API，gstatic generate_204，
+  4. 预算裁剪：按剩余时间预算（--budget，默认 1800s 对齐任务超时）裁剪
+     测试集——rescue 先裁、pending 次之、carryover 不裁；未测节点由 CI
+     下轮待测文档从当前候选池重新生成时再现，不丢失；
+  5. mihomo 并发拨测（external-controller delay API，gstatic generate_204，
      HTTPS+204 双信号），通过节点逐个取出口 IP/地区证据；
-  5. 合并发布：通过节点构建验证集（clash + sing-box + v2ray + proxies-only），
+  6. 合并发布：通过节点构建验证集（clash + sing-box + v2ray + proxies-only），
      覆盖发布到主资产 p_*（订阅永久地址不变），并发布
      verification_report.json（证据 + 统计，CI 据此切换主资产所有权）；
-  6. 熔断：自检失败/mihomo 起不来/通过数 < VERIFICATION_MIN_PASSED 时
+  7. 熔断：自检失败/mihomo 起不来/通过数 < VERIFICATION_MIN_PASSED 时
      绝不发布主资产（保留上一轮验证集或 CI 兜底候选集），仅出报告。
 
 所有权约定（与 CI 工作流联动）：
@@ -26,6 +29,7 @@
 
 用法：
   GH_TOKEN=... python3 scripts/cn_probe.py [--dry-run] [--max-wait 20]
+  [--budget 1800]
   GH_TOKEN 由调度 prompt 先 source github-connector get_token.sh 注入。
 """
 
@@ -86,6 +90,17 @@ PENDING_POLL_WINDOW_MIN = 20
 # 120 节点 × 24s（三源回退各 8s 超时）会击穿任务超时，设硬预算，
 # 超时跳过剩余节点（无证据不影响发布）。
 GEO_BUDGET_S = 120
+# 总时间预算（秒）：与定时任务 timeout 对齐（scheduler-api 上限）。
+# 本轮实测 1193 节点端到端 902s（拨测 ~0.62s/节点）；但轮询等待
+# 最多 20min 会挤占预算，最坏 1200+902=2102s 击穿超时——故按
+# 剩余预算裁剪测试集（见 cap_test_set）。
+TASK_BUDGET_S = 1800
+# 拨测后预留（秒）：出口证据（≤GEO_BUDGET_S）+ 多格式输出 + 发布
+# + 收尾开销。仅覆盖发布链，拨测本身按 PER_NODE_S 折算。
+PUBLISH_RESERVE_S = 300
+# 单节点拨测耗时悲观估计（秒）：实测 1193 节点拨测约 745s（0.62s/
+# 节点，取证含在内），取 1.0 留 60% 余量吸收慢节点/网络抖动。
+PER_NODE_S = 1.0
 
 
 ASSET_FORMAT_REV = {"clean_proxies_only.yaml": "proxies_only",
@@ -167,6 +182,35 @@ def resolve_tested_round(consumed_round: str | None,
     重复测试同一文档。
     """
     return consumed_round or last_round
+
+
+def cap_test_set(nodes: list[dict], budget_s: float,
+                 per_node_s: float = PER_NODE_S) -> tuple[list[dict], int]:
+    """按剩余时间预算裁剪测试集，返回 (保留集, 裁剪数)。
+
+    轮询等待（至多 20min）会挤占 1800s 预算：本轮实测 1193 节点端到端
+    902s，若文档在轮询尾声才出现，1200+902=2102s 必超时。按**优先级
+    填充**裁剪（保留集规模恒 ≤ max_nodes，硬保 1800s 不击穿）：
+      - carryover 最高优先级（订阅生命线，已发布节点重测开销小）；
+      - pending 次之（含最终发布集，订阅骨干）；
+      - rescue 最低（救援池产能低——本轮 0/100 通过）；
+    未测节点不丢失：CI 下轮待测文档从当前候选池重新生成时再现。
+    预算耗尽（max_nodes=0）时返回空集——main() 据此跳过本轮、保留
+    上一轮已发布验证集，绝不把规模失控的拨测推过超时线。
+    """
+    max_nodes = max(0, int(budget_s / per_node_s))
+    if len(nodes) <= max_nodes:
+        return nodes, 0
+    carry = [n for n in nodes if n.get("origin") == "carryover"]
+    pend = [n for n in nodes if n.get("origin") == "pending"]
+    resc = [n for n in nodes if n.get("origin") == "rescue"]
+    kept: list[dict] = []
+    for bucket in (carry, pend, resc):  # 优先级：carryover > pending > rescue
+        room = max_nodes - len(kept)
+        if room <= 0:
+            break
+        kept.extend(bucket[:room])
+    return kept, len(nodes) - len(kept)
 
 
 # ---------------------------------------------------------------- 自检
@@ -425,6 +469,9 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--workdir", default=os.environ.get("CN_PROBE_WORKDIR", "/tmp/cn_probe"))
     ap.add_argument("--max-wait", type=int, default=PENDING_POLL_WINDOW_MIN,
                     help="轮次闸门最长等待分钟（受任务 1800s 超时约束，默认 20）")
+    ap.add_argument("--budget", type=int, default=TASK_BUDGET_S,
+                    help="总时间预算秒数（默认 1800，对齐定时任务超时；"
+                         "手动跑大可放宽，测试集按剩余预算裁剪）")
     ap.add_argument("--dry-run", action="store_true", help="不发布，仅本地验证")
     return ap
 
@@ -437,6 +484,7 @@ def main() -> int:
     os.makedirs(workdir, exist_ok=True)
     stamp = datetime.datetime.now(datetime.timezone.utc)
     round_id = stamp.strftime("%Y%m%dT%H%MZ")
+    t0 = time.time()  # 预算起点：轮询/拨测/发布全程计时
 
     # 0) 单实例锁：任务重试/调度重叠时防止两个探针并发发布
     lock_fd = open(os.path.join(workdir, "cn_probe.lock"), "w")
@@ -510,8 +558,20 @@ def main() -> int:
     if not nodes:
         log("无任何可测节点（无待测文档且主资产为空），退出")
         return 4
-    log(f"测试集: {len(nodes)}（pending {len(pend)} / rescue {len(resc)} / "
-        f"carryover {len(carry)}）")
+    # 3.5) 截止时间感知上限：轮询等待已耗时，按剩余预算裁剪，
+    # 保证 TASK_BUDGET_S 内完成发布（裁剪序：rescue→pending，
+    # carryover 不裁；未测节点由 CI 下轮文档自然再现，不丢失）。
+    budget = args.budget - PUBLISH_RESERVE_S - (time.time() - t0)
+    nodes, dropped = cap_test_set(nodes, budget)
+    if dropped:
+        log(f"时间预算约束：裁剪 {dropped} 个节点"
+            f"（剩余预算 {int(budget)}s，~{int(budget / PER_NODE_S)} 个名额），"
+            f"未测节点顺延至 CI 后续轮次，不丢失")
+    n_pend = sum(1 for n in nodes if n.get("origin") == "pending")
+    n_resc = sum(1 for n in nodes if n.get("origin") == "rescue")
+    n_carry = sum(1 for n in nodes if n.get("origin") == "carryover")
+    log(f"测试集: {len(nodes)}（pending {n_pend} / rescue {n_resc} / "
+        f"carryover {n_carry}）")
 
     # 4) mihomo 拨测
     mihomo = ensure_mihomo(workdir)
@@ -601,8 +661,8 @@ def main() -> int:
         "counts": {
             "tested": len(nodes),
             "passed": len(verified),
-            "by_origin": {"pending": len(pend), "rescue": len(resc),
-                          "carryover": len(carry)},
+            "by_origin": {"pending": n_pend, "rescue": n_resc,
+                          "carryover": n_carry},
             "passed_by_origin": by_origin,
         },
         "nodes": [{
