@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """中国出口节点实测（沙箱侧）——Phase 1 核心工作者。
 
-定时任务（北京 01:02/07:02，CI 后 ~45min）启动本脚本：
+定时任务（北京 01:02/07:02，即 CI 名义时段 00:17/06:17 后 ~45min）启动本脚本：
 
   1. 自检：沙箱自身网络必须直连可用（否则节点全挂是冤枉的）；
   2. 下载 CI 交接文档 pending_probe.json / pending_rescue.json，按
      generated_at 做新鲜度闸门（≤3h 直接测；否则轮询等待至多 --max-wait
-     分钟；仍陈旧则退化为仅测 carryover，保订阅新鲜度）；
+     分钟——默认 120 分钟，专门吸收 GitHub 调度器 18–159 分钟的排队
+     延迟；仍陈旧则退化为仅测 carryover，保订阅新鲜度）；
   3. carryover：解析当前主资产（p_*_c.yaml，上一轮发布集）——实测集滚动
      携带，本轮未通过的节点自然淘汰（免费节点寿命以小时计，自清洁）；
   4. mihomo 并发拨测（external-controller delay API，gstatic generate_204，
@@ -22,7 +23,7 @@
   - 验证陈旧（连续未产出）时 CI 兜底把候选集发布到主资产。
 
 用法：
-  GH_TOKEN=... python3 scripts/cn_probe.py [--dry-run] [--max-wait 20]
+  GH_TOKEN=... python3 scripts/cn_probe.py [--dry-run] [--max-wait 120]
   GH_TOKEN 由调度 prompt 先 source github-connector get_token.sh 注入。
 """
 
@@ -73,6 +74,13 @@ VERIFIED_FILE = {
     "v2ray": "verified_v2ray.txt",
 }
 PENDING_MAX_AGE_S = 3 * 3600  # 新鲜度闸门：超过视为 CI 未完成/故障
+
+# 闸门轮询默认窗口（分钟）：GitHub 定时触发的调度器排队延迟实测 18–159
+# 分钟（2026-10-11～13 七次取样：作业内仅 ~19 分钟，延迟全在 run 创建
+# 前的排队），叠加 filter ~19 分钟后，CI 实际发布时刻 = 名义时段
+# +40min～+3h。探针在名义时段 +45min 启动，轮询 120 分钟可覆盖已观测
+# 的全部延迟分布；超出的极端情况退化为仅测 carryover（下轮自愈）。
+PENDING_POLL_WINDOW_MIN = 120
 
 
 ASSET_FORMAT_REV = {"clean_proxies_only.yaml": "proxies_only",
@@ -370,13 +378,18 @@ def write_verified_outputs(nodes: list[dict], workdir: str) -> dict[str, str]:
 
 
 # ---------------------------------------------------------------- 主流程
-def main() -> int:
+def build_parser() -> argparse.ArgumentParser:
     ap = argparse.ArgumentParser(description="中国出口节点实测（沙箱侧）")
     ap.add_argument("--tag", default=default_tag())
     ap.add_argument("--workdir", default=os.environ.get("CN_PROBE_WORKDIR", "/tmp/cn_probe"))
-    ap.add_argument("--max-wait", type=int, default=20, help="新鲜度闸门最长等待分钟")
+    ap.add_argument("--max-wait", type=int, default=PENDING_POLL_WINDOW_MIN,
+                    help="新鲜度闸门最长等待分钟（吸收 GitHub 调度延迟，默认 120）")
     ap.add_argument("--dry-run", action="store_true", help="不发布，仅本地验证")
-    args = ap.parse_args()
+    return ap
+
+
+def main() -> int:
+    args = build_parser().parse_args()
 
     tag = args.tag
     workdir = args.workdir
@@ -407,8 +420,10 @@ def main() -> int:
         else:
             log(f"pending_probe.json 陈旧（{doc_ts}），轮询等待至多 {args.max_wait} 分钟…")
             deadline = time.time() + args.max_wait * 60
+            waited = 0
             while time.time() < deadline:
                 time.sleep(60)
+                waited += 1
                 if gh_download(tag, common.PENDING_PROBE_FILE, pend_path):
                     try:
                         with open(pend_path, encoding="utf-8") as f:
@@ -418,6 +433,8 @@ def main() -> int:
                     if doc_ts and (stamp - doc_ts).total_seconds() <= PENDING_MAX_AGE_S:
                         fresh = True
                         break
+                if waited % 15 == 0:
+                    log(f"仍在等待 CI 交接文档（已等 {waited}/{args.max_wait} 分钟）")
     else:
         log("未找到 pending_probe.json（CI 可能尚未发布交接文档）")
     if fresh:

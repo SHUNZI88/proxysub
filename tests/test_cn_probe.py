@@ -125,3 +125,18 @@ def test_parse_ts_variants():
     assert cn_probe.parse_ts("2026-10-14T00:17:42") is not None
     assert cn_probe.parse_ts("") is None
     assert cn_probe.parse_ts(None) is None
+
+
+# ---------------------------------------------------------------- 新鲜度闸门
+def test_poll_window_default_absorbs_github_schedule_delay():
+    # GitHub 定时触发调度器排队延迟实测 18–159 分钟（2026-10-11～13 七次
+    # 取样），叠加 filter ~19 分钟与探针 +45min 启动偏移，默认轮询窗口
+    # 须 ≥120 分钟才能覆盖已观测分布；窗口不足会导致接力落空。
+    args = cn_probe.build_parser().parse_args([])
+    assert args.max_wait == cn_probe.PENDING_POLL_WINDOW_MIN
+    assert cn_probe.PENDING_POLL_WINDOW_MIN >= 120
+
+
+def test_max_wait_override_still_honored():
+    args = cn_probe.build_parser().parse_args(["--max-wait", "5"])
+    assert args.max_wait == 5
