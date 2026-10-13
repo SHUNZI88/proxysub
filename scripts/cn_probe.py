@@ -5,9 +5,11 @@
 
   1. 自检：沙箱自身网络必须直连可用（否则节点全挂是冤枉的）；
   2. 下载 CI 交接文档 pending_probe.json / pending_rescue.json，按
-     generated_at 做新鲜度闸门（≤3h 直接测；否则轮询等待至多 --max-wait
-     分钟——默认 120 分钟，专门吸收 GitHub 调度器 18–159 分钟的排队
-     延迟；仍陈旧则退化为仅测 carryover，保订阅新鲜度）；
+     round_id 与上轮报告 tested_round 做**轮次闸门**：新轮次立即测
+     （文档只是节点清单，活性由实时拨测决定，年龄不是新鲜信号）；
+     已测过则轮询等待新轮次至多 --max-wait 分钟（默认 20，受定时
+     任务 1800s 超时约束）；等不到则仅测 carryover——未测轮次顺延
+     至下一实测轮测试，不丢失；
   3. carryover：解析当前主资产（p_*_c.yaml，上一轮发布集）——实测集滚动
      携带，本轮未通过的节点自然淘汰（免费节点寿命以小时计，自清洁）；
   4. mihomo 并发拨测（external-controller delay API，gstatic generate_204，
@@ -23,7 +25,7 @@
   - 验证陈旧（连续未产出）时 CI 兜底把候选集发布到主资产。
 
 用法：
-  GH_TOKEN=... python3 scripts/cn_probe.py [--dry-run] [--max-wait 120]
+  GH_TOKEN=... python3 scripts/cn_probe.py [--dry-run] [--max-wait 20]
   GH_TOKEN 由调度 prompt 先 source github-connector get_token.sh 注入。
 """
 
@@ -31,6 +33,7 @@ from __future__ import annotations
 
 import argparse
 import datetime
+import fcntl
 import json
 import os
 import re
@@ -73,14 +76,16 @@ VERIFIED_FILE = {
     "singbox": "verified_singbox.json",
     "v2ray": "verified_v2ray.txt",
 }
-PENDING_MAX_AGE_S = 3 * 3600  # 新鲜度闸门：超过视为 CI 未完成/故障
 
-# 闸门轮询默认窗口（分钟）：GitHub 定时触发的调度器排队延迟实测 18–159
-# 分钟（2026-10-11～13 七次取样：作业内仅 ~19 分钟，延迟全在 run 创建
-# 前的排队），叠加 filter ~19 分钟后，CI 实际发布时刻 = 名义时段
-# +40min～+3h。探针在名义时段 +45min 启动，轮询 120 分钟可覆盖已观测
-# 的全部延迟分布；超出的极端情况退化为仅测 carryover（下轮自愈）。
-PENDING_POLL_WINDOW_MIN = 120
+# 闸门轮询默认窗口（分钟）：受定时任务超时上限 1800s 约束——轮询
+# 20min + 有界工作（自检/下载/拨测/取证/发布 ≈6.5min）+ 代理开销，
+# 必须留余量。等不到新轮次不影响正确性：该轮次由轮次闸门顺延到
+# 下一实测轮测试（不丢失），本轮退化为仅测 carryover 保订阅新鲜。
+PENDING_POLL_WINDOW_MIN = 20
+# 出口证据时间预算（秒）：证据仅留痕、不构成闸门；顺序取证最坏
+# 120 节点 × 24s（三源回退各 8s 超时）会击穿任务超时，设硬预算，
+# 超时跳过剩余节点（无证据不影响发布）。
+GEO_BUDGET_S = 120
 
 
 ASSET_FORMAT_REV = {"clean_proxies_only.yaml": "proxies_only",
@@ -126,6 +131,42 @@ def parse_ts(s: str) -> datetime.datetime | None:
         return dt if dt.tzinfo else dt.replace(tzinfo=datetime.timezone.utc)
     except Exception:
         return None
+
+
+# ---------------------------------------------------------------- 轮次闸门
+def gate_decision(doc_round: str | None, last_round: str | None) -> str:
+    """交接文档闸门判定（轮次比对，替代早期的年龄比对）。
+
+    CI 定时运行受 GitHub 调度器排队影响（实测 18–159 分钟），发布时刻
+    不可预期；交接文档本质是「节点清单」，活性由实时拨测决定，故年龄
+    不是有效的新鲜信号，「轮次是否测过」才是。新轮次立即测；重度延迟
+    未赶上的轮次顺延到下一实测轮——由 cadence 匹配保证不丢失。
+
+    返回 "test"（新轮次，立即测）/ "wait"（无新轮次，可轮候）。
+    """
+    if doc_round and doc_round != last_round:
+        return "test"
+    return "wait"
+
+
+def doc_round_id(path: str) -> str | None:
+    """读取交接文档的 round_id（缺失/不可解析返回 None）。"""
+    try:
+        with open(path, encoding="utf-8") as f:
+            rid = json.load(f).get("round_id")
+        return str(rid) if rid else None
+    except Exception:
+        return None
+
+
+def resolve_tested_round(consumed_round: str | None,
+                         last_round: str | None) -> str | None:
+    """报告记录的 tested_round：本轮消费的轮次；未消费则继承上轮。
+
+    继承而非清空：仅测 carryover 的轮次若把已测信息抹掉，下一轮会
+    重复测试同一文档。
+    """
+    return consumed_round or last_round
 
 
 # ---------------------------------------------------------------- 自检
@@ -383,7 +424,7 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--tag", default=default_tag())
     ap.add_argument("--workdir", default=os.environ.get("CN_PROBE_WORKDIR", "/tmp/cn_probe"))
     ap.add_argument("--max-wait", type=int, default=PENDING_POLL_WINDOW_MIN,
-                    help="新鲜度闸门最长等待分钟（吸收 GitHub 调度延迟，默认 120）")
+                    help="轮次闸门最长等待分钟（受任务 1800s 超时约束，默认 20）")
     ap.add_argument("--dry-run", action="store_true", help="不发布，仅本地验证")
     return ap
 
@@ -397,6 +438,14 @@ def main() -> int:
     stamp = datetime.datetime.now(datetime.timezone.utc)
     round_id = stamp.strftime("%Y%m%dT%H%MZ")
 
+    # 0) 单实例锁：任务重试/调度重叠时防止两个探针并发发布
+    lock_fd = open(os.path.join(workdir, "cn_probe.lock"), "w")
+    try:
+        fcntl.flock(lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+        log("另一实例正在运行（单实例锁），退出")
+        return 0
+
     # 1) 自检：沙箱自身网络
     if not sandbox_selfcheck():
         log("熔断: 沙箱自身网络不可用（直连探测失败），中止——避免把自身故障"
@@ -404,44 +453,49 @@ def main() -> int:
         return 2
     log("自检通过: 沙箱直连可用")
 
-    # 2) 交接文档 + 新鲜度闸门
+    # 2) 交接文档 + 轮次闸门
     pend_path = os.path.join(workdir, common.PENDING_PROBE_FILE)
     rescue_path = os.path.join(workdir, common.PENDING_RESCUE_FILE)
-    fresh = False
-    if gh_download(tag, common.PENDING_PROBE_FILE, pend_path):
-        doc_ts = None
+    # 上轮报告 -> 已测轮次。首轮/报告缺失时 last_round=None：任何现有
+    # 文档都算新轮次（修掉早期「首轮文档陈旧即空转」的死角）。
+    last_round = None
+    prev_report = os.path.join(workdir, "prev_verification_report.json")
+    if gh_download(tag, common.VERIFICATION_REPORT_FILE, prev_report):
         try:
-            with open(pend_path, encoding="utf-8") as f:
-                doc_ts = parse_ts(json.load(f).get("generated_at", ""))
+            with open(prev_report, encoding="utf-8") as f:
+                last_round = json.load(f).get("tested_round") or None
         except Exception:
-            doc_ts = None
-        if doc_ts and (stamp - doc_ts).total_seconds() <= PENDING_MAX_AGE_S:
-            fresh = True
-        else:
-            log(f"pending_probe.json 陈旧（{doc_ts}），轮询等待至多 {args.max_wait} 分钟…")
-            deadline = time.time() + args.max_wait * 60
-            waited = 0
-            while time.time() < deadline:
-                time.sleep(60)
-                waited += 1
-                if gh_download(tag, common.PENDING_PROBE_FILE, pend_path):
-                    try:
-                        with open(pend_path, encoding="utf-8") as f:
-                            doc_ts = parse_ts(json.load(f).get("generated_at", ""))
-                    except Exception:
-                        doc_ts = None
-                    if doc_ts and (stamp - doc_ts).total_seconds() <= PENDING_MAX_AGE_S:
-                        fresh = True
-                        break
-                if waited % 15 == 0:
-                    log(f"仍在等待 CI 交接文档（已等 {waited}/{args.max_wait} 分钟）")
+            last_round = None
     else:
-        log("未找到 pending_probe.json（CI 可能尚未发布交接文档）")
+        log("未找到上轮 verification_report.json（首轮或 CI 未发布）")
+
+    fresh = False
+    doc_round = doc_round_id(pend_path) if gh_download(
+        tag, common.PENDING_PROBE_FILE, pend_path) else None
+    if gate_decision(doc_round, last_round) == "test":
+        fresh = True
+    else:
+        why = "交接文档缺失" if doc_round is None else f"轮次 {doc_round} 已测过"
+        log(f"{why}，轮询等待 CI 新轮次至多 {args.max_wait} 分钟…")
+        deadline = time.time() + args.max_wait * 60
+        waited = 0
+        while time.time() < deadline:
+            time.sleep(60)
+            waited += 1
+            if gh_download(tag, common.PENDING_PROBE_FILE, pend_path):
+                doc_round = doc_round_id(pend_path)
+                if gate_decision(doc_round, last_round) == "test":
+                    fresh = True
+                    break
+            if waited % 5 == 0:
+                log(f"仍在等待 CI 新轮次交接文档"
+                    f"（已等 {waited}/{args.max_wait} 分钟）")
     if fresh:
         gh_download(tag, common.PENDING_RESCUE_FILE, rescue_path)
-        log(f"交接文档新鲜（{doc_ts}），进入实测")
+        log(f"交接文档轮次 {doc_round} 待测，进入实测")
     else:
-        log("无新鲜待测文档：退化为仅测 carryover（保订阅新鲜度）")
+        log("无新轮次待测文档（CI 调度延迟或故障）：本轮仅测 carryover；"
+            "未测轮次顺延至下一实测轮，不丢失")
 
     # 3) 测试集 = carryover ∪ pending ∪ rescue
     assets = release_assets(tag)
@@ -503,9 +557,15 @@ def main() -> int:
             log(f"拨测完成: 通过 {sum(1 for r in results.values() if r['ok'])}/{len(nodes)}"
                 f"（{time.time() - t0:.0f}s）")
 
-            # 5) 出口证据（仅通过节点，限量顺序执行）
+            # 5) 出口证据（仅通过节点，限量 + 限时顺序执行）
             passed = [n for n in nodes if results.get(n["probe_name"], {}).get("ok")]
+            geo_deadline = time.time() + GEO_BUDGET_S
             for i, n in enumerate(passed[:GEO_MAX_NODES]):
+                if time.time() > geo_deadline:
+                    log(f"出口证据达到时间预算 {GEO_BUDGET_S}s，跳过剩余 "
+                        f"{len(passed[:GEO_MAX_NODES]) - i} 个节点"
+                        f"（证据仅留痕，不构成闸门）")
+                    break
                 ev = exit_evidence(api_port, "PROBE", n["probe_name"])
                 if ev:
                     results[n["probe_name"]].update(ev)
@@ -533,6 +593,8 @@ def main() -> int:
 
     report = {
         "round_id": round_id,
+        "tested_round": resolve_tested_round(doc_round if fresh else None,
+                                             last_round),
         "generated_at": stamp.strftime("%Y-%m-%dT%H:%M:%SZ"),
         "vantage": "cn-hn-sandbox",
         "exit_ip": _sandbox_ip(),

@@ -128,15 +128,50 @@ def test_parse_ts_variants():
 
 
 # ---------------------------------------------------------------- 新鲜度闸门
-def test_poll_window_default_absorbs_github_schedule_delay():
-    # GitHub 定时触发调度器排队延迟实测 18–159 分钟（2026-10-11～13 七次
-    # 取样），叠加 filter ~19 分钟与探针 +45min 启动偏移，默认轮询窗口
-    # 须 ≥120 分钟才能覆盖已观测分布；窗口不足会导致接力落空。
+def test_poll_window_default_fits_task_timeout():
+    # 定时任务超时上限 1800s：轮询 20min + 有界工作（自检/下载/拨测/
+    # 取证/发布 ≈6.5min）+ 代理开销，必须留余量；等不到新轮次由轮次
+    # 闸门顺延到下一实测轮（不丢失），不依赖长轮询。
     args = cn_probe.build_parser().parse_args([])
     assert args.max_wait == cn_probe.PENDING_POLL_WINDOW_MIN
-    assert cn_probe.PENDING_POLL_WINDOW_MIN >= 120
+    assert cn_probe.PENDING_POLL_WINDOW_MIN <= 20
 
 
 def test_max_wait_override_still_honored():
     args = cn_probe.build_parser().parse_args(["--max-wait", "5"])
     assert args.max_wait == 5
+
+
+# ---------------------------------------------------------------- 轮次闸门
+def test_gate_decision_new_round_tests_regardless_of_age():
+    # 文档只是节点清单、活性靠实时拨测：轮次没测过就立即测，与年龄无关
+    assert cn_probe.gate_decision("R2", "R1") == "test"
+    assert cn_probe.gate_decision("R1", None) == "test"  # 首轮无历史
+
+
+def test_gate_decision_same_round_waits():
+    assert cn_probe.gate_decision("R1", "R1") == "wait"
+
+
+def test_gate_decision_missing_doc_waits():
+    assert cn_probe.gate_decision(None, "R1") == "wait"
+    assert cn_probe.gate_decision(None, None) == "wait"
+
+
+def test_doc_round_id(tmp_path):
+    p = tmp_path / "pending_probe.json"
+    p.write_text(json.dumps({"round_id": "20261014T0017Z", "nodes": []}),
+                 encoding="utf-8")
+    assert cn_probe.doc_round_id(str(p)) == "20261014T0017Z"
+    assert cn_probe.doc_round_id(str(tmp_path / "nope.json")) is None
+    p.write_text("{bad json", encoding="utf-8")
+    assert cn_probe.doc_round_id(str(p)) is None
+    p.write_text(json.dumps({"nodes": []}), encoding="utf-8")  # 缺 round_id
+    assert cn_probe.doc_round_id(str(p)) is None
+
+
+def test_resolve_tested_round_carries_forward():
+    # 本轮消费 -> 记录本轮；仅测 carryover -> 继承上轮（防丢已测信息）
+    assert cn_probe.resolve_tested_round("R2", "R1") == "R2"
+    assert cn_probe.resolve_tested_round(None, "R1") == "R1"
+    assert cn_probe.resolve_tested_round(None, None) is None

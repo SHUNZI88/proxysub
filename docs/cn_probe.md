@@ -25,23 +25,27 @@ CI（GitHub Actions，美国出口）每轮产出「拟交沙箱待测节点文�
 >
 > **GitHub 调度延迟**（2026-10-11～13 实测）：定时运行的实际创建时刻比 cron
 > 名义时刻晚 18–159 分钟（作业内仅 ~19 分钟，延迟全在调度器排队），CI 实际
-> 发布 = 名义时段 +40min～+3h。探针在名义时段 +45min 启动，靠新鲜度闸门的
-> **120 分钟轮询窗口**吸收该延迟（§4）；只有超过 165 分钟的极端延迟才退化
-> 为仅测 carryover，且下一轮自愈。
+> 发布 = 名义时段 +40min～+3h。加之定时任务执行超时上限 1800s，探针不可能
+> 在会话内长等——故闸门设计为**轮次比对**（§3 步 2）：新轮次立即测，等不到
+> 就测 carryover，**未测轮次顺延至下一实测轮，不丢失**。
 
 ## 3. 单轮流程
 
 1. **自检**：沙箱直连探测（baidu / api.github.com）。失败即中止——避免把
    沙箱自身故障误判为节点全失效；
-2. **新鲜度闸门**：下载 `pending_probe.json`，`generated_at` ≤3h 直接测；
-   否则轮询等待至多 **120 分钟**（吸收 GitHub 调度器 18–159 分钟排队延迟，
-   见 §2）；仍陈旧（CI 故障）则退化为仅测 carryover；
+2. **轮次闸门**：下载上轮 `verification_report.json` 取 `tested_round`（已测
+   轮次）；下载 `pending_probe.json` 取 `round_id`——不同即新轮次，**立即测**
+   （文档只是节点清单，活性由实时拨测决定，年龄不是新鲜信号）；相同则轮询
+   等待新轮次至多 **20 分钟**（受任务 1800s 超时约束）；等不到则仅测
+   carryover——未测轮次顺延至下一实测轮，不丢失。首轮无报告时任何现有
+   文档都算新轮次；
 3. **测试集** = carryover（当前主资产，滚动携带+自清洁）∪ pending（待测
    文档）∪ rescue（救援文档，CI 淘汰但静态可行的节点）；
 4. **拨测**：mihomo external-controller delay API，`generate_204`
    （HTTPS+204 双信号），12 并发，失败重试一次；
 5. **出口证据**：通过节点逐个切流量取出口 IP/地区（cip.cc → ipip →
-   ip-api 依次回退），仅留痕、不构成闸门；
+   ip-api 依次回退），仅留痕、不构成闸门；顺序取证设 120s 时间预算
+   （防极端情况击穿任务超时），超时跳过剩余节点；
 6. **合并发布**：通过节点按「双 vantage 强者优先 + 延迟」排序，构建
    clash/sing-box/v2ray/proxies-only 四格式，覆盖发布到主资产
    （p_* 随机名，**订阅永久地址不变**），并发布 `verification_report.json`；
@@ -68,7 +72,7 @@ CI 侧联动：`verification_report.json` 新鲜（<12h 且通过数 ≥15）时
 | `candidates_clash.yaml` 等 4 个 | CI | 候选集固定名副本，透明备查 |
 | `pending_probe.json` / `pending_rescue.json` | CI | 交接文档（待测/救援） |
 | `pending_probe.prev.json` | 本任务 | 上轮待测文档备份 |
-| `verification_report.json` | 本任务 | 证据+统计（每节点延迟/出口 IP/地区/vantage） |
+| `verification_report.json` | 本任务 | 证据+统计（每节点延迟/出口 IP/地区/vantage）；`tested_round` 字段记录已测轮次，供下一轮闸门判定 |
 
 ## 6. 手动执行（调试/补跑）
 
@@ -78,6 +82,9 @@ source /root/.codebuddy/skills/github-connector/scripts/get_token.sh github
 python3 scripts/cn_probe.py --dry-run   # 不发布，产物落 /tmp/cn_probe
 python3 scripts/cn_probe.py             # 正式一轮
 ```
+
+> 单实例锁：另一实例运行中时直接退出（`/tmp/cn_probe/cn_probe.lock`），
+> 防任务重试/调度重叠导致并发发布。
 
 ## 7. Phase 2 预告（进化引擎）
 
