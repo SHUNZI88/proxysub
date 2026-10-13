@@ -1,0 +1,7 @@
+{
+  "_doc": "多渠道搜集配置（proxysub 自动发现的能力扩展）。每轮运行读取本文件，从下列渠道提取订阅源 URL（进入与 GitHub 发现相同的候选→试用期→淘汰流程）以及原始节点分享链接（vmess/vless/trojan/ss，写入 collected_nodes.txt 后统一清洗）。全部留空即不采集；关闭方式：PROXYSUB_DISCOVERY=0 或把 enabled 改为 false。",
+  "enabled": true,
+  "telegram": [],
+  "web": [],
+  "static_sources": []
+}

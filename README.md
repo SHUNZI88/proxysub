@@ -77,7 +77,10 @@ Content-Type: application/json
 | `score.py` | 评分层：协议分层、中美路径惩罚、跨天存活与历史稳定性（仅依赖 common） |
 | `output.py` | 输出层：分享链接 / sing-box 转换与多格式文件、健康报告（依赖 common + score） |
 | `sources_manager.py` | 订阅源生命周期：自动发现、试用、晋升、淘汰、上限、长期评分 |
+| `channels.py` | **多渠道搜集引擎**：从 Telegram 频道 / 网页 / 手工静态源提取订阅源 URL 与原始节点链接（仅依赖 safe_io + requests，无循环依赖） |
+| `channels.json` | 多渠道采集配置：Telegram 频道列表、监控网页列表、手工静态源（默认空，由用户按渠道填充） |
 | `honeypot.py` | 防蜜罐过滤：地址校验、DNS 校验、黑名单、源结构检测 |
+| `collected_nodes.txt` | 多渠道搜集到的原始节点分享链接（vmess/vless/trojan/ss），经同样的静态门槛与死活闸门清洗后进入输出 |
 | `safe_io.py` | JSON 原子化读写：临时文件 + `os.replace` + filelock，损坏自愈 |
 | `clean_clash.yaml` | **主订阅**（Clash / mihomo 完整配置） |
 | `clean_proxies_only.yaml` | 仅 `proxies` 段，供客户端 `proxy-providers` 引用 |
@@ -100,11 +103,37 @@ Content-Type: application/json
 
 ## 订阅源自动发现与淘汰
 
-1. **发现**：每次运行用 Actions 自带 `GITHUB_TOKEN`（只读搜索）在 GitHub 搜最近 3 天有更新的相关仓库，查找 `clash.yaml / mihomo.yaml / list.meta.yml / proxies.yaml` 等文件。每次最多查看 20 个仓库、新增 10 个候选；接近限额自动停止。
+1. **发现（多渠道）**：每次运行除在 GitHub 搜索外，还会从 `channels.json` 配置的多渠道搜集订阅源：
+   - **GitHub 搜索**：用 Actions 自带 `GITHUB_TOKEN`（只读）搜最近 3 天有更新的相关仓库，查找 `clash.yaml / mihomo.yaml / list.meta.yml / proxies.yaml` 等文件（每次最多查看 20 个仓库、新增 10 个候选）。
+   - **Telegram 频道**：抓取 `https://t.me/s/<频道>` 的公开消息，提取订阅链接与节点分享链接（带 3s 限流，失败自动跳过）。
+   - **网页**：抓取配置的网页，提取其中的订阅链接与节点链接（博客 / 聚合页 / 论坛帖等）。
+   - **手工静态源**：`channels.json` 的 `static_sources` 里粘入从任意渠道搜集到的源，等同手工源**直接转正**为正式源，无需试用期。
+   所有渠道发现的 URL 都经过同一套验证（拉取并解析出 ≥20 个节点）与候选→试用期→淘汰流程，天然继承蜜罐检测、配额与上限防护。
 2. **仓库信誉**：fork、已归档、创建不足 7 天、0 星且新建、名称/简介含推广/博彩等垃圾词的仓库直接拒绝；星数少（<5）或较新（<60 天）的仓库试用期从 3 次延长到 5 次。
 3. **试用期**：候选源需**连续 N 次**同时满足：通过静态门槛且 TCP 存活节点 ≥5，且其中 ≥4 个是正式源里没有的新节点，才能晋升；每次最多晋升 2 个。连续 3 次拉取失败、或 16 次仍未达标则拒绝。候选源节点排序额外加惩罚。
 4. **淘汰**：正式源连续 4 次（约 24 小时）拉取失败、连续约 4 天没有独有存活节点、蜜罐结构/篡改比例过高，自动移除；被移除的源 30 天内不会被重新发现。
 5. **上限**：正式源最多 30 个，超出时按「拉取成功率 + 独有贡献」排序淘汰末尾（手工源有少量加分）。
+
+## 多渠道搜集配置（Telegram 等）
+
+编辑仓库根目录 `channels.json`（默认空，需自行按渠道填充）：
+
+```json
+{
+  "enabled": true,
+  "telegram": ["FreeNodes", "v2rayng_free"],          // Telegram 频道用户名（不含 @，程序抓取 t.me/s/<用户名>）
+  "web": ["https://example.com/free-nodes.html"],      // 监控的网页 URL
+  "static_sources": [                                  // 手工维护的订阅源（直接转正为正式源）
+    "https://raw.githubusercontent.com/xxx/yyy/main/clash.yaml"
+  ]
+}
+```
+
+- 多渠道搜集的订阅源 URL 与 GitHub 发现完全共享晋升/淘汰机制；搜集到的原始节点链接
+  （`vmess://` / `vless://` / `trojan://` / `ss://`）则写入 `collected_nodes.txt`，主流程
+  会将其 ingest 后经过**同样的静态门槛 + 死活闸门**清洗，仅白名单协议且通过拨测的节点进入输出。
+- 关闭方式：工作流环境变量 `PROXYSUB_DISCOVERY: '0'`，或在 `channels.json` 设 `"enabled": false`。
+- 推荐只填写你信任、确实发布订阅链接的频道；所有外部抓取均带超时与限流，失败不影响主流程。
 
 ## 防蜜罐措施
 
@@ -136,6 +165,7 @@ python -m pytest tests/ -v
 - 本地运行真实探测：配置 `MIHOMO_BIN` 指向 mihomo 可执行文件（不设置禁用变量即可）。
 - 关闭自动发现：工作流环境变量 `PROXYSUB_DISCOVERY: '0'`。
 - 手工加源：在 `sources.json` 的 `official` 里加一条 `{"url": "...", "origin": "manual"}`。
+- 多渠道加源：编辑 `channels.json`，在 `telegram` / `web` / `static_sources` 填入对应渠道（详见上文「多渠道搜集配置」）。
 - 禁止某仓库：在 `deny_repos` 里加 `owner/repo`。
 
 ### 局限（请知悉）

@@ -17,6 +17,7 @@ from urllib.parse import quote
 
 import requests
 
+import channels  # 多渠道搜集（Telegram / 网页 / 手工静态源）；本模块不反向依赖 sources_manager，无循环
 from safe_io import load_json, save_json  # 原子化读写，防止 JSON 截断损坏
 
 SOURCES_FILE = "sources.json"
@@ -309,6 +310,17 @@ def discover(
     report["searched_repos"] = len(repos)
     report["api_calls"] = gh.calls
     report["errors"] = gh.errors[:10]
+
+    # ---- 多渠道搜集（Telegram 频道 / 网页 / 手工静态源）----
+    # 与 GitHub 发现共享同一套候选→试用期→淘汰流程；任何异常都不影响主流程。
+    try:
+        ch = channels.discover_channels(sources, cands, parse_fn, log)
+        report["channels"] = ch
+        report["added"].extend(ch["added"])
+    except Exception as e:  # 多渠道为增强能力，失败绝不应阻断更新
+        report["channels_error"] = f"{type(e).__name__}: {e}"
+        log(f"多渠道搜集异常（已忽略）: {type(e).__name__}: {e}")
+
     return report
 
 

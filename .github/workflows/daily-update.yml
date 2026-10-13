@@ -96,7 +96,8 @@ jobs:
           git add clean_clash.yaml clean_singbox.json clean_v2ray.txt \
                   clean_proxies_only.yaml stats.md survival.json \
                   source_stats.json source_scores.json bad_sources.json \
-                  sources.json candidate_sources.json honeypot_blocklist.json || true
+                  sources.json candidate_sources.json honeypot_blocklist.json \
+                  collected_nodes.txt || true
           # remove accidental duplicate if still tracked
           if [ -f .github/workflows/filter_clash.py ]; then
             git rm -f .github/workflows/filter_clash.py || true

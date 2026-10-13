@@ -518,6 +518,61 @@ def _parse_trojan_uri(uri: str) -> dict | None:
     except Exception:
         return None
 
+def _parse_vless_uri(uri: str) -> dict | None:
+    """解析 vless:// UUID@host:port?params#name（含 Reality / TLS / 传输层）。"""
+    try:
+        if not uri.lower().startswith("vless://"):
+            return None
+        rest = uri[len("vless://"):].strip()
+        name = None
+        if "#" in rest:
+            rest, frag = rest.split("#", 1)
+            name = unquote(frag)
+        qs = ""
+        if "?" in rest:
+            auth, qs = rest.split("?", 1)
+        else:
+            auth = rest
+        if "@" not in auth:
+            return None
+        uid, netloc = auth.split("@", 1)
+        if ":" not in netloc:
+            return None
+        host, _, port = netloc.rpartition(":")
+        try:
+            port = int(port)
+        except ValueError:
+            return None
+        p = {
+            "name": name or f"vless-{host}",
+            "type": "vless",
+            "server": host,
+            "port": port,
+            "uuid": uid,
+        }
+        params = parse_qs(qs)
+        sec = (params.get("security") or ["none"])[0].lower()
+        if sec and sec != "none":
+            p["tls"] = True
+            sni = (params.get("sni") or params.get("peer") or [None])[0]
+            if sni:
+                p["sni"] = sni
+        fp = (params.get("fp") or [None])[0]
+        if fp:
+            p["client-fingerprint"] = fp
+        typ = (params.get("type") or [""])[0]
+        if typ:
+            p["network"] = typ
+        pbk = (params.get("pbk") or [None])[0]
+        sid = (params.get("sid") or [None])[0]
+        if pbk:
+            p["reality-opts"] = {"public-key": pbk}
+            if sid:
+                p["reality-opts"]["short-id"] = sid
+        return p
+    except Exception:
+        return None
+
 def parse_subscription_text(text: str) -> list[dict]:
     """Parse Clash YAML, base64 blob, or line-based share links."""
     text = text.strip()
@@ -557,7 +612,7 @@ def parse_subscription_text(text: str) -> list[dict]:
         line = line.strip()
         if not line or line.startswith("#"):
             continue
-        for parser in (_parse_ss_uri, _parse_vmess_uri, _parse_trojan_uri):
+        for parser in (_parse_ss_uri, _parse_vmess_uri, _parse_trojan_uri, _parse_vless_uri):
             p = parser(line)
             if p:
                 out.append(p)

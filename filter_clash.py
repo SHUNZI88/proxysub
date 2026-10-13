@@ -13,6 +13,7 @@ from __future__ import annotations
 import os
 import re
 import sys
+from collections import defaultdict
 
 import common
 import output
@@ -41,7 +42,13 @@ def main() -> None:
 
     # ---- 1. discovery ----
     disc = sm.discover(sources, cands, parse_subscription_text, os.environ.get("GITHUB_TOKEN"))
-    print(f"自动发现: 新增候选 {len(disc['added'])}，扫描仓库 {disc['searched_repos']}")
+    _ch = disc.get("channels", {}) or {}
+    print(
+        f"自动发现: 新增候选 {len(disc['added'])}"
+        f"（GitHub {len(disc['added']) - len(_ch.get('added', []))} + 多渠道 {len(_ch.get('added', []))}），"
+        f"扫描仓库 {disc['searched_repos']}；多渠道搜集节点 {_ch.get('nodes_collected', 0)} 条"
+        f"，静态源加入 {len(_ch.get('static_added', []))}"
+    )
 
     off_urls = sm.official_urls(sources)
     cand_urls = [u for u in sm.active_candidate_urls(cands) if u not in off_urls]
@@ -50,6 +57,26 @@ def main() -> None:
     # ---- 2. fetch ----
     per_source, fstats = fetch_all_sources(off_urls + cand_urls)
     print(f"原始节点总数: {sum(len(v) for v in per_source.values())}")
+
+    # ---- 2b. 多渠道搜集到的原始节点（Telegram / 网页分享链接） ----
+    # 这些节点已写入 collected_nodes.txt，此处 ingest 后与正式源走完全相同的
+    # 静态门槛 + 死活闸门清洗，仅白名单协议且通过拨测的节点才会进入最终输出。
+    INGEST_MAX_NODES = 300
+    _collected_path = "collected_nodes.txt"
+    if os.path.exists(_collected_path):
+        try:
+            with open(_collected_path, encoding="utf-8") as _cf:
+                _lines = [ln.strip() for ln in _cf if ln.strip()][-INGEST_MAX_NODES:]
+            _plist: list[dict] = []
+            for _ln in _lines:
+                _plist.extend(parse_subscription_text(_ln))
+            if _plist:
+                _key = "__channel_nodes__"
+                per_source[_key] = _plist
+                fstats[_key] = {"ok": True, "count": len(_plist), "error": None, "ingested": True}
+                print(f"多渠道节点: 解析 {len(_plist)} 个（来自 {_collected_path}，上限 {INGEST_MAX_NODES}）")
+        except Exception as e:
+            print(f"警告: 多渠道节点解析失败（不影响其他源）: {type(e).__name__}: {e}")
 
     bad_sources = load_json(BAD_SOURCES_FILE, {})
     bad_sources = {u: v for u, v in bad_sources.items() if u in fstats}
