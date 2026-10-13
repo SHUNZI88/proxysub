@@ -22,8 +22,9 @@ def test_common_is_leaf_no_cycle():
 def test_reexport_surface():
     for name in (
         "fingerprint", "protocol_gate_reason", "parse_subscription_text", "fetch_all_sources",
-        "light_http_probe", "mihomo_probe", "tcp_probe",
-        "is_preferred", "classify_proxy", "update_survival", "history_bonus",
+        "select_probe_sample", "mihomo_probe", "tcp_probe",
+        "survival_state_fresh", "update_survival", "history_bonus",
+        "is_preferred", "classify_proxy",
         "proxy_to_share_link", "proxy_to_singbox", "write_outputs", "write_stats_md",
     ):
         assert hasattr(fc, name), name

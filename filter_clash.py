@@ -54,6 +54,106 @@ def detect_bait_reuse(staged: dict[str, list[dict]], bait_fps: set[str],
                 continue
     return flags
 
+
+def select_probe_sample(
+    tcp_lat: dict[str, float],
+    unique: dict[str, dict],
+    prov: dict[str, set],
+    official_fps: set[str],
+    cand_urls: list[str],
+    survival: dict,
+    today_str: str,
+    source_keys=None,
+) -> list[str]:
+    """从 TCP 存活节点中选出进入真实拨测的样本（顺序即优先级）。
+
+    拨测是输出的死活闸门（REQUIRE_REAL_PROBE_IN_OUTPUT）：只有本轮拨测通过的
+    节点才能进入最终列表，因此「选谁去拨测」直接决定输出质量。选择原则：
+
+    1) **不迷信历史**：survival.json 可能因任何原因停更（2026-10 曾因工作流
+       `git add` 原子失败冻结多轮）。文件一旦陈旧（无今日记录，见
+       survival_state_fresh），历史稳定优先整体关闭——否则已死旧节点会凭
+       陈旧 streak 霸占拨测预算，新节点无拨测机会，输出质量随轮次持续下滑；
+    2) **新节点保底**（PROBE_FRESH_QUOTA）：从未入池的节点保证有拨测机会，
+       节点池才能正常轮换；
+    3) **区域/协议分层**：亚洲区域与 hy2/reality 优先协议保留各自配额
+       （PROBE_RESERVE_PER_REGION / PROBE_PREFERRED_PER_REGION）；
+    4) **渠道节点配额**（CHANNEL_PROBE_QUOTA）：多渠道搜集的节点既非正式源
+       也非候选源 URL，此前的样本循环永远选不到它们，导致其在评分时全被
+       cand_only 闸门丢弃（收集了却永不入选）。给予固定配额，与候选源同等
+       参与「通过拨测方可入榜」的试用机制。
+
+    曾经的阶段 1「轻量探活」已废除：它与 TCP 存活检查同为一次 TCP connect，
+    对 3000 个节点重复一遍（通过率 99.7%）只拖慢运行，不提供任何新信息。
+    """
+    state_fresh = survival_state_fresh(survival, today_str)
+
+    def _probe_rank(fp: str) -> tuple:
+        rec = survival.get(fp, {}) if state_fresh else {}
+        streak = int(rec.get("streak", 0))
+        seen = int(rec.get("seen_days", 0))
+        tier = protocol_tier(unique[fp])
+        stable = 0 if streak >= SURVIVAL_STREAK_FORCE_PROBE else 1
+        return (stable, tier, -streak, -seen, tcp_lat[fp])
+
+    alive_sorted = sorted(tcp_lat, key=_probe_rank)
+    # Stratify: fill per-region reserves first so Asia is actually probed.
+    # Within region: take preferred (hy2/reality) quota first, then rest by rank.
+    by_region: dict[str, list[str]] = defaultdict(list)
+    for fp in alive_sorted:
+        if fp not in official_fps:
+            continue
+        by_region[classify_proxy(unique[fp].get("name", ""))].append(fp)
+    sample: list[str] = []
+    chosen: set[str] = set()
+    for region, reserve in PROBE_RESERVE_PER_REGION.items():
+        pool = by_region.get(region, [])
+        pref_n = PROBE_PREFERRED_PER_REGION.get(region, 0)
+        pref = [fp for fp in pool if is_preferred(unique[fp])]
+        rest = [fp for fp in pool if fp not in pref]
+        ordered = pref[:pref_n] + rest + pref[pref_n:]
+        for fp in ordered[:reserve]:
+            if fp not in chosen:
+                sample.append(fp)
+                chosen.add(fp)
+    # 新节点保底配额：从未进入 survival 的节点优先占用固定名额。
+    fresh = [fp for fp in alive_sorted if fp not in survival and fp not in chosen]
+    for fp in fresh[:PROBE_FRESH_QUOTA]:
+        sample.append(fp)
+        chosen.add(fp)
+    # UDP protocols (hy2/tuic) skipped TCP probe — force them into the probe
+    # sample, otherwise the dead-or-alive gate can never verify them.
+    udp_sorted = sorted(
+        (fp for fp in alive_sorted if is_udp_protocol(unique[fp]) and fp in official_fps),
+        key=_probe_rank,
+    )
+    for fp in udp_sorted:
+        if len(sample) >= PROBE_LIMIT_OFFICIAL:
+            break
+        if fp not in chosen:
+            sample.append(fp)
+            chosen.add(fp)
+    for fp in alive_sorted:
+        if len(sample) >= PROBE_LIMIT_OFFICIAL:
+            break
+        if fp in official_fps and fp not in chosen:
+            sample.append(fp)
+            chosen.add(fp)
+    for cu in cand_urls:
+        extra = [fp for fp in alive_sorted if cu in prov[fp] and fp not in official_fps and fp not in chosen]
+        extra = extra[:PROBE_PER_CANDIDATE]
+        sample += extra
+        chosen.update(extra)
+    # 多渠道节点保底配额（Telegram/网页分享链接搜集）。
+    if source_keys and CHANNEL_NODES_KEY in source_keys:
+        ch_fps = [fp for fp in alive_sorted
+                  if CHANNEL_NODES_KEY in prov[fp] and fp not in chosen]
+        for fp in ch_fps[:CHANNEL_PROBE_QUOTA]:
+            sample.append(fp)
+            chosen.add(fp)
+    return sample
+
+
 def main() -> None:
     sources = sm.load_sources()
     cands = sm.load_candidates()
@@ -108,7 +208,7 @@ def main() -> None:
             for _ln in _lines:
                 _plist.extend(parse_subscription_text(_ln))
             if _plist:
-                _key = "__channel_nodes__"
+                _key = CHANNEL_NODES_KEY
                 per_source[_key] = _plist
                 fstats[_key] = {"ok": True, "count": len(_plist), "error": None, "ingested": True}
                 print(f"多渠道节点: 解析 {len(_plist)} 个（来自 {_collected_path}，上限 {INGEST_MAX_NODES}）")
@@ -217,85 +317,25 @@ def main() -> None:
     print(f"TCP 存活节点: {len(tcp_lat) - udp_exempt} | UDP 协议（hy2/tuic，交拨测验证）: {udp_exempt}")
 
     # ---- 5. real probe (OPTIONAL, local-only) ----
-    # GitHub Actions（美西机房）无法穿越防火墙，测得的「真实连通性」对中国大陆
-    # 用户没有参考价值，反而会误选美国垃圾节点。CI 通过 PROXYSUB_DISABLE_PROBE=1
-    # 彻底禁用本环节（见 .github/workflows/daily-update.yml）；仅本地手动运行且
-    # 装有 mihomo 时才做真实探测。最终活性测试由用户本地客户端完成。
+    # 拨测是输出的死活闸门（REQUIRE_REAL_PROBE_IN_OUTPUT）：只有本轮真实拨测
+    # 通过的节点才进入最终列表，因此「选哪些节点去拨测」直接决定输出质量。
+    # 样本选择原则见 select_probe_sample() 的 docstring——2026-10 质量回归后
+    # 修订：历史稳定优先仅在状态新鲜时生效 + 新节点保底配额 + 渠道节点配额。
     survival_pre = load_json(SURVIVAL_FILE, {})
     probe: dict[str, dict] = {}
     bin_path = mihomo_available() if real_probe_enabled() else None
     if not real_probe_enabled():
         print("云端真实流量拨测已禁用（PROXYSUB_DISABLE_PROBE=1）：仅保留 TCP 存活检查，"
               "最终测速/优选由本地客户端通过 gstatic generate_204 完成")
-    if not real_probe_enabled():
         sample: list[str] = []
     else:
-        # ---- 阶段 1：轻量探活（高并发 TCP 粗筛）----
-        # tcp_lat 中仅含 TCP 存活 + UDP 豁免节点；此处再做一次统一的高并发复筛，
-        # 结果用于在拨测样本有限时优先保留真正可达的节点。
-        print(f"阶段1：轻量探活 {len(tcp_lat)} 个节点（并发 {LIGHT_PROBE_CONCURRENCY}）...")
-        light_ok: set[str] = set()
-        with ThreadPoolExecutor(max_workers=LIGHT_PROBE_CONCURRENCY) as ex:
-            futs = {ex.submit(light_http_probe, unique[fp]): fp for fp in tcp_lat}
-            for fut in as_completed(futs):
-                if fut.result():
-                    light_ok.add(futs[fut])
-        print(f"阶段1完成：轻量探活通过 {len(light_ok)}/{len(tcp_lat)}，进入阶段2真实拨测")
-
-        def _probe_rank(fp: str) -> tuple:
-            # 历史稳定节点（streak >= 阈值）强制优先进入拨测样本；
-            # 其次轻量探活通过者；再看协议层级/存活时长/TCP 延迟。
-            rec = survival_pre.get(fp, {})
-            streak = int(rec.get("streak", 0))
-            seen = int(rec.get("seen_days", 0))
-            tier = protocol_tier(unique[fp])
-            stable = 0 if streak >= SURVIVAL_STREAK_FORCE_PROBE else 1
-            light = 0 if fp in light_ok else 1
-            return (stable, light, tier, -streak, -seen, tcp_lat[fp])
-
-        alive_sorted = sorted(tcp_lat, key=_probe_rank)
-        # Stratify: fill per-region reserves first so Asia is actually probed.
-        # Within region: take preferred (hy2/reality) quota first, then rest by rank.
-        by_region: dict[str, list[str]] = defaultdict(list)
-        for fp in alive_sorted:
-            if fp not in official_fps:
-                continue
-            by_region[classify_proxy(unique[fp].get("name", ""))].append(fp)
-        sample = []
-        chosen: set[str] = set()
-        for region, reserve in PROBE_RESERVE_PER_REGION.items():
-            pool = by_region.get(region, [])
-            pref_n = PROBE_PREFERRED_PER_REGION.get(region, 0)
-            pref = [fp for fp in pool if is_preferred(unique[fp])]
-            rest = [fp for fp in pool if fp not in pref]
-            ordered = pref[:pref_n] + rest + pref[pref_n:]
-            for fp in ordered[:reserve]:
-                if fp not in chosen:
-                    sample.append(fp)
-                    chosen.add(fp)
-        # UDP protocols (hy2/tuic) skipped TCP probe — force them into the probe
-        # sample, otherwise the dead-or-alive gate can never verify them.
-        udp_sorted = sorted(
-            (fp for fp in alive_sorted if is_udp_protocol(unique[fp]) and fp in official_fps),
-            key=_probe_rank,
+        sample = select_probe_sample(
+            tcp_lat, unique, prov, official_fps, cand_urls,
+            survival_pre, _today(), per_source.keys(),
         )
-        for fp in udp_sorted:
-            if len(sample) >= PROBE_LIMIT_OFFICIAL:
-                break
-            if fp not in chosen:
-                sample.append(fp)
-                chosen.add(fp)
-        for fp in alive_sorted:
-            if len(sample) >= PROBE_LIMIT_OFFICIAL:
-                break
-            if fp in official_fps and fp not in chosen:
-                sample.append(fp)
-                chosen.add(fp)
-        for cu in cand_urls:
-            extra = [fp for fp in alive_sorted if cu in prov[fp] and fp not in official_fps and fp not in chosen]
-            extra = extra[:PROBE_PER_CANDIDATE]
-            sample += extra
-            chosen.update(extra)
+        state_fresh = survival_state_fresh(survival_pre, _today())
+        print(f"拨测样本: {len(sample)}/{len(tcp_lat)}（TCP 存活节点中选出；"
+              f"状态{'新鲜' if state_fresh else '陈旧-样本选择与评分均忽略历史优先级'}）")
 
     if bin_path:
         print(f"使用 mihomo 真实探测 {len(sample)} 个节点: {bin_path}")
@@ -327,13 +367,19 @@ def main() -> None:
 
     # ---- 6. per-source metrics ----
     per_src: dict[str, dict] = {}
-    for url in off_urls + cand_urls:
+    # 渠道节点（CHANNEL_NODES_KEY）也纳入 per-source 指标：此前它不在
+    # off_urls + cand_urls 中，指标/统计里完全不可见（收集了多少、存活多少、
+    # 拨测通过多少都无从考证）。
+    metric_urls = off_urls + cand_urls + (
+        [CHANNEL_NODES_KEY] if CHANNEL_NODES_KEY in per_source else []
+    )
+    for url in metric_urls:
         fps = [fp for fp, s in prov.items() if url in s]
         alive = [fp for fp in fps if fp in tcp_lat]
         is_off = url in off_set
         m = dict(fstats.get(url, {}))
         m.update(
-            role="official" if is_off else "candidate",
+            role="official" if is_off else ("channel" if url == CHANNEL_NODES_KEY else "candidate"),
             alive=len(alive),
             real_ok=sum(1 for fp in alive if fp in real_ok),
             probed=sum(1 for fp in fps if fp in probe),
@@ -361,6 +407,12 @@ def main() -> None:
     # Real-probe OK ranks first; TCP-alive (esp. Asia / Hy2/Reality) stays eligible
     # so China-path quotas and MIN_FINAL can be filled when US-runner probe is sparse.
     survival = survival_pre
+    # 与 select_probe_sample 同一原则：survival 停更（陈旧）时，评分阶段同样
+    # 不信任历史加成——否则陈旧 streak/real_hist 会在排序里继续放大旧时代
+    # 节点的优势，与拨测样本选择的口径相悖（样本已不迷信历史，排序却迷信）。
+    # update_survival 仍基于真实记录累积（非连续日期会自然重置 streak，自愈）。
+    state_fresh = survival_state_fresh(survival, _today())
+    score_survival = survival if state_fresh else {}
     scored: list[tuple[dict, float, float, bool, bool, int]] = []
     for fp, tlat in tcp_lat.items():
         if fp in tampered:
@@ -368,7 +420,7 @@ def main() -> None:
         cand_only = fp not in official_fps
         r = real_ok.get(fp)
         if bin_path and REQUIRE_REAL_PROBE_IN_OUTPUT and not r:
-            continue  # legacy hard gate (off by default for China-path floor)
+            continue  # 死活闸门：本轮未通过真实拨测的节点不进最终列表
         if cand_only and bin_path and not r:
             continue  # probation-source nodes must pass the real probe
         if bin_path and REQUIRE_HTTPS_OK_IN_OUTPUT and r and not r.get("https_ok"):
@@ -387,6 +439,10 @@ def main() -> None:
         penalty = 0.0 if r or not bin_path else NO_REAL_PROBE_PENALTY
         if r and bin_path and not r.get("https_ok"):
             penalty += NO_HTTPS_PENALTY  # soft: CF HTTPS not sole veto
+            # 跳过证书校验且 HTTPS 探测失败：TLS 链路大概率已被劫持/为空壳，
+            # 再追加一等惩罚（Insecure 节点本就应更严格，见命名阶段的安全隔离）。
+            if _truthy(unique[fp].get("skip-cert-verify")):
+                penalty += NO_HTTPS_PENALTY
         if r and r.get("cf_blocked"):
             penalty += CF_BLOCKED_PENALTY  # soft purity
         if cand_only:
@@ -397,8 +453,8 @@ def main() -> None:
         penalty += protocol_penalty(unique[fp])
         penalty += china_feature_bonus(unique[fp])
         penalty += us_china_penalty(unique[fp], r)
-        bonus = survival_bonus_ms(fp, survival)
-        bonus += history_bonus(fp, survival)  # 历史真实通过率（持续通过的节点排更前）
+        bonus = survival_bonus_ms(fp, score_survival)
+        bonus += history_bonus(fp, score_survival)  # 历史真实通过率（持续通过的节点排更前）
         if is_preferred(unique[fp]):
             bonus *= 1.5  # keep long-lived hy2/reality even harder
         # TCP 延迟（美西 Runner 测得，≠国内真实路径）仅作粗排信号：贡献设上限，

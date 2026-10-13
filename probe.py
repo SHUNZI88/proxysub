@@ -21,8 +21,6 @@ from common import (
     is_udp_protocol,
     fingerprint,
     UDP_PROTOCOLS,
-    LIGHT_PROBE_CONCURRENCY,
-    LIGHT_PROBE_TIMEOUT,
     TCP_TIMEOUT,
     PROBE_URLS,
     PROBE_PASS_NEED,
@@ -33,20 +31,6 @@ from common import (
     PROBE_CONCURRENCY,
     PROBE_BATCH,
 )
-
-def light_http_probe(proxy: dict) -> bool:
-    """阶段 1 轻量探活：TCP 可达性粗筛（UDP 协议豁免，交阶段 2 的 QUIC 拨测）。"""
-    if is_udp_protocol(proxy):
-        return True
-    server = proxy.get("server")
-    port = proxy.get("port")
-    if not server or not port:
-        return False
-    try:
-        with socket.create_connection((server, int(port)), timeout=LIGHT_PROBE_TIMEOUT):
-            return True
-    except Exception:
-        return False
 
 def tcp_probe(proxy: dict) -> tuple[bool, float]:
     server = proxy.get("server")

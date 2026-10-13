@@ -149,6 +149,16 @@ PROBE_URL = "http://www.gstatic.com/generate_204"
 TRACE_URL = "https://www.cloudflare.com/cdn-cgi/trace"  # soft HTTPS signal + egress IP/loc
 PROBE_LIMIT_OFFICIAL = 980
 PROBE_PER_CANDIDATE = 20
+# 新节点保底拨测配额：从未进入 survival 的节点保证有拨测机会，
+# 节点池才能正常轮换（2026-10 质量回归修订：此前历史稳定节点
+# 可以凭 streak 把新节点完全挤出 980 个拨测预算）。
+PROBE_FRESH_QUOTA = 250
+# 多渠道节点（Telegram/网页分享链接）在 per_source 中的伪键名。
+# 它们既非正式源也非候选源 URL，此前的样本循环永远选不到它们，
+# 导致渠道节点在评分时全被 cand_only 闸门丢弃（收集了却永不入选）。
+CHANNEL_NODES_KEY = "__channel_nodes__"
+# 多渠道节点保底拨测配额：与候选源同等参与「通过拨测方可入榜」机制。
+CHANNEL_PROBE_QUOTA = 60
 PROBE_BATCH = 100
 PROBE_CONCURRENCY = 32
 # Reserve real-probe slots: Asia heavy, US light.
@@ -185,6 +195,9 @@ MAX_PER_EGRESS_IP = 3            # diversity (slightly looser)
 TAMPER_STATUSES = ("tamper_http", "tamper_https", "tls_mitm", "bad_egress")
 # 云端拨测 = 死活闸门：连美国都无法代理成功的节点必然已死（凭证过期/后端下线/
 # CDN 空壳），不允许进入最终列表。探测延迟不参与排序（见 TCP_LATENCY_CAP_IN_SCORE）。
+# 注意：工作流实际开启拨测（未设 PROXYSUB_DISABLE_PROBE）——美西 Runner 的
+# 连通性结论作为「节点是否已死」的闸门是可靠的（死节点在哪都死），仅延迟数值
+# 不作为国内路径依据（见 is_us_node / us_china_penalty 的软惩罚）。
 REQUIRE_REAL_PROBE_IN_OUTPUT = True
 # CF HTTPS trace is soft — do NOT hard-exclude; apply NO_HTTPS_PENALTY instead.
 REQUIRE_HTTPS_OK_IN_OUTPUT = False
@@ -241,11 +254,9 @@ MAX_SURVIVAL_DAYS = 28
 # 由 mihomo 拨测（QUIC）作为其死活闸门。
 UDP_PROTOCOLS = {"hysteria2", "hy2", "tuic", "hysteria", "quic"}
 
-# 两阶段探测：阶段 1 用高并发短超时的 TCP 轻量探活，快速砍掉大批已下线节点，
-# 避免把有限的 mihomo 拨测预算浪费在明显不存活的节点上；阶段 2 才做真实拨测。
-LIGHT_PROBE_CONCURRENCY = 180
-LIGHT_PROBE_TIMEOUT = 4.0
-# 跨天存活达到此天数的节点，强制优先进入真实拨测样本（历史稳定性强绑定）
+# 跨天存活达到此天数的节点，在 survival 状态新鲜时强制优先进入拨测样本
+# （历史稳定性强绑定）。注意：状态一旦陈旧（停更），select_probe_sample 会
+# 整体忽略该优先级，防止已死旧节点凭陈旧 streak 霸占拨测预算。
 SURVIVAL_STREAK_FORCE_PROBE = 3
 # 历史真实通过率加成（过去 N 次运行的 real_ok 比率，见 update_survival）
 HISTORY_PASS_RATE_BONUS = 150.0
@@ -253,6 +264,18 @@ SURVIVAL_PASS_WINDOW = 7
 
 def _today() -> str:
     return date.today().isoformat()
+
+
+def survival_state_fresh(survival: dict, today_str: str) -> bool:
+    """survival 状态是否新鲜（存在今日记录）。
+
+    状态文件可能因任何原因停更（2026-10 曾因工作流 `git add` 原子失败冻结
+    多轮）。一旦陈旧，拨测样本选择（select_probe_sample）与评分阶段都整体
+    忽略历史记录——否则已死旧节点会凭陈旧 streak/real_hist 霸占拨测预算
+    与排序优势，新节点永无拨测机会，输出质量逐轮下滑。
+    """
+    return any(str(rec.get("last_seen", "")) == today_str
+               for rec in (survival or {}).values())
 
 
 # load_json / save_json 统一由 safe_io 提供（原子写入 + 文件锁 + 损坏自愈）。
