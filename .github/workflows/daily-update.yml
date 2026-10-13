@@ -25,6 +25,10 @@ jobs:
   update:
     runs-on: ubuntu-latest
     timeout-minutes: 50
+    # 反爬：public 仓库的 workflow_dispatch 默认任何人可手动触发。限定仅仓库
+    # 所有者可手动运行（schedule / repository_dispatch 不受影响——后者本就需要
+    # 带 repo 权限的 PAT，天然受限）。
+    if: github.event_name != 'workflow_dispatch' || github.actor == github.repository_owner
 
     steps:
       - name: Checkout
@@ -83,6 +87,8 @@ jobs:
           # 仅用于只读 GitHub 搜索（源发现）；sources_manager.py 内部已做限流
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PROXYSUB_DISCOVERY: '1'
+          # 反爬总开关走 anti_crawl.json 的 enabled；此处可设 '0' 临时强制关闭
+          PROXYSUB_ANTI_CRAWL: '1'
           # 调试用：PROXYSUB_DISABLE_PROBE=1 可跳过真实拨测（输出会混入僵尸节点）
         run: python filter_clash.py
 
@@ -97,7 +103,11 @@ jobs:
                   clean_proxies_only.yaml stats.md survival.json \
                   source_stats.json source_scores.json bad_sources.json \
                   sources.json candidate_sources.json honeypot_blocklist.json \
-                  collected_nodes.txt || true
+                  collected_nodes.txt anti_crawl.json robots.txt || true
+          # 反爬轮换文件名（clean_clash.<token>.yaml 等）：-A 同时捕获新增与
+          # 被程序删除的过期文件；无匹配时静默跳过。
+          git add -A -- 'clean_clash.*' 'clean_singbox.*' 'clean_v2ray.*' \
+                  'clean_proxies_only.*' 2>/dev/null || true
           # remove accidental duplicate if still tracked
           if [ -f .github/workflows/filter_clash.py ]; then
             git rm -f .github/workflows/filter_clash.py || true
@@ -123,7 +133,11 @@ jobs:
           exit 1
 
       - name: Create issue on failure
-        if: failure()
+        # 反爬：失败详情默认不再开公开 Issue（会在仓库 Issues 页暴露运行信息），
+        # 需要告警时把下方 ALERT_ISSUE 改为 '1'。
+        if: failure() && env.ALERT_ISSUE == '1'
+        env:
+          ALERT_ISSUE: '0'
         uses: actions/github-script@v7
         with:
           script: |
