@@ -365,16 +365,20 @@ def write_github_summary(info: dict) -> None:
     # 反爬状态：真实订阅地址只写在本页（仅仓库所有者可见），不进入任何公开文件
     ac = info.get("anti_crawl") or {}
     if ac.get("enabled"):
-        repo = os.environ.get("GITHUB_REPOSITORY", "OWNER/REPO")
         lines += [
             "## Anti-crawl (real URLs are ONLY shown here — do not share)",
             "",
-            f"- Fixed-name files (`clean_clash.yaml` etc.) are **decoy content** "
-            f"({(ac.get('decoy') or {}).get('total', 0)} bait nodes); rotation every "
-            f"{ac.get('rotate_days', '?')} days",
         ]
-        lines += [f"- `https://raw.githubusercontent.com/{repo}/main/{p}`"
-                  for p in ac.get("real_outputs", []) if p]
+        if ac.get("mode") == "release":
+            lines.append(
+                "- Mode: decoy fixed names + rolling GitHub Release — "
+                "**permanent URLs, copy once, never changes**:")
+            lines += [f"- `{u}`" for u in ac.get("release_urls", [])]
+        else:
+            lines.append(
+                "- Mode: decoy fixed names + rotating file names "
+                f"(every {ac.get('rotate_days', '?')} days, old links expire):")
+            lines += [f"- `{u}`" for u in ac.get("real_outputs", [])]
         if ac.get("stale_outputs"):
             lines.append(f"- Expired (deleted): {', '.join(ac['stale_outputs'])}")
         lines.append("")

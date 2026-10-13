@@ -3,30 +3,37 @@
 
 威胁模型：public 仓库的订阅文件通过 raw.githubusercontent.com 对任何人可读，
 且会被「按固定路径扫描」的爬虫 / 聚合站 / 搜索引擎收录。本模块提供一层
-「诱饵分流 + 文件名轮换 + 回流检测」，显著提高爬虫成本：
+「诱饵分流 + 永久地址 + 回流检测」，显著提高爬虫成本：
 
   1. 诱饵分流（decoy）：开启后，固定名订阅文件（clean_clash.yaml 等）改写为
      **诱饵内容**——大量形态合法但必定不可用的诱饵节点（名称带 [BAIT] 标记，
      服务器指向保留域 .invalid，任何客户端都无法连通）。
-  2. 文件名轮换（rotate）：真实输出改写入轮换文件名
-     （clean_clash.<token>.yaml，token 每 rotate_days 天确定性更换一次，
-     过期文件自动删除）。大众爬虫只认固定路径，扫到的永远是诱饵。
+  2. 永久订阅地址（rolling release，默认）：真实输出发布到仓库的滚动
+     GitHub Release（tag 可配），资产名为首次生成的随机字符串
+     （p_<hex>_c.yaml 等，之后永久不变）。订阅地址形如
+     https://github.com/<repo>/releases/latest/download/p_<hex>_c.yaml
+     —— **一次复制，永久有效**；按固定路径扫描 raw 的爬虫永远只会扫到诱饵。
   3. 诱饵回流检测（bait feedback）：若某个订阅源收录了我们生成的诱饵节点
      （指纹比对），该源会被自动标记 bait_reuse —— 候选源直接拒绝、
      正式源自动淘汰。爬虫转载诱饵即自我暴露。
   4. robots.txt：生成 Disallow: / 声明，劝阻合规爬虫。
   5. 真实订阅地址只写入 GitHub Actions Step Summary（仅仓库所有者可见），
-     不进入任何公开文件。
+     不进入任何公开文件（README / stats.md 均不含）。
+
+备选模式（publish_release=false）：真实输出写轮换文件名
+（clean_clash.<token>.yaml，每 rotate_days 天更换，过期自动删除）——链接会
+定期失效，适合「分享出去的链接应过期」的场景；默认不启用。
 
 效果边界（如实说明，详见 README「反爬与防搜索」）：
   - public 仓库无法从根本上避免被 GitHub 站内搜索 / 代码索引 / 外部搜索引擎收录；
-  - 轮换 token 与当前文件名记录在公开的 anti_crawl.json 中，可防御大众爬虫，
-    无法防御针对性人工分析；要彻底隐藏只有转 private 仓库（代价见 README）。
+  - 永久地址的随机资产名记录在公开的 anti_crawl.json 中，可防御大众爬虫，
+    无法防御针对性人工分析（也可用环境变量 PROXYSUB_ASSET_NAMES 指定资产名、
+    使其完全不落仓库）；要彻底隐藏只有转 private 仓库（代价见 README）。
 
 默认关闭：anti_crawl.json 的 "enabled": false 时本模块完全不改变原有行为
-（不写诱饵、不轮换、不删文件），也可用环境变量 PROXYSUB_ANTI_CRAWL=0 强制关闭。
+（不写诱饵、不发布、不删文件），也可用环境变量 PROXYSUB_ANTI_CRAWL=0 强制关闭。
 
-依赖分层：本模块可 import common / output（filter_clash 已同时依赖它们，
+依赖分层：本模块可 import output（filter_clash 已同时依赖它们，
 不构成循环）；不 import probe / score / sources_manager。
 """
 
@@ -34,6 +41,7 @@ from __future__ import annotations
 
 import base64
 import hashlib
+import json
 import os
 import re
 import secrets
@@ -47,19 +55,28 @@ from safe_io import load_json, save_json  # 原子化读写，防止 JSON 截断
 
 CONFIG_FILE = "anti_crawl.json"
 ROBOTS_FILE = "robots.txt"
+PUBLISH_DIR = ".publish"               # 真实输出的本地暂存目录（由工作流发布为 Release 资产）
 
-# 固定名文件 = 诱饵；真实输出 = 轮换名（见 rotated_name）
+# 固定名文件 = 诱饵；真实输出 = Release 资产（见 asset_name）
 OUTPUT_BASENAMES = (
     "clean_clash.yaml",
     "clean_proxies_only.yaml",
     "clean_singbox.json",
     "clean_v2ray.txt",
 )
+# 资产名后缀：随机 token + 区分格式的后缀 + 原扩展名（p_<hex>_c.yaml 等）
+_ASSET_SUFFIX = {
+    "clean_clash.yaml": "_c",
+    "clean_proxies_only.yaml": "_p",
+    "clean_singbox.json": "_s",
+    "clean_v2ray.txt": "_v",
+}
 
 BAIT_TAG = "[BAIT]"
 DEFAULT_BAIT_HOST = "bait.invalid"   # RFC 2606 保留域：任何客户端都无法连通
 DEFAULT_ROTATE_DAYS = 3
 DEFAULT_DECOY_COUNT = 60
+DEFAULT_RELEASE_TAG = "sub"
 BAIT_HISTORY_KEEP = 3                # 保留最近 N 轮诱饵节点指纹用于回流检测
 
 
@@ -69,19 +86,27 @@ def default_config() -> dict:
     return {
         "_doc": (
             "反爬与防搜索配置（默认关闭）。enabled=true 后：固定名订阅文件改写为诱饵内容，"
-            "真实输出改用轮换文件名（每 rotate_days 天更换，过期自动删除）；"
-            "token_seed/token/current_outputs/stale_outputs/bait_nodes/bait_history 由程序自动维护，请勿手工编辑；"
-            "PROXYSUB_ANTI_CRAWL=0 可临时强制关闭。效果边界见 README「反爬与防搜索」。"
+            "真实输出发布到滚动 GitHub Release（资产名为随机字符串、永久不变，publish_release=true，"
+            "默认）；publish_release=false 则退回轮换文件名模式（链接定期失效）。"
+            "token_seed/token/current_outputs/stale_outputs/bait_nodes/bait_history/asset_names "
+            "由程序自动维护，请勿手工编辑；PROXYSUB_ANTI_CRAWL=0 可临时强制关闭；"
+            "PROXYSUB_ASSET_NAMES 可指定 Release 资产名（JSON，指定后不写入本文件）。"
+            "效果边界见 README「反爬与防搜索」。"
         ),
         "enabled": False,
+        "publish_release": True,      # True: 滚动 Release 永久地址（默认）；False: 轮换文件名
+        "release_tag": DEFAULT_RELEASE_TAG,
         "rotate_days": DEFAULT_ROTATE_DAYS,
         "decoy_count": DEFAULT_DECOY_COUNT,
         "bait_host": DEFAULT_BAIT_HOST,
         "token_seed": "",
+        "asset_token": "",
         "token": "",
         "rotated_at": "",
+        "output_mode": "",            # "release" | "rotate"，由程序维护
         "current_outputs": [],
         "stale_outputs": [],
+        "asset_names": {},
         "bait_nodes": [],
         "bait_history": [],
     }
@@ -95,6 +120,8 @@ def load_config() -> dict:
     base.update({k: v for k, v in cfg.items() if k in base})
     # 类型兜底：损坏/手误的字段回退到默认值，绝不让流水线崩溃
     base["enabled"] = bool(base.get("enabled"))
+    base["publish_release"] = bool(base.get("publish_release", True))
+    base["release_tag"] = str(base.get("release_tag") or DEFAULT_RELEASE_TAG)
     for k, lo, hi, dflt in (("rotate_days", 1, 30, DEFAULT_ROTATE_DAYS),
                             ("decoy_count", 5, 500, DEFAULT_DECOY_COUNT)):
         try:
@@ -105,6 +132,8 @@ def load_config() -> dict:
     for k in ("current_outputs", "stale_outputs", "bait_nodes", "bait_history"):
         if not isinstance(base.get(k), list):
             base[k] = []
+    if not isinstance(base.get("asset_names"), dict):
+        base["asset_names"] = {}
     return base
 
 
@@ -120,7 +149,12 @@ def is_enabled(cfg: dict | None = None) -> bool:
     return bool(cfg.get("enabled"))
 
 
-# ====================== 轮换 token 与文件名 ======================
+def publish_mode(cfg: dict) -> bool:
+    """True=滚动 Release 永久地址模式；False=轮换文件名模式。"""
+    return bool(cfg.get("publish_release", True))
+
+
+# ====================== 轮换 token 与文件名（rotate 模式） ======================
 
 def epoch_of(day: date, rotate_days: int) -> int:
     return day.toordinal() // max(1, int(rotate_days))
@@ -141,15 +175,47 @@ def rotated_name(basename: str, token: str) -> str:
 
 
 def make_namer(cfg: dict) -> Callable[[str], str]:
-    """返回 basename -> 当前真实输出文件名 的映射函数（供 output 层使用）。"""
+    """返回 basename -> 当前真实输出文件名 的映射函数（rotate 模式，供 output 层使用）。"""
     token = str(cfg.get("token") or "")
     return lambda base: rotated_name(base, token) if token else base
 
 
-def real_output_urls(cfg: dict, repo: str | None = None) -> list[str]:
+# ====================== Release 永久地址（release 模式，默认） ======================
+
+def asset_name(cfg: dict, basename: str) -> str:
+    """Release 资产名：首次生成为随机字符串，之后永久不变。
+
+    优先使用环境变量 PROXYSUB_ASSET_NAMES（JSON dict，指定后不写入公开配置，
+    资产名即可完全不落仓库）；否则生成 p_<hex><后缀><扩展名> 并持久化。
+    """
+    env = os.environ.get("PROXYSUB_ASSET_NAMES")
+    if env:
+        try:
+            override = json.loads(env)
+            if isinstance(override, dict) and basename in override:
+                return str(override[basename])
+        except Exception:
+            pass
+    names = cfg.setdefault("asset_names", {})
+    if basename not in names or not names[basename]:
+        if not cfg.get("asset_token"):
+            cfg["asset_token"] = secrets.token_hex(5)
+        ext = os.path.splitext(basename)[1]
+        names[basename] = f"p_{cfg['asset_token']}{_ASSET_SUFFIX.get(basename, '')}{ext}"
+    return str(names[basename])
+
+
+def publish_paths(cfg: dict) -> dict[str, str]:
+    """basename -> .publish/<资产名>（工作流随后上传为 Release 资产）。"""
+    return {b: os.path.join(PUBLISH_DIR, asset_name(cfg, b)) for b in OUTPUT_BASENAMES}
+
+
+def release_urls(cfg: dict, repo: str | None = None) -> list[str]:
+    """永久订阅地址：https://github.com/<repo>/releases/latest/download/<资产名>。"""
     repo = repo or os.environ.get("GITHUB_REPOSITORY") or "OWNER/REPO"
-    return [f"https://raw.githubusercontent.com/{repo}/main/{p}"
-            for p in cfg.get("current_outputs", []) if p]
+    tag = str(cfg.get("release_tag") or DEFAULT_RELEASE_TAG)
+    return [f"https://github.com/{repo}/releases/latest/download/{asset_name(cfg, b)}"
+            for b in OUTPUT_BASENAMES]
 
 
 # ====================== 诱饵节点与诱饵订阅 ======================
@@ -255,7 +321,6 @@ def write_decoy_outputs(cfg: dict) -> dict:
             outbounds.append(ob)
     outbounds.append({"type": "direct", "tag": "direct"})
     with open("clean_singbox.json", "w", encoding="utf-8") as f:
-        import json
         json.dump({"outbounds": outbounds}, f, ensure_ascii=False, indent=2)
     stat["singbox"] = len(outbounds) - 1
 
@@ -274,7 +339,7 @@ def write_decoy_outputs(cfg: dict) -> dict:
 # ====================== 每轮推进 ======================
 
 def begin_run(cfg: dict | None = None, today: date | None = None) -> dict:
-    """每轮更新开始时调用：按需轮换 token / 重生成诱饵 / 清理过期文件 / 写配置。
+    """每轮更新开始时调用：按需轮换诱饵 / 推进输出模式 / 清理过期文件 / 写配置。
 
     未启用时原样返回（不落盘、不产生任何文件变化）。
     """
@@ -286,22 +351,37 @@ def begin_run(cfg: dict | None = None, today: date | None = None) -> dict:
     if not cfg.get("token_seed"):
         cfg["token_seed"] = secrets.token_hex(16)  # 首次启用：随机种子（之后保持不变）
 
+    prev_token = cfg.get("token")
+    prev_mode = cfg.get("output_mode")
+    prev_outputs = [p for p in cfg.get("current_outputs", []) if p]
+    mode = "release" if publish_mode(cfg) else "rotate"
     token = rotate_token(cfg, today)
-    if token != cfg.get("token"):
-        # 新轮换周期：记录待删旧文件、重生成诱饵、切换真实输出名
-        cfg["stale_outputs"] = [p for p in cfg.get("current_outputs", []) if p]
+
+    # 诱饵按周期轮换（两种模式都做：外部流传的旧诱饵指纹仍保留 BAIT_HISTORY_KEEP 轮）
+    if token != prev_token:
         nodes = gen_decoy_nodes(int(cfg.get("decoy_count", DEFAULT_DECOY_COUNT)), token, cfg)
         cfg["bait_nodes"] = nodes
         history = [h for h in cfg.get("bait_history", []) if isinstance(h, dict)]
-        history = history[-(BAIT_HISTORY_KEEP - 1):] + [{"token": token, "nodes": nodes}]
-        cfg["bait_history"] = history
+        cfg["bait_history"] = history[-(BAIT_HISTORY_KEEP - 1):] + [{"token": token, "nodes": nodes}]
         cfg["token"] = token
-        cfg["current_outputs"] = [rotated_name(b, token) for b in OUTPUT_BASENAMES]
         cfg["rotated_at"] = today.isoformat()
-    else:
-        cfg["stale_outputs"] = []
 
-    # 删除上一轮换周期的真实输出文件（爬虫收藏的旧链接随之失效）
+    # 输出文件名推进
+    stale: list[str] = []
+    if prev_mode and prev_mode != mode:
+        # 模式切换：清理旧模式的输出文件（如 rotate -> release 时删掉轮换文件）
+        stale = prev_outputs
+    elif mode == "rotate" and token != prev_token:
+        stale = prev_outputs
+    cfg["stale_outputs"] = stale
+    cfg["output_mode"] = mode
+    if mode == "release":
+        # 永久地址：资产名首次生成后不变，无需删旧文件
+        cfg["current_outputs"] = list(publish_paths(cfg).values())
+    elif token != prev_token:
+        cfg["current_outputs"] = [rotated_name(b, token) for b in OUTPUT_BASENAMES]
+
+    # 删除过期输出文件（模式切换残留 / 上一轮换周期的真实输出）
     for f in cfg.get("stale_outputs", []):
         try:
             if os.path.exists(f):
@@ -352,20 +432,36 @@ def summary_lines(cfg: dict) -> list[str]:
     lines = [
         "## 反爬状态（真实地址仅本页可见，请勿外传）",
         "",
-        f"- 模式：诱饵分流 + 文件名轮换（每 {cfg.get('rotate_days', DEFAULT_ROTATE_DAYS)} 天，"
-        f"当前 token `{cfg.get('token', '')}`）",
-        f"- 固定名订阅文件（`clean_clash.yaml` 等）为**诱饵内容**（{len(cfg.get('bait_nodes', []))} 个诱饵节点）",
     ]
-    lines += [f"- 订阅地址：`{u}`" for u in real_output_urls(cfg)]
+    if publish_mode(cfg):
+        lines.append(
+            f"- 模式：诱饵分流 + 滚动 Release 永久地址（tag `{cfg.get('release_tag', DEFAULT_RELEASE_TAG)}`，"
+            f"固定名 raw 文件为诱饵内容 {len(cfg.get('bait_nodes', []))} 个）")
+        lines.append("- **永久订阅地址（一次复制，永久有效，不会变）**：")
+        lines += [f"  - `{u}`" for u in release_urls(cfg)]
+    else:
+        lines.append(
+            f"- 模式：诱饵分流 + 文件名轮换（每 {cfg.get('rotate_days', DEFAULT_ROTATE_DAYS)} 天，"
+            f"当前 token `{cfg.get('token', '')}`，过期链接自动失效）")
+        lines.append("- 当前订阅地址：")
+        lines += [f"  - `{u}`" for u in real_output_urls(cfg)]
     if cfg.get("stale_outputs"):
         lines.append(f"- 已过期的旧地址（已删除）：{', '.join(cfg['stale_outputs'])}")
     return lines
 
 
+def real_output_urls(cfg: dict, repo: str | None = None) -> list[str]:
+    """rotate 模式下的当前真实输出 raw 地址。"""
+    repo = repo or os.environ.get("GITHUB_REPOSITORY") or "OWNER/REPO"
+    return [f"https://raw.githubusercontent.com/{repo}/main/{p}"
+            for p in cfg.get("current_outputs", []) if p]
+
+
 __all__: list[Any] = [
-    "CONFIG_FILE", "ROBOTS_FILE", "OUTPUT_BASENAMES", "BAIT_TAG",
-    "default_config", "load_config", "save_config", "is_enabled",
+    "CONFIG_FILE", "ROBOTS_FILE", "PUBLISH_DIR", "OUTPUT_BASENAMES", "BAIT_TAG",
+    "default_config", "load_config", "save_config", "is_enabled", "publish_mode",
     "rotate_token", "rotated_name", "make_namer", "real_output_urls", "epoch_of",
+    "asset_name", "publish_paths", "release_urls",
     "gen_decoy_nodes", "build_decoy_config", "write_decoy_outputs",
     "begin_run", "bait_fingerprints", "robots_text", "write_robots", "summary_lines",
 ]

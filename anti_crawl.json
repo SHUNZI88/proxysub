@@ -1,14 +1,19 @@
 {
-  "_doc": "反爬与防搜索配置（默认关闭）。enabled=true 后：固定名订阅文件改写为诱饵内容，真实输出改用轮换文件名（每 rotate_days 天更换，过期自动删除）；token_seed/token/current_outputs/stale_outputs/bait_nodes/bait_history 由程序自动维护，请勿手工编辑；PROXYSUB_ANTI_CRAWL=0 可临时强制关闭。效果边界见 README「反爬与防搜索」。",
+  "_doc": "反爬与防搜索配置（默认关闭）。enabled=true 后：固定名订阅文件改写为诱饵内容，真实输出发布到滚动 GitHub Release（资产名为随机字符串、永久不变，publish_release=true，默认）；publish_release=false 则退回轮换文件名模式（链接定期失效）。token_seed/token/current_outputs/stale_outputs/bait_nodes/bait_history/asset_names 由程序自动维护，请勿手工编辑；PROXYSUB_ANTI_CRAWL=0 可临时强制关闭；PROXYSUB_ASSET_NAMES 可指定 Release 资产名（JSON，指定后不写入本文件）。效果边界见 README「反爬与防搜索」。",
   "enabled": false,
+  "publish_release": true,
+  "release_tag": "sub",
   "rotate_days": 3,
   "decoy_count": 60,
   "bait_host": "bait.invalid",
   "token_seed": "",
+  "asset_token": "",
   "token": "",
   "rotated_at": "",
+  "output_mode": "",
   "current_outputs": [],
   "stale_outputs": [],
+  "asset_names": {},
   "bait_nodes": [],
   "bait_history": []
 }

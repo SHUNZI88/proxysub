@@ -5,3 +5,5 @@ __pycache__/
 *.lock
 *.corrupt
 .tmp-*
+# 反爬暂存目录：真实输出在发布为滚动 Release 前暂存于此，不入库
+.publish/

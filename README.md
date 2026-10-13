@@ -16,6 +16,8 @@
 
 > 中国大陆直连 `raw.githubusercontent.com` 常不稳定，可换用 jsDelivr 镜像：
 > `https://cdn.jsdelivr.net/gh/SHUNZI88/proxysub@main/clean_clash.yaml`（有 CDN 缓存延迟）。
+>
+> ⚠️ 若在 `anti_crawl.json` 开启了反爬（`"enabled": true`），上表固定名地址将变为**诱饵内容**，真实永久订阅地址见 Actions 运行页 Step Summary（详见「反爬与防搜索」）。
 
 ### 更新时效与外部心跳
 
@@ -80,8 +82,8 @@ Content-Type: application/json
 | `channels.py` | **多渠道搜集引擎**：从 Telegram 频道 / 网页 / 手工静态源提取订阅源 URL 与原始节点链接（仅依赖 safe_io + requests，无循环依赖） |
 | `channels.json` | 多渠道采集配置：Telegram 频道列表、监控网页列表、手工静态源（默认空，由用户按渠道填充） |
 | `honeypot.py` | 防蜜罐过滤：地址校验、DNS 校验、黑名单、源结构检测 |
-| `anti_crawl.py` | **反爬与防搜索**（默认关闭）：诱饵分流、输出文件名轮换、诱饵回流检测、robots.txt |
-| `anti_crawl.json` | 反爬配置与自动维护状态（`enabled` 开启；token/当前输出名/诱饵节点由程序维护，勿手改） |
+| `anti_crawl.py` | **反爬与防搜索**（默认关闭）：诱饵分流、滚动 Release 永久地址 / 文件名轮换、诱饵回流检测、robots.txt |
+| `anti_crawl.json` | 反爬配置与自动维护状态（`enabled` 开启；`publish_release` 控制永久地址/轮换模式；token/资产名/诱饵节点由程序维护，勿手改） |
 | `robots.txt` | 反爬开启时生成的 `Disallow: /` 声明 |
 | `collected_nodes.txt` | 多渠道搜集到的原始节点分享链接（vmess/vless/trojan/ss），经同样的静态门槛与死活闸门清洗后进入输出 |
 | `safe_io.py` | JSON 原子化读写：临时文件 + `os.replace` + filelock，损坏自愈 |
@@ -155,33 +157,40 @@ Content-Type: application/json
 
 public 仓库的订阅文件对任何人可读，且会被「按固定路径扫描」的爬虫 / 聚合站收录。在 `anti_crawl.json` 设 `"enabled": true` 后：
 
-1. **诱饵分流**：固定名订阅文件（`clean_clash.yaml` 等）改写为**诱饵内容**——大量形态合法但必定不可用的诱饵节点（名称带 `[BAIT]` 标记，服务器指向 RFC 保留域 `.invalid`，任何客户端都无法连通；混合 VLESS-Reality / Trojan / Hysteria2 三种形态，与真实输出完全同构）。
-2. **文件名轮换**：真实输出改写入**轮换文件名**（如 `clean_clash.a1b2c3d4e5.yaml`，token 每 `rotate_days` 天确定性更换），过期文件自动删除——爬虫收藏的旧链接随之 404。
+1. **诱饵分流**：固定名订阅文件（`clean_clash.yaml` 等）改写为**诱饵内容**——大量形态合法但必定不可用的诱饵节点（名称带 `[BAIT]` 标记，服务器指向 RFC 保留域 `.invalid`，任何客户端都无法连通；混合 VLESS-Reality / Trojan / Hysteria2 三种形态，与真实输出完全同构）。按固定路径扫描 raw 的爬虫，扫到的永远是诱饵。
+2. **永久订阅地址（滚动 Release，默认模式 `publish_release: true`）**：真实输出由工作流发布到仓库的滚动 GitHub Release（tag 可配，默认 `sub`），**资产名为首次生成的随机字符串**（如 `p_5d0dc339da_c.yaml`，之后永久不变）。订阅地址形如：
+   ```
+   https://github.com/SHUNZI88/proxysub/releases/latest/download/p_5d0dc339da_c.yaml
+   ```
+   **一次复制，永久有效，无需任何手动维护**；且该路径不在任何 raw 扫描器的目标清单上，也不从任何公开文件链接（地址只在 Actions Step Summary 可见）。
 3. **诱饵回流检测**：若某个订阅源收录了我们生成的诱饵节点（指纹比对，在静态门槛与 DNS 之前完成），该源会被标记 `bait_reuse`——**候选源直接拒绝、正式源自动淘汰**（`redistributes_bait`）。爬虫转载诱饵即自我暴露。
 4. **robots.txt**：生成 `Disallow: /` 声明，劝阻合规爬虫。
 5. **真实订阅地址只写入 GitHub Actions 的 Step Summary**（仅仓库所有者可见），不进入任何公开文件。
 6. 工作流加固：`workflow_dispatch` 限定**仅仓库所有者**可手动触发（public 仓库默认任何人可点）；失败告警 Issue 默认关闭（`ALERT_ISSUE: '1'` 可重开）。
 
+> 备选模式：`"publish_release": false` 退回**文件名轮换**（真实输出写 `clean_clash.<token>.yaml`，每 `rotate_days` 天更换、过期自动删除）——适合「分享出去的链接应过期」的场景，但订阅地址需定期更新。默认不启用。
+
 ### 效果边界（重要，请如实知悉）
 
 | 措施 | 防住 | 防不住 |
 |---|---|---|
-| 诱饵分流 + 轮换 | 按固定路径扫描的大众爬虫 / 聚合站；搜索引擎已收录链接失效 | 会解析 `anti_crawl.json` 推导当前文件名的针对性爬虫；人工分析 |
+| 诱饵分流 + Release 永久地址 | 按固定路径扫描 raw 的大众爬虫 / 聚合站（扫到的只有诱饵） | 会去读 Releases 页 / 解析 `anti_crawl.json` 的针对性爬虫；人工分析 |
 | 诱饵回流检测 | 转载诱饵的源被自动拒绝/淘汰 | 只爬不用、或清洗掉诱饵后再转载的爬虫 |
 | robots.txt | 遵守 robots 规范的合规爬虫 | 不遵守的爬虫；GitHub 站内搜索与代码索引 |
 | owner-only dispatch | 陌生人手动触发工作流 | 定时触发本身 |
 | 失败告警关闭 | Issues 页暴露运行信息 | — |
 
 - **public 仓库无法从根本上避免被检索**：GitHub 仓库页/README/代码会被站内搜索与外部搜索引擎索引，个人仓库内的文件（含 robots.txt）不能控制这一点。
-- 轮换 token 与当前文件名记录在公开的 `anti_crawl.json` 中——这是「提高门槛」而非「加密保密」。
-- 开启反爬后，**README 顶部的订阅地址表会指向诱饵文件**，请按需删除或改写该段（真实地址在 Actions Step Summary）。
-- **要彻底隐藏**（搜索/索引/raw 直链全部失效）：将仓库转为 **private**。代价：raw 订阅直链对 private 仓库返回 404，客户端无法直接订阅，需改用 GitHub API 带 token 下载或 Actions artifact；外部心跳 `repository_dispatch` 不受影响（本就用 PAT），且免费账户 private 仓库每月有 2000 分钟 Actions 额度（本工作流日均 4 次、单次数分钟，远低于上限）。
+- 永久地址的随机资产名记录在公开的 `anti_crawl.json` 中——这是「提高门槛」而非「加密保密」。如要求资产名完全不落仓库，可用仓库 secret 传入环境变量 `PROXYSUB_ASSET_NAMES`（JSON，如 `{"clean_clash.yaml":"my_name.yaml"}`），指定后程序不再生成也不再写入配置。
+- 滚动 Release 页面本身是公开的（任何人可看到资产存在），但资产名为随机字符串，且发布动作每轮静默更新，对「扫路径」的自动化爬虫不可见。
+- 开启反爬后，**README 顶部的订阅地址表会指向诱饵文件**，请按需删除或改写该段（真实永久地址在 Actions Step Summary，不会变）。
+- **要彻底隐藏**（搜索/索引/raw 直链全部失效）：将仓库转为 **private**。代价：raw 订阅直链与 Release 资产对 private 仓库都需要 token 才能下载，客户端无法直接订阅，需改用 GitHub API 带 token 下载或 Actions artifact；外部心跳 `repository_dispatch` 不受影响（本就用 PAT），且免费账户 private 仓库每月有 2000 分钟 Actions 额度（本工作流日均 4 次、单次数分钟，远低于上限）。
 
 ## 工程化
 
 - **原子化 JSON 读写**（`safe_io.py`）：所有状态文件（sources.json / survival.json / source_stats.json 等）通过「临时文件 + fsync + `os.replace` + filelock」写入，进程中断不会产生截断/空文件；损坏文件自动备份为 `.corrupt` 并自愈重启，不会导致流水线崩溃。
 - **工作流健壮性**：无文件变动时通过 `git diff --staged --quiet` 安全跳过提交（不会非零退出报错）；不再在 CI 中安装 mihomo（该步骤已随云端拨测一并移除）；依赖通过 `requirements.txt` 固定安装并启用 pip 缓存。
-- **回归测试**：`tests/` 覆盖订阅解析、指纹去重（嵌套参数变更不被误判）、地区识别（Russia 不误判为美国等边界用例）、协议门槛、原子写入（并发/截断/失败场景）、多渠道搜集、反爬（轮换/诱饵/回流检测）。CI 在每次代码变更时自动运行（`.github/workflows/tests.yml`）。
+- **回归测试**：`tests/` 覆盖订阅解析、指纹去重（嵌套参数变更不被误判）、地区识别（Russia 不误判为美国等边界用例）、协议门槛、原子写入（并发/截断/失败场景）、多渠道搜集、反爬（诱饵形态/永久地址/轮换/回流检测）。CI 在每次代码变更时自动运行（`.github/workflows/tests.yml`）。
 
 本地运行测试：
 
@@ -197,7 +206,7 @@ python -m pytest tests/ -v
 - 关闭自动发现：工作流环境变量 `PROXYSUB_DISCOVERY: '0'`。
 - 手工加源：在 `sources.json` 的 `official` 里加一条 `{"url": "...", "origin": "manual"}`。
 - 多渠道加源：编辑 `channels.json`，在 `telegram` / `web` / `static_sources` 填入对应渠道（详见上文「多渠道搜集配置」）。
-- 开启/关闭反爬：编辑 `anti_crawl.json` 的 `"enabled"`（默认 false）；或工作流环境变量 `PROXYSUB_ANTI_CRAWL: '0'` 临时强制关闭。开启后真实订阅地址见 Actions 运行页的 Step Summary。
+- 开启/关闭反爬：编辑 `anti_crawl.json` 的 `"enabled"`（默认 false）；或工作流环境变量 `PROXYSUB_ANTI_CRAWL: '0'` 临时强制关闭。开启后**永久订阅地址**（滚动 Release，不会变）见 Actions 运行页的 Step Summary。
 - 禁止某仓库：在 `deny_repos` 里加 `owner/repo`。
 
 ### 局限（请知悉）

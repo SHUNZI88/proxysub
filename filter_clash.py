@@ -661,16 +661,35 @@ def main() -> None:
     }
 
     # ---- 8. persist ----
-    # 反爬开启时：真实输出写轮换文件名，固定名文件写诱饵内容（见 anti_crawl）。
+    # 反爬开启时：固定名文件写诱饵内容；真实输出的去向由 publish_release 决定——
+    #   release 模式（默认）：写入 .publish/<随机资产名>，由工作流发布为滚动
+    #     GitHub Release，订阅地址永久不变（一次复制，长期有效）；
+    #   rotate 模式：写轮换文件名，链接每 rotate_days 天失效一次。
     if ac_enabled:
-        namer = anti_crawl.make_namer(ac)
-        real_main = namer(OUTPUT_FILE)
-        with open(real_main, "w", encoding="utf-8") as f:
-            yaml.dump(config, f, allow_unicode=True, sort_keys=False)
-        write_outputs(final_proxies + insecure_proxies, namer=namer)
-        decoy_stat = anti_crawl.write_decoy_outputs(ac)
-        ac_report["decoy"] = decoy_stat
-        print(f"反爬: 真实输出 -> {real_main}（固定名文件已写为诱饵 {decoy_stat.get('total', 0)} 个节点）")
+        if anti_crawl.publish_mode(ac):
+            paths = anti_crawl.publish_paths(ac)
+            os.makedirs(anti_crawl.PUBLISH_DIR, exist_ok=True)
+            real_main = paths[OUTPUT_FILE]
+            with open(real_main, "w", encoding="utf-8") as f:
+                yaml.dump(config, f, allow_unicode=True, sort_keys=False)
+            write_outputs(final_proxies + insecure_proxies, namer=lambda b: paths[b])
+            decoy_stat = anti_crawl.write_decoy_outputs(ac)
+            ac_report.update({
+                "mode": "release",
+                "real_outputs": list(paths.values()),
+                "release_urls": anti_crawl.release_urls(ac),
+            })
+            print(f"反爬: 真实输出 -> {anti_crawl.PUBLISH_DIR}/（发布为滚动 Release 永久地址；"
+                  f"固定名文件已写为诱饵 {decoy_stat.get('total', 0)} 个节点）")
+        else:
+            namer = anti_crawl.make_namer(ac)
+            real_main = namer(OUTPUT_FILE)
+            with open(real_main, "w", encoding="utf-8") as f:
+                yaml.dump(config, f, allow_unicode=True, sort_keys=False)
+            write_outputs(final_proxies + insecure_proxies, namer=namer)
+            decoy_stat = anti_crawl.write_decoy_outputs(ac)
+            ac_report.update({"mode": "rotate", "real_outputs": ac.get("current_outputs", [])})
+            print(f"反爬: 真实输出 -> {real_main}（固定名文件已写为诱饵 {decoy_stat.get('total', 0)} 个节点）")
     else:
         with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
             yaml.dump(config, f, allow_unicode=True, sort_keys=False)
@@ -690,7 +709,7 @@ def main() -> None:
         print(f"警告: 源评分更新失败（不影响输出）: {type(e).__name__}: {e}")
 
     print(f"\n✅ 已生成: {real_main if ac_enabled else OUTPUT_FILE}"
-          + ("（固定名文件为诱饵内容；真实地址见 Actions Step Summary）" if ac_enabled else ""))
+          + ("（固定名文件为诱饵内容；永久订阅地址见 Actions Step Summary）" if ac_enabled else ""))
     summary_info = {
         "final": total_final, "compliant": len(final_proxies), "insecure": len(insecure_proxies),
         "tcp": len(tcp_lat), "real": len(real_ok),

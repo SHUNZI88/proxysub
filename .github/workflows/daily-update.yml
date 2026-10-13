@@ -132,6 +132,36 @@ jobs:
           echo "最终推送失败" >&2
           exit 1
 
+      - name: Publish rolling release (anti-crawl permanent URLs)
+        # 反爬 release 模式：把 .publish/ 下的真实输出发布为滚动 Release（tag sub），
+        # 资产名为随机字符串（首次生成后不变），订阅地址永久有效。
+        # 未开启反爬或 publish_release=false 时跳过。
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          if ! python3 -c "
+          import json, sys
+          try:
+              cfg = json.load(open('anti_crawl.json', encoding='utf-8'))
+          except Exception:
+              sys.exit(1)
+          sys.exit(0 if cfg.get('enabled') and cfg.get('publish_release', True) else 1)
+          "; then
+            echo "反爬 Release 发布未启用，跳过"
+            exit 0
+          fi
+          tag="$(python3 -c "import json; print(json.load(open('anti_crawl.json', encoding='utf-8')).get('release_tag') or 'sub')")"
+          compgen -G ".publish/*" >/dev/null || { echo "ERROR: .publish/ 下没有待发布文件" >&2; exit 1; }
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" --clobber .publish/*
+          else
+            gh release create "$tag" --title "subscription" \
+              --notes "Auto-updated rolling release. Permanent subscription URLs (random asset names) are shown only in the Actions run Step Summary (repo owner)." \
+              .publish/*
+          fi
+          echo "已发布滚动 Release: $tag"
+
       - name: Create issue on failure
         # 反爬：失败详情默认不再开公开 Issue（会在仓库 Issues 页暴露运行信息），
         # 需要告警时把下方 ALERT_ISSUE 改为 '1'。
