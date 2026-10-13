@@ -71,7 +71,11 @@ Content-Type: application/json
 
 | 文件 | 作用 |
 |---|---|
-| `filter_clash.py` | 主流程：抓取 → 静态门槛过滤 → 两阶段探活/拨测 → 打分 → 多格式输出 |
+| `filter_clash.py` | 编排入口（`main()`）：抓取 → 静态门槛 → 两阶段探活/拨测 → 打分 → 多格式输出；具体实现分散到下列 4 个模块（直接 `python filter_clash.py` 运行方式不变） |
+| `common.py` | 公共层（架构叶子，无循环依赖）：全部配置常量 + 指纹/解析/静态过滤/协议门槛等纯函数 |
+| `probe.py` | 探测层：TCP/QUIC 存活检查与 mihomo 真实拨测（仅依赖 common） |
+| `score.py` | 评分层：协议分层、中美路径惩罚、跨天存活与历史稳定性（仅依赖 common） |
+| `output.py` | 输出层：分享链接 / sing-box 转换与多格式文件、健康报告（依赖 common + score） |
 | `sources_manager.py` | 订阅源生命周期：自动发现、试用、晋升、淘汰、上限、长期评分 |
 | `honeypot.py` | 防蜜罐过滤：地址校验、DNS 校验、黑名单、源结构检测 |
 | `safe_io.py` | JSON 原子化读写：临时文件 + `os.replace` + filelock，损坏自愈 |
