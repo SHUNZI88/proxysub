@@ -114,7 +114,7 @@ Content-Type: application/json
 | `source_scores.json` | 源长期评分（成功率 / 独有贡献 / 真实通过 / 蜜罐惩罚的指数滑动平均） |
 | `requirements.txt` | Python 依赖（requests / PyYAML / filelock / pytest / pytest-cov / pyflakes） |
 | `.coveragerc` | 覆盖率门禁配置：语句覆盖 `fail_under=80`；计量范围为库模块（`tests/`、`scripts/` 运维脚本、monitor 一次性脚本按配置排除并注明理由） |
-| `tests/` | 单元 + 集成测试（400 项）：指纹去重、地区识别、静态门槛、订阅解析、原子写入、拨测样本选择、多格式输出、源评分；`test_main_pipeline.py`（mock 边界的 main() 全链路集成）+ `test_stage_functions.py`（阶段函数单测，配额/回填/加成等分支） |
+| `tests/` | 单元 + 集成测试（507 项）：指纹去重、地区识别、静态门槛、订阅解析、原子写入、拨测样本选择、多格式输出、源评分；`test_main_pipeline.py`（mock 边界的 main() 全链路集成）+ `test_stage_functions.py`（阶段函数单测，配额/回填/加成等分支）+ `test_probe_mihomo.py`（mihomo 进程编排 mock）+ `test_sources_lifecycle.py`（源生命周期 mock） |
 
 ## 探测流程（TCP 预筛 + 拨测闸门）
 
@@ -232,7 +232,8 @@ public 仓库的订阅文件对任何人可读，且会被「按固定路径扫�
   - 无文件变动时通过 `git diff --staged --quiet` 安全跳过提交（不会非零退出报错）；依赖通过 `requirements.txt` 固定安装并启用 pip 缓存。
 - **编排主线可测化（P1-1）**：`filter_clash.main()` 原为 685 行不可测巨函数，已拆为 83 行薄编排 + 10 个命名阶段函数（`discover_and_fetch` / `static_filter_stage` / `liveness_stage` / `real_probe_stage` / `per_source_metrics` / `score_candidates` / `select_final` / `name_and_isolate` / `build_clash_config` / `_persist_stage`），阶段间经 `@dataclass` 结果容器传递多产出。重构遵循「安全网先行」：先建 mock 集成测试（变异验证：故意注入缺陷须被抓到）再动结构。
 - **回归测试**：`tests/` 覆盖订阅解析、指纹去重（嵌套参数变更不被误判）、地区识别（Russia 不误判为美国等边界用例）、协议门槛、原子写入（并发/截断/失败场景）、多渠道搜集、反爬（诱饵形态/永久地址/轮换/回流检测）、评分函数全分支、fetch 编码决策（iso-8859-1→apparent→utf-8 三级回落）、探测响应契约、源结构聚类、渠道候选校验（含 pyflakes「未定义名字」静态门禁，防拆模块后漏 import 常量——2026-10-13 daily 崩溃事故的回归防线）。
-- **覆盖率门禁（P1-1d）**：CI 每次代码变更跑 `pytest --cov`，库模块语句覆盖 **≥80%** 未达标即阻断合入（`.coveragerc` `fail_under=80`）。当前 400 项测试、总覆盖 **80.21%**（`filter_clash.py` 88%）。已知低覆盖模块：`probe.py`（mihomo 进程编排）与 `sources_manager.py`（外网抓取）需重度 mock，列入后续阶段补齐。
+- **覆盖率门禁（P1-1d）**：CI 每次代码变更跑 `pytest --cov`，库模块语句覆盖 **≥80%** 未达标即阻断合入（`.coveragerc` `fail_under=80`）。当前 **507 项测试、总覆盖 91.56%**（`filter_clash.py` 88%）。
+- **低覆盖模块补齐（P1-2a）**：`probe.py` 的 mihomo 进程编排（`_probe_through` 各出口/篡改/TLS 中间人/CF 拦截分支、`_mihomo_batch` 进程早退与 controller 未就绪、`mihomo_probe` 大批量二分重试）与 `sources_manager.py` 源生命周期（GitHub 限流重试、仓库声誉全 verdict、discover 收录/跳过路径、试用期拒绝与晋升、正式源降级与超额裁剪）已用 mock 全面覆盖，两模块分别达 **99% / 100%**。
 
 ## 安全加固（2026-10-14 安全评估整改）
 
