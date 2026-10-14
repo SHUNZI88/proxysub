@@ -96,6 +96,20 @@
       "url": "https://raw.githubusercontent.com/Barabama/FreeNodes/main/nodes/nodefree.yaml",
       "origin": "static_channel",
       "added": "2026-10-13"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/free-nodes/clashfree/main/clash20261014.yml",
+      "origin": "discovered",
+      "added": "2026-10-14",
+      "repo": "free-nodes/clashfree",
+      "probation_runs": 3
+    },
+    {
+      "url": "https://raw.githubusercontent.com/free-nodes/clashfree/main/clash20261013.yml",
+      "origin": "discovered",
+      "added": "2026-10-14",
+      "repo": "free-nodes/clashfree",
+      "probation_runs": 3
     }
   ],
   "removed": [
