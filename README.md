@@ -87,7 +87,7 @@ Content-Type: application/json
 
 | 文件 | 作用 |
 |---|---|
-| `filter_clash.py` | 编排入口（`main()`）：抓取 → 静态门槛 → 两阶段探活/拨测 → 打分 → 多格式输出；具体实现分散到下列 4 个模块（直接 `python filter_clash.py` 运行方式不变） |
+| `filter_clash.py` | 编排入口：`main()` 仅 83 行阶段序列（抓取 → 静态门槛 → 两阶段探活/拨测 → 打分 → 命名/分组 → 持久化/发布），具体逻辑拆为 10 个命名阶段函数（结果经 `@dataclass` 容器传递），可单测；底层能力分散到下列模块（直接 `python filter_clash.py` 运行方式不变） |
 | `common.py` | 公共层（架构叶子，无循环依赖）：全部配置常量 + 指纹/解析/静态过滤/协议门槛等纯函数 |
 | `probe.py` | 探测层：TCP/QUIC 存活检查与 mihomo 真实拨测（仅依赖 common） |
 | `score.py` | 评分层：协议分层、中美路径惩罚、跨天存活与历史稳定性（仅依赖 common） |
@@ -112,8 +112,9 @@ Content-Type: application/json
 | `honeypot_blocklist.json` | 黑名单：手工 `domains/ips/cidrs/keywords` + 自动条目（14 天过期） |
 | `source_stats.json` / `bad_sources.json` / `survival.json` | 源统计、失败计数、节点跨天存活与真实通过率 |
 | `source_scores.json` | 源长期评分（成功率 / 独有贡献 / 真实通过 / 蜜罐惩罚的指数滑动平均） |
-| `requirements.txt` | Python 依赖（requests / PyYAML / filelock / pytest / pyflakes） |
-| `tests/` | 单元测试：指纹去重、地区识别、静态门槛、订阅解析、原子写入、拨测样本选择、多格式输出、源评分 |
+| `requirements.txt` | Python 依赖（requests / PyYAML / filelock / pytest / pytest-cov / pyflakes） |
+| `.coveragerc` | 覆盖率门禁配置：语句覆盖 `fail_under=80`；计量范围为库模块（`tests/`、`scripts/` 运维脚本、monitor 一次性脚本按配置排除并注明理由） |
+| `tests/` | 单元 + 集成测试（400 项）：指纹去重、地区识别、静态门槛、订阅解析、原子写入、拨测样本选择、多格式输出、源评分；`test_main_pipeline.py`（mock 边界的 main() 全链路集成）+ `test_stage_functions.py`（阶段函数单测，配额/回填/加成等分支） |
 
 ## 探测流程（TCP 预筛 + 拨测闸门）
 
@@ -229,7 +230,9 @@ public 仓库的订阅文件对任何人可读，且会被「按固定路径扫�
   - **发布先于提交**：滚动 Release 发布失败时绝不先提交——否则仓库状态已前进而永久地址仍指向旧资产，下一轮基于失同步状态选样；
   - **发布前诱饵 sanity 检查**：`.publish/` 下文件为空或含诱饵标记（bait_host / `[BAIT]`）时发布步骤直接失败，永久地址不可能再服务纯诱饵内容；
   - 无文件变动时通过 `git diff --staged --quiet` 安全跳过提交（不会非零退出报错）；依赖通过 `requirements.txt` 固定安装并启用 pip 缓存。
-- **回归测试**：`tests/` 覆盖订阅解析、指纹去重（嵌套参数变更不被误判）、地区识别（Russia 不误判为美国等边界用例）、协议门槛、原子写入（并发/截断/失败场景）、多渠道搜集、反爬（诱饵形态/永久地址/轮换/回流检测）、评分函数全分支（含 pyflakes「未定义名字」静态门禁，防拆模块后漏 import 常量——2026-10-13 daily 崩溃事故的回归防线）。CI 在每次代码变更时自动运行（`.github/workflows/tests.yml`）。
+- **编排主线可测化（P1-1）**：`filter_clash.main()` 原为 685 行不可测巨函数，已拆为 83 行薄编排 + 10 个命名阶段函数（`discover_and_fetch` / `static_filter_stage` / `liveness_stage` / `real_probe_stage` / `per_source_metrics` / `score_candidates` / `select_final` / `name_and_isolate` / `build_clash_config` / `_persist_stage`），阶段间经 `@dataclass` 结果容器传递多产出。重构遵循「安全网先行」：先建 mock 集成测试（变异验证：故意注入缺陷须被抓到）再动结构。
+- **回归测试**：`tests/` 覆盖订阅解析、指纹去重（嵌套参数变更不被误判）、地区识别（Russia 不误判为美国等边界用例）、协议门槛、原子写入（并发/截断/失败场景）、多渠道搜集、反爬（诱饵形态/永久地址/轮换/回流检测）、评分函数全分支、fetch 编码决策（iso-8859-1→apparent→utf-8 三级回落）、探测响应契约、源结构聚类、渠道候选校验（含 pyflakes「未定义名字」静态门禁，防拆模块后漏 import 常量——2026-10-13 daily 崩溃事故的回归防线）。
+- **覆盖率门禁（P1-1d）**：CI 每次代码变更跑 `pytest --cov`，库模块语句覆盖 **≥80%** 未达标即阻断合入（`.coveragerc` `fail_under=80`）。当前 400 项测试、总覆盖 **80.21%**（`filter_clash.py` 88%）。已知低覆盖模块：`probe.py`（mihomo 进程编排）与 `sources_manager.py`（外网抓取）需重度 mock，列入后续阶段补齐。
 
 ## 安全加固（2026-10-14 安全评估整改）
 
