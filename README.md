@@ -238,7 +238,7 @@ public 仓库的订阅文件对任何人可读，且会被「按固定路径扫�
 | 编号 | 问题 | 整改 |
 |---|---|---|
 | F1 | 多渠道/源抓取存在 SSRF 面（CWE-918） | 新增 `net_safety.py`：所有外部可控 URL（channels 三处发现 + `fetch_one` + sources_manager 新源试用）统一走 `safe_http_get`——协议白名单、DNS 落点校验（私网/回环/链路本地含 169.254 元数据/组播拦截）、重定向目标**逐跳重新校验**（防公网→内网穿透）。28 项专项测试 |
-| F2 | 依赖版本范围过宽、无审计（CWE-937） | `requests>=2.32`（避开 CVE-2024-35195）、`PyYAML>=6.0.1`、pytest 去掉大版本上限（避开 PYSEC-2026-1845）；CI 增加 `pip-audit` 步骤，本地复验 `No known vulnerabilities found` |
+| F2 | 依赖版本范围过宽、无审计（CWE-937） | `requests>=2.32`（避开 CVE-2024-35195）、`PyYAML>=6.0.1`、pytest 去掉大版本上限（避开 PYSEC-2026-1845）；`requirements.lock` 带 hash 锁文件（CI 优先 `--require-hashes` 安装，可复现）；CI 增加 `pip-audit` 步骤，本地复验 `No known vulnerabilities found` |
 | F3 | mihomo 二进制仅校验 ELF 魔数（CWE-345） | 下载后先 `sha256sum -c` 校验 pin 的已知完整包 hash（基线取自官方 Release API 元数据），再解压 + ELF 复核。升级 `MIHOMO_VERSION` 必须同步 hash，否则工作流故意失败 |
 | F4 | 资产名未做路径穿越校验（CWE-22） | `asset_name` 出口统一 `safe_asset_name` basename 校验（env override 与持久化值两条路径）；`stale_outputs` 清理限定在 `.publish/` 与仓库根级，`../`/绝对路径一律不删 |
 | F5 | 工作流 token 过度授权（CWE-250） | `daily-update.yml` 拆两个 job：**update**（`contents: read`，跑抓取/拨测/生成，不碰外部输入的写操作）+ **publish**（`contents: write` + `issues: write`，只处理本仓生成文件）；生成物经 actions artifact 传递。GITHUB_TOKEN 无法 step 级提权，故按职责拆 job 而非声明式收紧 |

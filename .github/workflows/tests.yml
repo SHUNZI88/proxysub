@@ -6,6 +6,7 @@ on:
     paths:
       - '**.py'
       - 'requirements.txt'
+      - 'requirements.lock'
       - 'tests/**'
       - '.github/workflows/tests.yml'
   pull_request:
@@ -30,9 +31,14 @@ jobs:
           cache: 'pip'
 
       - name: Install dependencies
+        # 优先使用带 hash 的锁文件（F2：可复现 + 完整性校验），缺失时回退。
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          if [ -f requirements.lock ]; then
+            pip install --require-hashes -r requirements.lock
+          else
+            pip install -r requirements.txt
+          fi
 
       - name: Dependency audit (pip-audit)
         # 安全评估 F2：依赖漏洞扫描，阻断含已知 CVE 的传递依赖合入。

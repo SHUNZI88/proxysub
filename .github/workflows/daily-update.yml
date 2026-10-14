@@ -53,9 +53,15 @@ jobs:
           cache: 'pip'
 
       - name: Install dependencies
+        # 优先使用带 hash 的锁文件（可复现 + 完整性校验）；锁文件缺失时
+        # 回退 requirements.txt（本地开发场景）。
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          if [ -f requirements.lock ]; then
+            pip install --require-hashes -r requirements.lock
+          else
+            pip install -r requirements.txt
+          fi
 
       - name: Install mihomo (liveness gate)
         env:
