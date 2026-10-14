@@ -8,6 +8,7 @@ on:
       - 'requirements.txt'
       - 'requirements.lock'
       - 'tests/**'
+      - '.coveragerc'
       - '.github/workflows/tests.yml'
   pull_request:
   workflow_dispatch:
@@ -47,5 +48,8 @@ jobs:
           pip install pip-audit
           pip-audit -r requirements.txt
 
-      - name: Run unit tests
-        run: python -m pytest tests/ -v
+      - name: Run unit tests with coverage gate
+        # P1-1d：覆盖率门禁 ≥80%（阈值与 omit 范围见 .coveragerc）。
+        # pytest-cov 已随 requirements.lock 安装；fail_under 未达标时
+        # pytest-cov 以非零退出码阻断合入。
+        run: python -m pytest tests/ -v --cov --cov-report=term-missing

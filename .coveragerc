@@ -1,0 +1,24 @@
+# 覆盖率配置（P1-1d 覆盖率门禁）。
+#
+# 计量口径：语句覆盖（不开 branch——本仓库大量防御性网络错误分支依赖
+# 真实外网/mihomo 进程，单测无法经济地覆盖，分支门禁会长期假性失败）。
+#
+# 计量范围：仓库内全部 Python 库模块。以下不计入：
+#   tests/*          测试自身（被测对象而非计量对象）
+#   scripts/*        运维脚本（cn_probe 等，依赖 gh CLI/外网/mihomo）
+#   monitor_1617_run.py  一次性运行监控脚本
+#
+# 已知低覆盖模块（依赖 mihomo 二进制或外网，单测需重度 mock，列入后续阶段）：
+#   probe.py          真实拨测（mihomo 进程编排）
+#   sources_manager.py 订阅源发现与抓取（外网）
+[run]
+source = .
+omit =
+    tests/*
+    scripts/*
+    monitor_1617_run.py
+
+[report]
+fail_under = 80
+show_missing = True
+skip_covered = True

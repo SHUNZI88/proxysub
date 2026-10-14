@@ -56,6 +56,11 @@ def proxy_to_share_link(p: dict) -> str | None:
             params["sni"] = sni
             if p.get("flow"):
                 params["flow"] = p["flow"]
+            # fp 与 TLS/trojan 分支及 proxy_to_singbox 的 utls 保持一致：
+            # Reality 客户端指纹缺失时导入方改用默认指纹，削弱 REALITY
+            # 伪装（P1-1d 补回归测试时发现的两输出不一致）。
+            if p.get("client-fingerprint"):
+                params["fp"] = p["client-fingerprint"]
         elif _truthy(p.get("tls")):
             params["security"] = "tls"
             params["sni"] = sni

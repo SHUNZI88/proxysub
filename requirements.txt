@@ -10,6 +10,8 @@ filelock>=3.12,<4
 # tmpdir 处理缺陷，修复于 9.0.3），pip-audit（CI）会阻断含 CVE 的版本。
 pytest>=8.0
 pyflakes>=3.2,<4
+# 覆盖率门禁（P1-1d，.coveragerc fail_under=80）
+pytest-cov>=6.0
 
 # 可选：ASN 支持（未安装时 honeypot.py 自动跳过 ASN 检查）
 # maxminddb>=2.6,<3
