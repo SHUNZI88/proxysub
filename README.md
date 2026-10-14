@@ -101,6 +101,7 @@ Content-Type: application/json
 | `robots.txt` | 反爬开启时生成的 `Disallow: /` 声明 |
 | `collected_nodes.txt` | 多渠道搜集到的原始节点分享链接（vmess/vless/trojan/ss），经同样的静态门槛与死活闸门清洗后进入输出 |
 | `safe_io.py` | JSON 原子化读写：临时文件 + `os.replace` + filelock，损坏自愈 |
+| `net_safety.py` | **安全 HTTP 抓取**（SSRF 防护）：协议白名单 + DNS 落点校验（私网/回环/链路本地/元数据拦截）+ 重定向目标重新校验；所有外部可控 URL 的抓取均经此模块 |
 | `clean_clash.yaml` | **主订阅**（Clash / mihomo 完整配置） |
 | `clean_proxies_only.yaml` | 仅 `proxies` 段，供客户端 `proxy-providers` 引用 |
 | `clean_singbox.json` | sing-box `outbounds` 列表 |
@@ -229,6 +230,18 @@ public 仓库的订阅文件对任何人可读，且会被「按固定路径扫�
   - **发布前诱饵 sanity 检查**：`.publish/` 下文件为空或含诱饵标记（bait_host / `[BAIT]`）时发布步骤直接失败，永久地址不可能再服务纯诱饵内容；
   - 无文件变动时通过 `git diff --staged --quiet` 安全跳过提交（不会非零退出报错）；依赖通过 `requirements.txt` 固定安装并启用 pip 缓存。
 - **回归测试**：`tests/` 覆盖订阅解析、指纹去重（嵌套参数变更不被误判）、地区识别（Russia 不误判为美国等边界用例）、协议门槛、原子写入（并发/截断/失败场景）、多渠道搜集、反爬（诱饵形态/永久地址/轮换/回流检测）、评分函数全分支（含 pyflakes「未定义名字」静态门禁，防拆模块后漏 import 常量——2026-10-13 daily 崩溃事故的回归防线）。CI 在每次代码变更时自动运行（`.github/workflows/tests.yml`）。
+
+## 安全加固（2026-10-14 安全评估整改）
+
+针对外部安全评估发现的问题已完成整改，测试与 CI 门禁同步固化：
+
+| 编号 | 问题 | 整改 |
+|---|---|---|
+| F1 | 多渠道/源抓取存在 SSRF 面（CWE-918） | 新增 `net_safety.py`：所有外部可控 URL（channels 三处发现 + `fetch_one` + sources_manager 新源试用）统一走 `safe_http_get`——协议白名单、DNS 落点校验（私网/回环/链路本地含 169.254 元数据/组播拦截）、重定向目标**逐跳重新校验**（防公网→内网穿透）。28 项专项测试 |
+| F2 | 依赖版本范围过宽、无审计（CWE-937） | `requests>=2.32`（避开 CVE-2024-35195）、`PyYAML>=6.0.1`、pytest 去掉大版本上限（避开 PYSEC-2026-1845）；CI 增加 `pip-audit` 步骤，本地复验 `No known vulnerabilities found` |
+| F3 | mihomo 二进制仅校验 ELF 魔数（CWE-345） | 下载后先 `sha256sum -c` 校验 pin 的已知完整包 hash（基线取自官方 Release API 元数据），再解压 + ELF 复核。升级 `MIHOMO_VERSION` 必须同步 hash，否则工作流故意失败 |
+| F4 | 资产名未做路径穿越校验（CWE-22） | `asset_name` 出口统一 `safe_asset_name` basename 校验（env override 与持久化值两条路径）；`stale_outputs` 清理限定在 `.publish/` 与仓库根级，`../`/绝对路径一律不删 |
+| F5 | 工作流 token 过度授权（CWE-250） | `daily-update.yml` 拆两个 job：**update**（`contents: read`，跑抓取/拨测/生成，不碰外部输入的写操作）+ **publish**（`contents: write` + `issues: write`，只处理本仓生成文件）；生成物经 actions artifact 传递。GITHUB_TOKEN 无法 step 级提权，故按职责拆 job 而非声明式收紧 |
 
 本地运行测试：
 
