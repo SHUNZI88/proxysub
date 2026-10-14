@@ -9,7 +9,7 @@
       "required_runs": 3,
       "first_seen": "2026-10-11",
       "initial_nodes": 533,
-      "runs": 12,
+      "runs": 13,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -21,13 +21,6 @@
           "tamper": 0
         },
         {
-          "date": "2026-10-12",
-          "count": 533,
-          "usable": 1,
-          "unique_new": 1,
-          "tamper": 0
-        },
-        {
           "date": "2026-10-13",
           "count": 533,
           "usable": 2,
@@ -50,6 +43,13 @@
         },
         {
           "date": "2026-10-13",
+          "count": 533,
+          "usable": 1,
+          "unique_new": 1,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-14",
           "count": 533,
           "usable": 1,
           "unique_new": 1,
@@ -80,7 +80,7 @@
       "required_runs": 3,
       "first_seen": "2026-10-11",
       "initial_nodes": 108,
-      "runs": 12,
+      "runs": 13,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -92,13 +92,6 @@
           "tamper": 0
         },
         {
-          "date": "2026-10-12",
-          "count": 108,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
           "date": "2026-10-13",
           "count": 108,
           "usable": 0,
@@ -121,6 +114,13 @@
         },
         {
           "date": "2026-10-13",
+          "count": 108,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-14",
           "count": 108,
           "usable": 0,
           "unique_new": 0,
@@ -151,17 +151,10 @@
       "required_runs": 3,
       "first_seen": "2026-10-11",
       "initial_nodes": 400,
-      "runs": 12,
+      "runs": 13,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-10-12",
-          "count": 400,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-10-12",
           "count": 400,
@@ -210,6 +203,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-14",
+          "count": 400,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -222,17 +222,10 @@
       "required_runs": 5,
       "first_seen": "2026-10-11",
       "initial_nodes": 90,
-      "runs": 12,
+      "runs": 13,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-10-12",
-          "count": 90,
-          "usable": 2,
-          "unique_new": 2,
-          "tamper": 0
-        },
         {
           "date": "2026-10-12",
           "count": 90,
@@ -281,6 +274,13 @@
           "usable": 2,
           "unique_new": 2,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-14",
+          "count": 90,
+          "usable": 3,
+          "unique_new": 3,
+          "tamper": 0
         }
       ]
     },
@@ -289,7 +289,7 @@
       "origin": "channel_web",
       "added": "2026-10-13",
       "first_seen": "2026-10-13",
-      "runs": 4,
+      "runs": 5,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -302,6 +302,13 @@
         },
         {
           "date": "2026-10-13",
+          "count": 304,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-14",
           "count": 304,
           "usable": 0,
           "unique_new": 0,
@@ -329,7 +336,7 @@
       "origin": "channel_web",
       "added": "2026-10-13",
       "first_seen": "2026-10-13",
-      "runs": 4,
+      "runs": 5,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -360,6 +367,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-14",
+          "count": 566,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ],
       "required_runs": 3
@@ -369,7 +383,7 @@
       "origin": "channel_web",
       "added": "2026-10-13",
       "first_seen": "2026-10-13",
-      "runs": 4,
+      "runs": 5,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -400,6 +414,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-14",
+          "count": 1686,
+          "usable": 8,
+          "unique_new": 3,
+          "tamper": 0
         }
       ],
       "required_runs": 3
@@ -409,7 +430,7 @@
       "origin": "channel_web",
       "added": "2026-10-13",
       "first_seen": "2026-10-13",
-      "runs": 4,
+      "runs": 5,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -440,6 +461,13 @@
           "usable": 41,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-14",
+          "count": 598,
+          "usable": 41,
+          "unique_new": 0,
+          "tamper": 0
         }
       ],
       "required_runs": 3
@@ -449,7 +477,7 @@
       "origin": "channel_web",
       "added": "2026-10-13",
       "first_seen": "2026-10-13",
-      "runs": 3,
+      "runs": 4,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -473,6 +501,13 @@
           "usable": 1,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-14",
+          "count": 31,
+          "usable": 1,
+          "unique_new": 0,
+          "tamper": 0
         }
       ],
       "required_runs": 3
@@ -482,10 +517,17 @@
       "origin": "channel_web",
       "added": "2026-10-14",
       "first_seen": "2026-10-14",
-      "runs": 1,
+      "runs": 2,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
+        {
+          "date": "2026-10-14",
+          "count": 483,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
         {
           "date": "2026-10-14",
           "count": 483,
