@@ -141,7 +141,12 @@ def update_source_scores_cn(report: dict, path: str = common.SOURCE_SCORES_FILE)
         return _load_json(path, {})
     scores = _load_json(path, {})
     by_source = report.get("counts", {}).get("by_source", {})
+    # 无源伪键 "?" 不写入；并清理历史残留（修复前报告曾写入该键，
+    # 它不代表任何真实源，留着会污染 source_scores 的 cn 维度）。
+    scores.pop("?", None)
     for src, c in by_source.items():
+        if not src or src == "?":
+            continue
         tested = c.get("tested", 0)
         passed = c.get("passed", 0)
         entry = scores.get(src, {})

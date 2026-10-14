@@ -171,3 +171,32 @@ def test_run_evolution_orchestrator(tmp_path):
     assert summary["source_scores_with_cn"] == 2
     assert "CN_LATENCY_CAP_MS" in summary["learned"]
     assert summary["probe_history_line"]
+
+
+def test_update_source_scores_cn_skips_and_purges_unknown_key(tmp_path):
+    """回归（2026-10-14 真实数据）：无源伪键 "?" 不得写入，且要清理历史残留。
+
+    修复前的报告含 by_source["?"]（carryover 无源节点），已污染 source_scores.json
+    产生 "?" 条目（0.5333）。该键不代表任何真实源，评分时也无法命中，
+    属脏数据——故固化「跳过写入 + 清理残留」两条不变量。
+    """
+    path = str(tmp_path / "source_scores.json")
+    # 预置历史残留 "?" 条目
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump({"?": {"cn_pass_rate": 0.5333},
+                   "old/repo": {"cn_pass_rate": 0.1}}, f)
+
+    report = {
+        "generated_at": "2026-10-14T07:02:00Z",
+        "counts": {
+            "by_source": {
+                "?": {"tested": 30, "passed": 16},
+                "good/repo": {"tested": 50, "passed": 40},
+            },
+        },
+    }
+    scores = evolution.update_source_scores_cn(report, path)
+    assert "?" not in scores, "无源伪键 '?' 必须被清理"
+    assert scores["good/repo"]["cn_pass_rate"] == 0.8
+    # 其它既有源不受影响
+    assert scores["old/repo"]["cn_pass_rate"] == 0.1
