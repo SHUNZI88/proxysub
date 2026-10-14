@@ -1,0 +1,60 @@
+name: 订阅质量问题
+description: 节点不可用 / 订阅拉取异常 / 格式解析失败
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **请勿在 issue 中粘贴你的私人订阅地址**（反爬机制下资产名属敏感信息，公开悬挂会降低防搜索效果）。
+        描述现象时用「格式 + 客户端 + 大致节点名」即可，例如「Clash 格式，Clash Verge Rev 导入后列表为空」。
+
+        上报前建议先看 README「运行态速览」三行，确认主列表指标口径（`stats.md` 是美西候选健康度，不代表中国实测通过集）。
+
+  - type: dropdown
+    id: format
+    attributes:
+      label: 订阅格式
+      options:
+        - Clash / mihomo（p_*_c.yaml）
+        - 仅 proxies 段（p_*_p.yaml）
+        - sing-box（p_*_s.json）
+        - v2ray 分享链接（p_*_v.txt）
+    validations:
+      required: true
+
+  - type: dropdown
+    id: client
+    attributes:
+      label: 客户端
+      options:
+        - Clash Verge Rev
+        - FlClash
+        - mihomo / clash.meta
+        - sing-box
+        - v2rayN / NekoBox
+        - 其他（请在现象描述中说明）
+    validations:
+      required: true
+
+  - type: textarea
+    id: symptom
+    attributes:
+      label: 现象描述
+      description: 发生了什么？何时开始？全部节点还是个别节点？
+      placeholder: |
+        例如：10-15 早导入后 30 个节点全部超时；或香港组节点延迟全部 >2000ms。
+    validations:
+      required: true
+
+  - type: textarea
+    id: health
+    attributes:
+      label: 健康报告读数（可选）
+      description: 打开仓库内 stats.md，粘贴顶部统计与警告区（公开文件，不含敏感信息）。
+      render: markdown
+
+  - type: input
+    id: since
+    attributes:
+      label: 问题开始的大致日期
+      placeholder: "2026-10-15"

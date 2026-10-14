@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 订阅地址在哪里？
+    url: https://github.com/SHUNZI88/proxysub#运行态速览三行先读这个
+    about: 反爬机制下订阅地址不公开悬挂，获取方式见 README「运行态速览」。
+  - name: 健康报告（stats.md）
+    url: https://github.com/SHUNZI88/proxysub/blob/main/stats.md
+    about: 每轮 CI 抓取后的节点健康度报告（美西候选口径，非中国实测通过集）。
+  - name: 中国实测报告（verification_report.json）
+    url: https://github.com/SHUNZI88/proxysub/releases
+    about: 滚动 Release 附带的中国出口实测证据与统计，主列表口径以此为准。

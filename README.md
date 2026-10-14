@@ -235,6 +235,7 @@ public 仓库的订阅文件对任何人可读，且会被「按固定路径扫�
 - **回归测试**：`tests/` 覆盖订阅解析、指纹去重（嵌套参数变更不被误判）、地区识别（Russia 不误判为美国等边界用例）、协议门槛、原子写入（并发/截断/失败场景）、多渠道搜集、反爬（诱饵形态/永久地址/轮换/回流检测）、评分函数全分支、fetch 编码决策（iso-8859-1→apparent→utf-8 三级回落）、探测响应契约、源结构聚类、渠道候选校验（含 pyflakes「未定义名字」静态门禁，防拆模块后漏 import 常量——2026-10-13 daily 崩溃事故的回归防线）。
 - **覆盖率门禁（P1-1d）**：CI 每次代码变更跑 `pytest --cov`，库模块语句覆盖 **≥80%** 未达标即阻断合入（`.coveragerc` `fail_under=80`）。当前 **510 项测试、总覆盖 91.59%**（`filter_clash.py` 88%）。
 - **低覆盖模块补齐（P1-2a）**：`probe.py` 的 mihomo 进程编排（`_probe_through` 各出口/篡改/TLS 中间人/CF 拦截分支、`_mihomo_batch` 进程早退与 controller 未就绪、`mihomo_probe` 大批量二分重试）与 `sources_manager.py` 源生命周期（GitHub 限流重试、仓库声誉全 verdict、discover 收录/跳过路径、试用期拒绝与晋升、正式源降级与超额裁剪）已用 mock 全面覆盖，两模块分别达 **99% / 100%**。
+- **反馈闭环（产品化）**：Issue 表单模板（订阅质量问题 / 功能建议，默认拒空白 issue 并引导至 README 与健康报告）；`ci-failure` 标签 + 失败自动开 Issue 开关（`ALERT_ISSUE`，默认关闭以守反爬边界）；README「反馈与告警」一节明确订阅者反馈纪律（勿贴私人订阅地址）与维护者三条告警通道（Watch Actions 邮件 / Actions 页订阅 / 自动开 Issue）。
 - **配置独立（P1-2）**：`common.py` 原为 757 行「常量 + 工具函数」混合体（102 个配置常量），认知负担大。已拆出 `config.py`（287 行，仅依赖标准库的架构最底层叶子）专收全部可调常量——区域规则/配额、协议白名单与奖惩参数、超时/并发旋钮、输出与状态文件名、探测 URL 与配额；`common.py` 瘦身为 502 行纯函数层，按需 `from config import`。调参只动 `config.py` 一处，模块职责单一可读。
 - **显式 import（P1-3）**：`filter_clash.py` 原用 `_reexport()` 在运行时把子模块符号动态 `setdefault` 进命名空间——依赖面静态不可见（pyflakes 199 条告警）、漏 import 只在运行期炸 `NameError`（2026-10-13 daily 工作流崩溃根因）。已改为按来源模块的显式 import（5 组、88 个名字），依赖面成为文件内可读清单；`filter_clash.py` 同步纳入「未定义名字」静态门禁，漏 import 在 CI 即失败。
 
@@ -256,6 +257,22 @@ public 仓库的订阅文件对任何人可读，且会被「按固定路径扫�
 pip install -r requirements.txt
 python -m pytest tests/ -v
 ```
+
+## 反馈与告警
+
+**订阅者反馈**：节点不可用 / 订阅异常请开 Issue（已配表单模板，按格式与客户端填报即可）。
+
+> ⚠️ **请勿在 Issue 粘贴你的私人订阅地址**——反爬机制下资产名属敏感信息，公开悬挂会削弱防搜索效果。描述现象用「格式 + 客户端 + 大致节点名」即可（如「Clash 格式，Verge Rev 导入后列表为空」）。
+
+**维护者告警通道**（定时任务失败时如何第一时间知道）：
+
+| 通道 | 配置 | 说明 |
+|---|---|---|
+| 邮件 / 推送通知 | Watch 本仓库 → Custom → 勾选 **Actions** | GitHub 原生通道，不暴露任何运行信息，**推荐** |
+| Actions 页 | 订阅 workflow 通知 | 失败run 出现在 `Daily Clean Clash Subscription` 页 |
+| 自动开 Issue | `daily-update.yml` 的 `ALERT_ISSUE` 改 `'1'` | 默认关闭：失败详情公开悬挂与反爬冲突，仅建议短期排查期开启；自动打 `ci-failure` 标签 |
+
+> 2026-10-13 曾发生定时任务失败数小时无人知晓的事故（运行期 `NameError`，CI 红但无告警）——此后 Tests 门禁 + 覆盖率门禁 + 上表告警通道共同构成「失败必被发现」的闭环。
 
 ## 手动控制
 

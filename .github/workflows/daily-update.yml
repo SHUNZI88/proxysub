@@ -344,6 +344,8 @@ jobs:
       - name: Create issue on failure
         # 反爬：失败详情默认不再开公开 Issue（会在仓库 Issues 页暴露运行信息），
         # 需要告警时把下方 ALERT_ISSUE 改为 '1'。
+        # 默认关闭时的维护者反馈通道：Watch 本仓库（Custom → 勾选 Actions）
+        # 收失败邮件，或在 Actions 页订阅通知——详见 README「反馈与告警」。
         if: failure() && env.ALERT_ISSUE == '1'
         env:
           ALERT_ISSUE: '0'
@@ -352,12 +354,15 @@ jobs:
           script: |
             const now = new Date().toISOString();
             const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
-            const title = `Update failed: ${now}`;
+            const title = `Update failed: run #${context.runNumber} (${context.eventName})`;
             const body = [
-              '本次更新任务失败，请检查日志。',
+              '本次更新任务失败，请检查日志。失败详情不在此展开（反爬：不公开悬挂运行信息）。',
               '',
+              `- 运行: #${context.runNumber}（尝试 ${context.runAttempt}）`,
               `- 触发方式: \`${context.eventName}\``,
-              `- 运行链接: ${runUrl}`,
+              `- 提交: \`${String(context.sha).slice(0, 8)}\``,
+              `- 时间: ${now}`,
+              `- 日志: ${runUrl}`,
             ].join('\n');
             try {
               await github.rest.issues.create({
