@@ -17,17 +17,17 @@ import requests
 import yaml
 
 import honeypot as hp
-from common import (
-    fingerprint,
-    TCP_TIMEOUT,
-    PROBE_URLS,
+from common import fingerprint
+from config import (
+    PROBE_BATCH,
+    PROBE_CONCURRENCY,
     PROBE_PASS_NEED,
     PROBE_TIMEOUT,
-    TRACE_URL,
-    PURITY_URL,
+    PROBE_URLS,
     PURITY_TIMEOUT,
-    PROBE_CONCURRENCY,
-    PROBE_BATCH,
+    PURITY_URL,
+    TCP_TIMEOUT,
+    TRACE_URL,
 )
 
 def tcp_probe(proxy: dict) -> tuple[bool, float]:

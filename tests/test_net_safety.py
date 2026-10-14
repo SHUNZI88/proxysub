@@ -4,8 +4,6 @@
 主机豁免、重定向目标重新校验（防公网→内网穿透）、跳数上限。
 """
 
-import subprocess
-import unittest.mock as mock
 
 import pytest
 import requests

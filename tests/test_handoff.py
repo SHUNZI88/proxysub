@@ -2,7 +2,7 @@
 
 import json
 
-import common
+import config
 import handoff
 
 
@@ -48,7 +48,7 @@ def test_build_pending_doc_union_and_names():
     assert by_fp["fp2"]["us_ok"] is False
     # proxies 为 clash 原生条目（完整参数）
     assert by_fp["fp1"]["proxy"]["server"] == "a.example"
-    assert doc["generator"] == common.HANDOFF_GENERATOR
+    assert doc["generator"] == config.HANDOFF_GENERATOR
     assert doc["counts"]["by_protocol"] == {"hysteria2": 2}
 
 
@@ -127,8 +127,8 @@ def test_write_handoff_docs(tmp_path):
     pending = {"round_id": "R", "generated_at": "T", "nodes": [{"fp": "a"}]}
     rescue = {"round_id": "R", "generated_at": "T", "nodes": []}
     stat = handoff.write_handoff_docs(str(tmp_path), pending, rescue)
-    assert stat == {common.PENDING_PROBE_FILE: 1, common.PENDING_RESCUE_FILE: 0}
-    for fname in (common.PENDING_PROBE_FILE, common.PENDING_RESCUE_FILE):
+    assert stat == {config.PENDING_PROBE_FILE: 1, config.PENDING_RESCUE_FILE: 0}
+    for fname in (config.PENDING_PROBE_FILE, config.PENDING_RESCUE_FILE):
         with open(tmp_path / fname, encoding="utf-8") as f:
             json.load(f)  # 必须是合法 JSON
 

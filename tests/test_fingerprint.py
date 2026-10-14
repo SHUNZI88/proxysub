@@ -5,7 +5,6 @@
 - 键顺序不同 / 仅名称不同 / 端口 int 与 str 表示不同的同一节点必须得到相同指纹。
 """
 
-import pytest
 
 import filter_clash as fc
 

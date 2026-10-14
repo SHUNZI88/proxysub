@@ -17,7 +17,7 @@ import score
 # ---------- 1. protocol_penalty：全分支（本次事故的直接回归） ----------
 
 def test_protocol_penalty_all_branches():
-    import common as cm
+    import config as cm
     cases = [
         ({"type": "hysteria2"}, cm.PROTOCOL_BONUS_HY2),
         ({"type": "hy2"}, cm.PROTOCOL_BONUS_HY2),
@@ -93,7 +93,7 @@ def test_scoring_loop_call_sequence_smoke():
 # ---------- 3. 其余评分函数行为抽查 ----------
 
 def test_china_feature_bonus_components():
-    import common as cm
+    import config as cm
     # 白名单 SNI + 友好端口
     p = {"type": "vless", "servername": "www.microsoft.com", "port": 443}
     assert score.china_feature_bonus(p) == cm.SNI_BONUS + cm.PORT_BONUS
@@ -104,7 +104,7 @@ def test_china_feature_bonus_components():
 
 
 def test_us_china_penalty_direction():
-    import common as cm
+    import config as cm
     us = {"name": "🇺🇸 US · Los Angeles", "type": "vmess"}
     asia = {"name": "🇭🇰 HK", "type": "vmess"}
     pen_us = score.us_china_penalty(us, None)
@@ -131,7 +131,7 @@ def test_survival_bonus_ms_empty_and_populated():
 
 def test_survival_bonus_ms_clamped():
     """streak/seen_days 超过 MAX_SURVIVAL_DAYS 时截断，防历史数据无限加权。"""
-    import common as cm
+    import config as cm
     v = score.survival_bonus_ms("fp", {"fp": {"streak": 9999, "seen_days": 9999}})
     expect = -cm.SURVIVAL_WEIGHT * cm.MAX_SURVIVAL_DAYS - cm.SEEN_DAYS_WEIGHT * cm.MAX_SURVIVAL_DAYS
     assert v == expect
@@ -166,7 +166,7 @@ def test_update_survival_new_and_decay():
 
 def test_update_survival_real_hist_window():
     """real_hist 滑动窗口不超过 SURVIVAL_PASS_WINDOW。"""
-    import common as cm
+    import config as cm
     survival = {"a": {"streak": 1, "last_seen": None, "seen_days": 1,
                       "real_hist": [1] * (cm.SURVIVAL_PASS_WINDOW - 1)}}
     out = score.update_survival({"a"}, survival, real_ok_fps={"a"})

@@ -11,6 +11,7 @@
 """
 
 import common
+import config
 import honeypot as hp
 import pytest
 
@@ -181,7 +182,7 @@ class TestScoreCandidates:
         return fc.score_candidates(
             _scored_items(unique), unique, prov, official_fps, off_set or {TEST_URL},
             real_ok or {}, tampered or set(), bin_path, survival or {},
-            common.MAX_ACCEPT_LATENCY_MS, {}, {}, True)
+            config.MAX_ACCEPT_LATENCY_MS, {}, {}, True)
 
     def test_liveness_gate_drops_unprobed_when_mihomo_present(self):
         """mihomo 在场时未通过拨测的节点被死活闸门丢弃。"""
@@ -258,15 +259,15 @@ class TestScoreCandidates:
         assert r_multi.scored[0][1] < r_single.scored[0][1]
         # multi=2 → 加成 = MULTI_SOURCE_BONUS * min(multi-1, 3) = 一档
         assert (r_single.scored[0][1] - r_multi.scored[0][1]
-                == common.MULTI_SOURCE_BONUS)
+                == config.MULTI_SOURCE_BONUS)
 
     def test_diversity_cap_drops_excess_credentials(self):
         """同一凭证超过 MAX_PER_CREDENTIAL 时多余节点被丢弃。"""
-        nodes = [_vless(server=f"10.0.0.{i}") for i in range(1, common.MAX_PER_CREDENTIAL + 3)]
+        nodes = [_vless(server=f"10.0.0.{i}") for i in range(1, config.MAX_PER_CREDENTIAL + 3)]
         r = self._run(nodes, bin_path=None)
         kept_cred = sum(1 for it in r.scored if it[0].get("uuid"))
-        assert kept_cred == common.MAX_PER_CREDENTIAL
-        assert r.diversity_dropped == len(nodes) - common.MAX_PER_CREDENTIAL
+        assert kept_cred == config.MAX_PER_CREDENTIAL
+        assert r.diversity_dropped == len(nodes) - config.MAX_PER_CREDENTIAL
 
     def test_preferred_bonus_scaling(self):
         """hy2 优先协议的 survival 历史加成 ×1.5。
@@ -316,38 +317,38 @@ class TestSelectFinal:
         每区配额 +5 个富余节点：选中总量 245 ≥ MIN_FINAL(150)，既不下限
         回填也不超 MAX_FINAL(300)，配额严格生效。
         """
-        quotas = common.REGION_QUOTAS
+        quotas = config.REGION_QUOTAS
         plan = [("HK", "🇭🇰 香港", _vless, 11), ("JP", "🇯🇵 日本", _hy2, 12),
                 ("SG", "🇸🇬 新加坡", _trojan, 13), ("TW", "🇹🇼 台湾", _vless, 14),
                 ("KR", "🇰🇷 韩国", _hy2, 15), ("US", "🇺🇸 美国", _vless, 16),
                 ("UK", "🇬🇧 英国", _trojan, 17), ("ZZ", "🌐 其他", _vless, 18)]
         scored = []
         for prefix, region, factory, octet in plan:
-            n = quotas.get(region, common.MAX_OTHER) + 5
+            n = quotas.get(region, config.MAX_OTHER) + 5
             for i in range(n):
                 scored.append(_item(factory(name=f"{prefix}-{i:03d}",
                                             server=f"{octet}.0.{i % 250}.1")))
         out = fc.select_final(scored, {})
         for region, quota in quotas.items():
             assert len(out.get(region, [])) == quota, region
-        assert len(out.get("🌐 其他", [])) == common.MAX_OTHER
-        assert sum(len(v) for v in out.values()) == sum(quotas.values()) + common.MAX_OTHER
+        assert len(out.get("🌐 其他", [])) == config.MAX_OTHER
+        assert sum(len(v) for v in out.values()) == sum(quotas.values()) + config.MAX_OTHER
 
     def test_unknown_region_uses_max_other(self):
         """未知地区走 MAX_OTHER 上限（构造已越过 MIN_FINAL，排除回填干扰）。"""
         scored = []
-        for i in range(common.MAX_OTHER + 5):
+        for i in range(config.MAX_OTHER + 5):
             scored.append(_item(_vless(name=f"ZZ-{i:03d}", server=f"18.0.{i % 250}.1")))
-        for i in range(common.REGION_QUOTAS["🇭🇰 香港"] + 5):
+        for i in range(config.REGION_QUOTAS["🇭🇰 香港"] + 5):
             scored.append(_item(_hy2(name=f"HK-{i:03d}", server=f"11.0.{i % 250}.1")))
-        for i in range(common.REGION_QUOTAS["🇯🇵 日本"] + 5):
+        for i in range(config.REGION_QUOTAS["🇯🇵 日本"] + 5):
             scored.append(_item(_hy2(name=f"JP-{i:03d}", server=f"12.0.{i % 250}.1")))
-        for i in range(common.REGION_QUOTAS["🇸🇬 新加坡"] + 5):
+        for i in range(config.REGION_QUOTAS["🇸🇬 新加坡"] + 5):
             scored.append(_item(_hy2(name=f"SG-{i:03d}", server=f"13.0.{i % 250}.1")))
         out = fc.select_final(scored, {})
-        assert len(out.get("🌐 其他", [])) == common.MAX_OTHER
+        assert len(out.get("🌐 其他", [])) == config.MAX_OTHER
         # 选中总量 60+40+35+30=165 ≥ MIN_FINAL：无回填、无裁剪
-        assert sum(len(v) for v in out.values()) == common.MAX_OTHER + 40 + 35 + 30
+        assert sum(len(v) for v in out.values()) == config.MAX_OTHER + 40 + 35 + 30
 
     def test_min_final_backfill_from_pool(self):
         """低于 MIN_FINAL 时从未选中的池回填。"""
@@ -358,7 +359,7 @@ class TestSelectFinal:
 
     def test_backfill_prioritizes_total_over_quota(self):
         """低于 MIN_FINAL 时下限回填优先于区域配额（保总数，配额让位）。"""
-        n = common.REGION_QUOTAS["🇭🇰 香港"] + 5
+        n = config.REGION_QUOTAS["🇭🇰 香港"] + 5
         scored = [_item(_vless(name=f"HK-{i:03d}", server=f"11.0.{i % 250}.1"))
                   for i in range(n)]
         out = fc.select_final(scored, {})
@@ -391,14 +392,14 @@ class TestSelectFinal:
         """美国节点占比不超过 MAX_US_SHARE。"""
         nodes = []
         # 充足的非美节点越过 MIN_FINAL，美国节点数受配额+占比双重限制
-        for i in range(common.MIN_FINAL + 30):
+        for i in range(config.MIN_FINAL + 30):
             nodes.append(_item(_hy2(name=f"JP-{i:03d}", server=f"5.5.5.{i % 250}")))
         for i in range(30):
             nodes.append(_item(_vless(name=f"US-{i:02d}", server=f"3.3.3.{i}")))
         out = fc.select_final(nodes, {})
         flat = [row for rows in out.values() for row in rows]
         n_us = sum(1 for row in flat if fc.classify_proxy(row[0]["name"]) == "🇺🇸 美国")
-        assert n_us <= max(1, int(len(flat) * common.MAX_US_SHARE + 0.999))
+        assert n_us <= max(1, int(len(flat) * config.MAX_US_SHARE + 0.999))
         assert n_us < 30   # 占比上限实际压过了美国节点数
 
     def test_preferred_real_fills_before_low_tier(self):

@@ -88,10 +88,11 @@ Content-Type: application/json
 | 文件 | 作用 |
 |---|---|
 | `filter_clash.py` | 编排入口：`main()` 仅 83 行阶段序列（抓取 → 静态门槛 → 两阶段探活/拨测 → 打分 → 命名/分组 → 持久化/发布），具体逻辑拆为 10 个命名阶段函数（结果经 `@dataclass` 容器传递），可单测；底层能力分散到下列模块（直接 `python filter_clash.py` 运行方式不变） |
-| `common.py` | 公共层（架构叶子，无循环依赖）：全部配置常量 + 指纹/解析/静态过滤/协议门槛等纯函数 |
-| `probe.py` | 探测层：TCP/QUIC 存活检查与 mihomo 真实拨测（仅依赖 common） |
-| `score.py` | 评分层：协议分层、中美路径惩罚、跨天存活与历史稳定性（仅依赖 common） |
-| `output.py` | 输出层：分享链接 / sing-box 转换与多格式文件、健康报告（依赖 common + score） |
+| `common.py` | 公共层（架构叶子，无循环依赖）：指纹/解析/静态过滤/协议门槛等纯函数（配置常量自 P1-2 起迁至 `config.py`） |
+| `config.py` | 配置层（架构最底层叶子，仅依赖标准库）：全部可调常量——区域规则/配额、协议白名单与奖惩参数、超时与并发旋钮、输出/状态文件名、探测 URL 与配额；改参数只动这一处 |
+| `probe.py` | 探测层：TCP/QUIC 存活检查与 mihomo 真实拨测（依赖 common + config） |
+| `score.py` | 评分层：协议分层、中美路径惩罚、跨天存活与历史稳定性（依赖 common + config） |
+| `output.py` | 输出层：分享链接 / sing-box 转换与多格式文件、健康报告（依赖 common + config + score） |
 | `sources_manager.py` | 订阅源生命周期：自动发现、试用、晋升、淘汰、上限、长期评分 |
 | `channels.py` | **多渠道搜集引擎**：从 Telegram 频道 / 网页 / 手工静态源提取订阅源 URL 与原始节点链接（仅依赖 safe_io + requests，无循环依赖） |
 | `channels.json` | 多渠道采集配置：Telegram 频道列表、监控网页列表、手工静态源（默认空，由用户按渠道填充） |
@@ -114,7 +115,7 @@ Content-Type: application/json
 | `source_scores.json` | 源长期评分（成功率 / 独有贡献 / 真实通过 / 蜜罐惩罚的指数滑动平均） |
 | `requirements.txt` | Python 依赖（requests / PyYAML / filelock / pytest / pytest-cov / pyflakes） |
 | `.coveragerc` | 覆盖率门禁配置：语句覆盖 `fail_under=80`；计量范围为库模块（`tests/`、`scripts/` 运维脚本、monitor 一次性脚本按配置排除并注明理由） |
-| `tests/` | 单元 + 集成测试（507 项）：指纹去重、地区识别、静态门槛、订阅解析、原子写入、拨测样本选择、多格式输出、源评分；`test_main_pipeline.py`（mock 边界的 main() 全链路集成）+ `test_stage_functions.py`（阶段函数单测，配额/回填/加成等分支）+ `test_probe_mihomo.py`（mihomo 进程编排 mock）+ `test_sources_lifecycle.py`（源生命周期 mock） |
+| `tests/` | 单元 + 集成测试（509 项）：指纹去重、地区识别、静态门槛、订阅解析、原子写入、拨测样本选择、多格式输出、源评分；`test_main_pipeline.py`（mock 边界的 main() 全链路集成）+ `test_stage_functions.py`（阶段函数单测，配额/回填/加成等分支）+ `test_probe_mihomo.py`（mihomo 进程编排 mock）+ `test_sources_lifecycle.py`（源生命周期 mock） |
 
 ## 探测流程（TCP 预筛 + 拨测闸门）
 
@@ -232,8 +233,10 @@ public 仓库的订阅文件对任何人可读，且会被「按固定路径扫�
   - 无文件变动时通过 `git diff --staged --quiet` 安全跳过提交（不会非零退出报错）；依赖通过 `requirements.txt` 固定安装并启用 pip 缓存。
 - **编排主线可测化（P1-1）**：`filter_clash.main()` 原为 685 行不可测巨函数，已拆为 83 行薄编排 + 10 个命名阶段函数（`discover_and_fetch` / `static_filter_stage` / `liveness_stage` / `real_probe_stage` / `per_source_metrics` / `score_candidates` / `select_final` / `name_and_isolate` / `build_clash_config` / `_persist_stage`），阶段间经 `@dataclass` 结果容器传递多产出。重构遵循「安全网先行」：先建 mock 集成测试（变异验证：故意注入缺陷须被抓到）再动结构。
 - **回归测试**：`tests/` 覆盖订阅解析、指纹去重（嵌套参数变更不被误判）、地区识别（Russia 不误判为美国等边界用例）、协议门槛、原子写入（并发/截断/失败场景）、多渠道搜集、反爬（诱饵形态/永久地址/轮换/回流检测）、评分函数全分支、fetch 编码决策（iso-8859-1→apparent→utf-8 三级回落）、探测响应契约、源结构聚类、渠道候选校验（含 pyflakes「未定义名字」静态门禁，防拆模块后漏 import 常量——2026-10-13 daily 崩溃事故的回归防线）。
-- **覆盖率门禁（P1-1d）**：CI 每次代码变更跑 `pytest --cov`，库模块语句覆盖 **≥80%** 未达标即阻断合入（`.coveragerc` `fail_under=80`）。当前 **507 项测试、总覆盖 91.56%**（`filter_clash.py` 88%）。
+- **覆盖率门禁（P1-1d）**：CI 每次代码变更跑 `pytest --cov`，库模块语句覆盖 **≥80%** 未达标即阻断合入（`.coveragerc` `fail_under=80`）。当前 **509 项测试、总覆盖 91.56%**（`filter_clash.py` 88%）。
 - **低覆盖模块补齐（P1-2a）**：`probe.py` 的 mihomo 进程编排（`_probe_through` 各出口/篡改/TLS 中间人/CF 拦截分支、`_mihomo_batch` 进程早退与 controller 未就绪、`mihomo_probe` 大批量二分重试）与 `sources_manager.py` 源生命周期（GitHub 限流重试、仓库声誉全 verdict、discover 收录/跳过路径、试用期拒绝与晋升、正式源降级与超额裁剪）已用 mock 全面覆盖，两模块分别达 **99% / 100%**。
+- **配置独立（P1-2）**：`common.py` 原为 757 行「常量 + 工具函数」混合体（102 个配置常量），认知负担大。已拆出 `config.py`（287 行，仅依赖标准库的架构最底层叶子）专收全部可调常量——区域规则/配额、协议白名单与奖惩参数、超时/并发旋钮、输出与状态文件名、探测 URL 与配额；`common.py` 瘦身为 502 行纯函数层，按需 `from config import`。调参只动 `config.py` 一处，模块职责单一可读。
+- **显式 import（P1-3）**：`filter_clash.py` 原用 `_reexport()` 在运行时把子模块符号动态 `setdefault` 进命名空间——依赖面静态不可见（pyflakes 199 条告警）、漏 import 只在运行期炸 `NameError`（2026-10-13 daily 工作流崩溃根因）。已改为按来源模块的显式 import（5 组、88 个名字），依赖面成为文件内可读清单；`filter_clash.py` 同步纳入「未定义名字」静态门禁，漏 import 在 CI 即失败。
 
 ## 安全加固（2026-10-14 安全评估整改）
 

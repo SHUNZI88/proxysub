@@ -5,8 +5,9 @@ import os
 import subprocess
 import unittest.mock as mock
 
-import pytest
 import yaml
+
+import config
 
 from scripts import cn_probe
 
@@ -72,7 +73,7 @@ def test_build_verified_config_groups():
     auto = next(g for g in cfg["proxy-groups"] if g["name"] == "♻️ 自动选择")
     assert "SG 03" not in auto["proxies"]
     insecure = next(g for g in cfg["proxy-groups"]
-                    if g["name"] == cn_probe.common.INSECURE_GROUP)
+                    if g["name"] == config.INSECURE_GROUP)
     assert insecure["proxies"] == ["SG 03"]
     assert len(cfg["proxies"]) == 3
 

@@ -192,6 +192,6 @@ def test_recently_removed_and_deny_respected(tmp_path, fake_get, monkeypatch):
         "deny_repos": [],
     }
     cands = {"candidates": {}, "rejected": {}}
-    rep = channels.discover_channels(sources, cands, common.parse_subscription_text, print)
+    channels.discover_channels(sources, cands, common.parse_subscription_text, print)
     # 该 URL 在 removed 冷却期内，不应被重新收录
     assert removed_url not in cands["candidates"]

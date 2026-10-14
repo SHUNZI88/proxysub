@@ -16,7 +16,7 @@ import datetime
 import json
 import os
 
-import common
+import config
 
 
 # ------------------------------------------------------------------ 护栏常量
@@ -66,13 +66,13 @@ def _report_age_s(report: dict) -> float:
 
 
 # ------------------------------------------------------------------ 2.1 节点级通过史
-def update_cn_history(report: dict, path: str = common.CN_HISTORY_FILE) -> dict:
+def update_cn_history(report: dict, path: str = config.CN_HISTORY_FILE) -> dict:
     """把报告内 per-fp 中国结果合并进 cn_history.json。
 
     返回更新后的历史字典。守卫：报告陈旧则原样返回（不覆盖好历史）。
     cn_ok 决定 streak/fails 增减；cn_runs/cn_pass 累计寿命统计。
     """
-    if _report_age_s(report) > common.VERIFICATION_MAX_AGE_S:
+    if _report_age_s(report) > config.VERIFICATION_MAX_AGE_S:
         return _load_json(path, {})
     hist = _load_json(path, {})
     for n in report.get("nodes", []):
@@ -119,7 +119,7 @@ def cn_stability_bonus_ms(fp: str, hist: dict, *, max_bonus: float = 80.0) -> fl
                 dt = dt.replace(tzinfo=datetime.timezone.utc)
         except Exception:
             dt = None
-        if dt and (datetime.datetime.now(datetime.timezone.utc) - dt).total_seconds() > common.VERIFICATION_MAX_AGE_S:
+        if dt and (datetime.datetime.now(datetime.timezone.utc) - dt).total_seconds() > config.VERIFICATION_MAX_AGE_S:
             return 0.0
     streak = rec.get("cn_streak", 0)
     fails = rec.get("cn_fails", 0)
@@ -131,12 +131,12 @@ def cn_stability_bonus_ms(fp: str, hist: dict, *, max_bonus: float = 80.0) -> fl
 
 
 # ------------------------------------------------------------------ 2.2 源级通过率
-def update_source_scores_cn(report: dict, path: str = common.SOURCE_SCORES_FILE) -> dict:
+def update_source_scores_cn(report: dict, path: str = config.SOURCE_SCORES_FILE) -> dict:
     """把报告 by_source 的中国通过率折回 source_scores.json 的 cn 维度。
 
     返回更新后的评分字典。守卫：报告陈旧则跳过（不污染源评分）。
     """
-    if _report_age_s(report) > common.VERIFICATION_MAX_AGE_S:
+    if _report_age_s(report) > config.VERIFICATION_MAX_AGE_S:
         return _load_json(path, {})
     scores = _load_json(path, {})
     by_source = report.get("counts", {}).get("by_source", {})
@@ -174,8 +174,8 @@ def cn_source_bonus(src: str | None, scores: dict, *, max_bonus: float = 60.0) -
 
 
 # ------------------------------------------------------------------ 2.3 门槛自学习
-def learn_thresholds(report: dict, out_path: str = common.LEARNED_THRESHOLDS_FILE,
-                     hist_path: str = common.THRESHOLD_HISTORY_FILE) -> dict:
+def learn_thresholds(report: dict, out_path: str = config.LEARNED_THRESHOLDS_FILE,
+                     hist_path: str = config.THRESHOLD_HISTORY_FILE) -> dict:
     """静态门槛自学习（带护栏），返回当前生效参数表。
 
     每个参数：样本≥30 才动；目标值取数据分布点 + 方向修正；幅度 = 幅度减半
@@ -184,7 +184,7 @@ def learn_thresholds(report: dict, out_path: str = common.LEARNED_THRESHOLDS_FIL
     """
     learned = _load_json(out_path, {})
     history = _load_json(hist_path, [])
-    if _report_age_s(report) > common.VERIFICATION_MAX_AGE_S:
+    if _report_age_s(report) > config.VERIFICATION_MAX_AGE_S:
         return {k: learned.get(k, v["default"]) for k, v in LEARNED_PARAMS.items()}
 
     counts = report.get("counts", {})
@@ -236,12 +236,12 @@ def learn_thresholds(report: dict, out_path: str = common.LEARNED_THRESHOLDS_FIL
 
 
 # ------------------------------------------------------------------ 2.4 审计行
-def append_probe_history(report: dict, path: str = common.PROBE_HISTORY_FILE) -> dict:
+def append_probe_history(report: dict, path: str = config.PROBE_HISTORY_FILE) -> dict:
     """每轮写一行 jsonl（待测/通过/分源通过率），返回本行；CI 提交进 git。
 
     守卫：报告陈旧则跳过（不记过期轮次）。小、单行、可 grep。
     """
-    if _report_age_s(report) > common.VERIFICATION_MAX_AGE_S:
+    if _report_age_s(report) > config.VERIFICATION_MAX_AGE_S:
         return {}
     counts = report.get("counts", {})
     tested = counts.get("tested", 0)
@@ -267,11 +267,11 @@ def run_evolution(report: dict, repo_root: str = ".") -> dict:
     """CI 侧一次性编排 4 个闭环；返回各产物摘要（供 main 打印/提交）。"""
     def _p(name):
         return os.path.join(repo_root, name)
-    cn_hist = update_cn_history(report, _p(common.CN_HISTORY_FILE))
-    src = update_source_scores_cn(report, _p(common.SOURCE_SCORES_FILE))
-    params = learn_thresholds(report, _p(common.LEARNED_THRESHOLDS_FILE),
-                              _p(common.THRESHOLD_HISTORY_FILE))
-    line = append_probe_history(report, _p(common.PROBE_HISTORY_FILE))
+    cn_hist = update_cn_history(report, _p(config.CN_HISTORY_FILE))
+    src = update_source_scores_cn(report, _p(config.SOURCE_SCORES_FILE))
+    params = learn_thresholds(report, _p(config.LEARNED_THRESHOLDS_FILE),
+                              _p(config.THRESHOLD_HISTORY_FILE))
+    line = append_probe_history(report, _p(config.PROBE_HISTORY_FILE))
     return {
         "cn_history_nodes": len(cn_hist),
         "source_scores_with_cn": sum(1 for v in src.values() if "cn_pass_rate" in v),

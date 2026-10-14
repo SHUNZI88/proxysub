@@ -33,7 +33,18 @@ import handoff
 import honeypot as hp
 import sources_manager as sm
 import yaml
-from common import (  # noqa: F401  （按需显式导入；非全部 re-export）
+from common import (  # 叶子工具函数（配置常量见下面 config import）
+    _today,
+    _truthy,
+    fetch_all_sources,
+    fingerprint,
+    is_udp_protocol,
+    normalize_network,
+    parse_subscription_text,
+    protocol_gate_reason,
+    survival_state_fresh,
+)
+from config import (  # 可调常量（P1-2 起独立模块）
     ASIA_REGIONS,
     BAD_SOURCES_FILE,
     CANDIDATES_CLASH,
@@ -44,6 +55,7 @@ from common import (  # noqa: F401  （按需显式导入；非全部 re-export�
     CF_BLOCKED_PENALTY,
     CHANNEL_NODES_KEY,
     CHANNEL_PROBE_QUOTA,
+    CN_HISTORY_FILE,
     EXCLUDE_KEYWORDS,
     FALLBACK_INTERVAL,
     HISTORY_PASS_RATE_BONUS,   # noqa: F401  兼容面：测试经 fc.<name> 访问
@@ -67,6 +79,8 @@ from common import (  # noqa: F401  （按需显式导入；非全部 re-export�
     OUTPUT_PROXIES_ONLY,
     OUTPUT_SINGBOX,
     OUTPUT_V2RAY,
+    PENDING_PROBE_FILE,
+    PENDING_RESCUE_FILE,
     PROBE_FRESH_QUOTA,
     PROBE_LIMIT_OFFICIAL,
     PROBE_PER_CANDIDATE,
@@ -85,16 +99,8 @@ from common import (  # noqa: F401  （按需显式导入；非全部 re-export�
     TAMPER_STATUSES,
     TCP_LATENCY_CAP_IN_SCORE,
     URLTEST_INTERVAL,
-    _today,
-    _truthy,
-    fetch_all_sources,
-    fingerprint,
-    is_udp_protocol,
-    normalize_network,
-    parse_subscription_text,
-    protocol_gate_reason,
+    VERIFICATION_REPORT_FILE,
     real_probe_enabled,
-    survival_state_fresh,
 )
 from handoff import (  # noqa: F401  （兼容面：测试经 fc.<name> 访问）
     build_pending_doc,
@@ -145,7 +151,7 @@ def _download_verification_report(repo_root: str) -> dict | None:
     if os.path.exists(path):
         os.remove(path)
     rc = subprocess.run(
-        ["gh", "release", "download", "sub", "-p", common.VERIFICATION_REPORT_FILE,
+        ["gh", "release", "download", "sub", "-p", VERIFICATION_REPORT_FILE,
          "-O", path, "--clobber"], capture_output=True, text=True, timeout=120).returncode
     if rc != 0 or not os.path.exists(path):
         return None
@@ -171,8 +177,8 @@ def load_evolution_inputs(repo_root: str) -> tuple[dict, dict, dict]:
         print(f"进化引擎: cn_history={summary['cn_history_nodes']} "
               f"源评分带cn维度={summary['source_scores_with_cn']} "
               f"自学习={summary['learned']}")
-        cn_hist = _load_json_safe(os.path.join(repo_root, common.CN_HISTORY_FILE), {})
-        source_scores_cn = _load_json_safe(os.path.join(repo_root, common.SOURCE_SCORES_FILE), {})
+        cn_hist = _load_json_safe(os.path.join(repo_root, CN_HISTORY_FILE), {})
+        source_scores_cn = _load_json_safe(os.path.join(repo_root, SOURCE_SCORES_FILE), {})
         learned = summary["learned"]
     return cn_hist, learned, source_scores_cn
 
@@ -1119,8 +1125,8 @@ def _persist_stage(ac_enabled, ac, config, final_proxies, insecure_proxies,
             })
             print(f"反爬: 真实输出 -> {anti_crawl.PUBLISH_DIR}/（发布为滚动 Release 永久地址；"
                   f"固定名文件已写为诱饵 {decoy_stat.get('total', 0)} 个节点）")
-            print(f"交接: 待测 {handoff_stat[common.PENDING_PROBE_FILE]} 个 | "
-                  f"救援 {handoff_stat[common.PENDING_RESCUE_FILE]} 个 "
+            print(f"交接: 待测 {handoff_stat[PENDING_PROBE_FILE]} 个 | "
+                  f"救援 {handoff_stat[PENDING_RESCUE_FILE]} 个 "
                   f"（round {handoff_rid}，交沙箱中国出口实测）")
         else:
             namer = anti_crawl.make_namer(ac)

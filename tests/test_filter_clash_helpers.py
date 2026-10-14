@@ -67,9 +67,9 @@ class TestLoadEvolutionInputs:
                                   "source_scores_with_cn": 2,
                                   "learned": {"k": 1}})
         # 状态文件存在时被读入
-        (tmp_path / fc.common.CN_HISTORY_FILE).write_text(
+        (tmp_path / fc.CN_HISTORY_FILE).write_text(
             json.dumps({"fp1": [1, 1]}), encoding="utf-8")
-        (tmp_path / fc.common.SOURCE_SCORES_FILE).write_text(
+        (tmp_path / fc.SOURCE_SCORES_FILE).write_text(
             json.dumps({"src1": 0.9}), encoding="utf-8")
         cn_hist, learned, src_scores = fc.load_evolution_inputs(str(tmp_path))
         assert cn_hist == {"fp1": [1, 1]}

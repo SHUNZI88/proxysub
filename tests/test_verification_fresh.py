@@ -3,7 +3,6 @@
 import datetime
 import json
 
-import pytest
 
 from scripts import verification_fresh as vf
 

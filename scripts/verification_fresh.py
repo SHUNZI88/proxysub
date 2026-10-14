@@ -18,7 +18,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import common  # noqa: E402
+import config  # noqa: E402
 
 
 def is_fresh(report: dict, now: datetime.datetime | None = None) -> bool:
@@ -33,7 +33,7 @@ def is_fresh(report: dict, now: datetime.datetime | None = None) -> bool:
     now = now or datetime.datetime.now(datetime.timezone.utc)
     age = (now - gen).total_seconds()
     passed = int((report.get("counts") or {}).get("passed", 0) or 0)
-    return 0 <= age < common.VERIFICATION_MAX_AGE_S and passed >= common.VERIFICATION_MIN_PASSED
+    return 0 <= age < config.VERIFICATION_MAX_AGE_S and passed >= config.VERIFICATION_MIN_PASSED
 
 
 if __name__ == "__main__":

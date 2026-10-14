@@ -13,10 +13,8 @@ from urllib.parse import quote, quote_plus
 import yaml
 
 import honeypot as hp
-from common import (
-    _sni_of,
-    _truthy,
-    _has_reality,
+from common import _has_reality, _sni_of, _truthy
+from config import (
     MIN_FINAL,
     OUTPUT_PROXIES_ONLY,
     OUTPUT_SINGBOX,

@@ -46,7 +46,6 @@ import shutil
 import socket
 import subprocess
 import sys
-import tempfile
 import time
 import urllib.parse
 import urllib.request
@@ -56,6 +55,7 @@ REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, REPO_ROOT)
 
 import common  # noqa: E402
+import config  # noqa: E402
 import yaml  # noqa: E402
 
 try:
@@ -472,7 +472,7 @@ def build_verified_config(nodes: list[dict]) -> dict:
         {"name": "🚀 节点选择", "type": "select",
          "proxies": ["♻️ 自动选择", "DIRECT"] + names},
         {"name": "♻️ 自动选择", "type": "url-test", "proxies": names,
-         "url": common.PROBE_URL, "interval": 300, "tolerance": 50},
+         "url": config.PROBE_URL, "interval": 300, "tolerance": 50},
     ]
     if classify_proxy is not None:
         regions: dict[str, list[str]] = {}
@@ -481,12 +481,12 @@ def build_verified_config(nodes: list[dict]) -> dict:
         for region, rnames in regions.items():
             if len(rnames) >= 2:
                 groups.append({"name": region, "type": "url-test", "proxies": rnames,
-                               "url": common.PROBE_URL, "interval": 300})
+                               "url": config.PROBE_URL, "interval": 300})
                 groups[0]["proxies"].append(region)
     if insecure_names:
-        groups.append({"name": common.INSECURE_GROUP, "type": "select",
+        groups.append({"name": config.INSECURE_GROUP, "type": "select",
                        "proxies": insecure_names})
-        groups[0]["proxies"].append(common.INSECURE_GROUP)
+        groups[0]["proxies"].append(config.INSECURE_GROUP)
     return {
         "mixed-port": 7890,
         "allow-lan": False,
@@ -559,13 +559,13 @@ def main() -> int:
     log("自检通过: 沙箱直连可用")
 
     # 2) 交接文档 + 轮次闸门
-    pend_path = os.path.join(workdir, common.PENDING_PROBE_FILE)
-    rescue_path = os.path.join(workdir, common.PENDING_RESCUE_FILE)
+    pend_path = os.path.join(workdir, config.PENDING_PROBE_FILE)
+    rescue_path = os.path.join(workdir, config.PENDING_RESCUE_FILE)
     # 上轮报告 -> 已测轮次。首轮/报告缺失时 last_round=None：任何现有
     # 文档都算新轮次（修掉早期「首轮文档陈旧即空转」的死角）。
     last_round = None
     prev_report = os.path.join(workdir, "prev_verification_report.json")
-    if gh_download(tag, common.VERIFICATION_REPORT_FILE, prev_report):
+    if gh_download(tag, config.VERIFICATION_REPORT_FILE, prev_report):
         try:
             with open(prev_report, encoding="utf-8") as f:
                 last_round = json.load(f).get("tested_round") or None
@@ -576,7 +576,7 @@ def main() -> int:
 
     fresh = False
     doc_round = doc_round_id(pend_path) if gh_download(
-        tag, common.PENDING_PROBE_FILE, pend_path) else None
+        tag, config.PENDING_PROBE_FILE, pend_path) else None
     if gate_decision(doc_round, last_round) == "test":
         fresh = True
     else:
@@ -587,7 +587,7 @@ def main() -> int:
         while time.time() < deadline:
             time.sleep(60)
             waited += 1
-            if gh_download(tag, common.PENDING_PROBE_FILE, pend_path):
+            if gh_download(tag, config.PENDING_PROBE_FILE, pend_path):
                 doc_round = doc_round_id(pend_path)
                 if gate_decision(doc_round, last_round) == "test":
                     fresh = True
@@ -596,7 +596,7 @@ def main() -> int:
                 log(f"仍在等待 CI 新轮次交接文档"
                     f"（已等 {waited}/{args.max_wait} 分钟）")
     if fresh:
-        gh_download(tag, common.PENDING_RESCUE_FILE, rescue_path)
+        gh_download(tag, config.PENDING_RESCUE_FILE, rescue_path)
         log(f"交接文档轮次 {doc_round} 待测，进入实测")
     else:
         log("无新轮次待测文档（CI 调度延迟或故障）：本轮仅测 carryover；"
@@ -739,13 +739,13 @@ def main() -> int:
         } for n in nodes],
         "published": False,
     }
-    report_path = os.path.join(workdir, common.VERIFICATION_REPORT_FILE)
+    report_path = os.path.join(workdir, config.VERIFICATION_REPORT_FILE)
     with open(report_path, "w", encoding="utf-8") as f:
         json.dump(report, f, ensure_ascii=False, indent=1)
 
     # 7) 熔断：通过数不足 → 不碰主资产（保留上轮验证集/CI 兜底）
-    if len(verified) < common.VERIFICATION_MIN_PASSED:
-        log(f"熔断: 通过数 {len(verified)} < 下限 {common.VERIFICATION_MIN_PASSED}，"
+    if len(verified) < config.VERIFICATION_MIN_PASSED:
+        log(f"熔断: 通过数 {len(verified)} < 下限 {config.VERIFICATION_MIN_PASSED}，"
             f"不发布主资产（保留上一轮验证集），仅更新报告")
         if not args.dry_run:
             run(["gh", "release", "upload", tag, "--clobber", report_path])
@@ -758,7 +758,7 @@ def main() -> int:
         m = ASSET_RE.match(a.get("name", ""))
         if m:
             asset_by_fmt[ASSET_FORMAT[m.group(1)]] = a["name"]
-    log(f"验证集输出: " + ", ".join(f"{k}={os.path.basename(v)}"
+    log("验证集输出: " + ", ".join(f"{k}={os.path.basename(v)}"
                                     for k, v in paths.items()))
     if args.dry_run:
         log("dry-run: 跳过发布。产物在 " + workdir)
@@ -790,7 +790,7 @@ def main() -> int:
         shutil.copyfile(pend_path, prev_path)
         run(["gh", "release", "upload", tag, "--clobber",
              f"{prev_path}#pending_probe.prev.json"])
-    log(f"发布完成: 主资产 {len(uploaded)} 个 + {common.VERIFICATION_REPORT_FILE}"
+    log(f"发布完成: 主资产 {len(uploaded)} 个 + {config.VERIFICATION_REPORT_FILE}"
         f"（round {round_id}）")
     return 0
 

@@ -19,7 +19,8 @@ import json
 import os
 from collections import defaultdict
 
-from common import HANDOFF_GENERATOR, PENDING_PROBE_FILE, PENDING_RESCUE_FILE, RESCUE_QUOTA, src_key
+from common import src_key
+from config import HANDOFF_GENERATOR, PENDING_PROBE_FILE, PENDING_RESCUE_FILE, RESCUE_QUOTA
 
 
 def round_stamp(now: datetime.datetime | None = None) -> tuple[str, str]:
