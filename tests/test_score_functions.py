@@ -123,6 +123,30 @@ def test_us_china_penalty_probe_loc_marks_us():
     assert score.us_china_penalty(p, {"loc": "HK"}) == 0.0
 
 
+def test_us_china_penalty_protocol_tiers():
+    """P1-4 简化后行为基线：出口惩罚按协议分层，区域项与出口项叠加。
+
+    美国区域名节点（区域项 +120）经主机名线索判 US 后，出口惩罚按协议分三档；
+    非美国区域名 + loc=US 时只拿出口惩罚（无区域项）。
+    """
+    import config as cm
+    us = {"name": "🇺🇸 US", "server": "us.example.com", "type": "vmess"}
+    hy2 = dict(us, type="hysteria2")
+    reality = {**us, "type": "vless", "reality-opts": {"public-key": "x" * 43}}
+    ss = dict(us, type="ss")
+    http_ = dict(us, type="http")
+    trojan = dict(us, type="trojan")
+    base = cm.US_REGION_DELAY_PENALTY
+    assert score.us_china_penalty(hy2, None) == base + cm.US_EGRESS_PENALTY_HY2_REALITY
+    assert score.us_china_penalty(reality, None) == base + cm.US_EGRESS_PENALTY_HY2_REALITY
+    assert score.us_china_penalty(ss, None) == base + cm.US_EGRESS_PENALTY_SS_VMESS
+    assert score.us_china_penalty(http_, None) == base + cm.US_EGRESS_PENALTY_SS_VMESS
+    assert score.us_china_penalty(trojan, None) == base + cm.US_EGRESS_PENALTY_MID
+    # 非美国区域名 + 拨测 loc=US：仅出口惩罚（trojan → 居中档）
+    anon = {"name": "Unknown", "type": "trojan"}
+    assert score.us_china_penalty(anon, {"loc": "US"}) == cm.US_EGRESS_PENALTY_MID
+
+
 def test_survival_bonus_ms_empty_and_populated():
     assert score.survival_bonus_ms("nope", {}) == 0.0
     v = score.survival_bonus_ms("fp", {"fp": {"streak": 5, "seen_days": 10}})

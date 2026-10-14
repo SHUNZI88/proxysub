@@ -138,7 +138,15 @@ def is_us_node(proxy: dict, probe_result: dict | None = None) -> bool:
     return False
 
 def us_china_penalty(proxy: dict, probe_result: dict | None = None) -> float:
-    """Extra ms penalty for US egress/region when ranking for China clients."""
+    """中美路径软惩罚（ms 等价，供中国客户端视角排序）。
+
+    两层可叠加（区域项为负即加成）：
+      1. 区域名：美国 +US_REGION_DELAY_PENALTY；亚洲区域 +ASIA_SCORE_BONUS；
+      2. 出口证据（拨测 loc=US 或主机名线索判 US）时按协议分层追加出口惩罚：
+         Hy2 / vless+Reality 最轻（现代协议在美出口下延迟更稳），
+         SS/VMess/HTTP/SOCKS 最重，其余（trojan 等）居中。
+    无美国出口证据时提前返回——区域项不与出口惩罚叠加。
+    """
     region = classify_proxy(str(proxy.get("name", "")))
     pen = 0.0
     if region == "🇺🇸 美国":
@@ -147,22 +155,14 @@ def us_china_penalty(proxy: dict, probe_result: dict | None = None) -> float:
         pen += ASIA_SCORE_BONUS
     if not is_us_node(proxy, probe_result):
         return pen
-    # Already counted region penalty; add egress-style protocol-tiered penalty once.
-    # If region was not US but egress/host is US, apply full egress penalty.
     ptype = str(proxy.get("type", "")).lower()
     if ptype in ("hysteria2", "hy2") or (ptype == "vless" and _has_reality(proxy)):
         egress_pen = US_EGRESS_PENALTY_HY2_REALITY
-    elif ptype in ("ss", "ssr", "vmess") or ptype in ("http", "https", "socks5", "socks5h", "socks"):
+    elif ptype in ("ss", "ssr", "vmess", "http", "https", "socks5", "socks5h", "socks"):
         egress_pen = US_EGRESS_PENALTY_SS_VMESS
     else:
         egress_pen = US_EGRESS_PENALTY_MID
-    if region == "🇺🇸 美国":
-        # region already +400; add only the delta so Hy2 US is lighter than SS US overall
-        # Hy2: 400+300=700, SS: 400+600=1000, Mid: 400+450=850
-        pen += egress_pen
-    else:
-        pen += egress_pen
-    return pen
+    return pen + egress_pen
 
 def classify_proxy(name: str) -> str:
     for region, pattern in REGION_RULES.items():
