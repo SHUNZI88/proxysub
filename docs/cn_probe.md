@@ -100,7 +100,8 @@ CI 侧联动：`verification_report.json` 新鲜（<12h 且通过数 ≥15）时
 
 ```bash
 cd <仓库根>
-source /root/.codebuddy/skills/github-connector/scripts/get_token.sh github
+export GITHUB_TOKEN="$(cat /root/.github_pat)"   # 持久化 PAT（chmod 600）
+export GH_TOKEN="$GITHUB_TOKEN"
 python3 scripts/cn_probe.py --dry-run   # 不发布，产物落 /tmp/cn_probe
 python3 scripts/cn_probe.py             # 正式一轮
 ```

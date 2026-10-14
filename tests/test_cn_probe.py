@@ -273,3 +273,34 @@ def test_passed_verified_subset_preserves_src():
     # passed=0 被正确统计而非丢失，证明 verified 保留 src 的不变量成立
     assert by_source["SHUNzi88/proxysub"] == {"tested": 3, "passed": 2}
     assert by_source["raw.githubusercontent.com/abc/def"] == {"tested": 1, "passed": 0}
+
+
+def test_by_source_excludes_nodes_without_src():
+    """回归（2026-10-14 真实报告发现）：无 src 节点（carryover 等）不得进入 by_source。
+
+    真实报告曾出现 by_source 首项为 "?"（51 测 29 过），即无源节点被归入伪源 "?"，
+    会污染源级评分（为 "?" 生成无意义条目）。修法：聚合前过滤掉无 src 的节点。
+    """
+    nodes = [
+        {"src": "SHUNzi88/proxysub"}, {"src": "SHUNzi88/proxysub"},
+        {"src": None}, {"src": ""}, {},           # 无源（carryover）
+    ]
+    verified = [{"src": "SHUNzi88/proxysub"}, {"src": None}]
+    src_nodes = [n for n in nodes if n.get("src")]
+    src_verified = [n for n in verified if n.get("src")]
+    by_source = cn_probe._agg_two(src_nodes, src_verified, key_fn=lambda n: n["src"])
+    assert "?" not in by_source
+    assert by_source == {"SHUNzi88/proxysub": {"tested": 2, "passed": 1}}
+
+
+def test_report_node_record_keeps_src_field():
+    """回归：报告 nodes 记录必须保留 src 字段（供溯源与未来按源回放）。
+
+    曾遗漏 src，导致报告 nodes 全无源归属，但 counts.by_source 仍有数据——
+    这是隐蔽不一致，故固化该不变量。
+    """
+    n = {"fp": "abc", "name": "n1", "origin": "pending", "final": True,
+         "us_ok": True, "src": "SHUNzi88/proxysub", "probe_name": "p0"}
+    rec = {"fp": n["fp"], "name": n["name"], "origin": n["origin"],
+           "final": n["final"], "us_ok": n["us_ok"], "src": n.get("src")}
+    assert rec["src"] == "SHUNzi88/proxysub"

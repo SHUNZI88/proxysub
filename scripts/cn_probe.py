@@ -30,7 +30,7 @@
 用法：
   GH_TOKEN=... python3 scripts/cn_probe.py [--dry-run] [--max-wait 20]
   [--budget 1800]
-  GH_TOKEN 由调度 prompt 先 source github-connector get_token.sh 注入。
+  GH_TOKEN 由调度 prompt 从 /root/.github_pat（持久化 PAT）注入。
 """
 
 from __future__ import annotations
@@ -667,7 +667,11 @@ def main() -> int:
     by_origin = {o: sum(1 for n in verified if n["origin"] == o)
                  for o in ("pending", "rescue", "carryover")}
     # 分源/分协议聚合（Phase 2.2）：tested/passed 双口径，供 CI 源级评分与门槛自学习
-    by_source = _agg_two(nodes, verified, key_fn=lambda n: n.get("src") or "?")
+    # 分源仅统计带 src 的节点（carryover 等无源节点不归任何源，避免产生 "?" 伪源
+    # 污染源级评分）；分协议仍覆盖全部节点。
+    src_nodes = [n for n in nodes if n.get("src")]
+    src_verified = [n for n in verified if n.get("src")]
+    by_source = _agg_two(src_nodes, src_verified, key_fn=lambda n: n["src"])
     by_protocol = _agg_two(nodes, verified,
                            key_fn=lambda n: str(n["proxy"].get("type", "?")))
     log(f"验证集: {len(verified)} 个（pending {by_origin['pending']} / "
@@ -691,7 +695,7 @@ def main() -> int:
         },
         "nodes": [{
             "fp": n["fp"], "name": n["name"], "origin": n["origin"],
-            "final": n["final"], "us_ok": n["us_ok"],
+            "final": n["final"], "us_ok": n["us_ok"], "src": n.get("src"),
             "cn": results.get(n["probe_name"], {}),
         } for n in nodes],
         "published": False,
