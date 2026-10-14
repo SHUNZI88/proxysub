@@ -1,295 +1,11 @@
 {
   "candidates": {
-    "https://raw.githubusercontent.com/dongchengjie/airport/main/subs/clashfree.yaml": {
-      "repo": "dongchengjie/airport",
-      "stars": 706,
-      "repo_created": "2024-01-28T14:46:33Z",
-      "reputation": "ok",
-      "reputation_note": "stars=706,age=986d",
-      "required_runs": 3,
-      "first_seen": "2026-10-11",
-      "initial_nodes": 533,
-      "runs": 15,
-      "good_streak": 0,
-      "fail_streak": 0,
-      "history": [
-        {
-          "date": "2026-10-13",
-          "count": 533,
-          "usable": 2,
-          "unique_new": 2,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-13",
-          "count": 533,
-          "usable": 1,
-          "unique_new": 1,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-13",
-          "count": 533,
-          "usable": 1,
-          "unique_new": 1,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-14",
-          "count": 533,
-          "usable": 1,
-          "unique_new": 1,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-14",
-          "count": 533,
-          "usable": 1,
-          "unique_new": 1,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-14",
-          "count": 533,
-          "usable": 1,
-          "unique_new": 1,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-14",
-          "count": 533,
-          "usable": 1,
-          "unique_new": 1,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-14",
-          "count": 533,
-          "usable": 1,
-          "unique_new": 1,
-          "tamper": 0
-        }
-      ]
-    },
-    "https://raw.githubusercontent.com/dongchengjie/airport/main/subs/clashnodev2ray.yaml": {
-      "repo": "dongchengjie/airport",
-      "stars": 706,
-      "repo_created": "2024-01-28T14:46:33Z",
-      "reputation": "ok",
-      "reputation_note": "stars=706,age=986d",
-      "required_runs": 3,
-      "first_seen": "2026-10-11",
-      "initial_nodes": 108,
-      "runs": 15,
-      "good_streak": 0,
-      "fail_streak": 0,
-      "history": [
-        {
-          "date": "2026-10-13",
-          "count": 108,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-13",
-          "count": 108,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-13",
-          "count": 108,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-14",
-          "count": 108,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-14",
-          "count": 108,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-14",
-          "count": 108,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-14",
-          "count": 108,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-14",
-          "count": 108,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        }
-      ]
-    },
-    "https://raw.githubusercontent.com/svinakraft-maker/FlareFeed/main/public/clash.yaml": {
-      "repo": "svinakraft-maker/FlareFeed",
-      "stars": 21,
-      "repo_created": "2026-07-11T19:51:44Z",
-      "reputation": "ok",
-      "reputation_note": "stars=21,age=91d",
-      "required_runs": 3,
-      "first_seen": "2026-10-11",
-      "initial_nodes": 400,
-      "runs": 15,
-      "good_streak": 0,
-      "fail_streak": 0,
-      "history": [
-        {
-          "date": "2026-10-13",
-          "count": 400,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-13",
-          "count": 400,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-13",
-          "count": 400,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-14",
-          "count": 400,
-          "usable": 4,
-          "unique_new": 4,
-          "tamper": 1
-        },
-        {
-          "date": "2026-10-14",
-          "count": 400,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-14",
-          "count": 400,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-14",
-          "count": 400,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-14",
-          "count": 400,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        }
-      ]
-    },
-    "https://raw.githubusercontent.com/oversizexl/FreeSubsCheck/main/mihomo.yaml": {
-      "repo": "oversizexl/FreeSubsCheck",
-      "stars": 5,
-      "repo_created": "2026-09-02T05:08:24Z",
-      "reputation": "low",
-      "reputation_note": "stars=5,age=39d",
-      "required_runs": 5,
-      "first_seen": "2026-10-11",
-      "initial_nodes": 90,
-      "runs": 15,
-      "good_streak": 0,
-      "fail_streak": 0,
-      "history": [
-        {
-          "date": "2026-10-13",
-          "count": 90,
-          "usable": 1,
-          "unique_new": 1,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-13",
-          "count": 90,
-          "usable": 2,
-          "unique_new": 2,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-13",
-          "count": 90,
-          "usable": 2,
-          "unique_new": 2,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-14",
-          "count": 90,
-          "usable": 2,
-          "unique_new": 2,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-14",
-          "count": 90,
-          "usable": 2,
-          "unique_new": 2,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-14",
-          "count": 90,
-          "usable": 3,
-          "unique_new": 3,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-14",
-          "count": 90,
-          "usable": 3,
-          "unique_new": 3,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-14",
-          "count": 90,
-          "usable": 3,
-          "unique_new": 3,
-          "tamper": 0
-        }
-      ]
-    },
     "https://clashgithub.com/clashnode-20261004.html": {
       "channel": "web:https://clashgithub.com/",
       "origin": "channel_web",
       "added": "2026-10-13",
       "first_seen": "2026-10-13",
-      "runs": 7,
+      "runs": 8,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -302,6 +18,13 @@
         },
         {
           "date": "2026-10-13",
+          "count": 304,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-14",
           "count": 304,
           "usable": 0,
           "unique_new": 0,
@@ -350,7 +73,7 @@
       "origin": "channel_web",
       "added": "2026-10-13",
       "first_seen": "2026-10-13",
-      "runs": 7,
+      "runs": 8,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -402,6 +125,13 @@
           "usable": 14,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-14",
+          "count": 1621,
+          "usable": 16,
+          "unique_new": 0,
+          "tamper": 0
         }
       ],
       "required_runs": 3
@@ -411,7 +141,7 @@
       "origin": "channel_web",
       "added": "2026-10-13",
       "first_seen": "2026-10-13",
-      "runs": 7,
+      "runs": 8,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -463,6 +193,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-14",
+          "count": 566,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ],
       "required_runs": 3
@@ -472,7 +209,7 @@
       "origin": "channel_web",
       "added": "2026-10-13",
       "first_seen": "2026-10-13",
-      "runs": 7,
+      "runs": 8,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -524,6 +261,13 @@
           "usable": 51,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-14",
+          "count": 515,
+          "usable": 52,
+          "unique_new": 0,
+          "tamper": 0
         }
       ],
       "required_runs": 3
@@ -533,7 +277,7 @@
       "origin": "channel_web",
       "added": "2026-10-13",
       "first_seen": "2026-10-13",
-      "runs": 6,
+      "runs": 7,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -578,6 +322,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-14",
+          "count": 9,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ],
       "required_runs": 3
@@ -587,10 +338,17 @@
       "origin": "channel_web",
       "added": "2026-10-14",
       "first_seen": "2026-10-14",
-      "runs": 4,
+      "runs": 5,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
+        {
+          "date": "2026-10-14",
+          "count": 483,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
         {
           "date": "2026-10-14",
           "count": 483,
@@ -627,11 +385,33 @@
       "origin": "channel_web",
       "added": "2026-10-14",
       "first_seen": "2026-10-14",
+      "runs": 1,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": [
+        {
+          "date": "2026-10-14",
+          "count": 489,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        }
+      ],
+      "required_runs": 3
+    },
+    "https://raw.githubusercontent.com/Nexuspt753/GitHub-Sub-Scanner/main/subs/isp/node-host-limited.yaml": {
+      "repo": "Nexuspt753/GitHub-Sub-Scanner",
+      "stars": 0,
+      "repo_created": "2026-08-14T12:32:58Z",
+      "reputation": "low",
+      "reputation_note": "stars=0,age=61d",
+      "required_runs": 5,
+      "first_seen": "2026-10-14",
+      "initial_nodes": 22,
       "runs": 0,
       "good_streak": 0,
       "fail_streak": 0,
-      "history": [],
-      "required_runs": 3
+      "history": []
     }
   },
   "rejected": {
@@ -764,6 +544,26 @@
       "reason": "honeypot_structure:shared_cred:15/25",
       "date": "2026-10-14",
       "repo": null
+    },
+    "https://raw.githubusercontent.com/dongchengjie/airport/main/subs/clashfree.yaml": {
+      "reason": "no_stable_contribution",
+      "date": "2026-10-14",
+      "repo": "dongchengjie/airport"
+    },
+    "https://raw.githubusercontent.com/dongchengjie/airport/main/subs/clashnodev2ray.yaml": {
+      "reason": "no_stable_contribution",
+      "date": "2026-10-14",
+      "repo": "dongchengjie/airport"
+    },
+    "https://raw.githubusercontent.com/svinakraft-maker/FlareFeed/main/public/clash.yaml": {
+      "reason": "no_stable_contribution",
+      "date": "2026-10-14",
+      "repo": "svinakraft-maker/FlareFeed"
+    },
+    "https://raw.githubusercontent.com/oversizexl/FreeSubsCheck/main/mihomo.yaml": {
+      "reason": "no_stable_contribution",
+      "date": "2026-10-14",
+      "repo": "oversizexl/FreeSubsCheck"
     }
   }
 }
