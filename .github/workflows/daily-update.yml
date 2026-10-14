@@ -117,6 +117,20 @@ jobs:
           # 调试用：PROXYSUB_DISABLE_PROBE=1 可跳过真实拨测（输出会混入僵尸节点）
         run: python filter_clash.py
 
+      - name: Stage outputs for artifact
+        # upload-artifact@v4 的 glob 语义会跳过点开头的隐藏目录——.publish/
+        # 直接写在 path 里不会被打包（2026-10-14 run 37 实测：.publish/ 整个
+        # 丢失导致 publish job 无文件可发）。故先复制到非隐藏目录再上传。
+        run: |
+          set -euo pipefail
+          rm -rf publish_out
+          if [ -d .publish ]; then
+            cp -r .publish publish_out
+          else
+            mkdir -p publish_out
+          fi
+          ls -la publish_out
+
       - name: Upload outputs for publish job
         # F5：生成物经 artifact 传给写权限 job。清单与 publish job 的
         # 「Commit and Push」逐文件 add 清单保持一致（含反爬轮换文件）。
@@ -126,7 +140,7 @@ jobs:
           if-no-files-found: error
           retention-days: 1
           path: |
-            .publish/
+            publish_out/
             clean_clash.yaml
             clean_singbox.json
             clean_v2ray.txt
@@ -184,7 +198,8 @@ jobs:
           path: .
 
       - name: Publish rolling release (anti-crawl permanent URLs)
-        # 反爬 release 模式：把 .publish/ 下的真实输出发布为滚动 Release（tag sub），
+        # 反爬 release 模式：把 publish_out/（update job 经 artifact 传来的
+        # .publish/ 副本）下的真实输出发布为滚动 Release（tag sub），
         # 资产名为随机字符串（首次生成后不变），订阅地址永久有效。
         # 未开启反爬或 publish_release=false 时跳过。
         #
@@ -221,7 +236,7 @@ jobs:
             exit 0
           fi
           tag="$(python3 -c "import json; print(json.load(open('anti_crawl.json', encoding='utf-8')).get('release_tag') or 'sub')")"
-          compgen -G ".publish/*" >/dev/null || { echo "ERROR: .publish/ 下没有待发布文件" >&2; exit 1; }
+          compgen -G "publish_out/*" >/dev/null || { echo "ERROR: publish_out/ 下没有待发布文件" >&2; exit 1; }
           # ---- 主资产所有权切换（CI 候选集 vs 沙箱实测集）----
           # 实测验证新鲜（report <12h 且通过数 ≥15，阈值见 common.py）时，
           # 主资产（p_* 随机名，订阅永久地址）归沙箱实测集所有：CI 只发布
@@ -242,11 +257,11 @@ jobs:
           fi
           # 上传清单：候选集副本 + 交接文档总是发布；主资产仅兜底时发布。
           files=()
-          for f in .publish/candidates_* .publish/pending_*; do
+          for f in publish_out/candidates_* publish_out/pending_*; do
             [ -f "$f" ] && files+=("$f")
           done
           if [ "$ver_fresh" != "1" ]; then
-            for f in .publish/p_*; do
+            for f in publish_out/p_*; do
               [ -f "$f" ] && files+=("$f")
             done
           fi
