@@ -335,3 +335,35 @@ def test_auth_selfcheck_ok(monkeypatch):
             ["gh"], 0, stdout="Logged in to github.com", stderr=""),
     ):
         assert cn_probe.auth_selfcheck() is True
+
+
+def test_gh_download_falls_back_to_curl(monkeypatch, tmp_path):
+    """回归（grok 2.4）：gh 失败时应自动回退 curl 并成功下载。"""
+    dest = tmp_path / "asset.json"
+    calls = {"n": 0}
+
+    def fake_run(cmd, **kw):
+        calls["n"] += 1
+        if cmd[0] == "gh":
+            return subprocess.CompletedProcess(cmd, 1, stdout="", stderr="timeout")
+        # curl 回退：真写一个文件模拟下载成功
+        dest.write_text('{"ok": true}')
+        return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
+
+    monkeypatch.setenv("GH_TOKEN", "ghp_dummy")
+    with mock.patch.object(cn_probe, "run", side_effect=fake_run):
+        assert cn_probe.gh_download("sub", "asset.json", str(dest)) is True
+    assert dest.exists()
+    assert calls["n"] == 2  # gh 一次 + curl 一次
+
+
+def test_gh_download_both_fail_returns_false(monkeypatch, tmp_path):
+    """gh 与 curl 均失败应返回 False，不误判成功。"""
+    dest = tmp_path / "asset.json"
+    monkeypatch.setenv("GH_TOKEN", "ghp_dummy")
+    with mock.patch.object(
+        cn_probe, "run",
+        return_value=subprocess.CompletedProcess(["x"], 1, stdout="", stderr=""),
+    ):
+        assert cn_probe.gh_download("sub", "asset.json", str(dest)) is False
+    assert not dest.exists()

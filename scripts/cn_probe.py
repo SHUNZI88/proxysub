@@ -127,8 +127,22 @@ def run(cmd: list[str], timeout: int = 120, **kw) -> subprocess.CompletedProcess
 
 
 def gh_download(tag: str, pattern: str, dest: str) -> bool:
-    r = run(["gh", "release", "download", tag, "-p", pattern, "-O", dest, "--clobber"])
-    return r.returncode == 0 and os.path.exists(dest)
+    """下载 Release 资产：优先 gh，失败自动回退 curl（Bearer token）。
+
+    回退原因（grok 2.4）：实测某些沙箱环境下 `gh release download` 会长时间
+    挂起无响应，而直连 `curl` 走 API 更稳定。两者任一成功即视为下载成功。
+    """
+    r = run(["gh", "release", "download", tag, "-p", pattern, "-O", dest, "--clobber"],
+            timeout=90)
+    if r.returncode == 0 and os.path.exists(dest):
+        return True
+    # 回退：curl -L .../releases/download/<tag>/<pattern>
+    token = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN") or ""
+    repo = os.environ.get("PROXYSUB_REPO", "SHUNZI88/proxysub")
+    url = f"https://github.com/{repo}/releases/download/{tag}/{pattern}"
+    cr = run(["curl", "-fsSL", "-H", f"Authorization: Bearer {token}", "-o", dest, url],
+             timeout=120)
+    return cr.returncode == 0 and os.path.exists(dest)
 
 
 def auth_selfcheck() -> bool:
