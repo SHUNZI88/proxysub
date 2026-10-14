@@ -3,6 +3,7 @@
 验证 4 个反哺闭环的护栏：陈旧守卫、源级聚合、门槛自学习（样本门限/幅度
 减半/有界/审计）、审计行格式。
 """
+import datetime
 import json
 import os
 import sys
@@ -12,6 +13,13 @@ import common
 import evolution
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "scripts"))
+
+
+def _now_iso() -> str:
+    """当前 UTC 时刻（进化引擎各处陈旧守卫均为 12h 窗口，夹具必须
+    相对“现在”生成——硬编码历史时刻会在跨日后被守卫拒绝，曾致 7 项
+    测试在 2026-10-15 集体失败）。"""
+    return datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def _mk_report(tested=200, passed=40, with_lat=True, stale=False):
@@ -29,7 +37,7 @@ def _mk_report(tested=200, passed=40, with_lat=True, stale=False):
     return {
         "round_id": "20261014T0702Z",
         "tested_round": "20261014T0640Z",
-        "generated_at": "2020-01-01T00:00:00Z" if stale else "2026-10-14T07:02:00Z",
+        "generated_at": "2020-01-01T00:00:00Z" if stale else _now_iso(),
         "vantage": "cn-hn-sandbox",
         "counts": {
             "tested": tested, "passed": passed,
@@ -77,9 +85,9 @@ def test_cn_stability_bonus_stale_zero():
 
 
 def test_cn_stability_bonus_sign():
-    ok = {"fp2": {"cn_ok": True, "cn_streak": 3, "cn_last": "2026-10-14T07:00:00Z"}}
+    ok = {"fp2": {"cn_ok": True, "cn_streak": 3, "cn_last": _now_iso()}}
     assert evolution.cn_stability_bonus_ms("fp2", ok) > 0
-    bad = {"fp3": {"cn_ok": False, "cn_fails": 2, "cn_last": "2026-10-14T07:00:00Z"}}
+    bad = {"fp3": {"cn_ok": False, "cn_fails": 2, "cn_last": _now_iso()}}
     assert evolution.cn_stability_bonus_ms("fp3", bad) < 0
 
 
@@ -186,7 +194,7 @@ def test_update_source_scores_cn_skips_and_purges_unknown_key(tmp_path):
                    "old/repo": {"cn_pass_rate": 0.1}}, f)
 
     report = {
-        "generated_at": "2026-10-14T07:02:00Z",
+        "generated_at": _now_iso(),
         "counts": {
             "by_source": {
                 "?": {"tested": 30, "passed": 16},
