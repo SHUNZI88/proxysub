@@ -2,9 +2,17 @@
 """proxysub —— 高纯度订阅清洗与结构规范化工具（编排入口）。
 
 本文件是流水线入口：仅保留 main() 编排逻辑；具体实现分散在
-common / probe / score / output 四个模块。运行方式不变：
+common / probe / score / output / handoff 等模块。运行方式不变：
     python filter_clash.py
-测试仍通过 `import filter_clash as fc` 访问全部符号（本文件 re-export）。
+
+依赖面（P1-3）：本文件原先用 _reexport() 在运行时把子模块公开符号
+动态注入本命名空间——静态分析无法看到这些名字（pyflakes 大量误报），
+新增引用时漏 import 也只会在运行期炸 NameError。现改为**按来源模块的
+显式 import**：下面这张清单就是本文件的真实外部依赖面，pyflakes 可
+静态校验，漏 import 在 CI 即失败。
+
+`import filter_clash as fc` 的既有调用方（测试 / 脚本）仍可访问
+fc.<name> —— 显式 import 同样把这些名字绑定到本模块命名空间。
 """
 
 
@@ -14,17 +22,114 @@ import json
 import os
 import re
 import subprocess
-import sys
 from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 
 import anti_crawl
 import common
 import evolution
 import handoff
-import output
-import probe
-import score
+import honeypot as hp
+import sources_manager as sm
+import yaml
+from common import (  # noqa: F401  （按需显式导入；非全部 re-export）
+    ASIA_REGIONS,
+    BAD_SOURCES_FILE,
+    CANDIDATES_CLASH,
+    CANDIDATES_PROXIES_ONLY,
+    CANDIDATES_SINGBOX,
+    CANDIDATES_V2RAY,
+    CANDIDATE_ONLY_PENALTY,
+    CF_BLOCKED_PENALTY,
+    CHANNEL_NODES_KEY,
+    CHANNEL_PROBE_QUOTA,
+    EXCLUDE_KEYWORDS,
+    FALLBACK_INTERVAL,
+    HISTORY_PASS_RATE_BONUS,   # noqa: F401  兼容面：测试经 fc.<name> 访问
+    INSECURE_GROUP,
+    INSECURE_TAG,
+    MAX_ACCEPT_LATENCY_MS,
+    MAX_ACCEPT_LATENCY_MS_US,
+    MAX_FINAL,
+    MAX_LOW_TIER_PER_REGION,
+    MAX_OTHER,
+    MAX_PER_CREDENTIAL,
+    MAX_PER_EGRESS_IP,
+    MAX_PER_SOURCE_FINAL,
+    MAX_US_SHARE,
+    MAX_WORKERS,
+    MIN_FINAL,
+    MULTI_SOURCE_BONUS,
+    NO_HTTPS_PENALTY,
+    NO_REAL_PROBE_PENALTY,
+    OUTPUT_FILE,
+    OUTPUT_PROXIES_ONLY,
+    OUTPUT_SINGBOX,
+    OUTPUT_V2RAY,
+    PROBE_FRESH_QUOTA,
+    PROBE_LIMIT_OFFICIAL,
+    PROBE_PER_CANDIDATE,
+    PROBE_PREFERRED_PER_REGION,
+    PROBE_RESERVE_PER_REGION,
+    PROBE_URL,
+    REGION_QUOTAS,
+    REGION_RULES,
+    REQUIRE_HTTPS_OK_IN_OUTPUT,
+    REQUIRE_REAL_PROBE_IN_OUTPUT,
+    SOURCE_SCORES_FILE,
+    SOURCE_STATS_FILE,
+    SURVIVAL_FILE,
+    SURVIVAL_PASS_WINDOW,      # noqa: F401  同上
+    SURVIVAL_STREAK_FORCE_PROBE,
+    TAMPER_STATUSES,
+    TCP_LATENCY_CAP_IN_SCORE,
+    URLTEST_INTERVAL,
+    _today,
+    _truthy,
+    fetch_all_sources,
+    fingerprint,
+    is_udp_protocol,
+    normalize_network,
+    parse_subscription_text,
+    protocol_gate_reason,
+    real_probe_enabled,
+    survival_state_fresh,
+)
+from handoff import (  # noqa: F401  （兼容面：测试经 fc.<name> 访问）
+    build_pending_doc,
+    build_rescue_doc,
+    round_stamp,
+    select_rescue,
+    write_handoff_docs,
+)
+from output import (  # noqa: F401
+    proxy_to_share_link,
+    proxy_to_singbox,
+    write_github_summary,
+    write_outputs,
+    write_stats_md,
+)
+from probe import (  # noqa: F401
+    http_socks_probe,
+    mihomo_available,
+    mihomo_probe,
+    tcp_probe,
+)
+from safe_io import load_json, save_json
+from score import (  # noqa: F401
+    cap_single_source,
+    china_feature_bonus,
+    classify_proxy,
+    history_bonus,
+    is_preferred,
+    is_us_node,
+    protocol_penalty,
+    protocol_tier,
+    survival_bonus_ms,
+    update_survival,
+    us_china_penalty,
+)
 
 
 REPO_ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -80,18 +185,6 @@ def _load_json_safe(path: str, default):
             return json.load(f)
     except Exception:
         return default
-
-
-def _reexport(*mods) -> None:
-    """把子模块的全部公开符号注入本模块命名空间，保持 `import filter_clash as fc` 兼容。"""
-    ns = sys.modules[__name__].__dict__
-    for m in mods:
-        for name, val in vars(m).items():
-            if not name.startswith("__"):
-                ns.setdefault(name, val)
-
-
-_reexport(common, probe, score, output, handoff)
 
 
 def detect_bait_reuse(staged: dict[str, list[dict]], bait_fps: set[str],

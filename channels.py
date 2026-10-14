@@ -22,9 +22,9 @@ import os
 import re
 import time
 from datetime import date, timedelta
-from typing import Any, Callable
+from typing import Callable
 
-import requests
+import requests  # noqa: F401  测试经 channels.requests.get 注入 mock（抓取接缝）
 
 from safe_io import load_json
 from net_safety import safe_http_get

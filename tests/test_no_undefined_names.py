@@ -5,9 +5,10 @@
 整个 PROTOCOL_* 常量组。符号「存在性」冒烟查不出「函数存在但内部引用
 未定义」这类问题，故用 pyflakes 对每个模块做全量 AST 检查。
 
-filter_clash.py 不在检查范围：其 _reexport() 在运行时把子模块符号注入
-本模块命名空间，静态分析必然大面积误报；该文件的行为冒烟由
-test_module_structure.py 与各功能测试覆盖。
+filter_clash.py 自 P1-3 起纳入检查范围：其原 _reexport() 在运行时把子
+模块符号动态注入本模块命名空间，静态分析必然大面积误报；改为按来源模块的
+显式 import 后，依赖面对 pyflakes 完全可见——漏 import 在 CI 即失败，
+不再等到运行期 NameError（正是 2026-10-13 事故的根因）。
 """
 
 import ast
@@ -21,6 +22,7 @@ from pyflakes.messages import UndefinedName
 ROOT = Path(__file__).resolve().parent.parent
 
 CHECKED_MODULES = [
+    "filter_clash.py",
     "common.py",
     "score.py",
     "probe.py",

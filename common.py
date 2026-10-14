@@ -19,19 +19,15 @@ import json
 import os
 import re
 import time
-from collections import defaultdict
 from typing import Any
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date
 from urllib.parse import parse_qs, unquote, urlparse
 
-import requests
 import yaml
 
 import honeypot as hp
-import sources_manager as sm
 from net_safety import safe_http_get  # SSRF 防护抓取（安全评估 F1）
-from safe_io import load_json, save_json  # 原子化读写，防止 JSON 截断损坏
 
 # ====================== 配置区 ======================
 # 订阅源已移到 sources.json（正式源）和 candidate_sources.json（候选/试用源），

@@ -18,9 +18,7 @@ import yaml
 
 import honeypot as hp
 from common import (
-    is_udp_protocol,
     fingerprint,
-    UDP_PROTOCOLS,
     TCP_TIMEOUT,
     PROBE_URLS,
     PROBE_PASS_NEED,

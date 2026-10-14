@@ -15,7 +15,6 @@ from __future__ import annotations
 import datetime
 import json
 import os
-from collections import defaultdict
 
 import common
 
