@@ -16,6 +16,7 @@ import re
 import subprocess
 import sys
 from collections import defaultdict
+from dataclasses import dataclass, field
 
 import anti_crawl
 import common
@@ -213,30 +214,37 @@ def select_probe_sample(
     return sample
 
 
-def main() -> None:
-    sources = sm.load_sources()
-    cands = sm.load_candidates()
-    blocklist = hp.Blocklist(load_json(hp.BLOCKLIST_FILE, None))
-    expired = blocklist.prune_expired()
-    stats_file = load_json(SOURCE_STATS_FILE, {})
-    history = stats_file.get("history", {}) if isinstance(stats_file, dict) else {}
+@dataclass
+class FetchStageResult:
+    """阶段 2（fetch）产出：原始节点 + 抓取统计 + 源失败计数 + 发现报告。"""
+    per_source: dict[str, list[dict]]
+    fstats: dict[str, dict]
+    bad_sources: dict[str, dict]
+    disc: dict
 
-    # ---- 0. 反爬与防搜索（默认关闭；开启后固定名写诱饵、真实输出用轮换文件名）----
-    ac = anti_crawl.load_config()
-    ac_enabled = anti_crawl.is_enabled(ac)
-    ac_report: dict = {"enabled": ac_enabled}
-    if ac_enabled:
-        ac = anti_crawl.begin_run(ac)          # 轮换 token / 重生成诱饵 / 删过期文件
-        anti_crawl.write_robots()              # robots.txt（Disallow: /）
-        ac_report.update({
-            "real_outputs": ac.get("current_outputs", []),
-            "rotate_days": ac.get("rotate_days"),
-            "stale_outputs": ac.get("stale_outputs", []),
-        })
-        print(f"反爬已开启: 固定名订阅文件为诱饵内容；真实输出 -> {ac.get('current_outputs')}")
-    bait_fps = anti_crawl.bait_fingerprints(ac, fingerprint) if ac_enabled else set()
 
-    # ---- 1. discovery ----
+@dataclass
+class StaticFilterResult:
+    """阶段 3（静态过滤）产出：去重后的节点池与各项过滤统计。
+
+    unique/prov/official_fps 供后续探测、评分、交接文档复用；
+    pre_reasons/src_flags 供健康报告与 Step Summary 呈现。
+    """
+    unique: dict[str, dict]
+    prov: dict[str, set]
+    official_fps: set
+    pre_reasons: dict = field(default_factory=lambda: defaultdict(int))
+    src_flags: dict = field(default_factory=dict)
+    candidates: list = field(default_factory=list)
+
+
+def discover_and_fetch(sources: dict, cands: dict, off_urls: list[str],
+                       cand_urls: list[str]) -> FetchStageResult:
+    """阶段 1+2：自动发现 + 抓取全部源 + 多渠道节点 ingest + 源失败计数。
+
+    副作用：读写 BAD_SOURCES_FILE（失败 streak 累积）；读取 collected_nodes.txt
+    （channels 模块生成的多渠道搜集产物）。
+    """
     disc = sm.discover(sources, cands, parse_subscription_text, os.environ.get("GITHUB_TOKEN"))
     _ch = disc.get("channels", {}) or {}
     print(
@@ -246,11 +254,6 @@ def main() -> None:
         f"，静态源加入 {len(_ch.get('static_added', []))}"
     )
 
-    off_urls = sm.official_urls(sources)
-    cand_urls = [u for u in sm.active_candidate_urls(cands) if u not in off_urls]
-    off_set = set(off_urls)
-
-    # ---- 2. fetch ----
     per_source, fstats = fetch_all_sources(off_urls + cand_urls)
     print(f"原始节点总数: {sum(len(v) for v in per_source.values())}")
 
@@ -282,8 +285,16 @@ def main() -> None:
         rec["last_error"] = s.get("error")
         rec["last_count"] = s.get("count", 0)
         bad_sources[url] = rec
+    return FetchStageResult(per_source, fstats, bad_sources, disc)
 
-    # ---- 3. static filters: keyword / honeypot / 协议白名单与关键参数硬性门槛 ----
+
+def static_filter_stage(per_source: dict[str, list[dict]], off_set: set,
+                        bait_fps: set, blocklist) -> StaticFilterResult:
+    """阶段 3：静态门槛清洗——关键词/蜜罐/协议白名单/DNS/blocklist/去重。
+
+    顺序有意为之：诱饵回流按节点丢弃 → 静态硬门槛 → 网络参数归一 → 协议白名单
+    → DNS 解析与保留地址检查（fake-ip 环境整体降级）→ 网段聚集标记 → 指纹去重。
+    """
     exclude_re = re.compile(EXCLUDE_KEYWORDS, re.IGNORECASE)
     pre_reasons: dict[str, int] = defaultdict(int)
     staged: dict[str, list[dict]] = {}
@@ -355,10 +366,32 @@ def main() -> None:
     official_fps = {fp for fp, s in prov.items() if s & off_set}
     candidates = list(unique.values())
     print(f"去重+过滤后: {len(candidates)}（预过滤拒绝 {sum(pre_reasons.values())}）")
+    return StaticFilterResult(unique, prov, official_fps, pre_reasons, src_flags, candidates)
 
-    # ---- 4. 存活性检查 ----
-    # TCP 协议（vless/trojan/anytls…）：TCP 握手作在线信号。
-    # UDP 协议（hy2/tuic）：豁免 TCP 检查，由拨测闸门（QUIC）验证死活。
+
+@dataclass
+class ProbeStageResult:
+    """阶段 4+5（探测）产出。
+
+    tcp_lat 同时承载 TCP 存活节点与 UDP 豁免节点（9999.0 中性延迟）；
+    probe 为原始拨测结果；real_ok/tampered/probe_reasons 供评分与报告使用。
+    """
+    tcp_lat: dict[str, float]
+    probe: dict[str, dict]
+    sample: list[str]
+    bin_path: str | None
+    real_ok: dict[str, dict]
+    tampered: set
+    probe_reasons: dict = field(default_factory=lambda: defaultdict(int))
+    host_users: dict = field(default_factory=lambda: defaultdict(int))
+    survival_pre: dict = field(default_factory=dict)
+
+
+def liveness_stage(unique: dict[str, dict]) -> tuple[dict[str, float], int]:
+    """阶段 4：TCP 协议走 TCP 握手作在线信号；UDP 协议（hy2/tuic）豁免，
+    交由拨测闸门（QUIC）验证死活——中性延迟 9999.0 仅使其进入拨测管道，
+    不参与排序。返回 (tcp_lat, udp_exempt)。
+    """
     print("开始存活性检测（TCP 协议走 TCP 握手；UDP 协议交由拨测闸门验证）...")
     tcp_lat: dict[str, float] = {}
     tcp_candidates = {fp: p for fp, p in unique.items() if not is_udp_protocol(p)}
@@ -374,12 +407,23 @@ def main() -> None:
             tcp_lat[fp] = 9999.0  # 中性延迟：不参与排序，仅使其进入拨测管道
             udp_exempt += 1
     print(f"TCP 存活节点: {len(tcp_lat) - udp_exempt} | UDP 协议（hy2/tuic，交拨测验证）: {udp_exempt}")
+    return tcp_lat, udp_exempt
 
-    # ---- 5. real probe (OPTIONAL, local-only) ----
-    # 拨测是输出的死活闸门（REQUIRE_REAL_PROBE_IN_OUTPUT）：只有本轮真实拨测
-    # 通过的节点才进入最终列表，因此「选哪些节点去拨测」直接决定输出质量。
-    # 样本选择原则见 select_probe_sample() 的 docstring——2026-10 质量回归后
-    # 修订：历史稳定优先仅在状态新鲜时生效 + 新节点保底配额 + 渠道节点配额。
+
+def real_probe_stage(tcp_lat: dict[str, float], unique: dict[str, dict], prov: dict[str, set],
+                     official_fps: set, cand_urls: list[str], per_source_keys,
+                     blocklist) -> ProbeStageResult:
+    """阶段 5：真实拨测（输出的死活闸门）。
+
+    拨测是输出的死活闸门（REQUIRE_REAL_PROBE_IN_OUTPUT）：只有本轮真实拨测
+    通过的节点才进入最终列表，因此「选哪些节点去拨测」直接决定输出质量。
+    样本选择原则见 select_probe_sample() 的 docstring——2026-10 质量回归后
+    修订：历史稳定优先仅在状态新鲜时生效 + 新节点保底配额 + 渠道节点配额。
+
+    tcp_lat 由 liveness_stage() 预先算出（TCP 存活 + UDP 豁免的中性延迟）。
+    mihomo 缺失时回退到 http/socks 简单真实探测；tamper 结果自动进 blocklist
+    （共享主机按节点粒度封锁，见 host_users 判断）。
+    """
     survival_pre = load_json(SURVIVAL_FILE, {})
     probe: dict[str, dict] = {}
     bin_path = mihomo_available() if real_probe_enabled() else None
@@ -390,7 +434,7 @@ def main() -> None:
     else:
         sample = select_probe_sample(
             tcp_lat, unique, prov, official_fps, cand_urls,
-            survival_pre, _today(), per_source.keys(),
+            survival_pre, _today(), per_source_keys,
         )
         state_fresh = survival_state_fresh(survival_pre, _today())
         print(f"拨测样本: {len(sample)}/{len(tcp_lat)}（TCP 存活节点中选出；"
@@ -423,57 +467,33 @@ def main() -> None:
             key = host if host_users[host] <= 2 else f"fp:{fp}"
             blocklist.auto_add(key, f"{r['status']}:{r.get('detail', '')}"[:100], sorted(prov[fp])[0])
     real_ok = {fp: r for fp, r in probe.items() if r["status"] == "ok"}
+    return ProbeStageResult(tcp_lat, probe, sample, bin_path, real_ok, tampered,
+                            probe_reasons, host_users, survival_pre)
 
-    # ---- 6. per-source metrics ----
-    per_src: dict[str, dict] = {}
-    # 渠道节点（CHANNEL_NODES_KEY）也纳入 per-source 指标：此前它不在
-    # off_urls + cand_urls 中，指标/统计里完全不可见（收集了多少、存活多少、
-    # 拨测通过多少都无从考证）。
-    metric_urls = off_urls + cand_urls + (
-        [CHANNEL_NODES_KEY] if CHANNEL_NODES_KEY in per_source else []
-    )
-    for url in metric_urls:
-        fps = [fp for fp, s in prov.items() if url in s]
-        alive = [fp for fp in fps if fp in tcp_lat]
-        is_off = url in off_set
-        m = dict(fstats.get(url, {}))
-        m.update(
-            role="official" if is_off else ("channel" if url == CHANNEL_NODES_KEY else "candidate"),
-            alive=len(alive),
-            real_ok=sum(1 for fp in alive if fp in real_ok),
-            probed=sum(1 for fp in fps if fp in probe),
-            tamper=sum(1 for fp in fps if fp in tampered),
-            cf_blocked=sum(1 for fp in fps if (probe.get(fp) or {}).get("cf_blocked")),
-            preferred_ok=sum(1 for fp in alive if fp in real_ok and is_preferred(unique[fp])),
-            flags=src_flags.get(url, []),
-        )
-        if is_off:
-            m["unique_alive"] = sum(1 for fp in alive if len(prov[fp] & off_set) == 1)
-        else:
-            usable = [fp for fp in alive if (fp in real_ok if bin_path else True)]
-            m["usable"] = len(usable)
-            m["unique_new"] = sum(1 for fp in usable if fp not in official_fps)
-        per_src[url] = m
 
-    cand_rep = sm.evaluate_candidates(cands, {u: per_src[u] for u in cand_urls}, sources)
-    off_rep = sm.update_official(sources, history, {u: per_src[u] for u in off_urls})
-    for u in cand_rep["promoted"]:
-        print(f"候选源晋升为正式源: {u}")
-    for u, why in {**cand_rep["rejected"], **off_rep["demoted"]}.items():
-        print(f"移除源: {u} -> {why}")
+@dataclass
+class ScoringResult:
+    """阶段 7（评分）产出。"""
+    scored: list = field(default_factory=list)
+    survival: dict = field(default_factory=dict)
+    diversity_dropped: int = 0
 
-    # ---- 6.5 进化引擎（Phase 2）：下载上轮沙箱实测报告，反哺本地数据/门槛 ----
-    cn_hist, learned_params, source_scores_cn = load_evolution_inputs(REPO_ROOT)
-    cn_latency_cap = learned_params.get("CN_LATENCY_CAP_MS", MAX_ACCEPT_LATENCY_MS)
 
-    # ---- 7. scoring ----
-    # Real-probe OK ranks first; TCP-alive (esp. Asia / Hy2/Reality) stays eligible
-    # so China-path quotas and MIN_FINAL can be filled when US-runner probe is sparse.
-    survival = survival_pre
-    # 与 select_probe_sample 同一原则：survival 停更（陈旧）时，评分阶段同样
-    # 不信任历史加成——否则陈旧 streak/real_hist 会在排序里继续放大旧时代
-    # 节点的优势，与拨测样本选择的口径相悖（样本已不迷信历史，排序却迷信）。
-    # update_survival 仍基于真实记录累积（非连续日期会自然重置 streak，自愈）。
+def score_candidates(tcp_lat: dict[str, float], unique: dict[str, dict], prov: dict[str, set],
+                     official_fps: set, off_set: set, real_ok: dict[str, dict],
+                     tampered: set, bin_path: str | None, survival: dict,
+                     cn_latency_cap: float, source_scores_cn: dict,
+                     cn_hist: dict, real_probe_on: bool) -> ScoringResult:
+    """阶段 7：评分、排序与多样性/单源上限裁剪。
+
+    Real-probe OK ranks first; TCP-alive (esp. Asia / Hy2/Reality) stays eligible
+    so China-path quotas and MIN_FINAL can be filled when US-runner probe is sparse.
+
+    与 select_probe_sample 同一原则：survival 停更（陈旧）时，评分阶段同样
+    不信任历史加成——否则陈旧 streak/real_hist 会在排序里继续放大旧时代
+    节点的优势，与拨测样本选择的口径相悖（样本已不迷信历史，排序却迷信）。
+    update_survival 仍基于真实记录累积（非连续日期会自然重置 streak，自愈）。
+    """
     state_fresh = survival_state_fresh(survival, _today())
     score_survival = survival if state_fresh else {}
     scored: list[tuple[dict, float, float, bool, bool, int]] = []
@@ -533,7 +553,7 @@ def main() -> None:
     alive_fps = {fingerprint(p) for p, *_ in scored}
     # 传入本轮真实拨测通过集合，用于维护「真实通过率滑动窗口」（real_hist）
     survival = update_survival(alive_fps, survival,
-                               set(real_ok.keys()) if (bin_path or real_probe_enabled()) else None)
+                               set(real_ok.keys()) if (bin_path or real_probe_on) else None)
 
     # diversity caps: one credential / one egress IP must not dominate the output
     cred_n: dict[str, int] = defaultdict(int)
@@ -558,7 +578,16 @@ def main() -> None:
     scored, src_dropped = cap_single_source(scored, prov, MAX_PER_SOURCE_FINAL)
     if src_dropped:
         print(f"单一源独占上限 {MAX_PER_SOURCE_FINAL}: 再去掉 {src_dropped} 个（防聚合源垄断）")
+    return ScoringResult(scored, survival, diversity_dropped)
 
+
+def select_final(scored: list, real_ok: dict[str, dict]) -> dict[str, list]:
+    """阶段 8+9：区域配额选择 + 美国占比上限 + MIN/MAX_FINAL 强制。
+
+    填充顺序：preferred real → high real → preferred TCP → high TCP → low
+    （TCP 档位让亚洲配额在美国 Runner 拨测不足时也能填满）；
+    低于下限时按 (非美/亚洲/真实/优先/tier/分数) 回填，高于上限则反向裁剪。
+    """
     region_dict: dict[str, list] = defaultdict(list)
     for item in scored:
         region_dict[classify_proxy(item[0].get("name", ""))].append(item)
@@ -709,12 +738,152 @@ def main() -> None:
         for region, row in flat2:
             final_by_region[region].append(row)
         print(f"节点数上限 {MAX_FINAL}: 裁剪后 {len(flat2)}")
+    return final_by_region
 
-    # ---- 命名与安全隔离 ----
-    # 1) 不再附加美西 Runner 测得的延迟标签——该延迟不代表国内真实路径，只会误导用户；
-    #    最终测速/优选完全由本地客户端的 url-test（gstatic generate_204）动态完成。
-    # 2) skip-cert-verify: true 的节点：名称打 [Insecure] 标签 + 独立分组隔离，
-    #    不与合规节点无差别混同，也不进入自动选择/故障转移/地区分组。
+
+def per_source_metrics(off_urls: list[str], cand_urls: list[str], off_set: set,
+                       per_source: dict[str, list[dict]], prov: dict[str, set],
+                       official_fps: set, unique: dict[str, dict], tcp_lat: dict[str, float],
+                       real_ok: dict[str, dict], probe: dict[str, dict],
+                       tampered: set, fstats: dict[str, dict],
+                       src_flags: dict, bin_path) -> dict[str, dict]:
+    """阶段 6：按源汇总指标（存活/拨测/tamper/独占计数）。
+
+    渠道节点（CHANNEL_NODES_KEY）也纳入 per-source 指标：此前它不在
+    off_urls + cand_urls 中，指标/统计里完全不可见（收集了多少、存活多少、
+    拨测通过多少都无从考证）。
+    """
+    per_src: dict[str, dict] = {}
+    metric_urls = off_urls + cand_urls + (
+        [CHANNEL_NODES_KEY] if CHANNEL_NODES_KEY in per_source else []
+    )
+    for url in metric_urls:
+        fps = [fp for fp, s in prov.items() if url in s]
+        alive = [fp for fp in fps if fp in tcp_lat]
+        is_off = url in off_set
+        m = dict(fstats.get(url, {}))
+        m.update(
+            role="official" if is_off else ("channel" if url == CHANNEL_NODES_KEY else "candidate"),
+            alive=len(alive),
+            real_ok=sum(1 for fp in alive if fp in real_ok),
+            probed=sum(1 for fp in fps if fp in probe),
+            tamper=sum(1 for fp in fps if fp in tampered),
+            cf_blocked=sum(1 for fp in fps if (probe.get(fp) or {}).get("cf_blocked")),
+            preferred_ok=sum(1 for fp in alive if fp in real_ok and is_preferred(unique[fp])),
+            flags=src_flags.get(url, []),
+        )
+        if is_off:
+            m["unique_alive"] = sum(1 for fp in alive if len(prov[fp] & off_set) == 1)
+        else:
+            usable = [fp for fp in alive if (fp in real_ok if bin_path else True)]
+            m["usable"] = len(usable)
+            m["unique_new"] = sum(1 for fp in usable if fp not in official_fps)
+        per_src[url] = m
+    return per_src
+
+
+def main() -> None:
+    sources = sm.load_sources()
+    cands = sm.load_candidates()
+    blocklist = hp.Blocklist(load_json(hp.BLOCKLIST_FILE, None))
+    expired = blocklist.prune_expired()
+    stats_file = load_json(SOURCE_STATS_FILE, {})
+    history = stats_file.get("history", {}) if isinstance(stats_file, dict) else {}
+
+    # ---- 0. 反爬与防搜索（默认关闭；开启后固定名写诱饵、真实输出用轮换文件名）----
+    ac = anti_crawl.load_config()
+    ac_enabled = anti_crawl.is_enabled(ac)
+    ac_report: dict = {"enabled": ac_enabled}
+    if ac_enabled:
+        ac = anti_crawl.begin_run(ac)          # 轮换 token / 重生成诱饵 / 删过期文件
+        anti_crawl.write_robots()              # robots.txt（Disallow: /）
+        ac_report.update({
+            "real_outputs": ac.get("current_outputs", []),
+            "rotate_days": ac.get("rotate_days"),
+            "stale_outputs": ac.get("stale_outputs", []),
+        })
+        print(f"反爬已开启: 固定名订阅文件为诱饵内容；真实输出 -> {ac.get('current_outputs')}")
+    bait_fps = anti_crawl.bait_fingerprints(ac, fingerprint) if ac_enabled else set()
+
+    # ---- 1+2. discovery + fetch ----
+    off_urls = sm.official_urls(sources)
+    cand_urls = [u for u in sm.active_candidate_urls(cands) if u not in off_urls]
+    off_set = set(off_urls)
+    fetched = discover_and_fetch(sources, cands, off_urls, cand_urls)
+    per_source, fstats, bad_sources = fetched.per_source, fetched.fstats, fetched.bad_sources
+    disc = fetched.disc
+
+    # ---- 3. static filters: keyword / honeypot / 协议白名单与关键参数硬性门槛 ----
+    sf = static_filter_stage(per_source, off_set, bait_fps, blocklist)
+    unique, prov, official_fps = sf.unique, sf.prov, sf.official_fps
+    pre_reasons, src_flags = sf.pre_reasons, sf.src_flags
+
+    # ---- 4+5. 存活性检查 + 真实拨测 ----
+    tcp_lat, udp_exempt = liveness_stage(unique)
+    ps = real_probe_stage(tcp_lat, unique, prov, official_fps, cand_urls,
+                          per_source.keys(), blocklist)
+    probe, sample, bin_path = ps.probe, ps.sample, ps.bin_path
+    real_ok, tampered, probe_reasons = ps.real_ok, ps.tampered, ps.probe_reasons
+    survival_pre = ps.survival_pre
+
+    # ---- 6. per-source metrics ----
+    per_src = per_source_metrics(off_urls, cand_urls, off_set, per_source, prov,
+                                 official_fps, unique, tcp_lat, real_ok, probe,
+                                 tampered, fstats, src_flags, bin_path)
+    cand_rep = sm.evaluate_candidates(cands, {u: per_src[u] for u in cand_urls}, sources)
+    off_rep = sm.update_official(sources, history, {u: per_src[u] for u in off_urls})
+    for u in cand_rep["promoted"]:
+        print(f"候选源晋升为正式源: {u}")
+    for u, why in {**cand_rep["rejected"], **off_rep["demoted"]}.items():
+        print(f"移除源: {u} -> {why}")
+
+    # ---- 6.5 进化引擎（Phase 2）：下载上轮沙箱实测报告，反哺本地数据/门槛 ----
+    cn_hist, learned_params, source_scores_cn = load_evolution_inputs(REPO_ROOT)
+    cn_latency_cap = learned_params.get("CN_LATENCY_CAP_MS", MAX_ACCEPT_LATENCY_MS)
+
+    # ---- 7. scoring ----
+    sr = score_candidates(tcp_lat, unique, prov, official_fps, off_set, real_ok,
+                          tampered, bin_path, survival_pre, cn_latency_cap,
+                          source_scores_cn, cn_hist, real_probe_enabled())
+    scored, survival, diversity_dropped = sr.scored, sr.survival, sr.diversity_dropped
+
+    # ---- 8+9. 区域配额选择 + 美国占比上限 + MIN/MAX_FINAL 强制 ----
+    final_by_region = select_final(scored, real_ok)
+
+    # ---- 10+11. 命名与安全隔离 + Clash 配置构建 ----
+    nr = name_and_isolate(final_by_region)
+    final_proxies, insecure_proxies = nr.final_proxies, nr.insecure_proxies
+    final_name_by_fp, total_final = nr.final_name_by_fp, nr.total_final
+    config = build_clash_config(final_proxies, insecure_proxies)
+
+    # ---- 12. persist + 13. summary ----
+    _persist_stage(ac_enabled, ac, config, final_proxies, insecure_proxies,
+                   sample, unique, real_ok, prov, tampered, tcp_lat, final_name_by_fp,
+                   per_src, sources, cands, history, survival, bad_sources, blocklist,
+                   expired, disc, cand_rep, off_rep, pre_reasons, probe_reasons,
+                   diversity_dropped, src_flags, probe, ac_report, total_final, bin_path)
+
+
+@dataclass
+class NamingResult:
+    """阶段 10（命名与隔离）产出。"""
+    final_proxies: list = field(default_factory=list)      # 合规节点
+    insecure_proxies: list = field(default_factory=list)   # 高风险节点（跳过证书校验）
+    final_name_by_fp: dict = field(default_factory=dict)
+    total_final: int = 0
+
+
+def name_and_isolate(final_by_region: dict[str, list]) -> NamingResult:
+    """阶段 10：命名与安全隔离。
+
+    1) 不再附加美西 Runner 测得的延迟标签——该延迟不代表国内真实路径，只会误导用户；
+       最终测速/优选完全由本地客户端的 url-test（gstatic generate_204）动态完成。
+    2) skip-cert-verify: true 的节点：名称打 [Insecure] 标签 + 独立分组隔离，
+       不与合规节点无差别混同，也不进入自动选择/故障转移/地区分组。
+
+    final_name_by_fp 是 fp -> 最终发布名（含 [Insecure] 标签与去重后缀）的映射：
+    交接文档用它与已发布资产对齐——沙箱据通过名单按此名过滤各格式候选资产。
+    """
     def _base_name(p: dict) -> str:
         base = re.sub(r"\s+\d+ms$", "", str(p.get("name", "node"))).strip()
         return base or "node"
@@ -743,13 +912,16 @@ def main() -> None:
     total_final = len(final_proxies) + len(insecure_proxies)
     if total_final < MIN_FINAL:
         print(f"警告: 最终 {total_final} < 下限 {MIN_FINAL}（候选池不足）")
-
-    # fp -> 最终发布名（含 [Insecure] 标签与去重后缀）：交接文档用它与
-    # 已发布资产对齐——沙箱据通过名单按此名过滤各格式候选资产。
     final_name_by_fp = {fingerprint(p): p["name"] for p in final_proxies + insecure_proxies}
-
     print(f"\n最终精简节点数: {total_final}（合规 {len(final_proxies)}，高风险隔离 {len(insecure_proxies)}）")
-    # 自动选择/故障转移仅包含合规节点；url-test 由客户端本地动态测速
+    return NamingResult(final_proxies, insecure_proxies, final_name_by_fp, total_final)
+
+
+def build_clash_config(final_proxies: list[dict], insecure_proxies: list[dict]) -> dict:
+    """阶段 11：构建 Clash 配置——选择组 + 自动测速/故障转移 + 地区分组 + Insecure 隔离池。
+
+    自动选择/故障转移仅包含合规节点；url-test 由客户端本地动态测速。
+    """
     names = [p["name"] for p in final_proxies]
     groups = [
         {
@@ -777,7 +949,7 @@ def main() -> None:
     present = {g["name"] for g in groups}
     groups[0]["proxies"] = [n for n in groups[0]["proxies"] if n in present or n == "DIRECT"]
 
-    config = {
+    return {
         "mixed-port": 7890,
         "allow-lan": False,
         "mode": "rule",
@@ -787,11 +959,22 @@ def main() -> None:
         "rules": ["GEOIP,CN,DIRECT", "MATCH,🚀 节点选择"],
     }
 
-    # ---- 8. persist ----
-    # 反爬开启时：固定名文件写诱饵内容；真实输出的去向由 publish_release 决定——
-    #   release 模式（默认）：写入 .publish/<随机资产名>，由工作流发布为滚动
-    #     GitHub Release，订阅地址永久不变（一次复制，长期有效）；
-    #   rotate 模式：写轮换文件名，链接每 rotate_days 天失效一次。
+
+def _persist_stage(ac_enabled, ac, config, final_proxies, insecure_proxies,
+                   sample, unique, real_ok, prov, tampered, tcp_lat, final_name_by_fp,
+                   per_src, sources, cands, history, survival, bad_sources, blocklist,
+                   expired, disc, cand_rep, off_rep, pre_reasons, probe_reasons,
+                   diversity_dropped, src_flags, probe, ac_report, total_final, bin_path):
+    """阶段 12+13：持久化、发布与汇总报告（反爬开启/关闭两条路径）。
+
+    反爬开启时：固定名文件写诱饵内容；真实输出的去向由 publish_release 决定——
+      release 模式（默认）：写入 .publish/<随机资产名>，由工作流发布为滚动
+        GitHub Release，订阅地址永久不变（一次复制，长期有效）；
+      rotate 模式：写轮换文件名，链接每 rotate_days 天失效一次。
+
+    无论哪条路径，状态文件（survival/bad_sources/source_stats/sources/candidates/
+    blocklist/source_scores）都会原子落盘；最后生成 stats.md 与 Step Summary。
+    """
     if ac_enabled:
         if anti_crawl.publish_mode(ac):
             paths = anti_crawl.publish_paths(ac)
