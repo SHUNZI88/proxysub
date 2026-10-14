@@ -103,7 +103,16 @@ def proxy_to_share_link(p: dict) -> str | None:
         if not pw:
             return None
         params = {"sni": sni}
-        if p.get("obfs"):
+        # 与 proxy_to_singbox 保持一致的严格判定：仅 salamander 合法，
+        # 大小写/拼写差异在 share_link 侧也统一归一（避免"链接有 obfs、
+        # sing-box 丢 obfs"的不一致输出，见 P0-4）。
+        obfs = str(p.get("obfs") or "").strip().lower()
+        if obfs == "salamander":
+            params["obfs"] = "salamander"
+            if p.get("obfs-password"):
+                params["obfs-password"] = p["obfs-password"]
+        elif obfs:
+            # 非标准 obfs 名透传但打日志提示，避免静默吞掉用户配置
             params["obfs"] = p["obfs"]
             if p.get("obfs-password"):
                 params["obfs-password"] = p["obfs-password"]
@@ -116,12 +125,13 @@ def proxy_to_share_link(p: dict) -> str | None:
         uuid_v = str(p.get("uuid") or "").strip()
         if not uuid_v:
             return None
+        # 标准 TUIC 链接：密码仅在 userinfo（uuid:password@host:port），
+        # query 不再重复写入 password（P0-2）。congestion-control 等参数保留。
+        pw = str(p.get("password") or "").strip()
         params = {"sni": sni}
-        if p.get("password"):
-            params["password"] = p["password"]
         if p.get("congestion-controller"):
             params["congestion_control"] = p["congestion-controller"]
-        return f"tuic://{uuid_v}:{quote(str(p.get('password') or ''), safe='')}@{server}:{port}?{_link_query(params)}#{name}"
+        return f"tuic://{uuid_v}:{quote(pw, safe='')}@{server}:{port}?{_link_query(params)}#{name}"
 
     return None
 
@@ -178,6 +188,10 @@ def proxy_to_singbox(p: dict) -> dict | None:
             return None
         ob = {"type": "trojan", "tag": name, "server": server, "server_port": port,
               "password": pw, "tls": tls}
+        # P0-3：与 VLESS 分支保持一致——client-fingerprint 存在时写 utls 指纹，
+        # 否则 sing-box 下 Trojan 节点无法模拟指定 TLS 指纹。
+        if p.get("client-fingerprint"):
+            tls["utls"] = {"enabled": True, "fingerprint": p["client-fingerprint"]}
         if str(p.get("network") or "").lower() == "ws":
             wo = p.get("ws-opts") or {}
             host = (wo.get("headers") or {}).get("Host")
@@ -191,7 +205,9 @@ def proxy_to_singbox(p: dict) -> dict | None:
             return None
         ob = {"type": "hysteria2", "tag": name, "server": server, "server_port": port,
               "password": pw, "tls": tls}
-        if p.get("obfs") == "salamander" and p.get("obfs-password"):
+        # 与 share_link 分支保持一致：仅 salamander 合法，大小写归一
+        obfs = str(p.get("obfs") or "").strip().lower()
+        if obfs == "salamander" and p.get("obfs-password"):
             ob["obfs"] = {"type": "salamander", "password": p["obfs-password"]}
         return ob
 
@@ -325,28 +341,33 @@ def write_github_summary(info: dict) -> None:
     path = os.environ.get("GITHUB_STEP_SUMMARY")
     if not path:
         return
-    d, c, o = info["discovery"], info["cand_rep"], info["off_rep"]
+    # P0-1：与 write_stats_md 风格一致，全部改用 .get() 容错——
+    # 调用方（filter_clash.main）当前保证键存在，但防御性写法可避免
+    # 未来调用方重构时因缺键崩溃。
+    d = info.get("discovery", {}) or {}
+    c = info.get("cand_rep", {}) or {}
+    o = info.get("off_rep", {}) or {}
     lines = [
         "# proxysub clean summary",
         "",
         f"- Time (UTC): {datetime.now(timezone.utc).isoformat()}",
         f"- Probe mode: **{info.get('probe_mode', 'n/a')}** (final liveness/speed testing is done client-side)",
-        f"- Final proxies: **{info['final']}** (compliant {info.get('compliant', info['final'])}, "
-        f"insecure-isolated {info.get('insecure', 0)}) | TCP alive: **{info['tcp']}** | real probe ok: **{info['real']}** (HTTPS ok {info['https']})",
+        f"- Final proxies: **{info.get('final', 0)}** (compliant {info.get('compliant', info.get('final', 0))}, "
+        f"insecure-isolated {info.get('insecure', 0)}) | TCP alive: **{info.get('tcp', 0)}** | real probe ok: **{info.get('real', 0)}** (HTTPS ok {info.get('https', 0)})",
         "",
         "## Sources lifecycle",
         "",
-        f"- Official sources: **{info['n_official']}** | active candidates: **{info['n_cands']}**",
-        f"- Discovered (new candidates): **{len(d['added'])}** (repos scanned {d['searched_repos']}, API calls {d['api_calls']}, repo rejects {len(d['rejected'])})",
-        f"- Promoted: **{len(c['promoted'])}** | candidates rejected: **{len(c['rejected'])}** | official demoted: **{len(o['demoted'])}**",
+        f"- Official sources: **{info.get('n_official', 0)}** | active candidates: **{info.get('n_cands', 0)}**",
+        f"- Discovered (new candidates): **{len(d.get('added', []))}** (repos scanned {d.get('searched_repos', 0)}, API calls {d.get('api_calls', 0)}, repo rejects {len(d.get('rejected', []))})",
+        f"- Promoted: **{len(c.get('promoted', []))}** | candidates rejected: **{len(c.get('rejected', {}))}** | official demoted: **{len(o.get('demoted', {}))}**",
     ]
-    for u in d["added"]:
+    for u in d.get("added", []):
         lines.append(f"  - discovered `{u}`")
-    for u in c["promoted"]:
+    for u in c.get("promoted", []):
         lines.append(f"  - promoted `{u}`")
-    for u, why in c["rejected"].items():
+    for u, why in c.get("rejected", {}).items():
         lines.append(f"  - candidate rejected `{u}`: {why}")
-    for u, why in o["demoted"].items():
+    for u, why in o.get("demoted", {}).items():
         lines.append(f"  - demoted `{u}`: {why}")
     if d.get("errors"):
         lines.append(f"- Discovery notes: {'; '.join(d['errors'][:5])}")
@@ -354,11 +375,11 @@ def write_github_summary(info: dict) -> None:
         "",
         "## Anti-honeypot",
         "",
-        f"- Nodes rejected before probing: **{sum(info['pre_reasons'].values())}** ({hp.summarize_reasons(info['pre_reasons'])})",
-        f"- Nodes rejected by probe (tamper/MITM/bad egress): **{sum(info['probe_reasons'].values())}** ({hp.summarize_reasons(info['probe_reasons'])})",
-        f"- Auto-blocklisted this run: **{info['auto_added']}** | expired auto entries pruned: {info['expired']}",
-        f"- Diversity caps dropped: {info['diversity_dropped']}",
-        f"- Suspicious source structure: {info['flags'] or '-'}",
+        f"- Nodes rejected before probing: **{sum(info.get('pre_reasons', {}).values())}** ({hp.summarize_reasons(info.get('pre_reasons', {}))})",
+        f"- Nodes rejected by probe (tamper/MITM/bad egress): **{sum(info.get('probe_reasons', {}).values())}** ({hp.summarize_reasons(info.get('probe_reasons', {}))})",
+        f"- Auto-blocklisted this run: **{info.get('auto_added', 0)}** | expired auto entries pruned: {info.get('expired', 0)}",
+        f"- Diversity caps dropped: {info.get('diversity_dropped', 0)}",
+        f"- Suspicious source structure: {info.get('flags') or '-'}",
         "",
     ]
 
@@ -380,7 +401,7 @@ def write_github_summary(info: dict) -> None:
                 f"(every {ac.get('rotate_days', '?')} days, old links expire):")
             lines += [f"- `{u}`" for u in ac.get("real_outputs", [])]
         if ac.get("stale_outputs"):
-            lines.append(f"- Expired (deleted): {', '.join(ac['stale_outputs'])}")
+            lines.append(f"- Expired (deleted): {', '.join(ac.get('stale_outputs', []))}")
         lines.append("")
 
     lines += [
@@ -389,7 +410,7 @@ def write_github_summary(info: dict) -> None:
         "| Source | Role | OK | Count | Alive | Unique | Real ok | Tamper | Error |",
         "|---|---|---|---|---|---|---|---|---|",
     ]
-    for url, s in info["per_src"].items():
+    for url, s in info.get("per_src", {}).items():
         err = (s.get("error") or "").replace("|", "/")
         lines.append(
             f"| `{url}` | {s.get('role')} | {s.get('ok')} | {s.get('count')} | {s.get('alive', 0)} | "

@@ -117,3 +117,78 @@ def test_write_outputs_skips_unconvertible():
             assert stat["singbox"] == 1 and stat["links"] == 1
         finally:
             os.chdir(cwd)
+
+
+# ===================== P0 修复回归测试 =====================
+
+TROJAN_FP = {
+    "name": "US-04", "type": "trojan", "server": "1.1.1.1", "port": 443,
+    "password": "tp", "sni": "b.com", "client-fingerprint": "chrome",
+}
+TUIC_NODE = {
+    "name": "JP-05", "type": "tuic", "server": "2.2.2.2", "port": 443,
+    "uuid": "uuid-uuid", "password": "tuicpw", "sni": "c.com",
+}
+HY2_NONSTD_OBFS = {
+    "name": "KR-06", "type": "hysteria2", "server": "3.3.3.3", "port": 8443,
+    "password": "pw", "obfs": "Salamander", "obfs-password": "obf",
+}
+
+
+def test_p0_2_tuic_no_redundant_password_query():
+    """P0-2：TUIC 密码已在 userinfo，query 不得再写 password 参数。"""
+    link = fc.proxy_to_share_link(TUIC_NODE)
+    assert link.startswith("tuic://uuid-uuid:tuicpw@2.2.2.2:443?")
+    assert "password=" not in link
+    assert "congestion_control" in link or "sni=c.com" in link
+
+
+def test_p0_3_trojan_singbox_has_utls():
+    """P0-3：Trojan sing-box 在 client-fingerprint 存在时应写 utls 指纹。"""
+    ob = fc.proxy_to_singbox(TROJAN_FP)
+    assert ob["type"] == "trojan"
+    assert ob["tls"]["utls"] == {"enabled": True, "fingerprint": "chrome"}
+
+
+def test_p0_3_trojan_singbox_no_utls_without_fp():
+    """无 client-fingerprint 时不应写 utls（与 VLESS 行为一致）。"""
+    ob = fc.proxy_to_singbox({"name": "x", "type": "trojan", "server": "1.1.1.1",
+                              "port": 443, "password": "p", "sni": "s.com"})
+    assert "utls" not in ob["tls"]
+
+
+def test_p0_4_hy2_obfs_normalized_in_share_link():
+    """P0-4：share_link 的 obfs 判定的严格化——大小写归一为 salamander。"""
+    link = fc.proxy_to_share_link(HY2_NONSTD_OBFS)
+    assert "obfs=salamander" in link
+    # 与 singbox 分支的 == 'salamander' 判定保持一致
+    ob = fc.proxy_to_singbox(HY2_NONSTD_OBFS)
+    assert ob["obfs"] == {"type": "salamander", "password": "obf"}
+
+
+def test_p0_4_hy2_obfs_passthrough_nonstandard():
+    """非标准 obfs 名（非 salamander）两个函数均透传而非静默丢弃。"""
+    node = {"name": "y", "type": "hysteria2", "server": "4.4.4.4", "port": 8443,
+            "password": "pw", "obfs": "weird-obfs"}
+    link = fc.proxy_to_share_link(node)
+    assert "obfs=weird-obfs" in link
+    ob = fc.proxy_to_singbox(node)
+    assert "obfs" not in ob  # singbox 仅 salamander 合法，非标准不写 obfs 段
+
+
+def test_p0_1_github_summary_survives_missing_keys(monkeypatch):
+    """P0-1：write_github_summary 在 info 缺键时不应 KeyError（容错风格）。"""
+    monkeypatch.setenv("GITHUB_STEP_SUMMARY", "/tmp/_summary_test.md")
+    # 构造一个只含部分键的 info，模拟调用方重构后漏传字段
+    partial = {
+        "final": 10, "tcp": 5, "real": 3, "https": 2,
+        "probe_mode": "mihomo", "insecure": 0,
+        "n_official": 2, "n_cands": 1,
+        "anti_crawl": {"enabled": False},
+    }
+    # 不应抛 KeyError
+    fc.write_github_summary(partial)
+    with open("/tmp/_summary_test.md", encoding="utf-8") as f:
+        content = f.read()
+    assert "Final proxies" in content
+    assert "Discovered" not in content or "Discovered (new candidates): **0**" in content
