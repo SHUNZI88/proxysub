@@ -182,18 +182,41 @@ def make_namer(cfg: dict) -> Callable[[str], str]:
 
 # ====================== Release 永久地址（release 模式，默认） ======================
 
+def safe_asset_name(name) -> str:
+    """资产名安全校验（安全评估 F4 / CWE-22）：必须是纯 basename。
+
+    Release 资产名会进入 ``.publish/<name>`` 写入路径与永久订阅 URL；
+    环境变量 PROXYSUB_ASSET_NAMES 与 anti_crawl.json 持久化值若含
+    ``../``、绝对路径或目录分隔符，可导致写出/删除落到 .publish 之外。
+    此处强制 basename 形态，非法值抛 ValueError（调用方按配置错误处理）。
+    """
+    name = str(name or "").strip()
+    if (not name
+            or name != os.path.basename(name)
+            or ".." in name
+            or "/" in name
+            or "\\" in name
+            or name.startswith(".")
+            or "\x00" in name):
+        raise ValueError(f"invalid asset name: {name!r}")
+    return name
+
+
 def asset_name(cfg: dict, basename: str) -> str:
     """Release 资产名：首次生成为随机字符串，之后永久不变。
 
     优先使用环境变量 PROXYSUB_ASSET_NAMES（JSON dict，指定后不写入公开配置，
     资产名即可完全不落仓库）；否则生成 p_<hex><后缀><扩展名> 并持久化。
+    两条路径的返回值都经 safe_asset_name 校验（F4）。
     """
     env = os.environ.get("PROXYSUB_ASSET_NAMES")
     if env:
         try:
             override = json.loads(env)
             if isinstance(override, dict) and basename in override:
-                return str(override[basename])
+                return safe_asset_name(override[basename])
+        except ValueError:
+            raise  # 资产名非法是配置错误，必须显式失败而非静默回退
         except Exception:
             pass
     names = cfg.setdefault("asset_names", {})
@@ -202,7 +225,7 @@ def asset_name(cfg: dict, basename: str) -> str:
             cfg["asset_token"] = secrets.token_hex(5)
         ext = os.path.splitext(basename)[1]
         names[basename] = f"p_{cfg['asset_token']}{_ASSET_SUFFIX.get(basename, '')}{ext}"
-    return str(names[basename])
+    return safe_asset_name(names[basename])
 
 
 def publish_paths(cfg: dict) -> dict[str, str]:
@@ -385,10 +408,21 @@ def begin_run(cfg: dict | None = None, today: date | None = None) -> dict:
         cfg["current_outputs"] = [rotated_name(b, token) for b in OUTPUT_BASENAMES]
 
     # 删除过期输出文件（模式切换残留 / 上一轮换周期的真实输出）
+    # F4 加固：只删两类合法位置的文件——.publish/ 内（release 模式资产）
+    # 或仓库根级纯 basename（rotate 模式轮换名 clean_clash.<token>.yaml）。
+    # stale_outputs 来自持久化配置，若被注入 ../ 或绝对路径，防止 os.remove
+    # 落到这些位置之外。
+    _pub = os.path.realpath(PUBLISH_DIR)
+    _root = os.path.realpath(os.getcwd())
     for f in cfg.get("stale_outputs", []):
         try:
-            if os.path.exists(f):
-                os.remove(f)
+            fs = str(f)
+            real = os.path.realpath(fs)
+            parent = os.path.dirname(real)
+            if parent not in (_pub, _root):
+                continue
+            if os.path.exists(fs):
+                os.remove(fs)
         except OSError:
             pass
 

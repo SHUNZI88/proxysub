@@ -322,3 +322,55 @@ def test_summary_lines(in_tmp, monkeypatch):
     text2 = "\n".join(anti_crawl.summary_lines(cfg2))
     assert "https://raw.githubusercontent.com/SHUNZI88/proxysub/main/clean_clash." in text2
     assert cfg2["token"] in text2
+
+
+# ---------------- F4：资产名路径穿越防护（安全评估 CWE-22） ----------------
+
+def test_safe_asset_name_rejects_traversal():
+    for bad in ["../evil.yaml", "../../etc/cron.d/x", "/abs/path.yaml",
+                "a/b.yaml", "a\\b.yaml", ".hidden", "", "   ", None,
+                "ok.yaml\x00.txt"]:
+        with pytest.raises(ValueError):
+            anti_crawl.safe_asset_name(bad)
+
+
+def test_safe_asset_name_accepts_plain_basename():
+    assert anti_crawl.safe_asset_name("p_abc123_c.yaml") == "p_abc123_c.yaml"
+    assert anti_crawl.safe_asset_name(" clean.yaml ") == "clean.yaml"
+
+
+def test_asset_name_env_override_traversal_rejected(monkeypatch):
+    """PROXYSUB_ASSET_NAMES 注入含 ../ 的资产名必须显式失败（不静默回退）。"""
+    monkeypatch.setenv("PROXYSUB_ASSET_NAMES",
+                       '{"clean_clash.yaml": "../../evil.yaml"}')
+    cfg = {"asset_names": {}}
+    with pytest.raises(ValueError):
+        anti_crawl.asset_name(cfg, "clean_clash.yaml")
+
+
+def test_asset_name_persisted_traversal_rejected():
+    """anti_crawl.json 持久化值被篡改为穿越路径时必须失败。"""
+    cfg = {"asset_names": {"clean_clash.yaml": "../evil.yaml"}}
+    with pytest.raises(ValueError):
+        anti_crawl.asset_name(cfg, "clean_clash.yaml")
+
+
+def test_asset_name_generated_is_safe():
+    """正常生成路径的资产名必须通过校验。"""
+    cfg = {"asset_token": "abc123", "asset_names": {}}
+    name = anti_crawl.asset_name(cfg, "clean_clash.yaml")
+    assert name.startswith("p_abc123") and name.endswith(".yaml")
+    anti_crawl.safe_asset_name(name)  # 不抛即通过
+
+
+def test_stale_outputs_traversal_not_deleted(in_tmp):
+    """F4：stale_outputs 含 ../ 穿越条目时不得删除目录外文件。"""
+    outside = in_tmp / "outside.txt"
+    outside.write_text("keep me")
+    cfg = _rotate_cfg(rotate_days=3, decoy_count=2)
+    cfg = anti_crawl.begin_run(cfg, TODAY)
+    cfg["stale_outputs"] = ["../outside.txt", "/etc/hosts"]
+    # 直接走 begin_run 的清理段：再次运行不应触碰目录外文件
+    anti_crawl.begin_run(cfg, TODAY + timedelta(days=3))
+    assert outside.exists()
+    assert outside.read_text() == "keep me"

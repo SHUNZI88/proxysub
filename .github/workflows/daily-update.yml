@@ -9,19 +9,28 @@ on:
   repository_dispatch:
     types: [external-trigger]   # 供外部 cron 心跳（cron-job.org 等）调用
 
+# 安全评估 F5（CWE-250 最小权限）：GITHUB_TOKEN 权限只能在 job 级声明，
+# 无法在 step 内临时提权，故按职责拆两个 job——
+#   update：只读 contents（跑抓取/拨测/生成，含 sources_manager 的
+#           GitHub 搜索 API——只需读）。绝不给写权限：本 job 会执行
+#           大量外部可控输入（channels 抓取），一旦被 SSRF 等方式利用
+#           泄漏 token，危害仅限读。
+#   publish：contents:write + issues:write（Release 上传 / git push /
+#            失败告警）。只处理本仓已生成的文件，不接触外部输入。
+# 两 job 间经 actions artifact 传递输出（ upload → download ）。
 permissions:
-  contents: write
-  issues: write                 # 失败时自动开 issue 告警
+  contents: read
 
 # 并发互斥：同一时刻只允许一个更新任务。注意这里刻意使用
 # cancel-in-progress: false —— 更新任务运行上限 50 分钟，若为新触发的运行
 # 而取消进行中的运行，会白白浪费已跑完的抓取/拨测并导致该时段无更新产出。
-# （此前的定时失败正是并发竞态导致 push 被拒，见下方 rebase 重试。）
+# （此前的定时失败正是并发竞态导致 push 被拒，见 publish job 的 rebase 重试。）
 concurrency:
   group: proxysub-update
   cancel-in-progress: false
 
 jobs:
+  # ===================== 生成（只读权限） =====================
   update:
     runs-on: ubuntu-latest
     timeout-minutes: 50
@@ -35,7 +44,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          fetch-depth: 0   # 完整历史，push 前才能 rebase 到最新远端
+          fetch-depth: 0   # 完整历史，publish job push 前才能 rebase 到最新远端
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -51,6 +60,12 @@ jobs:
       - name: Install mihomo (liveness gate)
         env:
           MIHOMO_VERSION: v1.19.32
+          # 安全评估 F3（CWE-345）：上游 MetaCubeX/mihomo 的 Release 不发布
+          # .sha256 校验文件，故此处 pin 已知完整包的 sha256 作为完整性基线
+          # （基线取自官方 Release API 元数据 size=22846526 的完整资产）。
+          # 升级 MIHOMO_VERSION 时必须同步更新本 hash，否则下载被拦截、
+          # 工作流失败——这是有意的防呆：宁可失败也不用未校验二进制。
+          MIHOMO_SHA256: 8451100836c9eda194331c2babfad490b2faf30cebc1a04b0e76fd8ac2d35d10
         run: |
           set -euo pipefail
           VER="${MIHOMO_VERSION}"
@@ -67,9 +82,12 @@ jobs:
             echo "ERROR: mihomo download failed after retries" >&2
             exit 1
           fi
+          # 完整性校验（F3）：先校验 gz 包 sha256，再解压。
+          # 拦截：发布被投毒 / 下载被中间人篡改 / 截断的半包。
+          echo "${MIHOMO_SHA256}  /tmp/mihomo.gz" | sha256sum -c -
           gunzip -c /tmp/mihomo.gz > /usr/local/bin/mihomo
           chmod +x /usr/local/bin/mihomo
-          # 校验解压产物确为可执行 ELF，防止下载到截断文件/错误页后带坏内核跑完全程
+          # 解压产物二次确认：必须仍是可执行 ELF（防解压链路异常）
           if ! file /usr/local/bin/mihomo | grep -q ELF; then
             echo "ERROR: downloaded mihomo is not a valid ELF binary" >&2
             exit 1
@@ -84,13 +102,80 @@ jobs:
       - name: Run filter script (liveness-gated static cleaning)
         env:
           MIHOMO_BIN: /usr/local/bin/mihomo
-          # 仅用于只读 GitHub 搜索（源发现）；sources_manager.py 内部已做限流
+          # 仅用于只读 GitHub 搜索（源发现）；sources_manager.py 内部已做限流。
+          # 本 job 的 permissions 仅 contents:read——token 泄漏也拿不到写能力。
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PROXYSUB_DISCOVERY: '1'
           # 反爬总开关走 anti_crawl.json 的 enabled；此处可设 '0' 临时强制关闭
           PROXYSUB_ANTI_CRAWL: '1'
           # 调试用：PROXYSUB_DISABLE_PROBE=1 可跳过真实拨测（输出会混入僵尸节点）
         run: python filter_clash.py
+
+      - name: Upload outputs for publish job
+        # F5：生成物经 artifact 传给写权限 job。清单与 publish job 的
+        # 「Commit and Push」逐文件 add 清单保持一致（含反爬轮换文件）。
+        uses: actions/upload-artifact@v4
+        with:
+          name: update-outputs
+          if-no-files-found: error
+          retention-days: 1
+          path: |
+            .publish/
+            clean_clash.yaml
+            clean_singbox.json
+            clean_v2ray.txt
+            clean_proxies_only.yaml
+            stats.md
+            survival.json
+            source_stats.json
+            source_scores.json
+            bad_sources.json
+            sources.json
+            candidate_sources.json
+            honeypot_blocklist.json
+            collected_nodes.txt
+            anti_crawl.json
+            robots.txt
+            cn_history.json
+            learned_thresholds.json
+            threshold_history.json
+            probe_history.jsonl
+            clean_clash.*
+            clean_singbox.*
+            clean_v2ray.*
+            clean_proxies_only.*
+
+  # ===================== 发布（写权限，不接触外部输入） =====================
+  publish:
+    needs: update
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write          # git push + Release 上传
+      issues: write            # 失败时自动开 issue 告警
+    # update 失败/取消时也进入本 job：第一个步骤会以非 0 退出，交由
+    # 末尾「Create issue on failure」按原策略告警（默认 ALERT_ISSUE=0 关闭）。
+    if: ${{ !cancelled() }}
+
+    steps:
+      - name: Check previous job result
+        run: |
+          if [ "${{ needs.update.result }}" != "success" ]; then
+            echo "ERROR: update job 未成功（${{ needs.update.result }}），不进入发布" >&2
+            exit 1
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0   # 完整历史，push 前才能 rebase 到最新远端
+
+      - name: Download outputs
+        uses: actions/download-artifact@v4
+        with:
+          name: update-outputs
+          path: .
 
       - name: Publish rolling release (anti-crawl permanent URLs)
         # 反爬 release 模式：把 .publish/ 下的真实输出发布为滚动 Release（tag sub），
