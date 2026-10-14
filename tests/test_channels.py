@@ -1,6 +1,9 @@
 """多渠道搜集（Telegram / 网页 / 静态源）与 vless 解析的回归测试。
 
 通过 monkeypatch ``channels.requests.get`` 模拟外部抓取，避免真实网络请求。
+另 mock ``net_safety.socket.getaddrinfo`` 返回公网 IP，使 SSRF 落点校验
+（安全评估 F1）在测试中放行这些示例主机——校验逻辑本身由
+``tests/test_net_safety.py`` 专项覆盖。
 """
 
 import os
@@ -10,6 +13,7 @@ import yaml
 
 import channels
 import common
+import net_safety
 from safe_io import save_json
 
 
@@ -55,7 +59,14 @@ trojan://pass@3.3.3.3:443?sni=host.com#TJ
 
 @pytest.fixture
 def fake_get(monkeypatch):
-    def _get(url, timeout=None, headers=None):
+    # SSRF 落点校验的 DNS 解析：测试主机一律返回公网 IP（真实校验见
+    # tests/test_net_safety.py）
+    monkeypatch.setattr(
+        net_safety.socket, "getaddrinfo",
+        lambda host, *a, **kw: [(2, 1, 6, "", ("93.184.216.34", 0))])
+
+    def _get(url, timeout=None, headers=None, **kw):
+        # **kw 吸收 safe_http_get 传入的 allow_redirects=False
         if "/s/" in url:
             return FakeResp(TG_HTML)
         if "blog.example.com" in url:

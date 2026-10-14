@@ -27,6 +27,7 @@ from typing import Any, Callable
 import requests
 
 from safe_io import load_json
+from net_safety import safe_http_get
 
 
 CHANNELS_FILE = "channels.json"
@@ -141,7 +142,7 @@ def _make_candidate(channel: str, kind: str) -> dict:
 def _validate_candidate(url: str, parse_fn: Callable[[str], list[dict]]) -> tuple[bool, str]:
     """抓取并以 parse_fn 校验节点数是否达标；返回 (ok, 原因)。"""
     try:
-        r = requests.get(url, timeout=CHANNEL_FETCH_TIMEOUT, headers=UA)
+        r = safe_http_get(url, timeout=CHANNEL_FETCH_TIMEOUT, headers=UA)
     except Exception as e:
         return False, f"fetch:{e}"
     if r.status_code != 200:
@@ -211,7 +212,7 @@ def discover_telegram(
         rep["channels_scanned"] += 1
         url = f"https://t.me/s/{ch}"
         try:
-            r = requests.get(url, timeout=CHANNEL_FETCH_TIMEOUT, headers=UA)
+            r = safe_http_get(url, timeout=CHANNEL_FETCH_TIMEOUT, headers=UA)
         except Exception as e:
             rep["errors"].append(f"{ch}: {e}")
             time.sleep(TELEGRAM_SLEEP)
@@ -259,7 +260,7 @@ def discover_web(
             continue
         rep["pages_scanned"] += 1
         try:
-            r = requests.get(page, timeout=CHANNEL_FETCH_TIMEOUT, headers=UA)
+            r = safe_http_get(page, timeout=CHANNEL_FETCH_TIMEOUT, headers=UA)
         except Exception as e:
             rep["errors"].append(f"{page}: {e}")
             time.sleep(WEB_SLEEP)

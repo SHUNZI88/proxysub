@@ -1,9 +1,14 @@
-requests>=2.31,<3
-PyYAML>=6.0,<7
+# 安全评估 F2（2026-10-14）：下限收紧至不含已知 CVE 的版本。
+# requests>=2.31 的下限包含 CVE-2024-35195（.netrc 跨主机重定向泄漏，
+# 修复于 2.32.0）；PyYAML>=6.0.1 避开 6.0 的加载器缺陷公告版本。
+requests>=2.32,<3
+PyYAML>=6.0.1,<7
 filelock>=3.12,<4
 
 # 测试
-pytest>=8.0,<9
+# pytest 不设大版本上限：pytest 8.4.x 存在 PYSEC-2026-1845（CVE-2025-71176，
+# tmpdir 处理缺陷，修复于 9.0.3），pip-audit（CI）会阻断含 CVE 的版本。
+pytest>=8.0
 pyflakes>=3.2,<4
 
 # 可选：ASN 支持（未安装时 honeypot.py 自动跳过 ASN 检查）

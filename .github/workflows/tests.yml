@@ -34,5 +34,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Dependency audit (pip-audit)
+        # 安全评估 F2：依赖漏洞扫描，阻断含已知 CVE 的传递依赖合入。
+        # pip-audit 的 advisory 源为 PyPA OSV 数据库（联网查询）。
+        run: |
+          pip install pip-audit
+          pip-audit -r requirements.txt
+
       - name: Run unit tests
         run: python -m pytest tests/ -v

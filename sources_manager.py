@@ -18,6 +18,7 @@ from urllib.parse import quote
 import requests
 
 import channels  # 多渠道搜集（Telegram / 网页 / 手工静态源）；本模块不反向依赖 sources_manager，无循环
+from net_safety import safe_http_get  # SSRF 防护抓取（安全评估 F1）
 from safe_io import load_json, save_json  # 原子化读写，防止 JSON 截断损坏
 
 SOURCES_FILE = "sources.json"
@@ -284,7 +285,7 @@ def discover(
             if url in known or _recently_removed(sources, url):
                 continue
             try:
-                r = requests.get(url, timeout=20, headers={"User-Agent": "proxysub-discovery/1.0"})
+                r = safe_http_get(url, timeout=20, headers={"User-Agent": "proxysub-discovery/1.0"})
                 n = len(parse_fn(r.text)) if r.status_code == 200 else 0
             except Exception:
                 n = 0
