@@ -16,6 +16,16 @@ on:
 permissions:
   contents: read
 
+# P2 并发互斥（与 daily-update 的 concurrency 同一思路，参数相反）：
+# 按 workflow + ref 分组——同一分支的push / 同一 PR 的多次推送只保留最新一次
+# 运行。测试仅 ~10 分钟且幂等，被新提交取代的旧跑结果已无意义，故
+# cancel-in-progress: true（daily-update 用 false：那边跑 50 分钟且
+# 取消会浪费已完成的抓取/拨测，产出会空档）。状态按 commit 归属，
+# 取消旧跑不影响最新 commit 的门禁判定。
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   pytest:
     runs-on: ubuntu-latest
