@@ -50,13 +50,6 @@
       "probation_runs": 3
     },
     {
-      "url": "https://raw.githubusercontent.com/xiaocongyu66/proxypool/main/output/clash.yml",
-      "origin": "discovered",
-      "added": "2026-10-10",
-      "repo": "xiaocongyu66/proxypool",
-      "probation_runs": 5
-    },
-    {
       "url": "https://raw.githubusercontent.com/VPN-Subcription-Links/ClashX-V2Ray-TopFreeProxy/main/combine/clash.config.yaml",
       "origin": "discovered",
       "added": "2026-10-10",
@@ -140,6 +133,11 @@
       "url": "https://raw.githubusercontent.com/F0rc3Run/F0rc3Run/main/Best-Results/clash-provider.yaml",
       "reason": "zero_unique_contribution:16runs",
       "date": "2026-10-13"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/xiaocongyu66/proxypool/main/output/clash.yml",
+      "reason": "zero_unique_contribution:16runs",
+      "date": "2026-10-14"
     }
   ],
   "deny_repos": []
