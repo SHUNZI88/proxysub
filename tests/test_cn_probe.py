@@ -233,3 +233,43 @@ def test_cap_test_set_negative_budget_no_negative_index():
     nodes = _mk("pending", 10)
     kept, dropped = cn_probe.cap_test_set(nodes, budget_s=-100.0, per_node_s=1.0)
     assert kept == [] and dropped == 10
+
+
+# ---------------------------------------------------------------- Phase 2.2 源级聚合（by_source 生产者）
+def test_agg_two_by_source_tested_and_passed():
+    """_agg_two 必须按 src 同时统计 tested(全部节点) 与 passed(verified 子集)。"""
+    nodes = [
+        {"src": "SHUNzi88/proxysub"}, {"src": "SHUNzi88/proxysub"},
+        {"src": "SHUNzi88/proxysub"}, {"src": "raw.githubusercontent.com/abc/def"},
+        {"src": "raw.githubusercontent.com/abc/def"},
+    ]
+    verified = [
+        {"src": "SHUNzi88/proxysub"}, {"src": "SHUNzi88/proxysub"},
+        {"src": "raw.githubusercontent.com/abc/def"},
+    ]
+    out = cn_probe._agg_two(nodes, verified, key_fn=lambda n: n.get("src") or "?")
+    assert out["SHUNzi88/proxysub"] == {"tested": 3, "passed": 2}
+    assert out["raw.githubusercontent.com/abc/def"] == {"tested": 2, "passed": 1}
+    assert "?" not in out  # 所有节点都带 src，不应落入兜底键（否则源级加成为 0）
+
+
+def test_passed_verified_subset_preserves_src():
+    """复刻主流程关键不变量：passed=[n for n in nodes if ok]; verified=sorted(passed)。
+
+    verified 节点必须保留 src 字段，否则 by_source 的 passed 计数会被算成 0，
+    源级聚合（cn_source_bonus）将静默失效而不报错。
+    """
+    nodes = [
+        {"src": "SHUNzi88/proxysub", "probe_name": f"p{i}"} for i in range(4)
+    ]
+    nodes[1]["src"] = "raw.githubusercontent.com/abc/def"
+    results = {n["probe_name"]: {"ok": (i % 2 == 0)} for i, n in enumerate(nodes)}
+    passed = [n for n in nodes if results.get(n["probe_name"], {}).get("ok")]
+    verified = sorted(passed, key=lambda n: n["probe_name"])
+    # 不变量：verified 全部保留 src
+    assert all("src" in n and n["src"] for n in verified)
+    by_source = cn_probe._agg_two(nodes, verified, key_fn=lambda n: n.get("src") or "?")
+    # A 源 3 测 2 过（index0/index2 通过，index3 不通过）；B 源 1 测 0 过（index1 失败）
+    # passed=0 被正确统计而非丢失，证明 verified 保留 src 的不变量成立
+    assert by_source["SHUNzi88/proxysub"] == {"tested": 3, "passed": 2}
+    assert by_source["raw.githubusercontent.com/abc/def"] == {"tested": 1, "passed": 0}
