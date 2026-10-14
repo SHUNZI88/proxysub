@@ -2,6 +2,8 @@
 
 import json
 import os
+import subprocess
+import unittest.mock as mock
 
 import pytest
 import yaml
@@ -304,3 +306,32 @@ def test_report_node_record_keeps_src_field():
     rec = {"fp": n["fp"], "name": n["name"], "origin": n["origin"],
            "final": n["final"], "us_ok": n["us_ok"], "src": n.get("src")}
     assert rec["src"] == "SHUNzi88/proxysub"
+
+
+def test_auth_selfcheck_no_token(monkeypatch):
+    """回归（grok 2.3）：GH_TOKEN/GITHUB_TOKEN 均无则立即失败，避免空转。"""
+    monkeypatch.delenv("GH_TOKEN", raising=False)
+    monkeypatch.delenv("GITHUB_TOKEN", raising=False)
+    assert cn_probe.auth_selfcheck() is False
+
+
+def test_auth_selfcheck_gh_status_failure(monkeypatch):
+    """GH_TOKEN 存在但 gh auth status 失败（如 401 失效）应判失败。"""
+    monkeypatch.setenv("GH_TOKEN", "ghp_dummy")
+    with mock.patch.object(
+        cn_probe, "run",
+        return_value=subprocess.CompletedProcess(
+            ["gh"], 1, stdout="", stderr="graphql: 401 Unauthorized"),
+    ):
+        assert cn_probe.auth_selfcheck() is False
+
+
+def test_auth_selfcheck_ok(monkeypatch):
+    """GH_TOKEN 存在且 gh auth status 成功应判通过。"""
+    monkeypatch.setenv("GH_TOKEN", "ghp_dummy")
+    with mock.patch.object(
+        cn_probe, "run",
+        return_value=subprocess.CompletedProcess(
+            ["gh"], 0, stdout="Logged in to github.com", stderr=""),
+    ):
+        assert cn_probe.auth_selfcheck() is True

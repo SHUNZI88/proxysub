@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """中国出口节点实测（沙箱侧）——Phase 1 核心工作者。
 
-定时任务（北京 01:02/07:02，即 CI 名义时段 00:17/06:17 后 ~45min）启动本脚本：
+定时任务（北京 09:18/16:18，即 CI 名义时段 06:17/12:17 后 ~45min，避开凌晨
+沙箱易休眠窗口）启动本脚本：
 
   1. 自检：沙箱自身网络必须直连可用（否则节点全挂是冤枉的）；
   2. 下载 CI 交接文档 pending_probe.json / pending_rescue.json，按
@@ -128,6 +129,26 @@ def run(cmd: list[str], timeout: int = 120, **kw) -> subprocess.CompletedProcess
 def gh_download(tag: str, pattern: str, dest: str) -> bool:
     r = run(["gh", "release", "download", tag, "-p", pattern, "-O", dest, "--clobber"])
     return r.returncode == 0 and os.path.exists(dest)
+
+
+def auth_selfcheck() -> bool:
+    """鉴权自检（grok 2.3）：GH_TOKEN 缺失或 gh 未登录则立即失败，避免空转。
+
+    返回 True 表示可继续；False 表示应非 0 退出。
+    """
+    token = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")
+    if not token:
+        log("熔断: 环境变量 GH_TOKEN/GITHUB_TOKEN 均未设置——无法读写 Release，中止")
+        return False
+    # gh 自动从 GH_TOKEN 读取；auth status 验证 token 实际可用（含 401 检测）
+    r = run(["gh", "auth", "status"], timeout=60)
+    if r.returncode != 0:
+        # 裁剪输出，避免把 token 细节打印到日志
+        msg = (r.stderr or r.stdout).strip().splitlines()
+        tail = "；".join(msg[-3:]) if msg else "gh auth status 异常"
+        log(f"熔断: gh 鉴权失败（GH_TOKEN 可能失效/权限不足）——中止。{tail}")
+        return False
+    return True
 
 
 def release_assets(tag: str) -> list[dict]:
@@ -511,6 +532,10 @@ def main() -> int:
     except OSError:
         log("另一实例正在运行（单实例锁），退出")
         return 0
+
+    # 0.5) 鉴权自检（grok 2.3）：GH_TOKEN 失效则立即退出，避免空转 20 分钟
+    if not auth_selfcheck():
+        return 3
 
     # 1) 自检：沙箱自身网络
     if not sandbox_selfcheck():
