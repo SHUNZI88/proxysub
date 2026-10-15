@@ -442,8 +442,12 @@ def static_filter_stage(per_source: dict[str, list[dict]], off_set: set,
     prov: dict[str, set] = defaultdict(set)
     src_flags: dict[str, list[str]] = {}
     for url, plist in staged.items():
-        # 合并诱饵回流标记与源网段聚集标记（两者都可能触发拒绝/淘汰）
-        flags = bait_reuse.get(url, []) + (hp.source_cluster_flags(plist, resolved) if dns_trusted else [])
+        # 合并诱饵回流标记、源网段聚集标记与模板×网段联合聚集标记
+        # （三者都可能触发拒绝/淘汰；fake-ip DNS 环境下整体跳过网络侧检查）
+        flags = bait_reuse.get(url, [])
+        if dns_trusted:
+            flags += hp.source_cluster_flags(plist, resolved)
+            flags += hp.template_ip_cluster_flags(plist, resolved)
         if flags:
             src_flags[url] = flags
         for p in plist:
