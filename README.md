@@ -114,6 +114,7 @@ Content-Type: application/json
 | `source_stats.json` / `bad_sources.json` / `survival.json` | 源统计、失败计数、节点跨天存活与真实通过率 |
 | `source_scores.json` | 源长期评分（成功率 / 独有贡献 / 真实通过 / 蜜罐惩罚的指数滑动平均） |
 | `requirements.txt` | Python 依赖（requests / PyYAML / filelock / pytest / pytest-cov / pyflakes） |
+| `scripts/doctor.py` | **上手自检（只读）**：fork 后 / 提 Issue 前跑 `python3 scripts/doctor.py`——依赖版本、配置 JSON 可解析性与结构一致性（反爬开启必须配 Release 资产名、正式源非空等）、工作流 YAML、mihomo 可发现性、`.corrupt` 自愈备份；退出码 0 = 通过（可含警告）、1 = 有错误。输出可直接贴进 Issue 表单 |
 | `.coveragerc` | 覆盖率门禁配置：语句覆盖 `fail_under=80`；计量范围为库模块（`tests/`、`scripts/` 运维脚本、monitor 一次性脚本按配置排除并注明理由） |
 | `tests/` | 单元 + 集成测试（510 项）：指纹去重、地区识别、静态门槛、订阅解析、原子写入、拨测样本选择、多格式输出、源评分；`test_main_pipeline.py`（mock 边界的 main() 全链路集成）+ `test_stage_functions.py`（阶段函数单测，配额/回填/加成等分支）+ `test_probe_mihomo.py`（mihomo 进程编排 mock）+ `test_sources_lifecycle.py`（源生命周期 mock） |
 
@@ -236,6 +237,7 @@ public 仓库的订阅文件对任何人可读，且会被「按固定路径扫�
 - **覆盖率门禁（P1-1d）**：CI 每次代码变更跑 `pytest --cov`，库模块语句覆盖 **≥80%** 未达标即阻断合入（`.coveragerc` `fail_under=80`）。当前 **510 项测试、总覆盖 91.59%**（`filter_clash.py` 88%）。
 - **低覆盖模块补齐（P1-2a）**：`probe.py` 的 mihomo 进程编排（`_probe_through` 各出口/篡改/TLS 中间人/CF 拦截分支、`_mihomo_batch` 进程早退与 controller 未就绪、`mihomo_probe` 大批量二分重试）与 `sources_manager.py` 源生命周期（GitHub 限流重试、仓库声誉全 verdict、discover 收录/跳过路径、试用期拒绝与晋升、正式源降级与超额裁剪）已用 mock 全面覆盖，两模块分别达 **99% / 100%**。
 - **反馈闭环（产品化）**：Issue 表单模板（订阅质量问题 / 功能建议，默认拒空白 issue 并引导至 README 与健康报告）；`ci-failure` 标签 + 失败自动开 Issue 开关（`ALERT_ISSUE`，默认关闭以守反爬边界）；README「反馈与告警」一节明确订阅者反馈纪律（勿贴私人订阅地址）与维护者三条告警通道（Watch Actions 邮件 / Actions 页订阅 / 自动开 Issue）。
+- **上手助手（产品化）**：`scripts/doctor.py` 一条命令自检配置与环境（19 项测试覆盖全部分支），把「fork 后配错 → CI 跑 50 分钟才炸」的反馈路径压缩为本地 1 秒；与反馈闭环联动——Issue 表单引导上报前先跑 doctor 并附输出，「环境-配置」类问题不再来回确认。
 - **配置独立（P1-2）**：`common.py` 原为 757 行「常量 + 工具函数」混合体（102 个配置常量），认知负担大。已拆出 `config.py`（287 行，仅依赖标准库的架构最底层叶子）专收全部可调常量——区域规则/配额、协议白名单与奖惩参数、超时/并发旋钮、输出与状态文件名、探测 URL 与配额；`common.py` 瘦身为 502 行纯函数层，按需 `from config import`。调参只动 `config.py` 一处，模块职责单一可读。
 - **显式 import（P1-3）**：`filter_clash.py` 原用 `_reexport()` 在运行时把子模块符号动态 `setdefault` 进命名空间——依赖面静态不可见（pyflakes 199 条告警）、漏 import 只在运行期炸 `NameError`（2026-10-13 daily 工作流崩溃根因）。已改为按来源模块的显式 import（5 组、88 个名字），依赖面成为文件内可读清单；`filter_clash.py` 同步纳入「未定义名字」静态门禁，漏 import 在 CI 即失败。
 
@@ -276,6 +278,7 @@ python -m pytest tests/ -v
 
 ## 手动控制
 
+- **自检（fork 后 / 改配置后 / 提 Issue 前）**：`python3 scripts/doctor.py`——一条命令检查依赖版本、配置一致性与结构、工作流 YAML、mihomo 可发现性；退出码 0 = 通过（可有警告），1 = 有错误项（附输出提 Issue 可加速定位）。
 - 临时禁用云端真实流量拨测（仅调试用，输出会混入僵尸节点）：环境变量 `PROXYSUB_DISABLE_PROBE=1`。
 - 本地运行真实探测：配置 `MIHOMO_BIN` 指向 mihomo 可执行文件（不设置禁用变量即可）。
 - 关闭自动发现：工作流环境变量 `PROXYSUB_DISCOVERY: '0'`。

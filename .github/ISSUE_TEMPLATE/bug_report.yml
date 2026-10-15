@@ -10,6 +10,8 @@ body:
 
         上报前建议先看 README「运行态速览」三行，确认主列表指标口径（`stats.md` 是美西候选健康度，不代表中国实测通过集）。
 
+        如果你是 fork 后自托管遇到问题：请先跑 `python3 scripts/doctor.py` 并把输出贴到「现象描述」里（它一条命令检查依赖 / 配置一致性 / 工作流 / mihomo，退出码非 0 即有错误项）。
+
   - type: dropdown
     id: format
     attributes:
