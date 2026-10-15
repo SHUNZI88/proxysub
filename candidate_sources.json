@@ -5,7 +5,7 @@
       "origin": "channel_web",
       "added": "2026-10-13",
       "first_seen": "2026-10-13",
-      "runs": 11,
+      "runs": 12,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -38,7 +38,7 @@
           "tamper": 0
         },
         {
-          "date": "2026-10-14",
+          "date": "2026-10-15",
           "count": 304,
           "usable": 0,
           "unique_new": 0,
@@ -73,17 +73,10 @@
       "origin": "channel_web",
       "added": "2026-10-13",
       "first_seen": "2026-10-13",
-      "runs": 11,
+      "runs": 12,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-10-14",
-          "count": 566,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-10-14",
           "count": 566,
@@ -132,6 +125,13 @@
           "usable": 15,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-15",
+          "count": 566,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ],
       "required_runs": 3
@@ -141,17 +141,10 @@
       "origin": "channel_web",
       "added": "2026-10-13",
       "first_seen": "2026-10-13",
-      "runs": 11,
+      "runs": 12,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-10-14",
-          "count": 566,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-10-14",
           "count": 1686,
@@ -200,6 +193,13 @@
           "usable": 15,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-15",
+          "count": 1621,
+          "usable": 16,
+          "unique_new": 0,
+          "tamper": 0
         }
       ],
       "required_runs": 3
@@ -209,17 +209,10 @@
       "origin": "channel_web",
       "added": "2026-10-13",
       "first_seen": "2026-10-13",
-      "runs": 11,
+      "runs": 12,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-10-14",
-          "count": 598,
-          "usable": 41,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-10-14",
           "count": 598,
@@ -268,6 +261,13 @@
           "usable": 46,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-15",
+          "count": 519,
+          "usable": 53,
+          "unique_new": 0,
+          "tamper": 0
         }
       ],
       "required_runs": 3
@@ -277,7 +277,7 @@
       "origin": "channel_web",
       "added": "2026-10-13",
       "first_seen": "2026-10-13",
-      "runs": 10,
+      "runs": 11,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -298,13 +298,6 @@
         {
           "date": "2026-10-14",
           "count": 31,
-          "usable": 1,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-14",
-          "count": 31,
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
@@ -334,6 +327,13 @@
           "date": "2026-10-15",
           "count": 9,
           "usable": 1,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-15",
+          "count": 9,
+          "usable": 0,
           "unique_new": 0,
           "tamper": 0
         }
@@ -345,7 +345,7 @@
       "origin": "channel_web",
       "added": "2026-10-14",
       "first_seen": "2026-10-14",
-      "runs": 8,
+      "runs": 9,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -378,7 +378,7 @@
           "tamper": 0
         },
         {
-          "date": "2026-10-14",
+          "date": "2026-10-15",
           "count": 483,
           "usable": 0,
           "unique_new": 0,
@@ -413,7 +413,7 @@
       "origin": "channel_web",
       "added": "2026-10-14",
       "first_seen": "2026-10-14",
-      "runs": 4,
+      "runs": 5,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -444,29 +444,10 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
-        }
-      ],
-      "required_runs": 3
-    },
-    "https://pai.yt/clash": {
-      "channel": "web:https://clashsub.net/free-subscribe/",
-      "origin": "channel_web",
-      "added": "2026-10-15",
-      "first_seen": "2026-10-15",
-      "runs": 2,
-      "good_streak": 0,
-      "fail_streak": 2,
-      "history": [
-        {
-          "date": "2026-10-15",
-          "count": 0,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
         },
         {
           "date": "2026-10-15",
-          "count": 0,
+          "count": 489,
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
@@ -483,10 +464,17 @@
       "required_runs": 3,
       "first_seen": "2026-10-15",
       "initial_nodes": 3718,
-      "runs": 1,
+      "runs": 2,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
+        {
+          "date": "2026-10-15",
+          "count": 3718,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
         {
           "date": "2026-10-15",
           "count": 3718,
@@ -505,7 +493,7 @@
       "required_runs": 3,
       "first_seen": "2026-10-15",
       "initial_nodes": 3728,
-      "runs": 1,
+      "runs": 2,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -515,8 +503,29 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-15",
+          "count": 3728,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
+    },
+    "https://raw.githubusercontent.com/wuge0/free-nodes/main/output/clash.yaml": {
+      "repo": "wuge0/free-nodes",
+      "stars": 1,
+      "repo_created": "2026-09-26T02:58:12Z",
+      "reputation": "low",
+      "reputation_note": "stars=1,age=19d",
+      "required_runs": 5,
+      "first_seen": "2026-10-15",
+      "initial_nodes": 768,
+      "runs": 0,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": []
     }
   },
   "rejected": {
@@ -674,6 +683,11 @@
       "reason": "honeypot_structure:cluster_24:144.31.215.0/24",
       "date": "2026-10-15",
       "repo": "Nexuspt753/GitHub-Sub-Scanner"
+    },
+    "https://pai.yt/clash": {
+      "reason": "fetch_failures",
+      "date": "2026-10-15",
+      "repo": null
     }
   }
 }
