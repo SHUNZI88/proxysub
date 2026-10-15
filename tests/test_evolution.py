@@ -259,3 +259,45 @@ def test_update_source_scores_cn_skips_and_purges_unknown_key(tmp_path):
     assert scores["good/repo"]["cn_pass_rate"] == 0.8
     # 其它既有源不受影响
     assert scores["old/repo"]["cn_pass_rate"] == 0.1
+
+
+def test_update_source_scores_cn_maps_src_key_to_url(tmp_path):
+    """键口径修复：传入 url_by_src 时，cn 维度须落到「完整 URL 主键」而非 owner/repo。
+
+    真实现象（2026-10-15 取证）：source_scores.json 主键是完整订阅 URL，
+    而报告 by_source 键是 owner/repo；旧实现直把 owner/repo 当键写入，
+    导致主键 URL 永远拿不到 cn 维度（79 源仅 27 有 cn，头部高分配额源恰在盲区）。
+    """
+    path = str(tmp_path / "source_scores.json")
+    url = "https://raw.githubusercontent.com/Au1rxx/xxx/main/sub.txt"
+    # 主键是 URL，且已带 score/role（由 update_source_scores 写入）
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump({url: {"score": 100.0, "runs": 9, "role": "official"}}, f)
+
+    report = {
+        "generated_at": _now_iso(),
+        "counts": {"by_source": {"Au1rxx/xxx": {"tested": 100, "passed": 5}}},
+    }
+    scores = evolution.update_source_scores_cn(report, path, {"Au1rxx/xxx": url})
+    # cn 维度落到 URL 主键
+    assert scores[url]["cn_pass_rate"] == 0.05
+    assert scores[url]["cn_tested"] == 100
+    # 关键：不得新造 owner/repo 影子条目
+    assert "Au1rxx/xxx" not in scores
+    # 关键：不得抹掉主键上已有的 score/role/runs
+    assert scores[url]["score"] == 100.0
+    assert scores[url]["runs"] == 9
+    assert scores[url]["role"] == "official"
+
+
+def test_update_source_scores_cn_falls_back_when_no_mapping(tmp_path):
+    """未传 url_by_src 时退回旧行为（镜像键），保证既有调用与测试不回归。"""
+    path = str(tmp_path / "source_scores.json")
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump({}, f)
+    report = {
+        "generated_at": _now_iso(),
+        "counts": {"by_source": {"owner/repo": {"tested": 40, "passed": 40}}},
+    }
+    scores = evolution.update_source_scores_cn(report, path)
+    assert scores["owner/repo"]["cn_pass_rate"] == 1.0

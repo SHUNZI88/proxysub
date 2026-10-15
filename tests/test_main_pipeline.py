@@ -113,7 +113,7 @@ def pipeline(tmp_path, monkeypatch):
     monkeypatch.setattr(fc, "mihomo_probe", env._mihomo_probe)
     # 进化引擎下载上轮报告走 gh 子进程——直接替换入口（返回安全默认值）
     monkeypatch.setattr(fc, "load_evolution_inputs",
-                        lambda root: ({}, {"CN_LATENCY_CAP_MS": 3000}, {}))
+                        lambda root, sources=None: ({}, {"CN_LATENCY_CAP_MS": 3000}, {}))
     return env
 
 

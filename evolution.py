@@ -149,10 +149,22 @@ def cn_stability_bonus_ms(fp: str, hist: dict, *, max_bonus: float = 80.0) -> fl
 
 
 # ------------------------------------------------------------------ 2.2 源级通过率
-def update_source_scores_cn(report: dict, path: str = config.SOURCE_SCORES_FILE) -> dict:
+def update_source_scores_cn(report: dict, path: str = config.SOURCE_SCORES_FILE,
+                            url_by_src: dict | None = None) -> dict:
     """把报告 by_source 的中国通过率折回 source_scores.json 的 cn 维度。
 
-    返回更新后的评分字典。守卫：报告陈旧则跳过（不污染源评分）。
+    键口径（关键修复）：报告的 `by_source` 键是 `owner/repo`（`common.src_key`
+    产出），而 `source_scores.json` 的主键是**完整订阅 URL**（由
+    `sources_manager.update_source_scores` 以 url 为键写入）。若直接把 owner/repo
+    当键写，会新增一批"影子源"条目，使主键 URL 永远拿不到 cn 维度——实测 79 源
+    仅 27 个有 cn 维度，头部的 Au1rxx/yy1588133（score=100）恰是 cn 盲区。
+
+    故新增 `url_by_src`（`src_key(url) -> url` 映射）：传入时 cn 写入正确的 URL
+    键；未传时退回旧行为（镜像键）以兼容既有调用与测试。
+
+    只写 cn_* 三个字段、**不重建整个条目**——避免抹掉主键上已有的
+    score/runs/role（反向亦然：`update_source_scores` 已改为保留 cn_* 字段）。
+    守卫：报告陈旧则跳过（不污染源评分）；"? " 伪源不写入并清理历史残留。
     """
     if _report_age_s(report) > config.VERIFICATION_MAX_AGE_S:
         return _load_json(path, {})
@@ -164,14 +176,15 @@ def update_source_scores_cn(report: dict, path: str = config.SOURCE_SCORES_FILE)
     for src, c in by_source.items():
         if not src or src == "?":
             continue
+        key = (url_by_src or {}).get(src, src)
         tested = c.get("tested", 0)
         passed = c.get("passed", 0)
-        entry = scores.get(src, {})
+        entry = scores.get(key, {})
         entry["cn_tested"] = tested
         entry["cn_passed"] = passed
         entry["cn_pass_rate"] = round(passed / tested, 4) if tested else 0.0
         entry["cn_last"] = report.get("generated_at")
-        scores[src] = entry
+        scores[key] = entry
     _save_json(path, scores)
     return scores
 
@@ -280,12 +293,17 @@ def append_probe_history(report: dict, path: str = config.PROBE_HISTORY_FILE) ->
 
 
 # ------------------------------------------------------------------ 编排
-def run_evolution(report: dict, repo_root: str = ".") -> dict:
-    """CI 侧一次性编排 4 个闭环；返回各产物摘要（供 main 打印/提交）。"""
+def run_evolution(report: dict, repo_root: str = ".",
+                  url_by_src: dict | None = None) -> dict:
+    """CI 侧一次性编排 4 个闭环；返回各产物摘要（供 main 打印/提交）。
+
+    `url_by_src`（src_key(url) -> url）：供源级 cn 维度写入正确的主键 URL，
+    见 update_source_scores_cn 的键口径说明。
+    """
     def _p(name):
         return os.path.join(repo_root, name)
     cn_hist = update_cn_history(report, _p(config.CN_HISTORY_FILE))
-    src = update_source_scores_cn(report, _p(config.SOURCE_SCORES_FILE))
+    src = update_source_scores_cn(report, _p(config.SOURCE_SCORES_FILE), url_by_src)
     params = learn_thresholds(report, _p(config.LEARNED_THRESHOLDS_FILE),
                               _p(config.THRESHOLD_HISTORY_FILE))
     line = append_probe_history(report, _p(config.PROBE_HISTORY_FILE))

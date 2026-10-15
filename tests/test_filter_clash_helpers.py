@@ -6,6 +6,7 @@
 
 import json
 
+import common
 import evolution
 import pytest
 
@@ -61,20 +62,27 @@ class TestLoadEvolutionInputs:
     def test_report_present_runs_evolution(self, tmp_path, monkeypatch):
         monkeypatch.setattr(fc, "_download_verification_report",
                             lambda root: {"round": "r1"})
-        monkeypatch.setattr(
-            evolution, "run_evolution",
-            lambda report, root: {"cn_history_nodes": 3,
-                                  "source_scores_with_cn": 2,
-                                  "learned": {"k": 1}})
+        seen = {}
+
+        def _fake_run(report, root, url_by_src=None):
+            seen["url_by_src"] = url_by_src
+            return {"cn_history_nodes": 3, "source_scores_with_cn": 2,
+                    "learned": {"k": 1}}
+
+        monkeypatch.setattr(evolution, "run_evolution", _fake_run)
         # 状态文件存在时被读入
         (tmp_path / fc.CN_HISTORY_FILE).write_text(
             json.dumps({"fp1": [1, 1]}), encoding="utf-8")
         (tmp_path / fc.SOURCE_SCORES_FILE).write_text(
             json.dumps({"src1": 0.9}), encoding="utf-8")
-        cn_hist, learned, src_scores = fc.load_evolution_inputs(str(tmp_path))
+        # 传入 official 源，验证 src_key(url) -> url 映射被构造并透传
+        url = "https://example.com/Au1rxx/sub.txt"
+        sources = {"official": [{"url": url}]}
+        cn_hist, learned, src_scores = fc.load_evolution_inputs(str(tmp_path), sources)
         assert cn_hist == {"fp1": [1, 1]}
         assert src_scores == {"src1": 0.9}
         assert learned == {"k": 1}
+        assert seen["url_by_src"] == {common.src_key(url): url}
 
     def test_report_missing_returns_safe_defaults(self, tmp_path, monkeypatch):
         monkeypatch.setattr(fc, "_download_verification_report", lambda root: None)

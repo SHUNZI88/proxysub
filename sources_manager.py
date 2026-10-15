@@ -485,10 +485,16 @@ def update_source_scores(sources: dict, per_src: dict, history: dict) -> dict:
         delta = (success * 15.0 + unique_ratio * 25.0 + real_ratio * 30.0
                  - tamper_ratio * 40.0 - (0.0 if success else 25.0))
         new_score = float(prev.get("score", 50.0)) * 0.85 + delta
-        scores[url] = {
+        rec = {
             "score": round(max(0.0, min(100.0, new_score)), 2),
             "runs": int(prev.get("runs", 0)) + 1,
             "role": m.get("role", "official"),
             "last": _today(),
         }
+        # 保留进化引擎写入的 cn_* 维度（中国实测通过率），否则本函数每轮重建
+        # 条目时会把它抹掉——两处写入方共用 URL 主键，须互不覆盖。
+        for ck in ("cn_tested", "cn_passed", "cn_pass_rate", "cn_last"):
+            if ck in prev:
+                rec[ck] = prev[ck]
+        scores[url] = rec
     return scores

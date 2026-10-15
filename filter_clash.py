@@ -162,18 +162,27 @@ def _download_verification_report(repo_root: str) -> dict | None:
         return None
 
 
-def load_evolution_inputs(repo_root: str) -> tuple[dict, dict, dict]:
+def load_evolution_inputs(repo_root: str, sources: dict | None = None) -> tuple[dict, dict, dict]:
     """Phase 2 进化引擎入口：下载上轮报告 -> 4 闭环反哺 -> 返回 (cn_hist, learned, source_scores_cn)。
 
     返回的三份数据供评分阶段复用（中国稳定性加成 / 自学习门槛 / 源级加成）。
     报告缺失或陈旧时返回安全默认值（不信任历史）。
+
+    `sources`：本仓 sources.json（含 official URL 列表），用于构造
+    `src_key(url) -> url` 映射，使报告的 owner/repo 键能落到 source_scores 的
+    URL 主键上（修复 cn 维度写错键的缺陷，见 evolution.update_source_scores_cn）。
     """
     cn_hist: dict = {}
     source_scores_cn: dict = {}
     learned = {k: v["default"] for k, v in evolution.LEARNED_PARAMS.items()}
     report = _download_verification_report(repo_root)
     if report:
-        summary = evolution.run_evolution(report, repo_root)
+        url_by_src: dict = {}
+        for u in (sources or {}).get("official", []):
+            url = u.get("url") if isinstance(u, dict) else u
+            if url:
+                url_by_src.setdefault(common.src_key(url), url)
+        summary = evolution.run_evolution(report, repo_root, url_by_src)
         print(f"进化引擎: cn_history={summary['cn_history_nodes']} "
               f"源评分带cn维度={summary['source_scores_with_cn']} "
               f"自学习={summary['learned']}")
@@ -943,7 +952,7 @@ def main() -> None:
         print(f"移除源: {u} -> {why}")
 
     # ---- 6.5 进化引擎（Phase 2）：下载上轮沙箱实测报告，反哺本地数据/门槛 ----
-    cn_hist, learned_params, source_scores_cn = load_evolution_inputs(REPO_ROOT)
+    cn_hist, learned_params, source_scores_cn = load_evolution_inputs(REPO_ROOT, sources)
     cn_latency_cap = learned_params.get("CN_LATENCY_CAP_MS", MAX_ACCEPT_LATENCY_MS)
     us_latency_cap = learned_params.get("US_LATENCY_CAP_MS", MAX_ACCEPT_LATENCY_MS_US)
     score_latency_cap = learned_params.get("SCORE_LATENCY_CAP_MS", TCP_LATENCY_CAP_IN_SCORE)
