@@ -76,11 +76,6 @@
       "added": "2026-10-13"
     },
     {
-      "url": "https://raw.githubusercontent.com/mahdibland/V2RayAggregator/master/Eternity.yml",
-      "origin": "static_channel",
-      "added": "2026-10-13"
-    },
-    {
       "url": "https://raw.githubusercontent.com/free-nodes/clashfree/main/clash20261014.yml",
       "origin": "discovered",
       "added": "2026-10-14",
@@ -149,6 +144,11 @@
     {
       "url": "https://raw.githubusercontent.com/OgdenThomas/freesub/main/output/by-country/clash-US.yaml",
       "reason": "zero_unique_contribution:16runs",
+      "date": "2026-10-15"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/mahdibland/V2RayAggregator/master/Eternity.yml",
+      "reason": "cf_blocked:5/15",
       "date": "2026-10-15"
     }
   ],
