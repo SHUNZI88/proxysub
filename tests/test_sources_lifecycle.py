@@ -607,6 +607,20 @@ class TestEvaluateCandidates:
         rep = sm.evaluate_candidates(cands, {"u": _good_run()}, {"official": []})
         assert rep["rejected"]["u"] == "no_stable_contribution"
 
+    def test_tolerates_none_probed_and_tamper(self):
+        """N2 回归：上游显式传 probed=None / tamper=None 时不得抛 TypeError。
+
+        修复前 evaluate_candidates 用 max(1, r.get('probed', 0))，若值为 None
+        则 max(1, None) 抛 TypeError；与同文件 update_official 已做的 int() 兜底
+        不一致。修复后须与 update_official 行为对齐。
+        """
+        cands = {"candidates": {"u": _cand()}, "rejected": {}}
+        run = {"u": {"ok": True, "usable": 9, "unique_new": 5,
+                     "tamper": None, "probed": None, "flags": []}}
+        rep = sm.evaluate_candidates(cands, run, {"official": []})
+        # 不崩即过关；None 经 int(... or 0) 兜底为 0，probed 取 1
+        assert "u" not in rep["rejected"]  # 优质候选不应因 None 被误拒
+
     def test_history_keeps_last_eight_entries(self):
         # required_runs 抬高以避免中途晋升（晋升会把它移出 candidates）
         cands = {"candidates": {"u": _cand(required_runs=999)}, "rejected": {}}

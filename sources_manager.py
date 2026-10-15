@@ -348,7 +348,9 @@ def evaluate_candidates(cands: dict, run: dict[str, dict], sources: dict) -> dic
             "unique_new": r.get("unique_new", 0), "tamper": r.get("tamper", 0),
         }])[-8:]
         reason = None
-        tamper, probed = r.get("tamper", 0), max(1, r.get("probed", 0))
+        # N2：与 update_official 保持一致——probed/tamper 统一 int() 兜底，
+        # 避免上游显式传 None 时 max(1, None) / >= 比较抛 TypeError。
+        tamper, probed = int(r.get("tamper") or 0), max(1, int(r.get("probed") or 0))
         if r.get("flags"):
             # 转载我们诱饵节点的源（爬虫/聚合站）直接拒绝，与蜜罐结构区分原因
             bait = [f for f in r["flags"] if "bait_reuse" in f]
@@ -426,6 +428,13 @@ def update_official(sources: dict, stats_hist: dict, run: dict[str, dict]) -> di
         if reason:
             rep["demoted"][url] = reason
 
+    # N3：排序前一次性读入长期评分，避免在 keep.sort(key=score) 中对每个源
+    # 重复 load_json（源多时 I/O 放大与锁竞争）；原写法每次比较都重读整个文件。
+    try:
+        persisted_scores = load_json(SOURCE_SCORES_FILE, {})
+    except Exception:
+        persisted_scores = {}
+
     def score(entry: dict) -> float:
         """综合评分：实时历史 EMA + 持久化 source_scores（含蜜罐/独有贡献维度）。"""
         h = stats_hist.get(entry["url"], {})
@@ -435,8 +444,7 @@ def update_official(sources: dict, stats_hist: dict, run: dict[str, dict]) -> di
         # 持久化评分（source_scores.json）作为长期维度：与实时 EMA 相加，
         # 使「长期稳定但近期波动」的源不会被瞬时数据误伤。
         try:
-            persisted = load_json(SOURCE_SCORES_FILE, {})
-            base += float(persisted.get(entry["url"], {}).get("score", 0.0)) * 0.5
+            base += float(persisted_scores.get(entry["url"], {}).get("score", 0.0)) * 0.5
         except Exception:
             pass
         return base
