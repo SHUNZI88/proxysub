@@ -89,6 +89,18 @@ gh auth status          # 应显示 Logged in as SHUNZI88
 
 ---
 
+## 📋 会话启动检查：待办看板（每次会话必查）
+
+**每个会话开始时，除读完本文件外，必须检查以下待办看板**；若其"复查条件"已满足，应**主动向用户提示**，不得静默跳过：
+
+| 看板 | 内容 | 复查条件 |
+|---|---|---|
+| [`docs/protocol_weights_todo.md`](docs/protocol_weights_todo.md) | 协议权重化评估（用户约定：7 轮后评估实施） | `protocol_history.json` 中某协议 `rounds≥5` 且 `tested≥50` |
+
+> 立此节原因：口头/会话内的"待办约定"会随会话结束而丢失（2026-10-15 教训）。**凡跨会话的约定，必须落在本文件或看板中。**
+
+---
+
 ## ✅ 提交与验证
 
 - 提交信息用 `.git/COMMIT_MSG.txt` + `git commit -F`，**避免中文引号导致的 shell 转义问题**。

@@ -2,6 +2,7 @@
 
 > 🤖 **AI 协作者必读**：本仓库有强制规则文件 **[`AGENTS.md`](AGENTS.md)**（摘要见 [`.github/copilot-instructions.md`](.github/copilot-instructions.md)）。
 > 两条铁律：**① 先验新鲜度，再采信**（任何输入先看生成时间与有无更新版本）；**② 断言"没有凭据"前，必须查 `/root/.github_pat` + 项目文档 + 环境变量 三处**。
+> 另：**每次会话请检查 [`docs/protocol_weights_todo.md`](docs/protocol_weights_todo.md)**（协议权重化评估的待办看板）。
 > 立此规则的原因（2026-10-15 事故复盘）见 `AGENTS.md` 开头。
 
 **高纯度订阅清洗与结构规范化工具**：每 6 小时（北京时间 0/6/12/18，GitHub Actions 定时 + 可手动 `workflow_dispatch`）自动抓取公开免费订阅源，经「协议白名单 + 关键参数校验 + 深度指纹去重 + 防蜜罐静态检测」清洗后，输出干净、格式标准、结构统一的节点列表。
