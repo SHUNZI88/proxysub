@@ -6,7 +6,7 @@
 > 真实订阅通过滚动 GitHub Release 分发，地址形如
 > `https://github.com/SHUNZI88/proxysub/releases/latest/download/p_<随机资产名>`，
 > **永久有效、无需更换**；具体地址仅仓库所有者可见（Actions 运行页 Step Summary），不在此公开悬挂。
-> 机制与效果边界详见「反爬与防搜索」一节。
+> 机制与效果边界详见「反爬与防搜索」一节及 [`docs/anti_crawl_design.md`](docs/anti_crawl_design.md)。
 
 ### 运行态速览（三行，先读这个）
 
@@ -191,39 +191,21 @@ Content-Type: application/json
 ## 反爬与防搜索（anti-crawl）
 
 > **当前状态：已开启**（`anti_crawl.json` 的 `"enabled": true`，`publish_release: true` 永久地址模式）。
-> 固定名 raw 地址为诱饵内容；真实订阅经滚动 Release 分发，地址永久不变（见页首）。
-> 关闭方式：`"enabled": false`，或工作流环境变量 `PROXYSUB_ANTI_CRAWL: '0'` 临时强制关闭。
 
-public 仓库的订阅文件对任何人可读，且会被「按固定路径扫描」的爬虫 / 聚合站收录。在 `anti_crawl.json` 设 `"enabled": true` 后：
+public 仓库的订阅文件对任何人可读，会被「按固定路径扫描」的爬虫 / 聚合站收录。开启反爬后：
 
-1. **诱饵分流**：固定名订阅文件（`clean_clash.yaml` 等）改写为**诱饵内容**——大量形态合法但必定不可用的诱饵节点（名称带 `[BAIT]` 标记，服务器指向 RFC 保留域 `.invalid`，任何客户端都无法连通；混合 VLESS-Reality / Trojan / Hysteria2 三种形态，与真实输出完全同构）。按固定路径扫描 raw 的爬虫，扫到的永远是诱饵。
-2. **永久订阅地址（滚动 Release，默认模式 `publish_release: true`）**：真实输出由工作流发布到仓库的滚动 GitHub Release（tag 可配，默认 `sub`），**资产名为首次生成的随机字符串**（如 `p_5d0dc339da_c.yaml`，之后永久不变）。订阅地址形如：
-   ```
-   https://github.com/SHUNZI88/proxysub/releases/latest/download/p_5d0dc339da_c.yaml
-   ```
-   **一次复制，永久有效，无需任何手动维护**；且该路径不在任何 raw 扫描器的目标清单上，也不从任何公开文件链接（地址只在 Actions Step Summary 可见）。
-3. **诱饵回流检测**：若某个订阅源收录了我们生成的诱饵节点（指纹比对，在静态门槛与 DNS 之前完成），该源会被标记 `bait_reuse`——**候选源直接拒绝、正式源自动淘汰**（`redistributes_bait`）。爬虫转载诱饵即自我暴露。
-4. **robots.txt**：生成 `Disallow: /` 声明，劝阻合规爬虫。
-5. **真实订阅地址只写入 GitHub Actions 的 Step Summary**（仅仓库所有者可见），不进入任何公开文件。
-6. 工作流加固：`workflow_dispatch` 限定**仅仓库所有者**可手动触发（public 仓库默认任何人可点）；失败告警 Issue 默认关闭（`ALERT_ISSUE: '1'` 可重开）。
+- **固定名 raw 地址（`clean_clash.yaml` 等）为诱饵内容**，请勿订阅——按固定路径扫描的爬虫只会
+  扫到不可用的诱饵。
+- **真实订阅经滚动 Release 分发**，地址永久不变（见页首「怎么订阅」），仅在 Actions 的 Step
+  Summary 显示。
+- **转载诱饵的订阅源会被自动拒绝 / 淘汰**（诱饵回流检测）。
 
-> 备选模式：`"publish_release": false` 退回**文件名轮换**（真实输出写 `clean_clash.<token>.yaml`，每 `rotate_days` 天更换、过期自动删除）——适合「分享出去的链接应过期」的场景，但订阅地址需定期更新。默认不启用。
+**能力边界（请如实知悉）**：反爬是「提高发现门槛」而非「彻底隐藏」。public 仓库无法从根本上
+避免被站内搜索 / 外部搜索引擎索引，针对性的（会读 Releases 页的）爬虫亦可绕过。**要彻底隐藏
+需将仓库转为 private**（代价：客户端无法直接订阅 raw 直链）。
 
-### 效果边界（重要，请如实知悉）
-
-| 措施 | 防住 | 防不住 |
-|---|---|---|
-| 诱饵分流 + Release 永久地址 | 按固定路径扫描 raw 的大众爬虫 / 聚合站（扫到的只有诱饵） | 会去读 Releases 页 / 解析 `anti_crawl.json` 的针对性爬虫；人工分析 |
-| 诱饵回流检测 | 转载诱饵的源被自动拒绝/淘汰 | 只爬不用、或清洗掉诱饵后再转载的爬虫 |
-| robots.txt | 遵守 robots 规范的合规爬虫 | 不遵守的爬虫；GitHub 站内搜索与代码索引 |
-| owner-only dispatch | 陌生人手动触发工作流 | 定时触发本身 |
-| 失败告警关闭 | Issues 页暴露运行信息 | — |
-
-- **public 仓库无法从根本上避免被检索**：GitHub 仓库页/README/代码会被站内搜索与外部搜索引擎索引，个人仓库内的文件（含 robots.txt）不能控制这一点。
-- 永久地址的随机资产名记录在公开的 `anti_crawl.json` 中——这是「提高门槛」而非「加密保密」。如要求资产名完全不落仓库，可用仓库 secret 传入环境变量 `PROXYSUB_ASSET_NAMES`（JSON，如 `{"clean_clash.yaml":"my_name.yaml"}`），指定后程序不再生成也不再写入配置。
-- 滚动 Release 页面本身是公开的（任何人可看到资产存在），但资产名为随机字符串，且发布动作每轮静默更新，对「扫路径」的自动化爬虫不可见。
-- 开启反爬后，**README 顶部的订阅地址表会指向诱饵文件**，请按需删除或改写该段（真实永久地址在 Actions Step Summary，不会变）。
-- **要彻底隐藏**（搜索/索引/raw 直链全部失效）：将仓库转为 **private**。代价：raw 订阅直链与 Release 资产对 private 仓库都需要 token 才能下载，客户端无法直接订阅，需改用 GitHub API 带 token 下载或 Actions artifact；外部心跳 `repository_dispatch` 不受影响（本就用 PAT），且免费账户 private 仓库每月有 2000 分钟 Actions 额度（本工作流日均 4 次、单次数分钟，远低于上限）。
+> 机制细节（诱饵形态、永久地址与资产名、回流检测、robots、效果边界逐项、开关与运维）见内部文档
+> [`docs/anti_crawl_design.md`](docs/anti_crawl_design.md)。
 
 ## 工程化
 
