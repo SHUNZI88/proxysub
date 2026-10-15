@@ -586,7 +586,9 @@ def score_candidates(tcp_lat: dict[str, float], unique: dict[str, dict], prov: d
                      official_fps: set, off_set: set, real_ok: dict[str, dict],
                      tampered: set, bin_path: str | None, survival: dict,
                      cn_latency_cap: float, source_scores_cn: dict,
-                     cn_hist: dict, real_probe_on: bool) -> ScoringResult:
+                     cn_hist: dict, real_probe_on: bool,
+                     us_latency_cap: float = MAX_ACCEPT_LATENCY_MS_US,
+                     score_latency_cap: float = TCP_LATENCY_CAP_IN_SCORE) -> ScoringResult:
     """阶段 7：评分、排序与多样性/单源上限裁剪。
 
     Real-probe OK ranks first; TCP-alive (esp. Asia / Hy2/Reality) stays eligible
@@ -613,7 +615,7 @@ def score_candidates(tcp_lat: dict[str, float], unique: dict[str, dict], prov: d
             continue  # AI/CF sites need working HTTPS egress
         display = r["latency"] if r else tlat
         us_like = is_us_node(unique[fp], r)
-        lat_cap = MAX_ACCEPT_LATENCY_MS_US if us_like else cn_latency_cap
+        lat_cap = us_latency_cap if us_like else cn_latency_cap
         if r and display > lat_cap:
             continue  # extreme outlier on runner RTT
         # Drop open http/socks from final when we have mihomo purity path
@@ -649,7 +651,7 @@ def score_candidates(tcp_lat: dict[str, float], unique: dict[str, dict], prov: d
             bonus *= 1.5  # keep long-lived hy2/reality even harder
         # TCP 延迟（美西 Runner 测得，≠国内真实路径）仅作粗排信号：贡献设上限，
         # 排序主要由协议质量 / 存活时长 / 多源 / 亚洲路径等静态特征决定。
-        score = min(display, TCP_LATENCY_CAP_IN_SCORE) + penalty + bonus
+        score = min(display, score_latency_cap) + penalty + bonus
         scored.append((unique[fp], score, display, is_preferred(unique[fp]), bool(r), tier))
 
     scored.sort(key=lambda x: (x[5], not x[3], x[1]))
@@ -943,11 +945,14 @@ def main() -> None:
     # ---- 6.5 进化引擎（Phase 2）：下载上轮沙箱实测报告，反哺本地数据/门槛 ----
     cn_hist, learned_params, source_scores_cn = load_evolution_inputs(REPO_ROOT)
     cn_latency_cap = learned_params.get("CN_LATENCY_CAP_MS", MAX_ACCEPT_LATENCY_MS)
+    us_latency_cap = learned_params.get("US_LATENCY_CAP_MS", MAX_ACCEPT_LATENCY_MS_US)
+    score_latency_cap = learned_params.get("SCORE_LATENCY_CAP_MS", TCP_LATENCY_CAP_IN_SCORE)
 
     # ---- 7. scoring ----
     sr = score_candidates(tcp_lat, unique, prov, official_fps, off_set, real_ok,
                           tampered, bin_path, survival_pre, cn_latency_cap,
-                          source_scores_cn, cn_hist, real_probe_enabled())
+                          source_scores_cn, cn_hist, real_probe_enabled(),
+                          us_latency_cap, score_latency_cap)
     scored, survival, diversity_dropped = sr.scored, sr.survival, sr.diversity_dropped
 
     # ---- 8+9. 区域配额选择 + 美国占比上限 + MIN/MAX_FINAL 强制 ----

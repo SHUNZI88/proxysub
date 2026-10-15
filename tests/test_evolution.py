@@ -150,6 +150,58 @@ def test_learn_thresholds_bounded(tmp_path):
     assert params["CN_LATENCY_CAP_MS"] >= spec["min"]
 
 
+def test_learn_thresholds_new_caps_registered(tmp_path):
+    """P3-3：参数注册表扩展——US/SCORE 两类延迟上限默认即学、默认即取。"""
+    report = _mk_report(tested=20, passed=5)
+    out = str(tmp_path / "learned.json")
+    hist = str(tmp_path / "th.json")
+    params = evolution.learn_thresholds(report, out, hist)
+    for name in ("US_LATENCY_CAP_MS", "SCORE_LATENCY_CAP_MS"):
+        assert name in params
+        assert params[name] == evolution.LEARNED_PARAMS[name]["default"]
+
+
+def test_learn_thresholds_healthy_tightens_cn_us(tmp_path):
+    """通过率健康且 p90≈2600ms（落在 CN/US 各自 [min,default) 内）-> 两类上限同构收紧。
+
+    注：SCORE_LATENCY_CAP_MS 默认仅 600ms，远小于真实延迟水位，本场景下不收紧
+    （p90 低于其 min），属设计正确——它衡量的是排序贡献上限而非真实延迟阈值。
+    """
+    report = _mk_report(tested=200, passed=180)
+    for i, n in enumerate(report["nodes"]):
+        if n["cn"].get("ok"):
+            n["cn"]["latency_ms"] = 2600 + (i % 10) * 10  # p90 ≈ 2680ms
+    out = str(tmp_path / "learned.json")
+    hist = str(tmp_path / "th.json")
+    params = evolution.learn_thresholds(report, out, hist)
+    h = json.load(open(hist))
+    for name in ("CN_LATENCY_CAP_MS", "US_LATENCY_CAP_MS"):
+        spec = evolution.LEARNED_PARAMS[name]
+        assert params[name] < spec["default"]
+        assert spec["min"] <= params[name] <= spec["max"]
+        assert any(e["param"] == name for e in h)
+    # SCORE 不收紧（p90 远低于其阈值窗口），维持默认
+    assert params["SCORE_LATENCY_CAP_MS"] == evolution.LEARNED_PARAMS["SCORE_LATENCY_CAP_MS"]["default"]
+
+
+def test_learn_thresholds_healthy_tightens_score_cap(tmp_path):
+    """p90≈500ms（落在 SCORE 的 [min,default) 内）-> 排序贡献上限收紧，CN/US 不动。"""
+    report = _mk_report(tested=200, passed=180)
+    for i, n in enumerate(report["nodes"]):
+        if n["cn"].get("ok"):
+            n["cn"]["latency_ms"] = 500 + (i % 10)  # p90 ≈ 508ms
+    out = str(tmp_path / "learned.json")
+    hist = str(tmp_path / "th.json")
+    params = evolution.learn_thresholds(report, out, hist)
+    spec = evolution.LEARNED_PARAMS["SCORE_LATENCY_CAP_MS"]
+    assert params["SCORE_LATENCY_CAP_MS"] < spec["default"]
+    assert spec["min"] <= params["SCORE_LATENCY_CAP_MS"] <= spec["max"]
+    assert any(e["param"] == "SCORE_LATENCY_CAP_MS" for e in json.load(open(hist)))
+    # CN/US 默认上限远大于真实 p90，本场景不收紧
+    assert params["CN_LATENCY_CAP_MS"] == evolution.LEARNED_PARAMS["CN_LATENCY_CAP_MS"]["default"]
+    assert params["US_LATENCY_CAP_MS"] == evolution.LEARNED_PARAMS["US_LATENCY_CAP_MS"]["default"]
+
+
 def test_learn_thresholds_stale_noop(tmp_path):
     report = _mk_report(tested=200, passed=120, stale=True)
     out = str(tmp_path / "learned.json")

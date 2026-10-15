@@ -175,14 +175,18 @@ def _fresh_survival(streak=5, seen_days=10, hist=(1, 1, 1)):
 
 class TestScoreCandidates:
     def _run(self, nodes, real_ok=None, bin_path="/fake/mihomo", survival=None,
-             tampered=None, official_fps=None, prov=None, off_set=None):
+             tampered=None, official_fps=None, prov=None, off_set=None,
+             cn_latency_cap=config.MAX_ACCEPT_LATENCY_MS,
+             us_latency_cap=config.MAX_ACCEPT_LATENCY_MS_US,
+             score_latency_cap=config.TCP_LATENCY_CAP_IN_SCORE):
         unique = {fc.fingerprint(p): p for p in nodes}
         prov = prov or {fp: {TEST_URL} for fp in unique}
         official_fps = official_fps if official_fps is not None else set(unique)
         return fc.score_candidates(
             _scored_items(unique), unique, prov, official_fps, off_set or {TEST_URL},
             real_ok or {}, tampered or set(), bin_path, survival or {},
-            config.MAX_ACCEPT_LATENCY_MS, {}, {}, True)
+            cn_latency_cap, {}, {}, True,
+            us_latency_cap, score_latency_cap)
 
     def test_liveness_gate_drops_unprobed_when_mihomo_present(self):
         """mihomo 在场时未通过拨测的节点被死活闸门丢弃。"""
@@ -218,6 +222,35 @@ class TestScoreCandidates:
     def test_open_http_kept_without_mihomo(self):
         r = self._run([_http()], bin_path=None)
         assert len(r.scored) == 1
+
+    def test_us_node_uses_learned_us_cap(self):
+        """美国出口节点用 us_latency_cap（非 CN 上限）；自学习放宽后保留。"""
+        node = {"name": "US-01", "type": "vless", "server": "h1.vultr.example.com",
+                "port": 443, "uuid": "u1"}
+        fp = fc.fingerprint(node)
+        ok = {fp: {"status": "ok", "latency": 3000.0, "https_ok": True}}
+        # 默认 US 上限 2800ms：3000ms 超界 -> 离群点丢弃
+        assert not self._run([node], real_ok=ok).scored
+        # 自学习放宽到 5000ms：保留
+        r = self._run([node], real_ok=ok, us_latency_cap=5000.0)
+        assert len(r.scored) == 1
+
+    def test_score_latency_cap_limits_contribution(self):
+        """score_latency_cap 限制 TCP 延迟（美西 RTT，≠国内路径）的排序贡献。
+
+        同构非美国节点延迟 100 vs 99999，cn 上限抬高避免离群丢弃，
+        score_latency_cap=500：两节点 score 之差应恰为 min() 之差 400。
+        """
+        base = {"name": "HK-01", "type": "vless", "server": "1.2.3.4",
+                "port": 443, "uuid": "u-base"}
+        fp = fc.fingerprint(base)
+        ok_low = {fp: {"status": "ok", "latency": 100.0, "https_ok": True}}
+        ok_hi = {fp: {"status": "ok", "latency": 99999.0, "https_ok": True}}
+        s_low = self._run([base], real_ok=ok_low, cn_latency_cap=100000.0,
+                          score_latency_cap=500.0).scored[0][1]
+        s_hi = self._run([base], real_ok=ok_hi, cn_latency_cap=100000.0,
+                         score_latency_cap=500.0).scored[0][1]
+        assert abs((s_hi - s_low) - 400.0) < 1e-6
 
     def test_candidate_only_must_pass_probe(self):
         """候选源节点必须通过拨测（与正式源同标准）。"""

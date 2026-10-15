@@ -25,11 +25,29 @@ THRESHOLD_STEP_FRACTION = 0.5       # 幅度减半渐进（防过冲）
 # 自学习参数注册表：name -> (默认/下界/上界/方向)
 #  direction: "loosen_if_low_pass"  通过率偏低时放宽（让更多节点进候选）
 #             "tighten_if_high_pass" 通过率健康且分布收紧时收紧（提质）
+# 注册表即「声明即可学」：新增参数只需在此登记 + 在消费点用
+#   learned_params.get(name, config.XXX) 取值，learn_thresholds 通用逻辑自动覆盖
+#   （所有延迟类上限共用 p90 收紧 / 低通过率放宽规则，见 learn_thresholds）。
 LEARNED_PARAMS = {
     "CN_LATENCY_CAP_MS": {
         "default": 4500.0,
         "min": 2500.0,
         "max": 6000.0,
+        "direction": "tighten_if_high_pass",
+    },
+    # 美国命名/美国出口节点的更严格延迟上限（config.MAX_ACCEPT_LATENCY_MS_US 的同形自学习版）
+    "US_LATENCY_CAP_MS": {
+        "default": 2800.0,
+        "min": 1800.0,
+        "max": 4500.0,
+        "direction": "tighten_if_high_pass",
+    },
+    # 排序中 TCP 延迟（美西 Runner RTT，≠国内路径）的贡献上限
+    # （config.TCP_LATENCY_CAP_IN_SCORE 的同形自学习版）
+    "SCORE_LATENCY_CAP_MS": {
+        "default": 600.0,
+        "min": 400.0,
+        "max": 1200.0,
         "direction": "tighten_if_high_pass",
     },
 }
@@ -202,17 +220,16 @@ def learn_thresholds(report: dict, out_path: str = config.LEARNED_THRESHOLDS_FIL
         target = cur
         reason = ""
         if tested >= THRESHOLD_MIN_SAMPLES:
-            if name == "CN_LATENCY_CAP_MS":
-                # 通过率健康且延迟水位明显低于当前 cap -> 收紧提质
-                if spec["direction"] == "tighten_if_high_pass" and pass_rate >= 0.10 and p90:
-                    if p90 < cur and p90 >= spec["min"]:
-                        target = p90
-                        reason = (f"pass_rate={pass_rate:.2%} 健康、p90延迟 {p90:.0f}ms "
-                                  f"< 当前 {cur:.0f}ms -> 收紧提质")
-                # 通过率偏低 -> 放宽，给更多节点候选机会
-                elif spec["direction"] == "loosen_if_low_pass" and pass_rate < 0.08:
-                    target = min(spec["max"], cur * 1.1)
-                    reason = f"pass_rate={pass_rate:.2%} 偏低 -> 放宽"
+            # 延迟类上限通用规则：通过率健康且 p90 水位低于当前 cap -> 收紧提质；
+            # 通过率偏低 -> 放宽，给更多节点候选机会。CN/US/SCORE 三类上限同构复用。
+            if spec["direction"] == "tighten_if_high_pass" and pass_rate >= 0.10 and p90:
+                if p90 < cur and p90 >= spec["min"]:
+                    target = p90
+                    reason = (f"pass_rate={pass_rate:.2%} 健康、p90延迟 {p90:.0f}ms "
+                              f"< 当前 {cur:.0f}ms -> 收紧提质")
+            elif spec["direction"] == "loosen_if_low_pass" and pass_rate < 0.08:
+                target = min(spec["max"], cur * 1.1)
+                reason = f"pass_rate={pass_rate:.2%} 偏低 -> 放宽"
             # 夹区间
             target = max(spec["min"], min(spec["max"], target))
             # 幅度减半渐进：至多走一半到目标

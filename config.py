@@ -223,15 +223,18 @@ MAX_ACCEPT_LATENCY_MS = 4500.0
 MAX_ACCEPT_LATENCY_MS_US = 2800.0  # stricter for US-named / US-egress
 # Soft cap: low-tier fill per region after preferred/high (raised to hit 100–200 band).
 MAX_LOW_TIER_PER_REGION = 10
-# Protocol score: Hy2 > VLESS+Reality > Trojan > else (ms-equivalent; lower = better).
-PROTOCOL_BONUS_HY2 = -420.0
-PROTOCOL_BONUS_REALITY = -380.0
-PROTOCOL_BONUS_TROJAN = -220.0
-PROTOCOL_BONUS_TLS_OK = -80.0
-PROTOCOL_PENALTY_VMESS = 280.0
-PROTOCOL_PENALTY_SS = 360.0
-PROTOCOL_PENALTY_HTTP_SOCKS = 900.0
-PROTOCOL_PENALTY_OTHER_LOW = 400.0
+# 协议评分（ms 等价，越低越好）：总分 = min(延迟, TCP_LATENCY_CAP_IN_SCORE) + 惩罚 + 加成。
+# 刻度参照：协议全档跨度 = -420(hy2) ~ +900(http/socks) ≈ 1320ms，即「协议偏好」最多
+# 可抵消约 1.3s 美西 Runner RTT——足以让首选协议压过次优但低延迟节点，又不碾压延迟事实。
+# 相邻档位差（40~540）决定排序分层：现代协议内部差距小、明文开放代理一档甩开。
+PROTOCOL_BONUS_HY2 = -420.0          # 首选：QUIC 穿透+延迟最优，最大加成
+PROTOCOL_BONUS_REALITY = -380.0       # VLESS+Reality 次选；与 hy2 仅差 40（均具伪站指纹，差距小）
+PROTOCOL_BONUS_TROJAN = -220.0        # 现代 TLS 伪装；比 reality 弱一档（缺 reality 指纹伪站）
+PROTOCOL_BONUS_TLS_OK = -80.0         # 仅普通 TLS 的 vless/trojan：基础加成
+PROTOCOL_PENALTY_VMESS = 280.0        # VMess 协议开销大、特征明显且常无 reality：正惩罚
+PROTOCOL_PENALTY_SS = 360.0           # SS 抗检测弱、国内易被识别：惩罚更高
+PROTOCOL_PENALTY_HTTP_SOCKS = 900.0   # 明文开放代理：纯度最低、最易被墙/滥用，最大惩罚
+PROTOCOL_PENALTY_OTHER_LOW = 400.0    # 其他低质明文协议（与 SS 同量级，略低于 http/socks）
 # China-friendly feature bonuses (SNI / port / Reality fingerprint).
 SNI_WHITELIST_SUFFIXES = (
     "microsoft.com", "apple.com", "cloudflare.com", "icloud.com",
@@ -239,16 +242,18 @@ SNI_WHITELIST_SUFFIXES = (
     "mzstatic.com", "akamai.net", "akamaized.net",
 )
 FRIENDLY_PORTS = {443, 8443, 2053, 2083, 2087, 2096}
-SNI_BONUS = -120.0
-PORT_BONUS = -80.0
-REALITY_FP_BONUS = -100.0
+# 三者加成量级（-80~-120）刻意小于协议档位差：伪装特征只是「加分项」，
+# 不喧宾夺主——节点是否可用仍由拨测与协议分层主导。
+SNI_BONUS = -120.0                    # SNI 指向白名单大厂：疑似正规业务流量，难被特征识别
+PORT_BONUS = -80.0                    # 标准 HTTPS 端口（443 等）：与正常 Web 流量同形
+REALITY_FP_BONUS = -100.0             # 具 reality 指纹伪站：抗主动探测，价值高于普通 SNI
 # Asia score bonus / US China-path penalties (ms-equivalent).
 ASIA_REGIONS = {"🇭🇰 香港", "🇯🇵 日本", "🇸🇬 新加坡", "🇹🇼 台湾", "🇰🇷 韩国"}
-ASIA_SCORE_BONUS = -220.0
-US_REGION_DELAY_PENALTY = 120.0   # named US region: mild penalty only (relaxed)
-US_EGRESS_PENALTY_HY2_REALITY = 120.0
-US_EGRESS_PENALTY_MID = 180.0
-US_EGRESS_PENALTY_SS_VMESS = 250.0
+ASIA_SCORE_BONUS = -220.0          # 亚洲（港日新台韩）对国内路径友好：加成（与 reality 同量级）
+US_REGION_DELAY_PENALTY = 120.0   # 仅命名美国区：轻微延迟惩罚（已放松，不硬歧视）
+US_EGRESS_PENALTY_HY2_REALITY = 120.0  # 美国出口+现代协议：最轻（现代协议在美出口下延迟更稳）
+US_EGRESS_PENALTY_MID = 180.0      # 美国出口+普通 TLS 协议：居中
+US_EGRESS_PENALTY_SS_VMESS = 250.0 # 美国出口+弱抗检协议：最重（SS/VMess 在美出口最易被识别）
 MAX_US_SHARE = 0.40               # final list US share <= 40% (no over-discrimination)
 CF_BLOCKED_PENALTY = 320.0        # soft purity hit (not hard veto)
 US_HOST_HINTS = re.compile(
@@ -262,8 +267,10 @@ PURITY_URL = "https://grok.com/"
 PURITY_TIMEOUT = 6.0
 
 # Cross-day survival: raise weight — multi-day survivors more likely usable from China.
-SURVIVAL_WEIGHT = 240  # ms-equivalent bonus per consecutive day (lower score = better)
-MAX_SURVIVAL_DAYS = 28
+# 刻度：survival_bonus = min(streak, MAX_SURVIVAL_DAYS) * SURVIVAL_WEIGHT，约 28 天封顶
+# ≈ 6720ms 加成——足够把「长期存活」推到首选协议之前（存活是可用性最硬的证据）。
+SURVIVAL_WEIGHT = 240  # ms 等价：每连续存活 1 天加成（越低越好）
+MAX_SURVIVAL_DAYS = 28  # 存活天数上限（防陈旧 streak 无限放大，也对齐多数免费源月级寿命）
 
 # UDP 协议（hysteria2/tuic/hysteria，走 QUIC）：服务器通常不监听 TCP，
 # TCP 检查必然失败——这曾把对墙穿透性最好的 hy2 系统性排除出输出
@@ -276,6 +283,8 @@ UDP_PROTOCOLS = {"hysteria2", "hy2", "tuic", "hysteria", "quic"}
 # 整体忽略该优先级，防止已死旧节点凭陈旧 streak 霸占拨测预算。
 SURVIVAL_STREAK_FORCE_PROBE = 3
 # 历史真实通过率加成（过去 N 次运行的 real_ok 比率，见 common.update_survival）
+# 150 < SURVIVAL_WEIGHT(240)：历史通过率只是「稳健性佐证」，权重低于连续存活天数；
+# 且受陈旧守卫约束（survival 停更则归零），避免陈旧记录误导排序。
 HISTORY_PASS_RATE_BONUS = 150.0
 SURVIVAL_PASS_WINDOW = 7
 
