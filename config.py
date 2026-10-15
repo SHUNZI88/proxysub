@@ -299,6 +299,17 @@ SURVIVAL_STREAK_FORCE_PROBE = 3
 # 且受陈旧守卫约束（survival 停更则归零），避免陈旧记录误导排序。
 HISTORY_PASS_RATE_BONUS = 150.0
 SURVIVAL_PASS_WINDOW = 7
+# ---- survival.json 僵尸记录清理（prune_survival）----
+# 见 score.prune_survival：不仅省体积，更修正「陈旧 seen_days 白送长寿加成」
+# 的评分隐患（僵尸记录诈尸复活时会立刻继承中断已久的历史加成）。
+# 判据 A：last_seen 距今 > 14 天（长期机制；远大于"连续存活"关注尺度
+#   MAX_SURVIVAL_DAYS=28 的一半，给周末停机/调度抖动留足容错，宁留勿删）。
+SURVIVAL_PRUNE_IDLE_DAYS = 14
+# 判据 B：已中断（streak=0 且非当日）且 seen_days ≤ 此值（项目早期数据仅
+#   数天、判据 A 尚不触发时启用）。取 2：出现 1–2 天即消失 = 无历史厚度。
+SURVIVAL_PRUNE_ZOMBIE_SEEN_MAX = 2
+# 高价值豁免：seen_days ≥ 此值的节点无论多久未出现都保留（历史有长期价值）。
+SURVIVAL_PRUNE_KEEP_SEEN = 3
 
 # 指纹计算时忽略的易变字段：改名不影响节点身份；latency/history 是运行期数据。
 FINGERPRINT_IGNORE_KEYS = {"name", "latency", "history"}

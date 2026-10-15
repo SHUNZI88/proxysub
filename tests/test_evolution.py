@@ -301,3 +301,40 @@ def test_update_source_scores_cn_falls_back_when_no_mapping(tmp_path):
     }
     scores = evolution.update_source_scores_cn(report, path)
     assert scores["owner/repo"]["cn_pass_rate"] == 1.0
+
+
+def test_prune_cn_history_removes_stale_never_passed(tmp_path):
+    """清理「已陈旧且从未通过」的 cn_history 记录（控制体积，零评分损失）。
+
+    cn_stability_bonus_ms 对 cn_last 超过 12h 的记录整条归零，故这类记录
+    对评分零贡献却随每轮 CI 进 git（实测 1331/2654 条）。注意 cn_history
+    仅用于评分加成，不用于"跳过已测节点"，删除不造成重复测试。
+    """
+    stale = "2020-01-01T00:00:00Z"
+    fresh = _now_iso()
+    hist = {
+        # 陈旧 + 从未通过 → 剔除
+        "zombie": {"cn_ok": False, "cn_streak": 0, "cn_fails": 5,
+                   "cn_runs": 5, "cn_pass": 0, "cn_last": stale},
+        # 曾有通过史 → 保留（无论多旧）
+        "passed": {"cn_ok": True, "cn_streak": 2, "cn_fails": 1,
+                   "cn_runs": 5, "cn_pass": 3, "cn_last": stale},
+        # 新鲜 + 从未通过 → 保留（仍在评分窗口内）
+        "freshfail": {"cn_ok": False, "cn_streak": 0, "cn_fails": 1,
+                      "cn_runs": 1, "cn_pass": 0, "cn_last": fresh},
+    }
+    out = evolution.prune_cn_history(hist)
+    assert set(out) == {"passed", "freshfail"}
+    assert "zombie" not in out
+
+
+def test_prune_cn_history_respects_max_age_override():
+    """max_age_s 可覆盖：阈值放宽后，原本陈旧的记录可被保留。"""
+    hist = {"x": {"cn_pass": 0, "cn_last": "2020-01-01T00:00:00Z"}}
+    assert "x" not in evolution.prune_cn_history(hist)
+    # 阈值放大到 100 年 → 视为新鲜
+    assert "x" in evolution.prune_cn_history(hist, max_age_s=100 * 365 * 24 * 3600)
+
+
+def test_prune_cn_history_no_op_on_empty():
+    assert evolution.prune_cn_history({}) == {}

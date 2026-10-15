@@ -29,6 +29,10 @@ from config import (
     SNI_BONUS,
     SNI_WHITELIST_SUFFIXES,
     SURVIVAL_PASS_WINDOW,
+    SURVIVAL_PRUNE_IDLE_DAYS,
+    SURVIVAL_PRUNE_KEEP_SEEN,
+    SURVIVAL_PRUNE_ZOMBIE_SEEN_MAX,
+    SURVIVAL_STREAK_FORCE_PROBE,
     SURVIVAL_WEIGHT,
     US_EGRESS_PENALTY_HY2_REALITY,
     US_EGRESS_PENALTY_MID,
@@ -221,7 +225,81 @@ def update_survival(alive_fps: set[str], survival: dict,
             if real_ok_fps is not None:
                 rec["real_hist"] = [1 if fp in real_ok_fps else 0]
             updated[fp] = rec
-    return updated
+    return prune_survival(updated, today=today)
+
+
+def prune_survival(survival: dict, *, today: str | None = None,
+                   max_idle_days: int = SURVIVAL_PRUNE_IDLE_DAYS,
+                   max_lifespan_for_zombie: int = SURVIVAL_PRUNE_ZOMBIE_SEEN_MAX) -> dict:
+    """清理长期未出现 / 已中断的「僵尸」存活记录（**修正评分信号 + 控制体积**）。
+
+    为什么必须清理（不只是省空间）：
+    `survival_bonus_ms` 的 `seen_days` 是**终身累计、从不重置**的字段——
+    一条僵尸记录（如 last_seen=10-10、seen_days=1、streak=0）虽已死，但该 fp
+    若日后「诈尸」重新出现，会立刻白得 `-SEEN_DAYS_WEIGHT×seen_days` 的历史
+    长寿加成（实测 55ms/seen_day），建立在**早已中断的历史**上。
+
+    实测（2026-10-15）：survival.json 7285 条中，5005 条属此类僵尸——last_seen
+    停在 3+ 天前、streak 已归零、seen_days≤2、且无真实拨测通过史。它们对当前
+    排序零贡献，却携带陈旧 seen_days 作为未来加成隐患，并占大量体积随每轮
+    CI 提交进 git。
+
+    两条剔除判据（满足任一即剔除，但均受「高价值豁免」保护）：
+      判据 A（长期机制）`last_seen` 距今 > `max_idle_days`；
+      判据 B（当前阶段）**已中断**（last_seen≠today 且 streak=0）且
+        `seen_days <= max_lifespan_for_zombie`（短寿，历史无厚度）。
+      A 面向长期运行（数据积累超过 idle 天数后自动生效）；B 在项目早期
+      （数据仅数天、A 尚不触发）即可清理，二者互补。
+
+    高价值豁免（三选一，宁留勿删）：
+      1. `seen_days >= SURVIVAL_PRUNE_KEEP_SEEN`（长寿节点）；
+      2. `real_hist` 含真实拨测通过记录（质量证据，滚动窗口需延续，不计判据 B）；
+      3. `streak >= SURVIVAL_STREAK_FORCE_PROBE`（连续存活已被强制拨测标记）。
+    """
+    if not survival:
+        return survival
+    try:
+        today_d = date.fromisoformat(today) if today else date.today()
+    except Exception:
+        today_d = date.today()
+    today_s = today_d.isoformat()
+    out: dict = {}
+    for fp, rec in survival.items():
+        last = rec.get("last_seen")
+        try:
+            last_d = date.fromisoformat(last) if last else None
+        except Exception:
+            last_d = None
+        # ---- 高价值豁免（任一命中即保留）----
+        if int(rec.get("seen_days", 0)) >= SURVIVAL_PRUNE_KEEP_SEEN:
+            out[fp] = rec
+            continue
+        if any(rec.get("real_hist") or []):
+            out[fp] = rec
+            continue
+        if int(rec.get("streak", 0)) >= SURVIVAL_STREAK_FORCE_PROBE:
+            out[fp] = rec
+            continue
+        # ---- 剔除判据 ----
+        idle = (last_d is not None and (today_d - last_d).days > max_idle_days)
+        interrupted_short = (last != today_s
+                             and int(rec.get("streak", 0)) == 0
+                             and int(rec.get("seen_days", 0)) <= max_lifespan_for_zombie)
+        if idle or interrupted_short:
+            continue
+        out[fp] = rec
+    if len(out) != len(survival):
+        _prune_log(f"存活历史清理: {len(survival)} -> {len(out)}"
+                   f"（剔除 {len(survival) - len(out)} 条僵尸记录）")
+    return out
+
+
+def _prune_log(msg: str) -> None:
+    """轻量日志（避免 score.py 依赖 filter_clash 的打印约定）。"""
+    try:
+        print(msg)
+    except Exception:
+        pass
 
 def survival_bonus_ms(fp: str, survival: dict) -> float:
     rec = survival.get(fp, {})

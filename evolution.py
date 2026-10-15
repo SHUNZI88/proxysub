@@ -115,8 +115,57 @@ def update_cn_history(report: dict, path: str = config.CN_HISTORY_FILE) -> dict:
             rec["cn_streak"] = 0
         rec["cn_last"] = report.get("generated_at")
         hist[fp] = rec
+    hist = prune_cn_history(hist)
     _save_json(path, hist)
     return hist
+
+
+def prune_cn_history(hist: dict, *, max_age_s: int | None = None) -> dict:
+    """清理「已陈旧且从未通过」的 cn_history 记录（控制体积 + 无评分损失）。
+
+    为什么安全（与 survival 的 prune 不同，此处不涉评分信号，纯体积）：
+    `cn_stability_bonus_ms` 有**双重失效判据**——`cn_last` 超过
+    `VERIFICATION_MAX_AGE_S`（12h）即整条归零；且失败惩罚 `-fails×8` 在
+    max_bonus（80ms=10 次失败）处封顶，失败次数再多也不再改变评分。
+
+    实测（2026-10-15）：cn_history.json 2654 条中 1331 条为「已陈旧(>12h) 且
+    cn_pass=0」，占 202KB 随每轮 CI 提交进 git，却对评分**零贡献**（陈旧归零）。
+    注意 cn_history 只用于评分加成（不用于"跳过已测节点"），故删除不造成
+    重复测试——这是与「黑名单记忆」的关键区别。
+
+    保留规则（宁留勿删）：
+      1. `cn_pass > 0`（曾有中国通过史，正/负加成均有参考价值）——一律保留；
+      2. `cn_last` 在 `max_age_s` 内（仍参与评分）——保留；
+      3. `cn_last` 缺失/不可解析——归为陈旧，剔除（本就永不生效）。
+    其余（陈旧 + 从未通过）判为僵尸，剔除。
+    """
+    if not hist:
+        return hist
+    age_s = max_age_s if max_age_s is not None else config.VERIFICATION_MAX_AGE_S
+    now = datetime.datetime.now(datetime.timezone.utc)
+    out: dict = {}
+    for fp, rec in hist.items():
+        if int(rec.get("cn_pass", 0)) > 0:
+            out[fp] = rec           # 规则 1：有通过史
+            continue
+        last = rec.get("cn_last")
+        fresh = False
+        if last:
+            try:
+                dt = datetime.datetime.fromisoformat(str(last).replace("Z", "+00:00"))
+                if dt.tzinfo is None:
+                    dt = dt.replace(tzinfo=datetime.timezone.utc)
+                fresh = (now - dt).total_seconds() <= age_s
+            except Exception:
+                fresh = False
+        if fresh:
+            out[fp] = rec           # 规则 2：仍在评分窗口内
+            continue
+        # 其余（陈旧 + 从未通过）剔除
+    if len(out) != len(hist):
+        print(f"中国通过史清理: {len(hist)} -> {len(out)}"
+              f"（剔除 {len(hist) - len(out)} 条陈旧且从未通过的记录）")
+    return out
 
 
 def cn_stability_bonus_ms(fp: str, hist: dict, *, max_bonus: float = 80.0) -> float:

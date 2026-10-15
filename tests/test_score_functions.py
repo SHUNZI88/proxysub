@@ -195,3 +195,62 @@ def test_update_survival_real_hist_window():
                       "real_hist": [1] * (cm.SURVIVAL_PASS_WINDOW - 1)}}
     out = score.update_survival({"a"}, survival, real_ok_fps={"a"})
     assert len(out["a"]["real_hist"]) == cm.SURVIVAL_PASS_WINDOW
+
+
+# ---------- prune_survival：僵尸记录清理（判据 + 高价值豁免） ----------
+
+def test_prune_survival_removes_interrupted_short_lived():
+    """已中断 + 短寿 + 无通过史 = 僵尸，须剔除。
+
+    真实现象（2026-10-15）：survival.json 7285 条中 5005 条属此类——
+    last_seen 停在 3+ 天前、streak 归零、seen_days≤2、无 real_hist。
+    隐患：seen_days 终身累计不重置，僵尸 fp 若"诈尸"会白得陈旧长寿加成。
+    """
+    today = "2026-10-15"
+    sv = {
+        # 僵尸：10-10 出现 2 天后消失，streak=0
+        "zombie": {"streak": 0, "last_seen": "2026-10-10", "seen_days": 2},
+        # 僵尸：seen_days=1
+        "zombie2": {"streak": 0, "last_seen": "2026-10-12", "seen_days": 1},
+        # 活跃：今日出现
+        "active": {"streak": 1, "last_seen": today, "seen_days": 1},
+    }
+    out = score.prune_survival(sv, today=today)
+    assert "zombie" not in out and "zombie2" not in out
+    assert "active" in out
+
+
+def test_prune_survival_keeps_high_value():
+    """高价值豁免：长寿、有真实通过史、连续存活达标者一律保留。"""
+    today = "2026-10-15"
+    sv = {
+        # 长寿（seen_days≥3）——虽已中断仍保留
+        "longlived": {"streak": 0, "last_seen": "2026-10-09", "seen_days": 5},
+        # 有真实拨测通过史——保留（滚动窗口需延续）
+        "passed": {"streak": 0, "last_seen": "2026-10-10", "seen_days": 1,
+                   "real_hist": [1, 0, 1]},
+        # 连续存活达标（streak≥3）——保留
+        "streaky": {"streak": 4, "last_seen": "2026-10-13", "seen_days": 1},
+    }
+    out = score.prune_survival(sv, today=today)
+    assert set(out) == {"longlived", "passed", "streaky"}
+
+
+def test_prune_survival_idle_rule_for_long_running():
+    """判据 A（长期机制）：last_seen 距今 > max_idle_days 即剔除（不管 seen_days）。"""
+    today = "2026-10-15"
+    sv = {
+        "veryold": {"streak": 0, "last_seen": "2026-09-01", "seen_days": 2},
+        "recent": {"streak": 0, "last_seen": "2026-10-13", "seen_days": 2},
+    }
+    out = score.prune_survival(sv, today=today)
+    assert "veryold" not in out, "超期未出现须剔除"
+    # recent 虽有 2 天 idle 但未超 14 天，且 streak=0/seen=2 命中判据 B
+    assert "recent" not in out
+
+
+def test_prune_survival_no_op_on_empty_and_keeps_all_when_fresh():
+    assert score.prune_survival({}, today="2026-10-15") == {}
+    sv = {"a": {"streak": 0, "last_seen": "2026-10-15", "seen_days": 1}}
+    # 当日出现：判据 B 要求 last_seen != today，故保留
+    assert set(score.prune_survival(sv, today="2026-10-15")) == {"a"}
