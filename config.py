@@ -160,6 +160,11 @@ PENDING_RESCUE_FILE = "pending_rescue.json"
 # 救援集上限：静态可行但未入拨测样本的节点（「美国不通、中国通」
 # lost-and-found 池——样本有配额上限，被挤出的节点仍可能中国可用）。
 RESCUE_QUOTA = 100
+# 救援集「每协议保底配额」：实测 rescue 池全被 vless（占存活 72%）占满，
+# 通过率仅 3.0%；而小众协议通过率更高（anytls 60%、hy2 7.7%）却因数量
+# 稀少永选不进。此值保证每协议至少有若干实测机会，再按全局排序填余量。
+# 取 5：既给小众协议入场券，又不挤占主流协议主体配额（100/5≈20 协议上限）。
+RESCUE_PER_PROTO_MIN = 5
 # 交接文档 schema 版本：变更节点字段/语义时递增，沙箱侧据此兼容。
 HANDOFF_GENERATOR = "proxysub-handoff/1"
 # ---- 主资产归属：CI 候选集 vs 沙箱实测集 ----
@@ -210,11 +215,18 @@ MAX_PER_CREDENTIAL = 6           # diversity (slightly looser so floor can be me
 MAX_PER_EGRESS_IP = 3            # diversity (slightly looser)
 # Hard rejects only; cf_blocked is soft (many China-usable nodes are CF-risked).
 TAMPER_STATUSES = ("tamper_http", "tamper_https", "tls_mitm", "bad_egress")
-# 云端拨测 = 死活闸门：连美国都无法代理成功的节点必然已死（凭证过期/后端下线/
-# CDN 空壳），不允许进入最终列表。探测延迟不参与排序（见 TCP_LATENCY_CAP_IN_SCORE）。
-# 注意：工作流实际开启拨测（未设 PROXYSUB_DISABLE_PROBE）——美西 Runner 的
-# 连通性结论作为「节点是否已死」的闸门是可靠的（死节点在哪都死），仅延迟数值
-# 不作为国内路径依据（见 score.is_us_node / us_china_penalty 的软惩罚）。
+# 云端拨测 = 「美西可达性」闸门（**口径已修正，2026-10-15**）：
+# 历史表述为「连美国都无法代理成功的节点必然已死」，但沙箱实测数据证伪——
+# 1292 节点交叉表显示 33 个节点「美西不通、国内通」（其中 29 个是 carryover
+# 老节点、4 个是当轮新节点）。美西不通的真实原因多为**该方向路径被墙/QoS**，
+# 而非节点死亡（国内方向仍可用）。故本闸门语义严格限定为：
+#   ✅ 美西拨测回答「该节点对美西出口是否可达」；
+#   ❌ 不冒充「节点死活」判定——死活由 survival 跨天出现史（出现即活）承担。
+# ⚠️ 已知取舍：因 CI 先跑、无法预知国内结果，美西不通节点难以在当轮区分
+# 「路径被墙（国内可用）」与「真死」。当前缓解手段是 rescue 池（把美西未入样
+# 的静态可行节点交沙箱复测，含协议多样化保底）——但实测 rescue 与 pending
+# 通过率同档（3% vs 4.7%），故扩大该闸门放宽幅度**无数据支撑**，暂不实施。
+# 探测延迟不参与排序（见 TCP_LATENCY_CAP_IN_SCORE）。
 REQUIRE_REAL_PROBE_IN_OUTPUT = True
 # CF HTTPS trace is soft — do NOT hard-exclude; apply NO_HTTPS_PENALTY instead.
 REQUIRE_HTTPS_OK_IN_OUTPUT = False

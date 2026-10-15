@@ -20,7 +20,8 @@ import os
 from collections import defaultdict
 
 from common import src_key
-from config import HANDOFF_GENERATOR, PENDING_PROBE_FILE, PENDING_RESCUE_FILE, RESCUE_QUOTA
+from config import (HANDOFF_GENERATOR, PENDING_PROBE_FILE, PENDING_RESCUE_FILE,
+                    RESCUE_PER_PROTO_MIN, RESCUE_QUOTA)
 
 
 def round_stamp(now: datetime.datetime | None = None) -> tuple[str, str]:
@@ -84,20 +85,61 @@ def build_pending_doc(*, round_id: str, generated_at: str, sample_fps: list[str]
 
 def select_rescue(*, tcp_lat: dict[str, float], unique: dict[str, dict],
                   tampered: set[str], excluded: set[str], quota: int = RESCUE_QUOTA,
-                  is_preferred, protocol_tier) -> list[str]:
+                  is_preferred, protocol_tier,
+                  per_proto_min: int = RESCUE_PER_PROTO_MIN) -> list[str]:
     """救援集：TCP 存活、未篡改、未入待测集，按协议档位/延迟取前 quota 个。
 
     这是「美国不通、中国通」节点的 lost-and-found 池：拨测样本有配额上限，
     被挤出但静态可行的节点仍有中国可用可能，交沙箱复测。排序与主线评分
     同向——协议档位优先（hy2/reality 等 tier 0/1 对中国路径最友好），
     其次偏好特征，最后 TCP 延迟（UDP 协议的中性 9999 在同档内排最后）。
+
+    **协议多样化（2026-10-15 修复）**：实测 rescue 池 100 个**全是 vless**，
+    通过率仅 3.0%（与 pending 4.7% 同档），沦为低效配额。根因是 `protocol_tier`
+    把非 reality 的 vless 也归 tier 1，而 vless 占存活节点 72%（824/1141），
+    按档位排序取前 quota 时配额被单一低通过率协议占满；而中国实测通过率
+    更高的小众协议（anytls 60%、hysteria2 7.7%）因数量稀少永远选不进。
+
+    故引入「每协议保底配额」：少于 quota 的协议先各保底 `per_proto_min` 个
+    （按档位/偏好/延迟排序取），余量再按原全局排序填充。保证小众高通过率
+    协议有实测机会，不改变总量与其它池的边界。
     """
     pool = [fp for fp in tcp_lat
             if fp not in excluded and fp not in tampered and fp in unique]
     pool.sort(key=lambda fp: (protocol_tier(unique[fp]),
                               0 if is_preferred(unique[fp]) else 1,
                               tcp_lat[fp]))
-    return pool[:quota]
+    if not pool:
+        return []
+    # 1) 每协议保底：优先给「被全局排序挤在后面」的小众协议实测机会。
+    by_proto: dict[str, list[str]] = defaultdict(list)
+    for fp in pool:
+        by_proto[str(unique[fp].get("type", "?"))].append(fp)
+    reserved: list[str] = []
+    chosen: set[str] = set()
+    if per_proto_min > 0:
+        # 协议按「全局最优代表的名次」排序——名次越靠后（越被挤掉）越优先保底。
+        rank = {fp: i for i, fp in enumerate(pool)}
+        order = sorted(by_proto.items(),
+                       key=lambda kv: rank[kv[1][0]], reverse=True)
+        for _p, fps in order:
+            # 只对「数量少于配额、确有被挤出风险」的协议保底
+            if len(fps) >= len(pool):
+                continue
+            for fp in fps[:per_proto_min]:
+                if fp not in chosen:
+                    reserved.append(fp)
+                    chosen.add(fp)
+        reserved = reserved[:quota]
+    # 2) 余量按原全局排序填充
+    out = list(reserved)
+    for fp in pool:
+        if len(out) >= quota:
+            break
+        if fp not in chosen:
+            out.append(fp)
+            chosen.add(fp)
+    return out[:quota]
 
 
 def build_rescue_doc(*, round_id: str, generated_at: str, rescue_fps: list[str],

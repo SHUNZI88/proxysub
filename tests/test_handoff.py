@@ -91,6 +91,7 @@ def test_select_rescue_ordering_and_quota():
     picked = handoff.select_rescue(
         tcp_lat=tcp_lat, unique=unique, tampered={"fp_tamper"},
         excluded=set(), is_preferred=is_preferred, protocol_tier=protocol_tier,
+        per_proto_min=0,  # 本用例只验证纯全局排序，关闭协议保底
     )
     assert picked == ["fp_t0", "fp_udp", "fp_t1"]
 
@@ -109,6 +110,48 @@ def test_select_rescue_ordering_and_quota():
         is_preferred=is_preferred, protocol_tier=protocol_tier,
     )
     assert len(picked3) == 3
+
+
+def test_select_rescue_per_protocol_min_diversifies():
+    """协议多样化：小众协议须获得保底实测配额，不被主流协议（vless）挤空。
+
+    真实现象（2026-10-15 取证）：rescue 池 100 个全是 vless，通过率 3.0%；
+    而 vless 占存活节点 72%，按档位排序时配额被它占满，中国通过率更高的小众
+    协议（anytls 60%、hysteria2 7.7%）因数量稀少永选不进。本用例固化：
+    给定「大量 vless + 少量 anytls」，anytls 必须出现在救援集里。
+    """
+    unique = {}
+    tcp_lat = {}
+    # 90 个 vless（低 tier 统一 1）+ 3 个 anytls（tier 1）
+    for i in range(90):
+        unique[f"v{i}"] = _proxy(type_="vless", server=f"v{i}")
+        tcp_lat[f"v{i}"] = float(i)
+    for i in range(3):
+        unique[f"a{i}"] = _proxy(type_="anytls", server=f"a{i}")
+        tcp_lat[f"a{i}"] = 500.0 + i  # 延迟远差于 vless，纯排序必被挤出
+
+    def is_preferred(p):
+        return False
+
+    def protocol_tier(p):
+        return 1  # 同档，仅靠延迟区分
+
+    picked = handoff.select_rescue(
+        tcp_lat=tcp_lat, unique=unique, tampered=set(), excluded=set(),
+        quota=20, is_preferred=is_preferred, protocol_tier=protocol_tier,
+        per_proto_min=3,
+    )
+    protos = {unique[fp]["type"] for fp in picked}
+    assert "anytls" in protos, "小众协议 anytls 必须获得保底配额"
+    assert len(picked) == 20, "总配额不变"
+
+    # 关闭保底则退化为纯排序，anytls 被挤出
+    picked0 = handoff.select_rescue(
+        tcp_lat=tcp_lat, unique=unique, tampered=set(), excluded=set(),
+        quota=20, is_preferred=is_preferred, protocol_tier=protocol_tier,
+        per_proto_min=0,
+    )
+    assert "anytls" not in {unique[fp]["type"] for fp in picked0}
 
 
 def test_build_rescue_doc():
