@@ -112,8 +112,11 @@ gh auth status          # 应显示 Logged in as SHUNZI88
 | 看板 | 内容 | 复查条件 |
 |---|---|---|
 | [`docs/protocol_weights_todo.md`](docs/protocol_weights_todo.md) | 协议权重化评估（用户约定：7 轮后评估实施） | `protocol_history.json` 中某协议 `rounds≥5` 且 `tested≥50` |
+| 沙箱实测定时任务 | `cn_probe.py` 北京 09:18/16:18 自动运行 | `verification_report.json` 的 `generated_at` 是否在最近 12h 内；若已过期，需检查 cron 是否存活/沙箱是否休眠 |
 
 > 立此节原因：口头/会话内的"待办约定"会随会话结束而丢失（2026-10-15 教训）。**凡跨会话的约定，必须落在本文件或看板中。**
+>
+> **沙箱 cron 约束（2026-10-15 新增）**：当前沙箱已安装并启动 `cron`，crontab 已配置。但沙箱若休眠/关机，cron 不会自动唤醒执行。**每次会话启动必须执行 `ps aux | grep '[c]ron'` 与 `crontab -l` 确认 cron 仍存活**，并检查 `verification_report.json` 的 `generated_at`；若发现漏跑，立即手动补跑 `scripts/cn_probe.py`。
 
 ---
 
