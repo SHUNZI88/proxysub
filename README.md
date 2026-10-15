@@ -9,7 +9,7 @@
 
 > **本仓库已开启反爬（anti-crawl）**：固定名 raw 地址（`.../main/clean_clash.yaml` 等）现为**诱饵内容**，请勿订阅。
 > 真实订阅通过滚动 GitHub Release 分发，地址形如
-> `https://github.com/SHUNZI88/proxysub/releases/latest/download/p_<随机资产名>`，
+> `https://github.com/SHUNZI88/proxysub/releases/download/sub/p_<随机资产名>`，
 > **永久有效、无需更换**；具体地址仅仓库所有者可见（Actions 运行页 Step Summary），不在此公开悬挂。
 > 机制与效果边界详见「反爬与防搜索」一节及 [`docs/anti_crawl_design.md`](docs/anti_crawl_design.md)。
 
@@ -29,10 +29,10 @@
 
 | 格式 | Release 资产名规则 | 适用客户端 |
 |---|---|---|
-| Clash / mihomo | `releases/latest/download/p_*_c.yaml` | FlClash、Clash Verge Rev、mihomo |
-| 仅 proxies 段 | `releases/latest/download/p_*_p.yaml` | 客户端 `proxy-providers` 引用 |
-| sing-box | `releases/latest/download/p_*_s.json` | sing-box（outbounds 列表） |
-| v2ray 分享链接 | `releases/latest/download/p_*_v.txt` | v2rayN、NekoBox（base64 整段导入） |
+| Clash / mihomo | `releases/download/sub/p_*_c.yaml` | FlClash、Clash Verge Rev、mihomo |
+| 仅 proxies 段 | `releases/download/sub/p_*_p.yaml` | 客户端 `proxy-providers` 引用 |
+| sing-box | `releases/download/sub/p_*_s.json` | sing-box（outbounds 列表） |
+| v2ray 分享链接 | `releases/download/sub/p_*_v.txt` | v2rayN、NekoBox（base64 整段导入） |
 | 健康报告 | `stats.md`（仓库内，公开） | 浏览器查看 |
 
 > 关闭反爬（`anti_crawl.json` 的 `"enabled": false`）后，固定名 raw 地址即恢复为真实内容：
