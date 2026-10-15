@@ -122,6 +122,7 @@ gh auth status          # 应显示 Logged in as SHUNZI88
 - 提交信息用 `.git/COMMIT_MSG.txt` + `git commit -F`，**避免中文引号导致的 shell 转义问题**。
 - 测试：`python3 -m pytest -q -p no:pylama`（`-p no:pylama` 是本环境必需的）。
 - 推送后核对：`git fetch && git log --oneline -1 HEAD origin/main` 应一致；`gh run list -L 5` 应全绿。
+- **声称落地的文件，必须真的进了 commit**：`git commit` 后用 `git show --stat HEAD` 核对本次文件清单，确认 message 里声称变更的文件**确实在列**。2026-10-15 教训：commit `caf0fc2` 的 message 声称"requirements.lock 带 hash 锁文件"，却因 `.gitignore` 的 `*.lock` 通配把它挡在库外，实际只提交了引用方——令 F2 的 `--require-hashes` 安装分支沦为**死代码**。**凡目标文件名可能被 `.gitignore` 通配误伤（`.lock` / `.log` / `.tmp` 等），`git add` 前先 `git check-ignore <file>`；被忽略的用 `!` 例外显式拉回，并在 commit 后核验落地。**
 
 ---
 
