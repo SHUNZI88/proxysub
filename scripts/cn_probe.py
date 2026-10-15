@@ -737,6 +737,18 @@ def main() -> int:
         "generated_at": stamp.strftime("%Y-%m-%dT%H:%M:%SZ"),
         "vantage": "cn-hn-sandbox",
         "exit_ip": _sandbox_ip(),
+        # 语义说明（口径修正，2026-10-15）：us_ok 与 cn.ok 是**两次不同测量**，
+        # 不可当同一维度的重复观测。二者的探测目标/超时/判定标准均不同：
+        #   us_ok  —— CI 美西 Runner 侧 mihomo 完整 HTTPS 拨测，回答「对美西出口
+        #             是否可达」；False 不代表节点已死（可能是该方向被墙/QoS）。
+        #   cn.ok  —— 本沙箱（中国）侧 mihomo 延迟测试，回答「国内路径是否可用」。
+        # 报告观测到的差异（如 us_ok=False 且 cn.ok=True）是**正常现象**，
+        # 反映的是路径差异而非数据矛盾。下游判读务必分开使用。
+        "dimensions": {
+            "us_ok": "美西拨测可达性（CI Runner，完整 HTTPS；False≠节点死亡）",
+            "cn_ok": "中国实测可用性（本沙箱，延迟测试）",
+            "note": "两维度探测目标/判定标准不同，不可互相替代或合并统计",
+        },
         "counts": {
             "tested": len(nodes),
             "passed": len(verified),

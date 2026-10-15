@@ -422,3 +422,18 @@ def test_gh_download_both_fail_returns_false(monkeypatch, tmp_path):
     ):
         assert cn_probe.gh_download("sub", "asset.json", str(dest)) is False
     assert not dest.exists()
+
+
+def test_report_declares_dimension_semantics():
+    """回归（口径修正 #5）：报告须显式声明 us_ok / cn.ok 语义不同。
+
+    us_ok（美西拨测可达性）与 cn.ok（中国实测可用性）是两次不同测量，
+    探测目标/判定标准不同，但历史文档中常被并列误读为同一维度的两次观测。
+    故在报告里加入 dimensions 说明块，固化"不可互相替代或合并统计"这一口径。
+    """
+    import inspect
+    src = inspect.getsource(cn_probe.main)
+    assert '"dimensions"' in src, "报告须含 dimensions 语义说明块"
+    assert '"us_ok"' in src and "美西" in src
+    assert '"cn_ok"' in src and "中国" in src
+    assert "不可互相替代" in src or "note" in src
