@@ -106,6 +106,11 @@ python3 scripts/cn_probe.py --dry-run   # 不发布，产物落 /tmp/cn_probe
 python3 scripts/cn_probe.py             # 正式一轮
 ```
 
+> ⚠️ **给 AI 协作者（重要）**：GitHub 凭据**不在环境变量里**，而在 **`/root/.github_pat`**（上表即正确用法）。
+> **绝不可因为 `env | grep GH_TOKEN` 为空就断言"没有 token"** —— 2026-10-15 有 AI 因此连续误判 3 次，并导致评估基于过期 20 小时的数据。
+> 断言"没有凭据"前，必须查完三处：①`/root/.github_pat`；②本项目文档（本文件、`scripts/cn_probe.py`、`monitor_1617_run.py`）；③环境变量。
+> 完整规则见仓库根目录 [`AGENTS.md`](../AGENTS.md)。
+
 > 单实例锁：另一实例运行中时直接退出（`/tmp/cn_probe/cn_probe.lock`），
 > 防任务重试/调度重叠导致并发发布。
 

@@ -363,10 +363,31 @@ def test_report_node_record_keeps_src_field():
     assert rec["src"] == "SHUNzi88/proxysub"
 
 
-def test_auth_selfcheck_no_token(monkeypatch):
-    """回归（grok 2.3）：GH_TOKEN/GITHUB_TOKEN 均无则立即失败，避免空转。"""
+def test_auth_selfcheck_falls_back_to_persisted_pat(monkeypatch, tmp_path):
+    """回归（2026-10-15 复盘）：环境变量无 token 时，应自动从持久化 PAT 兜底。
+
+    背景：曾因 env 为空而误判"没有 token"。现要求 env 缺失时自动读 PERSISTED_PAT_PATH。
+    """
     monkeypatch.delenv("GH_TOKEN", raising=False)
     monkeypatch.delenv("GITHUB_TOKEN", raising=False)
+    pat = tmp_path / "github_pat"
+    pat.write_text("ghp_from_file\n", encoding="utf-8")
+    monkeypatch.setattr(cn_probe, "PERSISTED_PAT_PATH", str(pat))
+    with mock.patch.object(
+        cn_probe, "run",
+        return_value=subprocess.CompletedProcess(["gh"], 0, stdout="ok", stderr=""),
+    ):
+        assert cn_probe.auth_selfcheck() is True
+    # 兜底成功后应写回环境变量，供后续 gh/curl 调用复用
+    assert cn_probe.os.environ.get("GH_TOKEN") == "ghp_from_file"
+
+
+def test_auth_selfcheck_no_token_anywhere(monkeypatch, tmp_path):
+    """回归：env 与持久化文件均无 token 时，才判失败（且不误判为"没有 token"）。"""
+    monkeypatch.delenv("GH_TOKEN", raising=False)
+    monkeypatch.delenv("GITHUB_TOKEN", raising=False)
+    monkeypatch.setattr(
+        cn_probe, "PERSISTED_PAT_PATH", str(tmp_path / "not_exist"))
     assert cn_probe.auth_selfcheck() is False
 
 
