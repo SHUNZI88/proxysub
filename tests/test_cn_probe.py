@@ -36,6 +36,60 @@ def test_parse_geo_no_ip():
     assert cn_probe._parse_geo("service unavailable") == {}
 
 
+# ---------------------------------------------------------------- exit_evidence
+def test_exit_evidence_uses_proxy_when_mixed_port(monkeypatch):
+    """P0-1：传入 mixed_port 时，GEO 请求必须经 mihomo 代理（而非裸直连）。
+
+    回归防线：早前版本裸 urlopen 直连，恒返回沙箱自身出口——此测试钉死
+    「每跳 GEO 请求都经 build_opener(ProxyHandler) 建立的 opener」。
+    """
+    captured = {}
+    monkeypatch.setattr(cn_probe, "api_put", lambda *a, **k: True)
+
+    class _Resp:
+        status = 200
+
+        def read(self):
+            return "IP\t: 9.9.9.9\n地址\t: 中国 香港".encode()
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+    class _Opener:
+        def open(self, req, timeout=None):
+            captured["proxied"] = True
+            return _Resp()
+
+    def _fake_build_opener(handler):
+        captured["handler"] = handler
+        return _Opener()
+
+    monkeypatch.setattr(cn_probe.urllib.request, "build_opener", _fake_build_opener)
+    ev = cn_probe.exit_evidence(9097, "PROBE", "node-x", mixed_port=7897)
+    assert captured.get("proxied") is True          # 走了 opener，而非裸 urlopen
+    assert ev["exit_ip"] == "9.9.9.9"
+
+
+def test_exit_evidence_no_proxy_without_mixed_port(monkeypatch):
+    """未传 mixed_port 时退回直连（兼容旧调用），不建立 opener。"""
+    monkeypatch.setattr(cn_probe, "api_put", lambda *a, **k: True)
+    built = {"called": False}
+
+    def _fake_build_opener(handler):
+        built["called"] = True
+        return None
+
+    monkeypatch.setattr(cn_probe.urllib.request, "build_opener", _fake_build_opener)
+    monkeypatch.setattr(cn_probe.urllib.request, "urlopen",
+                        lambda req, timeout=None: (_ for _ in ()).throw(OSError("no net")))
+    ev = cn_probe.exit_evidence(9097, "PROBE", "node-x")
+    assert built["called"] is False                  # 未建 opener
+    assert ev == {}                                  # 直连失败 -> 返回 {}
+
+
 # ---------------------------------------------------------------- dedup_nodes
 def test_dedup_nodes_priority_and_unique_names():
     dup = _proxy(name="same", server="a.example")

@@ -426,15 +426,29 @@ def delay_test(port: int, name: str) -> dict:
     return {"ok": False, "latency_ms": None}
 
 
-def exit_evidence(port: int, selector: str, name: str) -> dict:
-    """把流量切到指定节点，取出口 IP/地区（证据留痕，不构成闸门）。"""
+def exit_evidence(port: int, selector: str, name: str, mixed_port: int | None = None) -> dict:
+    """把流量切到指定节点，取出口 IP/地区（证据留痕，不构成闸门）。
+
+    ⚠️ 必须先经 mihomo 的 mixed-port 代理再请求 GEO 站：早前版本用裸
+    `urlopen` 直连 GEO，未指向 mihomo，导致每次拿到的都是**沙箱自身出口**
+    （exit_ip 恒为沙箱 IP、exit_loc 恒为沙箱所在地），该字段对「节点真实
+    落地」毫无判别力。修复后请求走 mihomo 所选节点出口，才能反映节点归属。
+    """
     if not api_put(port, f"/proxies/{urllib.parse.quote(selector, safe='')}",
                    {"name": name}):
         return {}
+    # 经 mihomo mixed-port 代理；mixed_port 缺省时退回直连（仅兼容旧调用，
+    # 主线总会传入——见 run_probe 的 free_port 分配）。
+    opener = None
+    if mixed_port:
+        proxy = f"http://127.0.0.1:{mixed_port}"
+        opener = urllib.request.build_opener(
+            urllib.request.ProxyHandler({"http": proxy, "https": proxy}))
     for url in GEO_URLS:
         try:
             req = urllib.request.Request(url, headers={"User-Agent": "curl/8"})
-            with urllib.request.urlopen(req, timeout=GEO_TIMEOUT_S) as r:
+            openfn = opener.open if opener else urllib.request.urlopen
+            with openfn(req, timeout=GEO_TIMEOUT_S) as r:
                 text = r.read().decode("utf-8", "replace")
             ev = _parse_geo(text)
             if ev:
@@ -683,7 +697,7 @@ def main() -> int:
                         f"{len(passed[:GEO_MAX_NODES]) - i} 个节点"
                         f"（证据仅留痕，不构成闸门）")
                     break
-                ev = exit_evidence(api_port, "PROBE", n["probe_name"])
+                ev = exit_evidence(api_port, "PROBE", n["probe_name"], mixed_port)
                 if ev:
                     results[n["probe_name"]].update(ev)
         except Exception as e:
