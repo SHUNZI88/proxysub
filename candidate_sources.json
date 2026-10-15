@@ -5,7 +5,7 @@
       "origin": "channel_web",
       "added": "2026-10-13",
       "first_seen": "2026-10-13",
-      "runs": 12,
+      "runs": 13,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -31,7 +31,7 @@
           "tamper": 0
         },
         {
-          "date": "2026-10-14",
+          "date": "2026-10-15",
           "count": 304,
           "usable": 0,
           "unique_new": 0,
@@ -73,17 +73,10 @@
       "origin": "channel_web",
       "added": "2026-10-13",
       "first_seen": "2026-10-13",
-      "runs": 12,
+      "runs": 13,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-10-14",
-          "count": 566,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-10-14",
           "count": 1621,
@@ -132,6 +125,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-15",
+          "count": 566,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ],
       "required_runs": 3
@@ -141,17 +141,10 @@
       "origin": "channel_web",
       "added": "2026-10-13",
       "first_seen": "2026-10-13",
-      "runs": 12,
-      "good_streak": 0,
+      "runs": 13,
+      "good_streak": 1,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-10-14",
-          "count": 1686,
-          "usable": 8,
-          "unique_new": 3,
-          "tamper": 0
-        },
         {
           "date": "2026-10-14",
           "count": 566,
@@ -200,6 +193,13 @@
           "usable": 16,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-15",
+          "count": 1621,
+          "usable": 14,
+          "unique_new": 5,
+          "tamper": 0
         }
       ],
       "required_runs": 3
@@ -209,17 +209,10 @@
       "origin": "channel_web",
       "added": "2026-10-13",
       "first_seen": "2026-10-13",
-      "runs": 12,
+      "runs": 13,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-10-14",
-          "count": 598,
-          "usable": 41,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-10-14",
           "count": 515,
@@ -268,6 +261,13 @@
           "usable": 53,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-15",
+          "count": 519,
+          "usable": 48,
+          "unique_new": 0,
+          "tamper": 0
         }
       ],
       "required_runs": 3
@@ -277,7 +277,7 @@
       "origin": "channel_web",
       "added": "2026-10-13",
       "first_seen": "2026-10-13",
-      "runs": 11,
+      "runs": 12,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -291,13 +291,6 @@
         {
           "date": "2026-10-14",
           "count": 31,
-          "usable": 1,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-14",
-          "count": 31,
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
@@ -334,6 +327,13 @@
           "date": "2026-10-15",
           "count": 9,
           "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-15",
+          "count": 9,
+          "usable": 1,
           "unique_new": 0,
           "tamper": 0
         }
@@ -345,7 +345,7 @@
       "origin": "channel_web",
       "added": "2026-10-14",
       "first_seen": "2026-10-14",
-      "runs": 9,
+      "runs": 10,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -371,7 +371,7 @@
           "tamper": 0
         },
         {
-          "date": "2026-10-14",
+          "date": "2026-10-15",
           "count": 483,
           "usable": 0,
           "unique_new": 0,
@@ -413,12 +413,19 @@
       "origin": "channel_web",
       "added": "2026-10-14",
       "first_seen": "2026-10-14",
-      "runs": 5,
+      "runs": 6,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
         {
           "date": "2026-10-14",
+          "count": 489,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-15",
           "count": 489,
           "usable": 0,
           "unique_new": 0,
@@ -464,10 +471,17 @@
       "required_runs": 3,
       "first_seen": "2026-10-15",
       "initial_nodes": 3718,
-      "runs": 2,
+      "runs": 3,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
+        {
+          "date": "2026-10-15",
+          "count": 3718,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
         {
           "date": "2026-10-15",
           "count": 3718,
@@ -493,10 +507,17 @@
       "required_runs": 3,
       "first_seen": "2026-10-15",
       "initial_nodes": 3728,
-      "runs": 2,
+      "runs": 3,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
+        {
+          "date": "2026-10-15",
+          "count": 3728,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
         {
           "date": "2026-10-15",
           "count": 3728,
@@ -522,6 +543,28 @@
       "required_runs": 5,
       "first_seen": "2026-10-15",
       "initial_nodes": 768,
+      "runs": 1,
+      "good_streak": 1,
+      "fail_streak": 0,
+      "history": [
+        {
+          "date": "2026-10-15",
+          "count": 709,
+          "usable": 121,
+          "unique_new": 16,
+          "tamper": 0
+        }
+      ]
+    },
+    "https://raw.githubusercontent.com/LancelotRar/free-subs/main/src/clash-lancelot.yaml": {
+      "repo": "LancelotRar/free-subs",
+      "stars": 103,
+      "repo_created": "2026-04-23T10:57:26Z",
+      "reputation": "ok",
+      "reputation_note": "stars=103,age=175d",
+      "required_runs": 3,
+      "first_seen": "2026-10-15",
+      "initial_nodes": 656,
       "runs": 0,
       "good_streak": 0,
       "fail_streak": 0,

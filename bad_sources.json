@@ -2,7 +2,7 @@
   "https://raw.githubusercontent.com/shaoyouvip/free/main/mihomo.yaml": {
     "fail_streak": 0,
     "last_error": null,
-    "last_count": 6
+    "last_count": 102
   },
   "https://raw.githubusercontent.com/Russ534/clash/cdf534db8f8c9306d61c630b840d0a1936d09dd2/bp.yaml": {
     "fail_streak": 0,
@@ -12,12 +12,12 @@
   "https://raw.githubusercontent.com/chengaopan/AutoMergePublicNodes/master/list.meta.yml": {
     "fail_streak": 0,
     "last_error": null,
-    "last_count": 484
+    "last_count": 435
   },
   "https://raw.githubusercontent.com/Au1rxx/free-vpn-subscriptions/main/output/clash.yaml": {
     "fail_streak": 0,
     "last_error": null,
-    "last_count": 1789
+    "last_count": 1822
   },
   "https://blog.ermao.net/sub/clash/ermao.net": {
     "fail_streak": 0,
@@ -27,17 +27,17 @@
   "https://raw.githubusercontent.com/yy1588133/proxy-pool/main/clash.yaml": {
     "fail_streak": 0,
     "last_error": null,
-    "last_count": 1786
+    "last_count": 1358
   },
   "https://raw.githubusercontent.com/lanzm/MetaFetch/master/list.meta.yml": {
     "fail_streak": 0,
     "last_error": null,
-    "last_count": 775
+    "last_count": 763
   },
   "https://raw.githubusercontent.com/peasoft/NoMoreWalls/master/list.meta.yml": {
     "fail_streak": 0,
     "last_error": null,
-    "last_count": 484
+    "last_count": 435
   },
   "https://raw.githubusercontent.com/awesome-vpn/awesome-vpn/master/clash.yaml": {
     "fail_streak": 0,
@@ -47,7 +47,7 @@
   "https://raw.githubusercontent.com/VPN-Subcription-Links/ClashX-V2Ray-TopFreeProxy/main/combine/clash.config.yaml": {
     "fail_streak": 0,
     "last_error": null,
-    "last_count": 2430
+    "last_count": 1460
   },
   "https://raw.githubusercontent.com/OgdenThomas/freesub/main/output/clash.yaml": {
     "fail_streak": 0,
@@ -109,11 +109,6 @@
     "last_error": null,
     "last_count": 489
   },
-  "https://pai.yt/clash": {
-    "fail_streak": 3,
-    "last_error": "HTTPSConnectionPool(host='sub.pai.yt', port=443): Read timed out. (read timeout=25)",
-    "last_count": 0
-  },
   "https://raw.githubusercontent.com/clashfreenodecom/clashfreenode.com/main/feed/clash-20261003.yaml": {
     "fail_streak": 0,
     "last_error": null,
@@ -123,5 +118,10 @@
     "fail_streak": 0,
     "last_error": null,
     "last_count": 3718
+  },
+  "https://raw.githubusercontent.com/wuge0/free-nodes/main/output/clash.yaml": {
+    "fail_streak": 0,
+    "last_error": null,
+    "last_count": 709
   }
 }
