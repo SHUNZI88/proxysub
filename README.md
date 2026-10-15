@@ -115,8 +115,9 @@ Content-Type: application/json
 | `source_scores.json` | 源长期评分（成功率 / 独有贡献 / 真实通过 / 蜜罐惩罚的指数滑动平均） |
 | `requirements.txt` | Python 依赖（requests / PyYAML / filelock / pytest / pytest-cov / pyflakes） |
 | `scripts/doctor.py` | **上手自检（只读）**：fork 后 / 提 Issue 前跑 `python3 scripts/doctor.py`——依赖版本、配置 JSON 可解析性与结构一致性（反爬开启必须配 Release 资产名、正式源非空等）、工作流 YAML、mihomo 可发现性、`.corrupt` 自愈备份；退出码 0 = 通过（可含警告）、1 = 有错误。输出可直接贴进 Issue 表单 |
+| `scripts/dashboard.py` | **运行态面板生成**：读 `probe_history.jsonl` 产出单文件 HTML（内联 SVG 趋势图 / 通过构成堆叠条 / 源贡献表，无 JS 无外部依赖）；定时任务将其发布到独立滚动 Release（tag `status`），详见「运行态观测」一节 |
 | `.coveragerc` | 覆盖率门禁配置：语句覆盖 `fail_under=80`；计量范围为库模块（`tests/`、`scripts/` 运维脚本、monitor 一次性脚本按配置排除并注明理由） |
-| `tests/` | 单元 + 集成测试（510 项）：指纹去重、地区识别、静态门槛、订阅解析、原子写入、拨测样本选择、多格式输出、源评分；`test_main_pipeline.py`（mock 边界的 main() 全链路集成）+ `test_stage_functions.py`（阶段函数单测，配额/回填/加成等分支）+ `test_probe_mihomo.py`（mihomo 进程编排 mock）+ `test_sources_lifecycle.py`（源生命周期 mock） |
+| `tests/` | 单元 + 集成测试（544 项）：指纹去重、地区识别、静态门槛、订阅解析、原子写入、拨测样本选择、多格式输出、源评分；`test_main_pipeline.py`（mock 边界的 main() 全链路集成）+ `test_stage_functions.py`（阶段函数单测，配额/回填/加成等分支）+ `test_probe_mihomo.py`（mihomo 进程编排 mock）+ `test_sources_lifecycle.py`（源生命周期 mock）+ `test_dashboard.py`（面板解析容错 / 渲染 / HTML 转义注入防护） |
 
 ## 探测流程（TCP 预筛 + 拨测闸门）
 
@@ -234,10 +235,11 @@ public 仓库的订阅文件对任何人可读，且会被「按固定路径扫�
   - 无文件变动时通过 `git diff --staged --quiet` 安全跳过提交（不会非零退出报错）；依赖通过 `requirements.txt` 固定安装并启用 pip 缓存。
 - **编排主线可测化（P1-1）**：`filter_clash.main()` 原为 685 行不可测巨函数，已拆为 83 行薄编排 + 10 个命名阶段函数（`discover_and_fetch` / `static_filter_stage` / `liveness_stage` / `real_probe_stage` / `per_source_metrics` / `score_candidates` / `select_final` / `name_and_isolate` / `build_clash_config` / `_persist_stage`），阶段间经 `@dataclass` 结果容器传递多产出。重构遵循「安全网先行」：先建 mock 集成测试（变异验证：故意注入缺陷须被抓到）再动结构。
 - **回归测试**：`tests/` 覆盖订阅解析、指纹去重（嵌套参数变更不被误判）、地区识别（Russia 不误判为美国等边界用例）、协议门槛、原子写入（并发/截断/失败场景）、多渠道搜集、反爬（诱饵形态/永久地址/轮换/回流检测）、评分函数全分支、fetch 编码决策（iso-8859-1→apparent→utf-8 三级回落）、探测响应契约、源结构聚类、渠道候选校验（含 pyflakes「未定义名字」静态门禁，防拆模块后漏 import 常量——2026-10-13 daily 崩溃事故的回归防线）。
-- **覆盖率门禁（P1-1d）**：CI 每次代码变更跑 `pytest --cov`，库模块语句覆盖 **≥80%** 未达标即阻断合入（`.coveragerc` `fail_under=80`）。当前 **510 项测试、总覆盖 91.59%**（`filter_clash.py` 88%）。
+- **覆盖率门禁（P1-1d）**：CI 每次代码变更跑 `pytest --cov`，库模块语句覆盖 **≥80%** 未达标即阻断合入（`.coveragerc` `fail_under=80`）。当前 **544 项测试、总覆盖 91.59%**（`filter_clash.py` 88%）。
 - **低覆盖模块补齐（P1-2a）**：`probe.py` 的 mihomo 进程编排（`_probe_through` 各出口/篡改/TLS 中间人/CF 拦截分支、`_mihomo_batch` 进程早退与 controller 未就绪、`mihomo_probe` 大批量二分重试）与 `sources_manager.py` 源生命周期（GitHub 限流重试、仓库声誉全 verdict、discover 收录/跳过路径、试用期拒绝与晋升、正式源降级与超额裁剪）已用 mock 全面覆盖，两模块分别达 **99% / 100%**。
 - **反馈闭环（产品化）**：Issue 表单模板（订阅质量问题 / 功能建议，默认拒空白 issue 并引导至 README 与健康报告）；`ci-failure` 标签 + 失败自动开 Issue 开关（`ALERT_ISSUE`，默认关闭以守反爬边界）；README「反馈与告警」一节明确订阅者反馈纪律（勿贴私人订阅地址）与维护者三条告警通道（Watch Actions 邮件 / Actions 页订阅 / 自动开 Issue）。
 - **上手助手（产品化）**：`scripts/doctor.py` 一条命令自检配置与环境（19 项测试覆盖全部分支），把「fork 后配错 → CI 跑 50 分钟才炸」的反馈路径压缩为本地 1 秒；与反馈闭环联动——Issue 表单引导上报前先跑 doctor 并附输出，「环境-配置」类问题不再来回确认。
+- **观测面板（产品化）**：`scripts/dashboard.py` 把每轮拨测审计（`probe_history.jsonl`）渲染为单文件 HTML——通过率趋势折线（内联 SVG）、通过构成堆叠条、源贡献累计表；纯标准库零依赖、无 JS、动态文本全量转义（注入防护 15 项测试钉死）。发布面为独立滚动 Release（tag `status`）：不进 git 历史（每轮变化会淹没订阅更新提交）、与订阅 `sub` Release 职责分离、固定资产名链接永久可收藏。面板失败设 `continue-on-error`——观测件不是关键路径，绝不阻断订阅更新。
 - **配置独立（P1-2）**：`common.py` 原为 757 行「常量 + 工具函数」混合体（102 个配置常量），认知负担大。已拆出 `config.py`（287 行，仅依赖标准库的架构最底层叶子）专收全部可调常量——区域规则/配额、协议白名单与奖惩参数、超时/并发旋钮、输出与状态文件名、探测 URL 与配额；`common.py` 瘦身为 502 行纯函数层，按需 `from config import`。调参只动 `config.py` 一处，模块职责单一可读。
 - **显式 import（P1-3）**：`filter_clash.py` 原用 `_reexport()` 在运行时把子模块符号动态 `setdefault` 进命名空间——依赖面静态不可见（pyflakes 199 条告警）、漏 import 只在运行期炸 `NameError`（2026-10-13 daily 工作流崩溃根因）。已改为按来源模块的显式 import（5 组、88 个名字），依赖面成为文件内可读清单；`filter_clash.py` 同步纳入「未定义名字」静态门禁，漏 import 在 CI 即失败。
 
@@ -275,6 +277,17 @@ python -m pytest tests/ -v
 | 自动开 Issue | `daily-update.yml` 的 `ALERT_ISSUE` 改 `'1'` | 默认关闭：失败详情公开悬挂与反爬冲突，仅建议短期排查期开启；自动打 `ci-failure` 标签 |
 
 > 2026-10-13 曾发生定时任务失败数小时无人知晓的事故（运行期 `NameError`，CI 红但无告警）——此后 Tests 门禁 + 覆盖率门禁 + 上表告警通道共同构成「失败必被发现」的闭环。
+
+## 运行态观测（Dashboard）
+
+每轮拨测的聚合统计渲染为单文件 HTML 面板（`scripts/dashboard.py`，纯标准库、无 JS、内联 SVG），随定时任务发布到**独立滚动 Release（tag `status`，固定资产名 `dashboard.html`，下载链接永久有效）**——与订阅内容的 `sub` Release 完全分离。面板含四块：
+
+- **关键指标**：最新轮通过率 / 通过数（含较上轮涨跌，涨红跌绿）、累计测试与通过；
+- **通过率趋势**：逐轮通过率折线（悬停数据点看该轮明细）；
+- **通过构成**：每轮「新测通过 / 救回 / 结转」占测试量比例的堆叠条；
+- **源贡献**：最新轮 top 5 源明细 + 全历史累计贡献前 10 源（含最近出现轮次）。
+
+隐私纪律：面板**只含聚合统计**，不含节点内容与订阅地址；源仓库路径本就是公开信息（同 `stats.md` 的公开口径）。本地生成：`python3 scripts/dashboard.py`（输出 `dashboard.html`，浏览器直接打开）。
 
 ## 手动控制
 

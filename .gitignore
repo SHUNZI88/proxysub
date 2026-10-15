@@ -12,3 +12,6 @@ publish_out/
 
 # 覆盖率数据文件（CI 门禁产物，不入库）
 .coverage
+
+# 运行态面板产物：随滚动 Release（tag status）分发，不入 git 历史
+dashboard.html

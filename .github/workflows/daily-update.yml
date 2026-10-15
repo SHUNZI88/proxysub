@@ -293,6 +293,30 @@ jobs:
           fi
           echo "已发布滚动 Release: $tag（主资产归属: $([ "$ver_fresh" = "1" ] && echo 实测集 || echo 候选集兜底)）"
 
+      - name: Publish status dashboard (rolling release asset)
+        # 观测面板发布面：独立滚动 Release（tag status），与订阅 sub release
+        # 完全分离——职责不同（一个是内容分发，一个是运行态透明度），
+        # 混在一个 tag 下会让「永久订阅地址」的资产清单掺入非订阅文件。
+        # 固定资产名 dashboard.html：不进 git 历史（每轮变化会淹没订阅更新
+        # 提交），经 --clobber 覆盖上传，下载链接永久有效、可收藏。
+        # 隐私纪律：面板只含聚合统计（轮次/通过率/源贡献），不含节点内容与
+        # 订阅地址；源仓库路径本就是公开信息（同 stats.md 的公开口径）。
+        # continue-on-error：观测面板不是关键路径，其失败绝不阻断订阅更新。
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          python3 scripts/dashboard.py probe_history.jsonl -o dashboard.html
+          tag="status"
+          notes="Auto-updated status dashboard. Aggregate stats only (rounds, pass rates, source contributions) — no node content, no subscription URLs."
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" --clobber dashboard.html
+          else
+            gh release create "$tag" --title "status dashboard" --notes "$notes" dashboard.html
+          fi
+          echo "已更新状态面板 Release: $tag（资产 dashboard.html）"
+
       - name: Commit and Push (with rebase retry)
         id: commit
         run: |
