@@ -310,6 +310,36 @@ def test_agg_two_by_source_tested_and_passed():
     assert "?" not in out  # 所有节点都带 src，不应落入兜底键（否则源级加成为 0）
 
 
+# ---------------------------------------------------------------- P2-a 协议置信区间
+def test_agg_two_with_ci_adds_stats_fields():
+    """P2-a：with_ci=True 时必须给出 pass_rate / 95%CI / sample_ok。"""
+    nodes = [{"proto": "anytls"}] * 8 + [{"proto": "vless"}] * 40
+    verified = [{"proto": "anytls"}] * 7 + [{"proto": "vless"}] * 2
+    out = cn_probe._agg_two(nodes, verified, key_fn=lambda n: n["proto"], with_ci=True)
+    a = out["anytls"]
+    assert a["tested"] == 8 and a["passed"] == 7
+    assert a["pass_rate"] == round(7 / 8, 4)
+    assert 0.0 <= a["ci95_low"] < a["pass_rate"] < a["ci95_high"] <= 1.0
+    assert a["sample_ok"] is False          # 8 < PROTOCOL_MIN_SAMPLE(30)
+    assert out["vless"]["sample_ok"] is True  # 40 >= 30
+
+
+def test_agg_two_default_no_ci_fields():
+    """向后兼容：默认 with_ci=False 时不得新增字段（旧消费方不受影响）。"""
+    nodes = [{"p": "x"}]
+    out = cn_probe._agg_two(nodes, nodes, key_fn=lambda n: n["p"])
+    assert out["x"] == {"tested": 1, "passed": 1}
+
+
+def test_wilson_ci_edge_cases():
+    """Wilson 区间边界：n=0 返回 (0,0)；全通过时上界应为 1 且下界明显<1。"""
+    assert cn_probe._wilson_ci(0, 0) == (0.0, 0.0)
+    lo, hi = cn_probe._wilson_ci(8, 8)
+    assert hi == 1.0 and lo < 1.0  # 小样本全通过也不能断言 100%
+    lo2, hi2 = cn_probe._wilson_ci(0, 10)
+    assert lo2 == 0.0 and hi2 < 0.5  # 全失败时上界仍留不确定性
+
+
 def test_passed_verified_subset_preserves_src():
     """复刻主流程关键不变量：passed=[n for n in nodes if ok]; verified=sorted(passed)。
 

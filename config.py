@@ -121,6 +121,23 @@ CN_HISTORY_FILE = "cn_history.json"          # 节点级中国通过史（fp -> 
 PROBE_HISTORY_FILE = "probe_history.jsonl"  # 每轮审计行（可 grep、随 CI 进 git）
 LEARNED_THRESHOLDS_FILE = "learned_thresholds.json"  # 静态门槛自学习结果
 THRESHOLD_HISTORY_FILE = "threshold_history.json"    # 门槛变更审计（旧值/新值/样本/理由）
+# 协议分层证据积累（P2-b，2026-10-15）：跨轮累积分协议 tested/passed，
+# 供后续「协议维度权重化」决策读取累计样本与跨轮一致性。单轮不具统计效力。
+PROTOCOL_HISTORY_FILE = "protocol_history.json"
+PROTOCOL_HISTORY_KEEP_ROUNDS = 30     # 每协议保留最近 K 轮明细（控制体积）
+# 协议样本量门槛（P2-a）：低于此值的协议通过率标记 sample_ok=False，
+# 不得据此调整采样/评分权重（避免小样本误判，2026-10-15 复盘教训）。
+PROTOCOL_MIN_SAMPLE = 30
+# 协议权重化「实施门槛」（P2-c，2026-10-15）：仅当同时满足以下三条，
+# 才允许按协议分层设定采样/评分权重，否则一律不实施（防小样本/单轮误判）：
+#   ① 该协议累计样本 tested ≥ PROTOCOL_WEIGHT_MIN_CUM_SAMPLE；
+#   ② 跨轮方向一致（累计通过率与各轮通过率同向，无反转）达
+#      PROTOCOL_WEIGHT_MIN_ROUNDS 轮以上；
+#   ③ 已在 protocol_history.json 中留痕（可审计、可复算）。
+# 背景：单轮 anytls 7/8=87.5% 曾被误当"可加权"依据，但其 95%CI=[52.9%,97.8%]，
+# 掉 1 个样本即跌破 50%，且仅 1 轮——统计上不成立。详见评估报告 §十/§十一。
+PROTOCOL_WEIGHT_MIN_CUM_SAMPLE = 50
+PROTOCOL_WEIGHT_MIN_ROUNDS = 5
 # China-client connectivity URLs first (Asia egress reaches them more easily from US runners).
 # Runner probe: China-client-ish URLs first (any 1 pass). US runner≠China path,
 # so HTTP ok is a soft quality signal — NOT the sole admission gate.

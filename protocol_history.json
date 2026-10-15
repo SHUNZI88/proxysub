@@ -1,0 +1,86 @@
+{
+ "vless": {
+  "rounds": 1,
+  "tested": 820,
+  "passed": 23,
+  "last_round": "20261014T2139Z",
+  "last_ts": "2026-10-14T23:06:33Z",
+  "recent": [
+   {
+    "round": "20261014T2139Z",
+    "tested": 820,
+    "passed": 23
+   }
+  ]
+ },
+ "hysteria2": {
+  "rounds": 1,
+  "tested": 166,
+  "passed": 9,
+  "last_round": "20261014T2139Z",
+  "last_ts": "2026-10-14T23:06:33Z",
+  "recent": [
+   {
+    "round": "20261014T2139Z",
+    "tested": 166,
+    "passed": 9
+   }
+  ]
+ },
+ "anytls": {
+  "rounds": 1,
+  "tested": 8,
+  "passed": 7,
+  "last_round": "20261014T2139Z",
+  "last_ts": "2026-10-14T23:06:33Z",
+  "recent": [
+   {
+    "round": "20261014T2139Z",
+    "tested": 8,
+    "passed": 7
+   }
+  ]
+ },
+ "trojan": {
+  "rounds": 1,
+  "tested": 202,
+  "passed": 5,
+  "last_round": "20261014T2139Z",
+  "last_ts": "2026-10-14T23:06:33Z",
+  "recent": [
+   {
+    "round": "20261014T2139Z",
+    "tested": 202,
+    "passed": 5
+   }
+  ]
+ },
+ "hysteria": {
+  "rounds": 1,
+  "tested": 4,
+  "passed": 2,
+  "last_round": "20261014T2139Z",
+  "last_ts": "2026-10-14T23:06:33Z",
+  "recent": [
+   {
+    "round": "20261014T2139Z",
+    "tested": 4,
+    "passed": 2
+   }
+  ]
+ },
+ "tuic": {
+  "rounds": 1,
+  "tested": 7,
+  "passed": 0,
+  "last_round": "20261014T2139Z",
+  "last_ts": "2026-10-14T23:06:33Z",
+  "recent": [
+   {
+    "round": "20261014T2139Z",
+    "tested": 7,
+    "passed": 0
+   }
+  ]
+ }
+}

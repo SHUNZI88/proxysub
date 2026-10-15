@@ -338,3 +338,63 @@ def test_prune_cn_history_respects_max_age_override():
 
 def test_prune_cn_history_no_op_on_empty():
     assert evolution.prune_cn_history({}) == {}
+
+
+# ---------------------------------------------------------------- P2-b 跨轮协议聚合
+def test_update_protocol_history_accumulates_across_rounds(tmp_path):
+    """P2-b：不同轮次的 by_protocol 必须累加，并记录 rounds/recent。"""
+    p = str(tmp_path / "protocol_history.json")
+    r1 = _mk_report(tested=200, passed=40)
+    r1["counts"]["by_protocol"] = {"hysteria2": {"tested": 100, "passed": 20},
+                                   "anytls": {"tested": 8, "passed": 7}}
+    r1["tested_round"] = "20261014T0600Z"
+    evolution.update_protocol_history(r1, p)
+
+    r2 = _mk_report(tested=300, passed=60)
+    r2["counts"]["by_protocol"] = {"hysteria2": {"tested": 150, "passed": 30},
+                                   "anytls": {"tested": 10, "passed": 8}}
+    r2["tested_round"] = "20261014T1200Z"
+    hist = evolution.update_protocol_history(r2, p)
+
+    assert hist["hysteria2"]["rounds"] == 2
+    assert hist["hysteria2"]["tested"] == 250
+    assert hist["hysteria2"]["passed"] == 50
+    assert hist["anytls"]["tested"] == 18
+    assert len(hist["hysteria2"]["recent"]) == 2
+
+
+def test_update_protocol_history_idempotent_same_round(tmp_path):
+    """同一轮重复执行不得重复累加（CI 重试/重跑场景）。"""
+    p = str(tmp_path / "protocol_history.json")
+    r = _mk_report(tested=200, passed=40)
+    r["counts"]["by_protocol"] = {"hysteria2": {"tested": 100, "passed": 20}}
+    r["tested_round"] = "20261014T0600Z"
+    evolution.update_protocol_history(r, p)
+    hist = evolution.update_protocol_history(r, p)  # 同轮再来一次
+    assert hist["hysteria2"]["rounds"] == 1
+    assert hist["hysteria2"]["tested"] == 100
+
+
+def test_update_protocol_history_skips_stale(tmp_path):
+    """陈旧报告不得写入（与其余反哺闭环一致的守卫）。"""
+    p = str(tmp_path / "protocol_history.json")
+    stale = _mk_report(stale=True)
+    stale["counts"]["by_protocol"] = {"hysteria2": {"tested": 100, "passed": 20}}
+    assert evolution.update_protocol_history(stale, p) == {}
+    assert not os.path.exists(p)
+
+
+def test_update_protocol_history_keeps_recent_bounded(tmp_path):
+    """recent 列表必须被裁剪到 PROTOCOL_HISTORY_KEEP_ROUNDS，控制体积。"""
+    import config
+    p = str(tmp_path / "protocol_history.json")
+    n = config.PROTOCOL_HISTORY_KEEP_ROUNDS + 5
+    for i in range(n):
+        r = _mk_report(tested=100, passed=20)
+        r["counts"]["by_protocol"] = {"hysteria2": {"tested": 100, "passed": 20}}
+        r["tested_round"] = f"20261014T{i:04d}Z"
+        r["generated_at"] = _now_iso()   # 保持新鲜
+        evolution.update_protocol_history(r, p)
+    hist = json.load(open(p))
+    assert hist["hysteria2"]["rounds"] == n          # 累计不丢
+    assert len(hist["hysteria2"]["recent"]) == config.PROTOCOL_HISTORY_KEEP_ROUNDS

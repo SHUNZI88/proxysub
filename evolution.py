@@ -342,6 +342,62 @@ def append_probe_history(report: dict, path: str = config.PROBE_HISTORY_FILE) ->
 
 
 # ------------------------------------------------------------------ 编排
+def update_protocol_history(report: dict,
+                            path: str = config.PROTOCOL_HISTORY_FILE) -> dict:
+    """跨轮累积「分协议 tested/passed」，用于协议维度权重化的证据积累（P2-b）。
+
+    设计（2026-10-15）：单轮 by_protocol 无法判断小样本协议的显著性，故把每轮的
+    tested/passed 累加到独立文件，供后续决策时读取「累计样本量 + 跨轮方向一致性」。
+
+    结构：
+      {
+        "<protocol>": {
+            "rounds": N,            # 出现轮次数
+            "tested": T, "passed": P,   # 累计
+            "last_round": "...", "last_ts": "...",
+            "recent": [{"round":..,"tested":..,"passed":..}, ...]  # 最近 K 轮
+        }, ...
+      }
+
+    守卫：报告陈旧则跳过（不记过期轮次）；同轮重复写入幂等（按 last_round 去重）。
+    """
+    if _report_age_s(report) > config.VERIFICATION_MAX_AGE_S:
+        return {}
+    counts = report.get("counts", {})
+    by_proto = counts.get("by_protocol", {}) or {}
+    if not by_proto:
+        return {}
+    round_id = report.get("tested_round") or report.get("round_id") or ""
+    ts = report.get("generated_at")
+    hist = _load_json(path, {})
+
+    for proto, c in by_proto.items():
+        # 兼容两种形态：旧版 {"tested":N,"passed":M}；新版含 ci/pass_rate 等
+        t = int(c.get("tested", 0))
+        p = int(c.get("passed", 0))
+        rec = hist.setdefault(proto, {
+            "rounds": 0, "tested": 0, "passed": 0,
+            "last_round": "", "last_ts": "", "recent": [],
+        })
+        # 幂等：同一轮不重复累加
+        if rec.get("last_round") == round_id and round_id:
+            continue
+        rec["rounds"] += 1
+        rec["tested"] += t
+        rec["passed"] += p
+        rec["last_round"] = round_id
+        rec["last_ts"] = ts
+        recent = rec.setdefault("recent", [])
+        recent.append({"round": round_id, "tested": t, "passed": p})
+        # 只保留最近 K 轮，控制体积
+        if len(recent) > config.PROTOCOL_HISTORY_KEEP_ROUNDS:
+            del recent[:-config.PROTOCOL_HISTORY_KEEP_ROUNDS]
+
+    _save_json(path, hist)
+    return hist
+
+
+# ------------------------------------------------------------------ 编排
 def run_evolution(report: dict, repo_root: str = ".",
                   url_by_src: dict | None = None) -> dict:
     """CI 侧一次性编排 4 个闭环；返回各产物摘要（供 main 打印/提交）。
@@ -353,12 +409,14 @@ def run_evolution(report: dict, repo_root: str = ".",
         return os.path.join(repo_root, name)
     cn_hist = update_cn_history(report, _p(config.CN_HISTORY_FILE))
     src = update_source_scores_cn(report, _p(config.SOURCE_SCORES_FILE), url_by_src)
+    proto_hist = update_protocol_history(report, _p(config.PROTOCOL_HISTORY_FILE))
     params = learn_thresholds(report, _p(config.LEARNED_THRESHOLDS_FILE),
                               _p(config.THRESHOLD_HISTORY_FILE))
     line = append_probe_history(report, _p(config.PROBE_HISTORY_FILE))
     return {
         "cn_history_nodes": len(cn_hist),
         "source_scores_with_cn": sum(1 for v in src.values() if "cn_pass_rate" in v),
+        "protocol_history_protocols": len(proto_hist),
         "learned": params,
         "probe_history_line": line,
     }

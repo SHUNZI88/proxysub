@@ -40,6 +40,7 @@ import argparse
 import datetime
 import fcntl
 import json
+import math
 import os
 import re
 import shutil
@@ -280,10 +281,28 @@ def cap_test_set(nodes: list[dict], budget_s: float,
     return kept, len(nodes) - len(kept)
 
 
-def _agg_two(nodes: list[dict], verified: list[dict], key_fn) -> dict:
+def _wilson_ci(k: int, n: int, z: float = 1.96) -> tuple[float, float]:
+    """Wilson 得分区间（95%）——小样本下比正态近似稳健（n=0 时返回 (0,0)）。
+
+    用于协议分层统计（P2-a）：小样本协议（如 anytls n=8）的朴素通过率极不稳定，
+    必须同时给出置信区间，才能避免"看数字下结论"（2026-10-15 复盘教训）。
+    """
+    if n == 0:
+        return 0.0, 0.0
+    p = k / n
+    denom = 1 + z * z / n
+    center = (p + z * z / (2 * n)) / denom
+    margin = z / denom * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n))
+    return max(0.0, center - margin), min(1.0, center + margin)
+
+
+def _agg_two(nodes: list[dict], verified: list[dict], key_fn,
+             *, with_ci: bool = False) -> dict:
     """按 key_fn 聚合 tested/passed 双口径（Phase 2.2，分源/分协议）。
 
     返回 {key: {"tested": N, "passed": M}}，按通过数降序、再按待测数降序。
+    with_ci=True 时额外给出 pass_rate 与 95% Wilson 置信区间（P2-a，分协议用），
+    用于判断小样本协议的通过率是否具备统计显著性。
     """
     tested: dict[str, int] = {}
     passed: dict[str, int] = {}
@@ -294,7 +313,18 @@ def _agg_two(nodes: list[dict], verified: list[dict], key_fn) -> dict:
         k = key_fn(n)
         passed[k] = passed.get(k, 0) + 1
     keys = sorted(tested, key=lambda k: (-passed.get(k, 0), -tested[k]))
-    return {k: {"tested": tested[k], "passed": passed.get(k, 0)} for k in keys}
+    out: dict[str, dict] = {}
+    for k in keys:
+        t, p = tested[k], passed.get(k, 0)
+        row: dict = {"tested": t, "passed": p}
+        if with_ci:
+            lo, hi = _wilson_ci(p, t)
+            row["pass_rate"] = round(p / t, 4) if t else 0.0
+            row["ci95_low"] = round(lo, 4)
+            row["ci95_high"] = round(hi, 4)
+            row["sample_ok"] = t >= config.PROTOCOL_MIN_SAMPLE
+        out[k] = row
+    return out
 
 
 # ---------------------------------------------------------------- 自检
@@ -757,8 +787,11 @@ def main() -> int:
     src_nodes = [n for n in nodes if n.get("src")]
     src_verified = [n for n in verified if n.get("src")]
     by_source = _agg_two(src_nodes, src_verified, key_fn=lambda n: n["src"])
+    # 分协议带置信区间（P2-a）：小样本协议（anytls/hysteria 等）的通过率必须配
+    # 95% Wilson 区间与 sample_ok 标记，避免"看单轮数字就加权"（2026-10-15 教训）。
     by_protocol = _agg_two(nodes, verified,
-                           key_fn=lambda n: str(n["proxy"].get("type", "?")))
+                           key_fn=lambda n: str(n["proxy"].get("type", "?")),
+                           with_ci=True)
     log(f"验证集: {len(verified)} 个（pending {by_origin['pending']} / "
         f"rescue {by_origin['rescue']} / carryover {by_origin['carryover']}）")
 
