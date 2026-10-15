@@ -2,7 +2,7 @@
   "https://raw.githubusercontent.com/shaoyouvip/free/main/mihomo.yaml": {
     "fail_streak": 0,
     "last_error": null,
-    "last_count": 31
+    "last_count": 53
   },
   "https://raw.githubusercontent.com/Russ534/clash/cdf534db8f8c9306d61c630b840d0a1936d09dd2/bp.yaml": {
     "fail_streak": 0,
@@ -17,7 +17,7 @@
   "https://raw.githubusercontent.com/Au1rxx/free-vpn-subscriptions/main/output/clash.yaml": {
     "fail_streak": 0,
     "last_error": null,
-    "last_count": 1812
+    "last_count": 1769
   },
   "https://blog.ermao.net/sub/clash/ermao.net": {
     "fail_streak": 0,
@@ -37,7 +37,7 @@
   "https://raw.githubusercontent.com/peasoft/NoMoreWalls/master/list.meta.yml": {
     "fail_streak": 0,
     "last_error": null,
-    "last_count": 517
+    "last_count": 484
   },
   "https://raw.githubusercontent.com/awesome-vpn/awesome-vpn/master/clash.yaml": {
     "fail_streak": 0,
@@ -63,11 +63,6 @@
     "fail_streak": 0,
     "last_error": null,
     "last_count": 460
-  },
-  "https://raw.githubusercontent.com/mahdibland/V2RayAggregator/master/Eternity.yml": {
-    "fail_streak": 0,
-    "last_error": null,
-    "last_count": 201
   },
   "https://clashgithub.com/clashnode-20261004.html": {
     "fail_streak": 0,
@@ -114,14 +109,19 @@
     "last_error": null,
     "last_count": 489
   },
-  "https://raw.githubusercontent.com/Nexuspt753/GitHub-Sub-Scanner/main/subs/isp/node-host-limited.yaml": {
+  "https://pai.yt/clash": {
+    "fail_streak": 2,
+    "last_error": "HTTPSConnectionPool(host='sub.pai.yt', port=443): Read timed out. (read timeout=25)",
+    "last_count": 0
+  },
+  "https://raw.githubusercontent.com/clashfreenodecom/clashfreenode.com/main/feed/clash-20261003.yaml": {
     "fail_streak": 0,
     "last_error": null,
-    "last_count": 25
+    "last_count": 3728
   },
-  "https://pai.yt/clash": {
-    "fail_streak": 1,
-    "last_error": "522 Server Error: <none> for url: https://sub.pai.yt/clash",
-    "last_count": 0
+  "https://raw.githubusercontent.com/clashfreenodecom/clashfreenode.com/main/feed/clash-20260922.yaml": {
+    "fail_streak": 0,
+    "last_error": null,
+    "last_count": 3718
   }
 }
