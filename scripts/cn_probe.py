@@ -132,19 +132,29 @@ def run(cmd: list[str], timeout: int = 120, **kw) -> subprocess.CompletedProcess
 
 
 def gh_download(tag: str, pattern: str, dest: str) -> bool:
-    """下载 Release 资产：优先 gh，失败自动回退 curl（Bearer token）。
+    """下载 Release 资产：优先 gh，失败/超时自动回退 curl（Bearer token）。
 
     回退原因（grok 2.4）：实测某些沙箱环境下 `gh release download` 会长时间
     挂起无响应，而直连 `curl` 走 API 更稳定。两者任一成功即视为下载成功。
+
+    ⚠️ 2026-10-16 教训：gh 挂起表现为 `subprocess.TimeoutExpired`（**异常**），
+    而非非零返回码。早期实现只判 `returncode`、未捕获超时异常，于是一次网络
+    抖动就让 `gh_download` 抛异常、整脚本崩溃，curl 回退永不会执行——结果
+    `pending_probe.json` / 主资产等关键下载静默失败，carryover=0、实测集也发不出。
+    现改为显式捕获 `TimeoutExpired` 后同样走 curl 回退。
     """
-    r = run(["gh", "release", "download", tag, "-p", pattern, "-O", dest, "--clobber"],
-            timeout=90)
-    if r.returncode == 0 and os.path.exists(dest):
-        return True
-    # 回退：curl -L .../releases/download/<tag>/<pattern>
     token = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN") or ""
     repo = os.environ.get("PROXYSUB_REPO", "SHUNZI88/proxysub")
     url = f"https://github.com/{repo}/releases/download/{tag}/{pattern}"
+    # 1) 优先 gh（超时/失败均交由 curl 兜底）
+    try:
+        r = run(["gh", "release", "download", tag, "-p", pattern, "-O", dest, "--clobber"],
+                timeout=90)
+        if r.returncode == 0 and os.path.exists(dest):
+            return True
+    except subprocess.TimeoutExpired:
+        log(f"提示: gh 下载 {pattern} 超时，回退 curl")
+    # 2) 回退 curl（gh 失败或超时均走此路）
     cr = run(["curl", "-fsSL", "-H", f"Authorization: Bearer {token}", "-o", dest, url],
              timeout=120)
     return cr.returncode == 0 and os.path.exists(dest)
@@ -761,11 +771,20 @@ def main() -> int:
     cfg_path = os.path.join(workdir, "probe_config.yaml")
     with open(cfg_path, "w", encoding="utf-8") as f:
         yaml.dump(cfg, f, allow_unicode=True, sort_keys=False)
-    proc = subprocess.Popen([mihomo, "-d", workdir, "-f", cfg_path],
-                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    # mihomo 日志落盘（不再吞 stderr）：控制器未就绪时可读尾部定位真正原因
+    # （常见为配置非法，如节点名重复），而不是黑盒"控制器未就绪"。
+    mihomo_log = os.path.join(workdir, "mihomo.log")
+    with open(mihomo_log, "w", encoding="utf-8") as mlog:
+        proc = subprocess.Popen([mihomo, "-d", workdir, "-f", cfg_path],
+                                stdout=mlog, stderr=subprocess.STDOUT)
     try:
         if not wait_controller(api_port):
-            log("熔断: mihomo 控制器未就绪，不发布")
+            try:
+                with open(mihomo_log, encoding="utf-8") as f:
+                    tail = "".join(list(f)[-25:])
+            except Exception:
+                tail = "(日志读取失败)"
+            log("熔断: mihomo 控制器未就绪，不发布。mihomo 尾部日志:\n" + tail)
             return 3
         log(f"mihomo 就绪（mixed {mixed_port} / api {api_port}），开始拨测 "
             f"{len(nodes)} 个节点…")
