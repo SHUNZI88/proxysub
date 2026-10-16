@@ -112,6 +112,33 @@ def test_dedup_nodes_priority_and_unique_names():
     assert len(set(names)) == 2  # 同名冲突已加后缀
 
 
+def test_dedup_nodes_suffixed_original_name_no_collision():
+    """回归：原始名已带 `#2` 后缀时，不得与计数生成名撞车（2026-10-16 修复）。
+
+    旧实现用 `used_names[base] += 1` 生成 `base#n`，当存在原始名 `base#2`
+    且另有多个同名 `base` 节点时，计数会把第二个 `base` 也命名为 `base#2`，
+    与原始 `base#2` 撞名，mihomo 报 duplicate name 拒绝启动。新实现用全局
+    已用名集合保证任何生成名都不重复。
+    """
+    a = _proxy(name="X#2", server="a.example")   # 原始名已带 #2
+    b = _proxy(name="X", server="b.example")
+    c = _proxy(name="X", server="c.example")     # 第二个同名，旧实现会生成 X#2 撞车
+    groups = [("pending", [
+        {"fp": "fa", "name": "X#2", "proxy": a, "origin": "pending",
+         "final": True, "us_ok": True},
+        {"fp": "fb", "name": "X", "proxy": b, "origin": "pending",
+         "final": True, "us_ok": True},
+        {"fp": "fc", "name": "X", "proxy": c, "origin": "pending",
+         "final": True, "us_ok": True},
+    ])]
+    out = cn_probe.dedup_nodes(groups)
+    names = [n["probe_name"] for n in out]
+    assert len(names) == len(set(names))          # 全部唯一
+    assert len(out) == 3
+    assert names.count("X#2") == 1                # 原始 X#2 只出现一次
+
+
+
 # ---------------------------------------------------------------- build_verified_config
 def test_build_verified_config_groups():
     nodes = [
