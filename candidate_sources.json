@@ -1,79 +1,11 @@
 {
   "candidates": {
-    "https://clashgithub.com/clashnode-20261014.html": {
-      "channel": "web:https://clashgithub.com/",
-      "origin": "channel_web",
-      "added": "2026-10-14",
-      "first_seen": "2026-10-14",
-      "runs": 15,
-      "good_streak": 0,
-      "fail_streak": 0,
-      "history": [
-        {
-          "date": "2026-10-15",
-          "count": 483,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-15",
-          "count": 483,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-15",
-          "count": 483,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-15",
-          "count": 483,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-16",
-          "count": 483,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-16",
-          "count": 483,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-16",
-          "count": 483,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-16",
-          "count": 483,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        }
-      ],
-      "required_runs": 3
-    },
     "https://clashgithub.com/clashnode-20261015.html": {
       "channel": "web:https://clashgithub.com/",
       "origin": "channel_web",
       "added": "2026-10-14",
       "first_seen": "2026-10-14",
-      "runs": 11,
+      "runs": 12,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -99,7 +31,7 @@
           "tamper": 0
         },
         {
-          "date": "2026-10-15",
+          "date": "2026-10-16",
           "count": 489,
           "usable": 0,
           "unique_new": 0,
@@ -145,17 +77,10 @@
       "required_runs": 3,
       "first_seen": "2026-10-15",
       "initial_nodes": 3718,
-      "runs": 8,
+      "runs": 9,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-10-15",
-          "count": 3718,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-10-15",
           "count": 3718,
@@ -204,6 +129,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-16",
+          "count": 3718,
+          "usable": 1,
+          "unique_new": 1,
+          "tamper": 0
         }
       ]
     },
@@ -216,17 +148,10 @@
       "required_runs": 3,
       "first_seen": "2026-10-15",
       "initial_nodes": 3728,
-      "runs": 8,
-      "good_streak": 0,
+      "runs": 9,
+      "good_streak": 1,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-10-15",
-          "count": 3728,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-10-15",
           "count": 3728,
@@ -275,6 +200,13 @@
           "usable": 4,
           "unique_new": 4,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-16",
+          "count": 3728,
+          "usable": 5,
+          "unique_new": 5,
+          "tamper": 0
         }
       ]
     },
@@ -283,10 +215,17 @@
       "origin": "channel_web",
       "added": "2026-10-15",
       "first_seen": "2026-10-15",
-      "runs": 4,
+      "runs": 5,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
+        {
+          "date": "2026-10-16",
+          "count": 496,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
         {
           "date": "2026-10-16",
           "count": 496,
@@ -327,7 +266,7 @@
       "required_runs": 3,
       "first_seen": "2026-10-16",
       "initial_nodes": 27,
-      "runs": 2,
+      "runs": 3,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -344,6 +283,13 @@
           "usable": 1,
           "unique_new": 1,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-16",
+          "count": 1,
+          "usable": 1,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -356,7 +302,7 @@
       "required_runs": 3,
       "first_seen": "2026-10-16",
       "initial_nodes": 22,
-      "runs": 1,
+      "runs": 2,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -366,8 +312,26 @@
           "usable": 1,
           "unique_new": 1,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-16",
+          "count": 22,
+          "usable": 1,
+          "unique_new": 1,
+          "tamper": 0
         }
       ]
+    },
+    "https://clashgithub.com/clashnode-20261017.html": {
+      "channel": "web:https://clashgithub.com/",
+      "origin": "channel_web",
+      "added": "2026-10-16",
+      "first_seen": "2026-10-16",
+      "runs": 0,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": [],
+      "required_runs": 3
     }
   },
   "rejected": {
@@ -557,6 +521,11 @@
       "repo": null
     },
     "https://tt.vg/freeclash": {
+      "reason": "no_stable_contribution",
+      "date": "2026-10-16",
+      "repo": null
+    },
+    "https://clashgithub.com/clashnode-20261014.html": {
       "reason": "no_stable_contribution",
       "date": "2026-10-16",
       "repo": null

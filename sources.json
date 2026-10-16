@@ -28,11 +28,6 @@
       "added": "2026-10-10"
     },
     {
-      "url": "https://blog.ermao.net/sub/clash/ermao.net",
-      "origin": "manual",
-      "added": "2026-10-10"
-    },
-    {
       "url": "https://raw.githubusercontent.com/lanzm/MetaFetch/master/list.meta.yml",
       "origin": "manual",
       "added": "2026-10-10"
@@ -157,6 +152,11 @@
       "url": "https://raw.githubusercontent.com/mahdibland/V2RayAggregator/master/Eternity.yml",
       "reason": "cf_blocked:5/15",
       "date": "2026-10-15"
+    },
+    {
+      "url": "https://blog.ermao.net/sub/clash/ermao.net",
+      "reason": "zero_unique_contribution:16runs",
+      "date": "2026-10-16"
     }
   ],
   "deny_repos": []
