@@ -394,20 +394,29 @@ def load_carryover(main_clash: str) -> list[dict]:
 
 
 def dedup_nodes(groups: list[tuple[str, list[dict]]]) -> list[dict]:
-    """按 (origin 优先级, 出现顺序) 去重；探测名保证唯一（mihomo 要求）。"""
+    """按 (origin 优先级, 出现顺序) 去重；探测名保证全局唯一（mihomo 硬性要求）。
+
+    2026-10-16 修复：旧实现用 `used_names[name] += 1` 计数生成 `name#n`，
+    但当原始名本身已带 `#2` 后缀时（订阅源常见），会与计数生成的 `#2` 撞名，
+    导致 mihomo 启动即报 "is the duplicate name" 并退出，cn_probe 熔断（exit 3），
+    实测集永远发不出来。改用「全局已用名集合 + 冲突时递增加后缀直到不重复」，
+    无论原始名长什么样都保证唯一。
+    """
     seen_fp: dict[str, dict] = {}
     for _origin, nodes in groups:
         for n in nodes:
             seen_fp.setdefault(n["fp"], n)
     out: list[dict] = []
-    used_names: dict[str, int] = {}
+    used: set[str] = set()
     for n in seen_fp.values():
-        name = n["name"]
-        if name in used_names:
-            used_names[name] += 1
-            name = f"{name}#{used_names[name]}"
-        else:
-            used_names[name] = 1
+        base = n["name"]
+        name = base
+        if name in used:
+            i = 2
+            while f"{base}#{i}" in used:
+                i += 1
+            name = f"{base}#{i}"
+        used.add(name)
         n["probe_name"] = name
         out.append(n)
     return out
@@ -537,17 +546,42 @@ def _truthy(v) -> bool:
     return str(v).lower() in ("1", "true", "yes", "on")
 
 
+def _unique_names(proxies: list[dict]) -> list[str]:
+    """给节点列表分配全局唯一 name（mihomo/clash 硬性要求），返回与 proxies 对齐的名称。
+
+    订阅源常见同名节点（尤其带 `#2` 后缀者），直接写入会让客户端/拨测端报
+    duplicate name 整体拒绝加载（2026-10-16 教训）。用「已用名集合 + 递增加后缀」
+    保证唯一，不改节点身份。
+    """
+    used: set[str] = set()
+    out: list[str] = []
+    for p in proxies:
+        base = str(p.get("name") or "node")
+        name = base
+        if name in used:
+            i = 2
+            while f"{base}#{i}" in used:
+                i += 1
+            name = f"{base}#{i}"
+        used.add(name)
+        out.append(name)
+    return out
+
+
 def build_verified_config(nodes: list[dict]) -> dict:
     """验证集 clash 配置：合规节点进自动/地区组，Insecure 独立隔离组。"""
     proxies = [dict(n["proxy"]) for n in nodes]
+    names = _unique_names(proxies)  # 先统一分配唯一名，再回填 proxy.name 供分组引用
+    for p, nm in zip(proxies, names):
+        p["name"] = nm
     compliant = [p for p in proxies if not _truthy(p.get("skip-cert-verify"))]
     insecure = [p for p in proxies if _truthy(p.get("skip-cert-verify"))]
-    names = [p["name"] for p in compliant]
+    compliant_names = [p["name"] for p in compliant]
     insecure_names = [p["name"] for p in insecure]
     groups = [
         {"name": "🚀 节点选择", "type": "select",
-         "proxies": ["♻️ 自动选择", "DIRECT"] + names},
-        {"name": "♻️ 自动选择", "type": "url-test", "proxies": names,
+         "proxies": ["♻️ 自动选择", "DIRECT"] + compliant_names},
+        {"name": "♻️ 自动选择", "type": "url-test", "proxies": compliant_names,
          "url": config.PROBE_URL, "interval": 300, "tolerance": 50},
     ]
     if classify_proxy is not None:
