@@ -179,7 +179,14 @@ gh auth status          # 应显示 Logged in as SHUNZI88
 > 2. **解释器真实存在**：`crontab -l` 里调用的 `python3.11`/脚本路径，用 `file <path>` 确认存在且为可执行；路径错误立即改成正解（本仓库正确路径为 `/root/.pyenv/shims/python3.11`）；
 > 3. **实测新鲜度**：下载 `verification_report.json` 看 `generated_at` 是否 <12h 且 `passed≥15`；过期说明最近一次实测没跑成（cron 没跑 / 沙箱休眠 / 熔断），**先修 1、2 再手动补跑 `scripts/cn_probe.py`**。
 >
-> **根因记忆（2026-10-16）**：本次用户反馈"150 个节点本地测速可用不到 10 个"——表象是 CI 把候选集兜底发布到了主资产 p_*（因 verification_report 已陈旧 >12h），根因是 cron 自配置起就从未成功执行（解释器路径错误 127）。**cron 配置"写进去了"≠"能跑起来"**，必须验证路径与进程双存活。
+> **根因记忆（2026-10-16，完整链路）**：用户反馈"150 个节点本地测速可用不到 10 个"——表象是 CI 把未测候选集兜底发布到主资产 p_*；根因是**实测链路三层叠加失效**：
+> 1. **cron 自配置起从未执行**（解释器路径写错 127，静默失败）——`verification_report` 停在 10-15、超 12h 阈值；
+> 2. **`cn_probe.py` 节点名去重 bug**：原始名带 `#2` 后缀时与计数生成名撞车，mihomo 报 `duplicate name` 熔断（exit 3），实测集发不出；
+> 3. **`gh_download` 未捕获超时异常**：gh 挂起抛 `TimeoutExpired`（异常而非非零返回码），原代码只判 `returncode`，一次网络抖动即整脚本崩溃、curl 回退永不执行——`pending_probe.json`/主资产下载失败被吞、carryover=0。
+>
+> 三处修复均已提交推送（commits `8834f05`/`b980e56`/`ca4b833`/`299e2ca`），并各加回归测试锁定。
+>
+> **🛡 健壮性铁律（见微知著，2026-10-16 新增）**：**凡调用外部命令（gh/curl/mihomo 等）的封装，必须同时处理「非零返回码」与「超时抛异常」两种情况**——`subprocess.run(timeout=...)` 超时会抛 `TimeoutExpired`（不是 returncode≠0）。只判 `returncode` 的封装，遇到一次网络抖动/命令挂起就会整轮崩溃，且错误被静默吞掉、极难排查。所有 `run()`/`subprocess` 调用点都要做「超时→回退/重试」处理。
 
 ---
 
