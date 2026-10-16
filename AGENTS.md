@@ -186,7 +186,11 @@ gh auth status          # 应显示 Logged in as SHUNZI88
 >
 > 三处修复均已提交推送（commits `8834f05`/`b980e56`/`ca4b833`/`299e2ca`），并各加回归测试锁定。
 >
-> **🛡 健壮性铁律（见微知著，2026-10-16 新增）**：**凡调用外部命令（gh/curl/mihomo 等）的封装，必须同时处理「非零返回码」与「超时抛异常」两种情况**——`subprocess.run(timeout=...)` 超时会抛 `TimeoutExpired`（不是 returncode≠0）。只判 `returncode` 的封装，遇到一次网络抖动/命令挂起就会整轮崩溃，且错误被静默吞掉、极难排查。所有 `run()`/`subprocess` 调用点都要做「超时→回退/重试」处理。
+> **第四层根因（2026-10-16 晚，用户发本地实测图）**：即使 cron/cn_probe/gh_download 都修复后，沙箱探测通过 53 个节点，用户本地（中国移动 5G）实测仅约 1 个可用。表象是"节点质量差"，实质是**探测标准太弱造成假阳性**：`cn_probe.py` 只调用 mihomo `/proxies/{name}/delay` API 测到 `gstatic.com` 的延迟——这只能验证 mihomo 与节点 server 建立了 TCP/TLS，不验证 server 是否真能转发流量访问被封锁目标；且 `gstatic.com` 在国内某些网络下可直接解析/缓存，进一步放大假阳性。修复：探测流程改为 **delay 初筛 + 真实流量终筛**——通过 mihomo `mixed-port` 代理访问 `https://www.google.com/robots.txt` / `https://www.cloudflare.com/cdn-cgi/trace` 等中国大陆不可达目标，只有返回合法 HTTP 响应才算可用（commit `fa0fea7`）。
+>
+> **🛡 健壮性铁律（见微知著，2026-10-16 新增）**：
+> 1. **凡调用外部命令（gh/curl/mihomo 等）的封装，必须同时处理「非零返回码」与「超时抛异常」两种情况**——`subprocess.run(timeout=...)` 超时会抛 `TimeoutExpired`（不是 returncode≠0）。只判 `returncode` 的封装，遇到一次网络抖动/命令挂起就会整轮崩溃，且错误被静默吞掉、极难排查。所有 `run()`/`subprocess` 调用点都要做「超时→回退/重试」处理。
+> 2. **沙箱探测不能只看「延迟通过」，必须验证「真实流量可通」**：`/delay` API、TCP 握手、TLS 延迟都不算"可用"——只有经代理实际访问到被封锁目标并拿到合法 HTTP 响应，才能判定节点在中国路径下可用。探测 URL 必须选中国大陆明确不可达的海外地址（Google/YouTube/Cloudflare trace 等），避免用国内仍可解析的域名（如 gstatic.com）造成假阳性。
 
 ---
 
