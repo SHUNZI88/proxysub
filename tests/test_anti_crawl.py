@@ -206,7 +206,7 @@ def test_release_mode_permanent_urls(in_tmp):
     assert cfg["output_mode"] == "release"
     assert all(p.startswith(anti_crawl.PUBLISH_DIR + "/") for p in outs1)
     assert len(urls1) == 4
-    assert all(u.startswith("https://github.com/SHUNZI88/proxysub/releases/latest/download/p_")
+    assert all(u.startswith("https://github.com/SHUNZI88/proxysub/releases/download/sub/p_")
                for u in urls1)
 
     # 跨周期：诱饵轮换了，但资产名 / 永久地址 / 输出路径完全不变
@@ -314,7 +314,7 @@ def test_summary_lines(in_tmp, monkeypatch):
     cfg = _enabled_cfg(decoy_count=6)
     cfg = anti_crawl.begin_run(cfg, TODAY)
     text = "\n".join(anti_crawl.summary_lines(cfg))
-    assert "releases/latest/download/p_" in text
+    assert "releases/download/sub/p_" in text
     assert "永久" in text
     # rotate 模式：轮换地址
     cfg2 = _rotate_cfg(decoy_count=6)

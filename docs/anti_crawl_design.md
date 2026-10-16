@@ -30,7 +30,7 @@ public 仓库的订阅文件（`clean_clash.yaml` 等固定名 raw 路径）对�
    （如 `p_5d0dc339da_c.yaml`，之后永久不变）。订阅地址形如：
 
    ```
-   https://github.com/SHUNZI88/proxysub/releases/latest/download/p_5d0dc339da_c.yaml
+   https://github.com/SHUNZI88/proxysub/releases/download/sub/p_5d0dc339da_c.yaml
    ```
 
    一次复制永久有效、无需手动维护；该路径不在任何 raw 扫描器的目标清单上，也不从任何公开

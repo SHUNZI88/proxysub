@@ -9,10 +9,12 @@
      **诱饵内容**——大量形态合法但必定不可用的诱饵节点（名称带 [BAIT] 标记，
      服务器指向保留域 .invalid，任何客户端都无法连通）。
   2. 永久订阅地址（rolling release，默认）：真实输出发布到仓库的滚动
-     GitHub Release（tag 可配），资产名为首次生成的随机字符串
+     GitHub Release（tag 可配，默认 `sub`），资产名为首次生成的随机字符串
      （p_<hex>_c.yaml 等，之后永久不变）。订阅地址形如
-     https://github.com/<repo>/releases/latest/download/p_<hex>_c.yaml
+     https://github.com/<repo>/releases/download/<tag>/p_<hex>_c.yaml
      —— **一次复制，永久有效**；按固定路径扫描 raw 的爬虫永远只会扫到诱饵。
+     （注意：必须用具体 tag 而非 `releases/latest`——latest 标记会被仓库内
+     其他较新创建的 release 抢走，导致地址漂移失效。）
   3. 诱饵回流检测（bait feedback）：若某个订阅源收录了我们生成的诱饵节点
      （指纹比对），该源会被自动标记 bait_reuse —— 候选源直接拒绝、
      正式源自动淘汰。爬虫转载诱饵即自我暴露。
@@ -233,13 +235,16 @@ def publish_paths(cfg: dict) -> dict[str, str]:
 
 
 def release_urls(cfg: dict, repo: str | None = None) -> list[str]:
-    """永久订阅地址：https://github.com/<repo>/releases/latest/download/<资产名>。
+    """永久订阅地址：https://github.com/<repo>/releases/download/<tag>/<资产名>。
 
-    注意：用 releases/latest/download 而非具体 tag，保证地址永久不变
-    （tag 仅在工作流内用于 gh release upload/create）。
+    注意：必须用具体 release_tag（默认 `sub`）而非 `releases/latest`。
+    GitHub 的 latest 标记归属最新创建的 release——仓库内任何较新创建的
+    release（如 status dashboard）都会把它抢走，使 `latest/download` 路径
+    404。具体 tag 路径不依赖 latest 标记，永久稳定。
     """
     repo = repo or os.environ.get("GITHUB_REPOSITORY") or "OWNER/REPO"
-    return [f"https://github.com/{repo}/releases/latest/download/{asset_name(cfg, b)}"
+    tag = str(cfg.get("release_tag") or DEFAULT_RELEASE_TAG)
+    return [f"https://github.com/{repo}/releases/download/{tag}/{asset_name(cfg, b)}"
             for b in OUTPUT_BASENAMES]
 
 

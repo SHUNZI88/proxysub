@@ -17,7 +17,7 @@
 
 | 项 | 当前值 |
 |---|---|
-| **订什么** | Release 永久地址 `.../latest/download/p_<随机名>_c.yaml`（随机名见 Actions Step Summary，不在此悬挂）；**勿订**固定名 raw（诱饵） |
+| **订什么** | Release 永久地址 `.../download/sub/p_<随机名>_c.yaml`（随机名见 Actions Step Summary，不在此悬挂）；**勿订**固定名 raw（诱饵） |
 | **最后中国实测** | 见 Release `verification_report.json` 的 `generated_at` 字段（沙箱 09:18 / 16:18 北京窗口产出） |
 | **最后 CI 抓取** | 见 `stats.md` 顶部时间戳（CI 每 6h：00:17/06:17/12:17/18:17 UTC+8 名义） |
 
