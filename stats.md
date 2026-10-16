@@ -1,20 +1,20 @@
 # proxysub 健康报告
 
-更新时间：2026-10-16 09:20 UTC
+更新时间：2026-10-16 15:11 UTC
 运行模式：**mihomo**
 
 ## 概览
 
-- 最终节点：**150**（合规 90，高风险隔离 60）
-- 真实拨测通过率：**43.1%**（449/1042）
-- TCP 存活：3887 | 正式源 15 个 | 候选源 8 个
+- 最终节点：**150**（合规 95，高风险隔离 55）
+- 真实拨测通过率：**47.0%**（490/1042）
+- TCP 存活：3665 | 正式源 16 个 | 候选源 7 个
 
 ## 协议分布
 
 | 协议 | 数量 |
 |---|---|
-| VLESS-Reality | 69 |
-| Hysteria2 | 61 |
+| VLESS-Reality | 71 |
+| Hysteria2 | 59 |
 | VLESS-TLS | 7 |
 | Trojan | 7 |
 | Anytls | 6 |
@@ -24,29 +24,30 @@
 | 区域 | 数量 |
 |---|---|
 | 🌐 其他 | 87 |
-| 🇺🇸 美国 | 23 |
-| 🇸🇬 新加坡 | 17 |
-| 🇭🇰 香港 | 8 |
-| 🇯🇵 日本 | 7 |
-| 🇬🇧 英国 | 4 |
+| 🇺🇸 美国 | 22 |
+| 🇸🇬 新加坡 | 14 |
+| 🇯🇵 日本 | 8 |
+| 🇬🇧 英国 | 6 |
+| 🇭🇰 香港 | 5 |
+| 🇰🇷 韩国 | 5 |
 | 🇹🇼 台湾 | 3 |
-| 🇰🇷 韩国 | 1 |
 
 ## 源贡献 Top 10（正式源）
 
 | 源 | 真实通过 | 独有存活 | 存活 |
 |---|---|---|---|
-| `Au1rxx/free-vpn-subscriptions` | 205 | 891 | 916 |
-| `yy1588133/proxy-pool` | 91 | 57 | 418 |
-| `VPN-Subcription-Links/ClashX-V2Ray-TopFreeProxy` | 90 | 127 | 435 |
-| `OgdenThomas/freesub` | 73 | 225 | 235 |
-| `sub/clash` | 55 | 0 | 192 |
-| `chengaopan/AutoMergePublicNodes` | 46 | 10 | 166 |
-| `peasoft/NoMoreWalls` | 43 | 0 | 160 |
-| `lanzm/MetaFetch` | 38 | 119 | 188 |
-| `ovmvo/FreeSub` | 21 | 42 | 44 |
-| `free-nodes/clashfree` | 17 | 30 | 113 |
+| `Au1rxx/free-vpn-subscriptions` | 237 | 806 | 832 |
+| `yy1588133/proxy-pool` | 102 | 96 | 429 |
+| `VPN-Subcription-Links/ClashX-V2Ray-TopFreeProxy` | 85 | 119 | 413 |
+| `OgdenThomas/freesub` | 71 | 116 | 127 |
+| `sub/clash` | 54 | 0 | 175 |
+| `chengaopan/AutoMergePublicNodes` | 47 | 1 | 163 |
+| `peasoft/NoMoreWalls` | 47 | 0 | 162 |
+| `lanzm/MetaFetch` | 39 | 124 | 184 |
+| `free-nodes/clashfree` | 21 | 50 | 116 |
+| `free-nodes/clashfree` | 19 | 36 | 111 |
 
 ## 警告
 
 - 本轮无源被淘汰
+- 可疑源结构：Au1rxx: template_cluster:805dc0e4:188.42.145.0/24(17/33)
