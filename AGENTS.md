@@ -188,9 +188,9 @@ gh auth status          # 应显示 Logged in as SHUNZI88
 >
 > **第四层根因（2026-10-16 晚，用户发本地实测图）**：即使 cron/cn_probe/gh_download 都修复后，沙箱探测通过 53 个节点，用户本地（中国移动 5G）实测仅约 1 个可用。表象是"节点质量差"，实质是**探测标准太弱造成假阳性**：`cn_probe.py` 只调用 mihomo `/proxies/{name}/delay` API 测到 `gstatic.com` 的延迟——这只能验证 mihomo 与节点 server 建立了 TCP/TLS，不验证 server 是否真能转发流量访问被封锁目标；且 `gstatic.com` 在国内某些网络下可直接解析/缓存，进一步放大假阳性。修复：探测流程改为 **delay 初筛 + 真实流量终筛**——通过 mihomo `mixed-port` 代理访问 `https://www.google.com/robots.txt` / `https://www.cloudflare.com/cdn-cgi/trace` 等中国大陆不可达目标，只有返回合法 HTTP 响应才算可用（commit `fa0fea7`）。
 >
-> **第四层根因（2026-10-16 晚，用户发本地实测图）**：即使 cron/cn_probe/gh_download 都修复后，沙箱探测通过 53 个节点，用户本地（中国移动 5G）实测仅约 1 个可用。表象是"节点质量差"，实质是**探测标准太弱造成假阳性**：`cn_probe.py` 只调用 mihomo `/proxies/{name}/delay` API 测到 `gstatic.com` 的延迟——这只能验证 mihomo 与节点 server 建立了 TCP/TLS，不验证 server 是否真能转发流量访问被封锁目标；且 `gstatic.com` 在国内某些网络下可直接解析/缓存，进一步放大假阳性。修复：探测流程改为 **delay 初筛 + 真实流量终筛**——通过 mihomo `mixed-port` 代理访问 `https://www.google.com/robots.txt` / `https://www.cloudflare.com/cdn-cgi/trace` 等中国大陆不可达目标，只有返回合法 HTTP 响应才算可用（commit `fa0fea7`）。
->
 > **第五层根因（2026-10-17 晨，用户刷新订阅发现又变回 150）**：实测标准修好后，用户客户端测速有延迟的约 17 个节点与真实流量测试通过数吻合，证明标准准确；但订阅列表却变回 150 候选集。根因是**主资产归属信号被一轮劣质运行撤销**：cron 运行通过数 <15 时，`cn_probe` 把 `verification_report.published` 设为 `False` 并上传，CI 据此误判"沙箱未产出有效集"而兜底发布 150 候选集覆盖实测集。修复：`verification_report` 增加 `main_asset_published_at`/`main_asset_passed` 字段（记录最近一次有效发布），`verification_fresh.is_fresh` 增加第二层判定——只要最近有效发布仍新鲜，即便本轮 passed<15 也不兜底；`cn_probe` 在 passed<15 时从 release 现有 report 继承该信号（commit `bbbd85a`）。
+>
+> **✅ 验证闭环（2026-10-17 06:26，用户本地实测确认）**：完成五层修复后，当前发布 `p_*` 为 39 个真实流量双闸门通过节点，用户本地（中国移动 5G）实测除约 6 个波动外，其余 33 个均稳定在 40–550ms，为历次发布中本地实测有效性最高的一次。这印证了整条链路修复的正确性：① cron 真实执行；② 节点名去重不熔断；③ gh 超时回退；④ 真实流量终筛消除假阳性；⑤ 主资产归属信号不被劣质运行撤销。后续 `PER_NODE_S` 由 2.0 回调至 1.2（终筛只跑少数节点、边际极小），为下一轮扩大可用池预留预算（commit `929d0ca`）。
 >
 > **🛡 健壮性铁律（见微知著，2026-10-16 新增）**：
 > 1. **凡调用外部命令（gh/curl/mihomo 等）的封装，必须同时处理「非零返回码」与「超时抛异常」两种情况**——`subprocess.run(timeout=...)` 超时会抛 `TimeoutExpired`（不是 returncode≠0）。只判 `returncode` 的封装，遇到一次网络抖动/命令挂起就会整轮崩溃，且错误被静默吞掉、极难排查。所有 `run()`/`subprocess` 调用点都要做「超时→回退/重试」处理。
