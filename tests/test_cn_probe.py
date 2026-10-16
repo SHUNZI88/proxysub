@@ -541,3 +541,75 @@ def test_report_declares_dimension_semantics():
     assert '"us_ok"' in src and "美西" in src
     assert '"cn_ok"' in src and "中国" in src
     assert "不可互相替代" in src or "note" in src
+
+
+# ---------------------------------------------------------------- real_traffic_test
+class _FakeResp:
+    def __init__(self, status, body):
+        self.status = status
+        self._body = body
+
+    def read(self, n=-1):
+        return self._body[:n] if n > 0 else self._body
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *a):
+        return False
+
+
+def test_real_traffic_test_google_robots_ok(monkeypatch):
+    """回归（2026-10-16）：真实流量测试经 mixed-port 访问 Google robots.txt
+    成功时应判为可用。"""
+    monkeypatch.setattr(cn_probe, "api_put", lambda *a, **k: True)
+    captured = {}
+
+    class _Opener:
+        def open(self, req, timeout=None):
+            captured["url"] = req.full_url
+            # 模拟 Google robots.txt 响应
+            return _FakeResp(200, b"User-agent: *\nDisallow: /private/")
+
+    monkeypatch.setattr(cn_probe.urllib.request, "build_opener", lambda *a, **k: _Opener())
+    res = cn_probe.real_traffic_test(9097, 7897, "node-x")
+    assert res["ok"] is True
+    assert "google.com" in captured["url"]
+
+
+def test_real_traffic_test_falls_back_to_cloudflare(monkeypatch):
+    """真实流量测试应在首个 URL 失败时回退到下一个 URL。"""
+    monkeypatch.setattr(cn_probe, "api_put", lambda *a, **k: True)
+    urls = []
+
+    class _Opener:
+        def open(self, req, timeout=None):
+            urls.append(req.full_url)
+            if "google.com" in req.full_url:
+                raise OSError("timeout")
+            return _FakeResp(200, b"ip=1.2.3.4\nloc=HK")
+
+    monkeypatch.setattr(cn_probe.urllib.request, "build_opener", lambda *a, **k: _Opener())
+    res = cn_probe.real_traffic_test(9097, 7897, "node-x")
+    assert res["ok"] is True
+    assert any("cloudflare.com" in u for u in urls)
+
+
+def test_real_traffic_test_all_unreachable_returns_false(monkeypatch):
+    """所有真实流量目标均不可达时，必须返回失败，禁止假阳性。"""
+    monkeypatch.setattr(cn_probe, "api_put", lambda *a, **k: True)
+
+    class _Opener:
+        def open(self, req, timeout=None):
+            raise OSError("blocked")
+
+    monkeypatch.setattr(cn_probe.urllib.request, "build_opener", lambda *a, **k: _Opener())
+    res = cn_probe.real_traffic_test(9097, 7897, "node-x")
+    assert res["ok"] is False
+
+
+def test_real_traffic_test_api_put_failure_returns_false(monkeypatch):
+    """若 mihomo API 切换节点失败，真实流量测试直接失败。"""
+    monkeypatch.setattr(cn_probe, "api_put", lambda *a, **k: False)
+    res = cn_probe.real_traffic_test(9097, 7897, "node-x")
+    assert res["ok"] is False

@@ -70,11 +70,19 @@ except Exception:  # 仓库模块缺失时明确失败（脚本与仓库同版�
     write_outputs = None
     classify_proxy = None
 
-GENERATE_204 = "https://www.gstatic.com/generate_204"
+GENERATE_204 = "https://www.google.com/robots.txt"
+# 真实流量测试目标：必须是在中国大陆被封锁、只有经代理才能稳定访问的海外地址。
+# 多 URL 回退可吸收单一域名被污染/劫持/间歇性失效的抖动。
+REAL_PROBE_URLS = [
+    "https://www.google.com/robots.txt",
+    "https://www.cloudflare.com/cdn-cgi/trace",
+]
 GEO_URLS = ["https://cip.cc", "https://myip.ipip.net", "http://ip-api.com/json"]
 MIHOMO_VERSION = os.environ.get("MIHOMO_VERSION", "v1.19.32")
 DELAY_TIMEOUT_MS = 5000
 DELAY_CONCURRENCY = 12
+REAL_TRAFFIC_TIMEOUT_S = 10
+REAL_TRAFFIC_CONCURRENCY = 12
 GEO_TIMEOUT_S = 8
 GEO_MAX_NODES = 120
 SELFCHECK_URLS = ["https://www.baidu.com", "https://api.github.com"]
@@ -101,12 +109,14 @@ GEO_BUDGET_S = 120
 # 最多 20min 会挤占预算，最坏 1200+902=2102s 击穿超时——故按
 # 剩余预算裁剪测试集（见 cap_test_set）。
 TASK_BUDGET_S = 1800
-# 拨测后预留（秒）：出口证据（≤GEO_BUDGET_S）+ 多格式输出 + 发布
-# + 收尾开销。仅覆盖发布链，拨测本身按 PER_NODE_S 折算。
-PUBLISH_RESERVE_S = 300
-# 单节点拨测耗时悲观估计（秒）：实测 1193 节点拨测约 745s（0.62s/
-# 节点，取证含在内），取 1.0 留 60% 余量吸收慢节点/网络抖动。
-PER_NODE_S = 1.0
+# 拨测后预留（秒）：真实流量测试 + 出口证据（≤GEO_BUDGET_S）+ 多格式输出
+# + 发布 + 收尾开销。真实流量测试加入后，通过节点需经 mixed-port 二次
+# 访问海外目标，预留从 300s 提升到 360s。
+PUBLISH_RESERVE_S = 360
+# 单节点拨测耗时悲观估计（秒）：delay API 初筛 + 真实流量终筛。
+# 原仅 delay 时 1193 节点约 745s；加入真实流量测试后通过节点需额外
+# 经 mixed-port 访问海外 URL，取 2.0 留 50% 余量吸收超时/抖动。
+PER_NODE_S = 2.0
 
 
 ASSET_FORMAT_REV = {"clean_proxies_only.yaml": "proxies_only",
@@ -507,6 +517,42 @@ def delay_test(port: int, name: str) -> dict:
     return {"ok": False, "latency_ms": None}
 
 
+def real_traffic_test(api_port: int, mixed_port: int, name: str) -> dict:
+    """真实流量测试：把 mihomo 切到指定节点，经 mixed-port 访问海外目标。
+
+    这是 2026-10-16 升级后的第二道闸门。仅做 delay 测试会出现假阳性：
+    mihomo 的 /delay API 只验证到节点 server 的 TCP/TLS 连通，不验证
+    server 是否真能转发流量访问被封锁目标；且原 URL gstatic.com 在国内
+    某些网络下可直接解析，导致沙箱测出"通过"、用户本地却全超时。
+    真实流量测试用中国大陆明确不可达的海外地址，只有返回合法 HTTP 响
+    应才算可用。
+    """
+    if not api_put(api_port, "/proxies/PROBE", {"name": name}):
+        return {"ok": False}
+    proxy = f"http://127.0.0.1:{mixed_port}"
+    opener = urllib.request.build_opener(
+        urllib.request.ProxyHandler({"http": proxy, "https": proxy}))
+    for url in REAL_PROBE_URLS:
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+            with opener.open(req, timeout=REAL_TRAFFIC_TIMEOUT_S) as r:
+                status = r.status
+                body = r.read(256)
+            # Google robots.txt 必然包含 "User-agent"；Cloudflare trace 包含 "ip="
+            # 200/204/403 都算"目标可达"（403 是服务端拒绝，证明代理链路已通）
+            if status in (200, 204, 301, 302, 403):
+                if "google.com" in urllib.parse.urlparse(url).netloc and b"User-agent" in body:
+                    return {"ok": True, "via": url, "status": status}
+                if "cloudflare.com" in urllib.parse.urlparse(url).netloc and b"ip=" in body:
+                    return {"ok": True, "via": url, "status": status}
+                # 兜底：只要状态码合法且读到非空 body 也算通（防止未来 URL 微调）
+                if body:
+                    return {"ok": True, "via": url, "status": status}
+        except Exception:
+            continue
+    return {"ok": False}
+
+
 def exit_evidence(port: int, selector: str, name: str, mixed_port: int | None = None) -> dict:
     """把流量切到指定节点，取出口 IP/地区（证据留痕，不构成闸门）。
 
@@ -791,6 +837,7 @@ def main() -> int:
         try:
             t0 = time.time()
             results: dict[str, dict] = {}
+            # 4.1) 初筛：mihomo delay API（快速排除完全不可达节点）
             with ThreadPoolExecutor(max_workers=DELAY_CONCURRENCY) as ex:
                 futs = {ex.submit(delay_test, api_port, n["probe_name"]): n["probe_name"]
                         for n in nodes}
@@ -800,7 +847,31 @@ def main() -> int:
                         results[name] = fut.result()
                     except Exception:
                         results[name] = {"ok": False, "latency_ms": None}
-            log(f"拨测完成: 通过 {sum(1 for r in results.values() if r['ok'])}/{len(nodes)}"
+            delay_passed = [n for n in nodes if results.get(n["probe_name"], {}).get("ok")]
+            log(f"delay 初筛通过: {len(delay_passed)}/{len(nodes)}（{time.time() - t0:.0f}s）")
+
+            # 4.2) 终筛：真实流量测试（经 mixed-port 访问海外被封锁目标）
+            if delay_passed:
+                t1 = time.time()
+                with ThreadPoolExecutor(max_workers=REAL_TRAFFIC_CONCURRENCY) as ex:
+                    futs = {ex.submit(real_traffic_test, api_port, mixed_port,
+                                     n["probe_name"]): n["probe_name"]
+                            for n in delay_passed}
+                    for fut in futs:
+                        name = futs[fut]
+                        try:
+                            rt = fut.result()
+                        except Exception:
+                            rt = {"ok": False}
+                        # 真实流量失败则把该节点最终标记为不通过
+                        if not rt.get("ok"):
+                            results[name]["ok"] = False
+                        results[name]["real_traffic"] = rt
+                real_passed = [n for n in delay_passed
+                               if results.get(n["probe_name"], {}).get("ok")]
+                log(f"真实流量终筛通过: {len(real_passed)}/{len(delay_passed)}"
+                    f"（{time.time() - t1:.0f}s）")
+            log(f"拨测完成: 最终通过 {sum(1 for r in results.values() if r['ok'])}/{len(nodes)}"
                 f"（{time.time() - t0:.0f}s）")
 
             # 5) 出口证据（仅通过节点，限量 + 限时顺序执行）
