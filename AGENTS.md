@@ -169,11 +169,17 @@ gh auth status          # 应显示 Logged in as SHUNZI88
 | 看板 | 内容 | 复查条件 |
 |---|---|---|
 | [`docs/protocol_weights_todo.md`](docs/protocol_weights_todo.md) | 协议权重化评估（用户约定：7 轮后评估实施） | `protocol_history.json` 中某协议 `rounds≥5` 且 `tested≥50` |
-| 沙箱实测定时任务 | `cn_probe.py` 北京 09:18/16:18 自动运行 | `verification_report.json` 的 `generated_at` 是否在最近 12h 内；若已过期，需检查 cron 是否存活/沙箱是否休眠 |
+| 沙箱实测定时任务 | `cn_probe.py` 北京 09:18/16:18 自动运行 | ① `verification_report.json` 的 `generated_at` 是否在最近 12h 内（过期=实测未跑/被 CI 兜底覆盖）；② `service cron status` 是否 running；③ `crontab -l` 中**脚本解释器路径真实存在**（`file` 检查，2026-10-16 教训：写的是 `/usr/bin/python3.11` 但二进制在 `/root/.pyenv/shims/python3.11`，cron 直接 127 静默失败，从未执行） |
 
 > 立此节原因：口头/会话内的"待办约定"会随会话结束而丢失（2026-10-15 教训）。**凡跨会话的约定，必须落在本文件或看板中。**
 >
-> **沙箱 cron 约束（2026-10-15 新增）**：当前沙箱已安装并启动 `cron`，crontab 已配置。但沙箱若休眠/关机，cron 不会自动唤醒执行。**每次会话启动必须执行 `ps aux | grep '[c]ron'` 与 `crontab -l` 确认 cron 仍存活**，并检查 `verification_report.json` 的 `generated_at`；若发现漏跑，立即手动补跑 `scripts/cn_probe.py`。
+> **沙箱 cron 约束（2026-10-15 新增，2026-10-16 强化）**：当前沙箱已安装并启动 `cron`，crontab 已配置。但沙箱若休眠/关机，cron 不会自动唤醒执行；**更严重的是 crontab 里的命令本身可能从一开始就从未跑成功过**（如解释器路径写错，cron 会以 127 静默退出，无邮件、无日志）。因此每次会话启动的核查必须做到三点，且任一点不满足就**立即修复并补跑**，不得只"观察到"：
+>
+> 1. **cron 服务存活**：`service cron status` 非 running 则 `service cron start`；
+> 2. **解释器真实存在**：`crontab -l` 里调用的 `python3.11`/脚本路径，用 `file <path>` 确认存在且为可执行；路径错误立即改成正解（本仓库正确路径为 `/root/.pyenv/shims/python3.11`）；
+> 3. **实测新鲜度**：下载 `verification_report.json` 看 `generated_at` 是否 <12h 且 `passed≥15`；过期说明最近一次实测没跑成（cron 没跑 / 沙箱休眠 / 熔断），**先修 1、2 再手动补跑 `scripts/cn_probe.py`**。
+>
+> **根因记忆（2026-10-16）**：本次用户反馈"150 个节点本地测速可用不到 10 个"——表象是 CI 把候选集兜底发布到了主资产 p_*（因 verification_report 已陈旧 >12h），根因是 cron 自配置起就从未成功执行（解释器路径错误 127）。**cron 配置"写进去了"≠"能跑起来"**，必须验证路径与进程双存活。
 
 ---
 
