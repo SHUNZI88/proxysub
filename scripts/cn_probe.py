@@ -122,6 +122,13 @@ PUBLISH_RESERVE_S = 360
 # 耗时，把 PER_NODE_S 从 1.0 误调到 2.0，导致本轮无故裁剪 413 个待测节点。
 PER_NODE_S = 1.2
 
+# 纯 carryover 轮次「保留已发布集」允许的波动带（节点数）。当本轮没有新 CI
+# 待测文档（测试集全为 carryover）且重测通过数比已发布集少 ≤ 该值时，视为正常
+# 单快照波动（用户自述约 6 个节点浮动），整体保留已发布集而非发布更小的重测
+# 子集，避免逐轮侵蚀（39→37→…）违背「固化」诉求；超过该值视为真实退化，走
+# 正常自清洁（发布重测通过的子集）。新 CI 轮次（含 pending/rescue）不受此约束。
+CARRYOVER_FLUCTUATION_BAND = 8
+
 
 ASSET_FORMAT_REV = {"clean_proxies_only.yaml": "proxies_only",
                     "clean_singbox.json": "singbox",
@@ -907,6 +914,22 @@ def main() -> int:
                 r.get("latency_ms") if r.get("latency_ms") is not None else 99999)
 
     verified = sorted(passed, key=rank)
+
+    # 6.5) 纯 carryover 轮次「保留已发布集」修复（2026-10-17，服务「固化闭环」）：
+    # 当本轮没有新 CI 待测文档（n_pend==0 且 n_resc==0，测试集全为 carryover），
+    # 且重测通过数相对已发布集的缺口 ≤ 波动带时，发布「完整 carryover 集」而非
+    # 重测通过的子集。依据：carryover 加载的即上一轮已发布/已验证集合；单快照
+    # 波动（用户自述约 6 个节点浮动）会让重测子集略小于已发布集，若据此发布更小
+    # 集合将随轮次持续侵蚀已验证质量（39→37→…）。缺口在波动带内即视为健康，
+    # 整体保留；缺口超带则归为真实退化，走正常自清洁。新 CI 轮次仍正常清洁。
+    if (n_pend == 0 and n_resc == 0 and n_carry > 0
+            and len(verified) >= config.VERIFICATION_MIN_PASSED
+            and (n_carry - len(verified)) <= CARRYOVER_FLUCTUATION_BAND):
+        log(f"纯 carryover 轮次：重测通过 {len(verified)}/{n_carry}，缺口 "
+            f"{n_carry - len(verified)} ≤ 波动带 {CARRYOVER_FLUCTUATION_BAND}，"
+            f"保留已发布集 {n_carry} 个（不随单快照波动侵蚀）")
+        verified = list(carry)  # carry 即上一轮已发布集，直接整体保留
+
     by_origin = {o: sum(1 for n in verified if n["origin"] == o)
                  for o in ("pending", "rescue", "carryover")}
     # 分源/分协议聚合（Phase 2.2）：tested/passed 双口径，供 CI 源级评分与门槛自学习
