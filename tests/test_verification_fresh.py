@@ -71,3 +71,41 @@ def test_cli_exit_codes(tmp_path):
     assert cli(good) == 0
     assert cli(bad) == 1
     assert cli(missing) == 1
+
+
+# ------------------------------------------------- 第二层：最近有效发布信号
+def _report_with_main(hours_ago, passed, main_hours_ago, main_passed, **extra):
+    r = _report(hours_ago, passed)
+    if main_hours_ago is not None:
+        mp = NOW - datetime.timedelta(hours=main_hours_ago)
+        r["main_asset_published_at"] = mp.strftime("%Y-%m-%dT%H:%M:%SZ")
+        r["main_asset_passed"] = main_passed
+    r.update(extra)
+    return r
+
+
+def test_main_asset_signal_saves_when_current_low():
+    """2026-10-17 回归：本轮 passed<15，但最近有效发布仍新鲜 → 不兜底。
+
+    修复前：cron 一轮 passed=12 上传 published=False，CI 误判并兜底 150
+    候选集覆盖实测集。修复后：main_asset_passed=17 且 <12h 内，信任沙箱。
+    """
+    r = _report_with_main(2, 12, 3, 17, published=True)
+    assert vf.is_fresh(r, now=NOW) is True
+
+
+def test_main_asset_stale_does_not_save():
+    """最近有效发布已超 12h 窗口 → 即使 main_asset_passed≥15 也视为不新鲜。"""
+    r = _report_with_main(13, 12, 13, 17, published=True)
+    assert vf.is_fresh(r, now=NOW) is False
+
+
+def test_low_passed_and_no_main_asset_rejected():
+    """本轮 passed<15 且无 main_asset 字段 → 不新鲜（不应兜底，订阅可暂空）。"""
+    assert vf.is_fresh(_report(1, 5), now=NOW) is False
+
+
+def test_main_asset_published_false_not_saved():
+    """最近有效发布信号但 published=False → 不信任（防止伪造信号）。"""
+    r = _report_with_main(2, 12, 3, 17, published=False)
+    assert vf.is_fresh(r, now=NOW) is False

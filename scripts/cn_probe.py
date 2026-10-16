@@ -954,14 +954,32 @@ def main() -> int:
         } for n in nodes],
         "published": False,
     }
+    # 继承主资产归属信号（2026-10-17 修复）：从 release 现有 report 读取最近
+    # 一次有效发布的时间/通过数。本轮通过数不足时，只要该信号仍新鲜，就保留
+    # "实测集在场"信号，避免 CI 误判为"沙箱未产出"而兜底覆盖实测集。
+    prev_report = _load_release_report(tag, workdir)
+    mp_at = prev_report.get("main_asset_published_at") if prev_report else None
+    mp_passed = int((prev_report or {}).get("main_asset_passed", 0) or 0)
+    report["main_asset_published_at"] = mp_at
+    report["main_asset_passed"] = mp_passed
     report_path = os.path.join(workdir, config.VERIFICATION_REPORT_FILE)
     with open(report_path, "w", encoding="utf-8") as f:
         json.dump(report, f, ensure_ascii=False, indent=1)
 
     # 7) 熔断：通过数不足 → 不碰主资产（保留上轮验证集/CI 兜底）
     if len(verified) < config.VERIFICATION_MIN_PASSED:
+        # 关键修复（2026-10-17）：本轮通过数不足 ≠ "沙箱从未有效产出"。
+        # 若 release 上最近有效发布（main_asset_passed≥15）仍新鲜，则保留
+        # published=True 信号，CI 据此不兜底，实测集不被候选集覆盖。
+        report["published"] = bool(
+            prev_report and prev_report.get("published")
+            and mp_at and mp_passed >= config.VERIFICATION_MIN_PASSED
+            and _within_window(mp_at, config.VERIFICATION_MAX_AGE_S))
         log(f"熔断: 通过数 {len(verified)} < 下限 {config.VERIFICATION_MIN_PASSED}，"
-            f"不发布主资产（保留上一轮验证集），仅更新报告")
+            f"不发布主资产（保留上一轮验证集）；继承主资产信号 published="
+            f"{report['published']}")
+        with open(report_path, "w", encoding="utf-8") as f:
+            json.dump(report, f, ensure_ascii=False, indent=1)
         if not args.dry_run:
             run(["gh", "release", "upload", tag, "--clobber", report_path])
         return 0
@@ -996,6 +1014,8 @@ def main() -> int:
     run(["gh", "release", "upload", tag, "--clobber", report_path])
     report["published"] = bool(uploaded)
     report["main_assets"] = uploaded
+    report["main_asset_published_at"] = stamp.strftime("%Y-%m-%dT%H:%M:%SZ")
+    report["main_asset_passed"] = len(verified)
     with open(report_path, "w", encoding="utf-8") as f:
         json.dump(report, f, ensure_ascii=False, indent=1)
     run(["gh", "release", "upload", tag, "--clobber", report_path])
@@ -1022,6 +1042,32 @@ def _sandbox_ip() -> str:
         except Exception:
             continue
     return ""
+
+
+def _load_release_report(tag: str, workdir: str) -> dict:
+    """下载 release 上现有 verification_report（用于继承主资产归属信号）。"""
+    path = os.path.join(workdir, "prev_verification_report.json")
+    if gh_download(tag, config.VERIFICATION_REPORT_FILE, path):
+        try:
+            with open(path, encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            return {}
+    return {}
+
+
+def _within_window(ts: str | None, max_age_s: int) -> bool:
+    """时间戳是否落在 [0, max_age_s) 窗口内（用于主资产归属信号新鲜度）。"""
+    if not ts:
+        return False
+    try:
+        gen = datetime.datetime.fromisoformat(str(ts).replace("Z", "+00:00"))
+        if gen.tzinfo is None:
+            gen = gen.replace(tzinfo=datetime.timezone.utc)
+        age = (datetime.datetime.now(datetime.timezone.utc) - gen).total_seconds()
+        return 0 <= age < max_age_s
+    except Exception:
+        return False
 
 
 if __name__ == "__main__":
