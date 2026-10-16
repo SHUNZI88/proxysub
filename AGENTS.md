@@ -188,9 +188,14 @@ gh auth status          # 应显示 Logged in as SHUNZI88
 >
 > **第四层根因（2026-10-16 晚，用户发本地实测图）**：即使 cron/cn_probe/gh_download 都修复后，沙箱探测通过 53 个节点，用户本地（中国移动 5G）实测仅约 1 个可用。表象是"节点质量差"，实质是**探测标准太弱造成假阳性**：`cn_probe.py` 只调用 mihomo `/proxies/{name}/delay` API 测到 `gstatic.com` 的延迟——这只能验证 mihomo 与节点 server 建立了 TCP/TLS，不验证 server 是否真能转发流量访问被封锁目标；且 `gstatic.com` 在国内某些网络下可直接解析/缓存，进一步放大假阳性。修复：探测流程改为 **delay 初筛 + 真实流量终筛**——通过 mihomo `mixed-port` 代理访问 `https://www.google.com/robots.txt` / `https://www.cloudflare.com/cdn-cgi/trace` 等中国大陆不可达目标，只有返回合法 HTTP 响应才算可用（commit `fa0fea7`）。
 >
+> **第四层根因（2026-10-16 晚，用户发本地实测图）**：即使 cron/cn_probe/gh_download 都修复后，沙箱探测通过 53 个节点，用户本地（中国移动 5G）实测仅约 1 个可用。表象是"节点质量差"，实质是**探测标准太弱造成假阳性**：`cn_probe.py` 只调用 mihomo `/proxies/{name}/delay` API 测到 `gstatic.com` 的延迟——这只能验证 mihomo 与节点 server 建立了 TCP/TLS，不验证 server 是否真能转发流量访问被封锁目标；且 `gstatic.com` 在国内某些网络下可直接解析/缓存，进一步放大假阳性。修复：探测流程改为 **delay 初筛 + 真实流量终筛**——通过 mihomo `mixed-port` 代理访问 `https://www.google.com/robots.txt` / `https://www.cloudflare.com/cdn-cgi/trace` 等中国大陆不可达目标，只有返回合法 HTTP 响应才算可用（commit `fa0fea7`）。
+>
+> **第五层根因（2026-10-17 晨，用户刷新订阅发现又变回 150）**：实测标准修好后，用户客户端测速有延迟的约 17 个节点与真实流量测试通过数吻合，证明标准准确；但订阅列表却变回 150 候选集。根因是**主资产归属信号被一轮劣质运行撤销**：cron 运行通过数 <15 时，`cn_probe` 把 `verification_report.published` 设为 `False` 并上传，CI 据此误判"沙箱未产出有效集"而兜底发布 150 候选集覆盖实测集。修复：`verification_report` 增加 `main_asset_published_at`/`main_asset_passed` 字段（记录最近一次有效发布），`verification_fresh.is_fresh` 增加第二层判定——只要最近有效发布仍新鲜，即便本轮 passed<15 也不兜底；`cn_probe` 在 passed<15 时从 release 现有 report 继承该信号（commit `bbbd85a`）。
+>
 > **🛡 健壮性铁律（见微知著，2026-10-16 新增）**：
 > 1. **凡调用外部命令（gh/curl/mihomo 等）的封装，必须同时处理「非零返回码」与「超时抛异常」两种情况**——`subprocess.run(timeout=...)` 超时会抛 `TimeoutExpired`（不是 returncode≠0）。只判 `returncode` 的封装，遇到一次网络抖动/命令挂起就会整轮崩溃，且错误被静默吞掉、极难排查。所有 `run()`/`subprocess` 调用点都要做「超时→回退/重试」处理。
 > 2. **沙箱探测不能只看「延迟通过」，必须验证「真实流量可通」**：`/delay` API、TCP 握手、TLS 延迟都不算"可用"——只有经代理实际访问到被封锁目标并拿到合法 HTTP 响应，才能判定节点在中国路径下可用。探测 URL 必须选中国大陆明确不可达的海外地址（Google/YouTube/Cloudflare trace 等），避免用国内仍可解析的域名（如 gstatic.com）造成假阳性。
+> 3. **单轮运行失败/不达标，不得撤销"系统已有有效产出"的归属信号**：CI 兜底/发布决策依赖的状态字段（如 `published`、`main_asset_*`），在任何一次运行里都要"继承而非归零"——一轮 passed<15 的劣质运行绝不应把 `published` 重置为 `False` 让上游误判并覆盖已有实测集。状态机要区分"本轮结果"与"系统级归属"，后者只能由成功发布正向更新，由超时/缺失负向降级。
 
 ---
 
