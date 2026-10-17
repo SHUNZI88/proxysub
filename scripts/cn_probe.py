@@ -71,9 +71,13 @@ except Exception:  # 仓库模块缺失时明确失败（脚本与仓库同版�
     classify_proxy = None
 
 GENERATE_204 = "https://www.google.com/robots.txt"
-# 真实流量测试目标：必须是在中国大陆被封锁、只有经代理才能稳定访问的海外地址。
-# 多 URL 回退可吸收单一域名被污染/劫持/间歇性失效的抖动。
-REAL_PROBE_URLS = [
+# 真实流量测试：必须是中国大陆被封锁、只有经代理才能访问的海外地址。
+# 早期用 robots.txt / cdn-cgi/trace「几行字」+ 403/非空 body 兜底作判据，放行大量
+# 「能握手但下载龟速」的伪可用节点（用户本地实测即暴露无效）。2026-10-17 改为
+# 「硬超时真实下载速度」闸门（见 real_traffic_test / _timed_download）。
+REAL_DOWNLOAD_URL = "https://speed.cloudflare.com/__down?bytes=1000000"  # 1MB
+REAL_MIN_BYTES = 250 * 1024   # 预算内至少下载 250KB（≈31KB/s）才算真能应用
+REAL_PROBE_URLS = [           # 仅作出口可达性辅助参考，不再单独作为闸门
     "https://www.google.com/robots.txt",
     "https://www.cloudflare.com/cdn-cgi/trace",
 ]
@@ -81,7 +85,7 @@ GEO_URLS = ["https://cip.cc", "https://myip.ipip.net", "http://ip-api.com/json"]
 MIHOMO_VERSION = os.environ.get("MIHOMO_VERSION", "v1.19.32")
 DELAY_TIMEOUT_MS = 5000
 DELAY_CONCURRENCY = 12
-REAL_TRAFFIC_TIMEOUT_S = 10
+REAL_TRAFFIC_TIMEOUT_S = 8    # 真实下载硬超时预算（秒）
 REAL_TRAFFIC_CONCURRENCY = 12
 GEO_TIMEOUT_S = 8
 GEO_MAX_NODES = 120
@@ -528,39 +532,57 @@ def delay_test(port: int, name: str) -> dict:
     return {"ok": False, "latency_ms": None}
 
 
-def real_traffic_test(api_port: int, mixed_port: int, name: str) -> dict:
-    """真实流量测试：把 mihomo 切到指定节点，经 mixed-port 访问海外目标。
+def _timed_download(proxy: str, url: str, budget: int, min_bytes: int) -> int:
+    """预算内硬超时下载：返回累计下载字节；超时或不足 min_bytes 均返回实际值。
 
-    这是 2026-10-16 升级后的第二道闸门。仅做 delay 测试会出现假阳性：
-    mihomo 的 /delay API 只验证到节点 server 的 TCP/TLS 连通，不验证
-    server 是否真能转发流量访问被封锁目标；且原 URL gstatic.com 在国内
-    某些网络下可直接解析，导致沙箱测出"通过"、用户本地却全超时。
-    真实流量测试用中国大陆明确不可达的海外地址，只有返回合法 HTTP 响
-    应才算可用。
+    用独立线程 + join(timeout) 实现「整体硬超时」——urllib 的 socket timeout
+    是每次 recv 超时而非整体超时，龟速节点会持续以几 KB/s 流入而整体远超预算
+    （曾观测到单节点下载耗时 324s），故必须线程级强制截断。
+    """
+    import concurrent.futures
+    def _dl() -> int:
+        opener = urllib.request.build_opener(
+            urllib.request.ProxyHandler({"http": proxy, "https": proxy}))
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        buf = 0
+        try:
+            # 关键：socket 超时 = budget，使慢节点首次 recv 即超时失败，
+            # 避免「单次 read 阻塞超时」绕过 while 的预算检查（曾致龟速节点误判可用）。
+            with opener.open(req, timeout=budget) as r:
+                t0 = time.time()
+                while time.time() - t0 < budget:
+                    chunk = r.read(16384)
+                    if not chunk:
+                        break
+                    buf += len(chunk)
+                    if buf >= min_bytes:
+                        break
+        except Exception:
+            pass
+        return buf
+    with concurrent.futures.ThreadPoolExecutor(1) as ex:
+        fut = ex.submit(_dl)
+        try:
+            return fut.result(timeout=budget + 4)
+        except Exception:
+            return 0
+
+
+def real_traffic_test(api_port: int, mixed_port: int, name: str) -> dict:
+    """真实流量闸门：硬超时真实下载，验证节点真能在中国网络下传输数据。
+
+    这是 2026-10-16 升级后的第二道闸门，2026-10-17 收紧判据。早期版本只取
+    google/robots.txt 与 cloudflare/cdn-cgi/trace「几行字」，且 403/非空 body
+    兜底放行，导致「能握手但下载龟速」的伪可用节点被判通过、用户本地实测即
+    暴露无效。现改为真实下载速度闸门：预算内下载量达 REAL_MIN_BYTES 才判可用，
+    龟速/失败（下载 0 或不足阈值）一律剔除。
     """
     if not api_put(api_port, "/proxies/PROBE", {"name": name}):
         return {"ok": False}
     proxy = f"http://127.0.0.1:{mixed_port}"
-    opener = urllib.request.build_opener(
-        urllib.request.ProxyHandler({"http": proxy, "https": proxy}))
-    for url in REAL_PROBE_URLS:
-        try:
-            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-            with opener.open(req, timeout=REAL_TRAFFIC_TIMEOUT_S) as r:
-                status = r.status
-                body = r.read(256)
-            # Google robots.txt 必然包含 "User-agent"；Cloudflare trace 包含 "ip="
-            # 200/204/403 都算"目标可达"（403 是服务端拒绝，证明代理链路已通）
-            if status in (200, 204, 301, 302, 403):
-                if "google.com" in urllib.parse.urlparse(url).netloc and b"User-agent" in body:
-                    return {"ok": True, "via": url, "status": status}
-                if "cloudflare.com" in urllib.parse.urlparse(url).netloc and b"ip=" in body:
-                    return {"ok": True, "via": url, "status": status}
-                # 兜底：只要状态码合法且读到非空 body 也算通（防止未来 URL 微调）
-                if body:
-                    return {"ok": True, "via": url, "status": status}
-        except Exception:
-            continue
+    n = _timed_download(proxy, REAL_DOWNLOAD_URL, REAL_TRAFFIC_TIMEOUT_S, REAL_MIN_BYTES)
+    if n >= REAL_MIN_BYTES:
+        return {"ok": True, "bytes": n}
     return {"ok": False}
 
 
