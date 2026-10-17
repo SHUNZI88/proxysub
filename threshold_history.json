@@ -1,0 +1,11 @@
+[
+ {
+  "param": "US_LATENCY_CAP_MS",
+  "old": 2800.0,
+  "new": 2578.5,
+  "samples": 39,
+  "passed": 39,
+  "at": "2026-10-17T00:18:01Z",
+  "reason": "pass_rate=100.00% 健康、p90延迟 2357ms < 当前 2800ms -> 收紧提质"
+ }
+]
