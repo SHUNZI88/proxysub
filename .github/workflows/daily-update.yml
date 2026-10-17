@@ -238,7 +238,7 @@ jobs:
           tag="$(python3 -c "import json; print(json.load(open('anti_crawl.json', encoding='utf-8')).get('release_tag') or 'sub')")"
           compgen -G "publish_out/*" >/dev/null || { echo "ERROR: publish_out/ 下没有待发布文件" >&2; exit 1; }
           # ---- 主资产所有权切换（CI 候选集 vs 沙箱实测集）----
-          # 实测验证新鲜（report <12h 且通过数 ≥15，阈值见 common.py）时，
+          # 实测验证新鲜（report <24h 且通过数 ≥15，阈值见 common.py）时，
           # 主资产（p_* 随机名，订阅永久地址）归沙箱实测集所有：CI 只发布
           # 候选集固定名副本（candidates_*）与交接文档（pending_*），避免
           # 发布后即被下一轮 CI 覆盖的抖动，订阅者长时间拿到优选集。

@@ -186,8 +186,8 @@ RESCUE_PER_PROTO_MIN = 5
 HANDOFF_GENERATOR = "proxysub-handoff/1"
 # ---- 主资产归属：CI 候选集 vs 沙箱实测集 ----
 # 主资产（p_* 随机名，订阅永久地址指向）的所有权按验证新鲜度切换：
-#   verification_report.json 新鲜（<12h 且通过数 ≥15）→ 主资产归沙箱实测
-#     集所有，CI 只发布候选集固定名副本与交接文档（避免发布后即被覆盖的
+#   verification_report.json 新鲜（<24h 且通过数 ≥15，阈值见下方）→ 主资产归
+#     沙箱实测集所有，CI 只发布候选集固定名副本与交接文档（避免发布后即被覆盖的
 #     抖动，订阅者长时间拿到实测优选集）；
 #   否则（无验证/验证陈旧/沙箱连续未产出）→ CI 兜底把候选集发布到主资产，
 #     保证订阅永不枯竭。两侧阈值由此处统一，工作流发布步骤 import 使用。
@@ -196,7 +196,15 @@ CANDIDATES_SINGBOX = "candidates_singbox.json"
 CANDIDATES_V2RAY = "candidates_v2ray.txt"
 CANDIDATES_PROXIES_ONLY = "candidates_proxies_only.yaml"
 VERIFICATION_REPORT_FILE = "verification_report.json"
-VERIFICATION_MAX_AGE_S = 12 * 3600
+# 12h 是 2026-10-17 覆盖事故的直接成因：当时沙箱实测 crontab 仅 2 次/天
+# （本地 01:18/08:18），相邻间隔 7h 与 **17h**；17h 空窗 > 12h 窗口，导致每天
+# 必有约 5h 的"验证过期"窗口被 CI 兜底成 150 候选集（本地实测可用 <15）。
+# 现实测已提频至 4 次/天（每 6h，最大空窗 6h），正常 age 恒 <6h；本阈值转为
+# **容错缓冲**：容忍沙箱偶发休眠/漏跑连续 4 次仍不降级。
+# 权衡依据：即便 24h 前的实测集（39 个，部分免费节点已失效）也显著优于
+# 150 个候选集（本地实测可用 <15）。兜底是"保不枯竭"的降级手段而非常态，
+# 故把持有期放宽，避免频繁跌落。超过 24h 仍会兜底，不会永久枯竭。
+VERIFICATION_MAX_AGE_S = 24 * 3600
 VERIFICATION_MIN_PASSED = 15
 PROBE_BATCH = 100
 PROBE_CONCURRENCY = 32
