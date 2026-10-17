@@ -156,33 +156,54 @@ def run(cmd: list[str], timeout: int = 120, **kw) -> subprocess.CompletedProcess
     return subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, **kw)
 
 
-def gh_download(tag: str, pattern: str, dest: str) -> bool:
+def gh_download(tag: str, pattern: str, dest: str, retries: int = 1) -> bool:
     """下载 Release 资产：优先 gh，失败/超时自动回退 curl（Bearer token）。
 
     回退原因（grok 2.4）：实测某些沙箱环境下 `gh release download` 会长时间
     挂起无响应，而直连 `curl` 走 API 更稳定。两者任一成功即视为下载成功。
 
-    ⚠️ 2026-10-16 教训：gh 挂起表现为 `subprocess.TimeoutExpired`（**异常**），
-    而非非零返回码。早期实现只判 `returncode`、未捕获超时异常，于是一次网络
-    抖动就让 `gh_download` 抛异常、整脚本崩溃，curl 回退永不会执行——结果
-    `pending_probe.json` / 主资产等关键下载静默失败，carryover=0、实测集也发不出。
-    现改为显式捕获 `TimeoutExpired` 后同样走 curl 回退。
+    ⚠️ 健壮性铁律（2026-10-17 续）：gh 与 curl 的挂起都表现为
+    `subprocess.TimeoutExpired`（**异常**），而非非零返回码。早期实现只判
+    `returncode`、未捕获超时异常，于是一次网络抖动就让 `gh_download` 抛异常、
+    整脚本崩溃——本次重测即因此：curl 下载 `pending_rescue.json` 超时 120s、
+    异常未捕获，新轮次实测尚未开始就崩。现改为：gh + curl 两路**均显式捕获
+    TimeoutExpired**，整函数重试 `retries` 次，最终仍失败**优雅返回 False**
+    （绝不抛出），由调用方决定降级策略（如 rescue 缺失则退化为 carryover 实測）。
     """
     token = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN") or ""
     repo = os.environ.get("PROXYSUB_REPO", "SHUNZI88/proxysub")
     url = f"https://github.com/{repo}/releases/download/{tag}/{pattern}"
-    # 1) 优先 gh（超时/失败均交由 curl 兜底）
-    try:
-        r = run(["gh", "release", "download", tag, "-p", pattern, "-O", dest, "--clobber"],
-                timeout=90)
-        if r.returncode == 0 and os.path.exists(dest):
-            return True
-    except subprocess.TimeoutExpired:
-        log(f"提示: gh 下载 {pattern} 超时，回退 curl")
-    # 2) 回退 curl（gh 失败或超时均走此路）
-    cr = run(["curl", "-fsSL", "-H", f"Authorization: Bearer {token}", "-o", dest, url],
-             timeout=120)
-    return cr.returncode == 0 and os.path.exists(dest)
+    last_err = "未执行"
+    for attempt in range(retries + 1):
+        # 1) 优先 gh（超时/失败均交由 curl 兜底）
+        try:
+            r = run(["gh", "release", "download", tag, "-p", pattern, "-O", dest, "--clobber"],
+                    timeout=60)
+            if r.returncode == 0 and os.path.exists(dest) and os.path.getsize(dest) > 0:
+                return True
+        except subprocess.TimeoutExpired:
+            last_err = "gh 超时"
+            log(f"提示: gh 下载 {pattern} 超时，回退 curl")
+        except Exception as e:
+            last_err = f"gh 异常: {e!r}"
+        # 2) 回退 curl（务必显式捕获超时，绝不向上抛出）
+        try:
+            cr = run(["curl", "-fsSL", "--connect-timeout", "10", "--max-time", "45",
+                      "-H", f"Authorization: Bearer {token}", "-o", dest, url],
+                     timeout=60)
+            if cr.returncode == 0 and os.path.exists(dest) and os.path.getsize(dest) > 0:
+                return True
+            last_err = f"curl 返回码 {cr.returncode}"
+        except subprocess.TimeoutExpired:
+            last_err = "curl 超时"
+            log(f"提示: curl 下载 {pattern} 超时")
+        except Exception as e:
+            last_err = f"curl 异常: {e!r}"
+        if attempt < retries:
+            log(f"下载 {pattern} 失败（{last_err}），8s 后重试（第 {attempt + 2}/{retries + 1} 次）")
+            time.sleep(8)
+    log(f"熔断: 下载 {pattern} 重试 {retries} 次仍失败（{last_err}）——将由调用方降级处理")
+    return False
 
 
 def auth_selfcheck() -> bool:
@@ -795,8 +816,11 @@ def main() -> int:
                 log(f"仍在等待 CI 新轮次交接文档"
                     f"（已等 {waited}/{args.max_wait} 分钟）")
     if fresh:
-        gh_download(tag, config.PENDING_RESCUE_FILE, rescue_path)
-        log(f"交接文档轮次 {doc_round} 待测，进入实测")
+        if gh_download(tag, config.PENDING_RESCUE_FILE, rescue_path):
+            log(f"交接文档轮次 {doc_round} 待测，进入实测")
+        else:
+            log(f"警告: 交接文档轮次 {doc_round} 已检出，但 rescue 文档下载失败，"
+                "本轮仅测 pending + carryover（rescue 顺延至下次实测）")
     else:
         log("无新轮次待测文档（CI 调度延迟或故障）：本轮仅测 carryover；"
             "未测轮次顺延至下一实测轮，不丢失")
