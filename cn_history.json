@@ -261,13 +261,13 @@
  },
  "897a39a6c08946631b3f88dd9fb2695e526cf48f": {
   "cn_ok": true,
-  "cn_streak": 16,
+  "cn_streak": 17,
   "cn_fails": 0,
-  "cn_runs": 16,
-  "cn_pass": 16,
-  "cn_latency_ms": 2071,
+  "cn_runs": 17,
+  "cn_pass": 17,
+  "cn_latency_ms": 2192,
   "cn_egress": "法国",
-  "cn_last": "2026-10-17T00:18:01Z"
+  "cn_last": "2026-10-17T17:18:02Z"
  },
  "b92386522139fa66bfbb7216a37ce13587abc9a2": {
   "cn_ok": true,
@@ -1111,13 +1111,13 @@
  },
  "6c9264ac3338ac54be51a281c8b706b41571c9be": {
   "cn_ok": true,
-  "cn_streak": 10,
+  "cn_streak": 11,
   "cn_fails": 0,
-  "cn_runs": 10,
-  "cn_pass": 10,
-  "cn_latency_ms": 2445,
+  "cn_runs": 11,
+  "cn_pass": 11,
+  "cn_latency_ms": 4250,
   "cn_egress": "斯里兰卡",
-  "cn_last": "2026-10-17T00:18:01Z"
+  "cn_last": "2026-10-17T17:18:02Z"
  },
  "b6979d19c3bc18127b3da57d3272503d8eb7c818": {
   "cn_ok": true,
@@ -1461,13 +1461,13 @@
  },
  "f32c1fd166e81ed9bbcac2a6a60b013f30e5fabc": {
   "cn_ok": true,
-  "cn_streak": 10,
+  "cn_streak": 11,
   "cn_fails": 0,
-  "cn_runs": 10,
-  "cn_pass": 10,
-  "cn_latency_ms": 994,
+  "cn_runs": 11,
+  "cn_pass": 11,
+  "cn_latency_ms": 3542,
   "cn_egress": "巴西",
-  "cn_last": "2026-10-17T00:18:01Z"
+  "cn_last": "2026-10-17T17:18:02Z"
  },
  "98c732155a9ad13c4d476dddd01d93e55f119f94": {
   "cn_ok": false,
@@ -1959,12 +1959,12 @@
  },
  "726717c75b16d287cc614c96b615047971e28b7c": {
   "cn_ok": true,
-  "cn_streak": 8,
+  "cn_streak": 9,
   "cn_fails": 0,
-  "cn_runs": 8,
-  "cn_pass": 8,
-  "cn_latency_ms": 1935,
-  "cn_last": "2026-10-17T00:18:01Z",
+  "cn_runs": 9,
+  "cn_pass": 9,
+  "cn_latency_ms": 2715,
+  "cn_last": "2026-10-17T17:18:02Z",
   "cn_egress": "中国 香港   pccw.com"
  },
  "b24c63912f523f144b0ad53df0f62bba4a910526": {
@@ -2469,12 +2469,12 @@
  },
  "2246fa3fb86ca7d4e060e4b23a5ac6f0f5f350b6": {
   "cn_ok": true,
-  "cn_streak": 5,
+  "cn_streak": 6,
   "cn_fails": 0,
-  "cn_runs": 5,
-  "cn_pass": 5,
-  "cn_latency_ms": 345,
-  "cn_last": "2026-10-17T00:18:01Z",
+  "cn_runs": 6,
+  "cn_pass": 6,
+  "cn_latency_ms": 1436,
+  "cn_last": "2026-10-17T17:18:02Z",
   "cn_egress": "美国"
  },
  "115d40e0da4a1036f14d86882ededa84caf5d716": {
@@ -2802,14 +2802,6 @@
   "cn_last": "2026-10-17T00:18:01Z",
   "cn_latency_ms": 1358
  },
- "7b3d74833f7c93b83a9c61e4cf0e4c3fd6470bf9": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 4,
-  "cn_runs": 4,
-  "cn_pass": 0,
-  "cn_last": "2026-10-17T00:18:01Z"
- },
  "631f04b2e9190a7a4f61c32f94801b0543fba140": {
   "cn_ok": true,
   "cn_streak": 2,
@@ -2922,14 +2914,6 @@
   "cn_latency_ms": 1499,
   "cn_last": "2026-10-17T00:18:01Z"
  },
- "54da77d00652a7afbad451294a20687f02df2d05": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
-  "cn_pass": 0,
-  "cn_last": "2026-10-17T00:18:01Z"
- },
  "7ddf07226b5295f4fc934ff2659179ce9742a697": {
   "cn_ok": true,
   "cn_streak": 2,
@@ -2959,30 +2943,33 @@
  },
  "8e52aff48da849e6882c407ae14a0ef286c98fa9": {
   "cn_ok": true,
-  "cn_streak": 2,
+  "cn_streak": 3,
   "cn_fails": 0,
-  "cn_runs": 2,
-  "cn_pass": 2,
-  "cn_latency_ms": 2357,
-  "cn_last": "2026-10-17T00:18:01Z"
+  "cn_runs": 3,
+  "cn_pass": 3,
+  "cn_latency_ms": 2575,
+  "cn_last": "2026-10-17T17:18:02Z",
+  "cn_egress": "德国"
  },
  "4c14dff7baec06e604934be5f662f3e82a4f9408": {
   "cn_ok": true,
-  "cn_streak": 2,
+  "cn_streak": 3,
   "cn_fails": 0,
-  "cn_runs": 2,
-  "cn_pass": 2,
-  "cn_latency_ms": 2091,
-  "cn_last": "2026-10-17T00:18:01Z"
+  "cn_runs": 3,
+  "cn_pass": 3,
+  "cn_latency_ms": 2118,
+  "cn_last": "2026-10-17T17:18:02Z",
+  "cn_egress": "德国"
  },
  "e33ccab0dca46ad7889064d5bd9c47b08cacebe6": {
   "cn_ok": true,
-  "cn_streak": 2,
+  "cn_streak": 3,
   "cn_fails": 0,
-  "cn_runs": 2,
-  "cn_pass": 2,
-  "cn_latency_ms": 2765,
-  "cn_last": "2026-10-17T00:18:01Z"
+  "cn_runs": 3,
+  "cn_pass": 3,
+  "cn_latency_ms": 2353,
+  "cn_last": "2026-10-17T17:18:02Z",
+  "cn_egress": "德国"
  },
  "cba15dc91f3656b1d6bf27089b49437da054ccec": {
   "cn_ok": true,
@@ -2993,12 +2980,110 @@
   "cn_latency_ms": 1755,
   "cn_last": "2026-10-17T00:18:01Z"
  },
- "40b9c9d503291c0d3e3dbfa98bd2741fadfe3e20": {
+ "25db2e8ea5eedaed914a87900ba81d89d7e16d94": {
+  "cn_ok": true,
+  "cn_streak": 1,
+  "cn_fails": 0,
+  "cn_runs": 1,
+  "cn_pass": 1,
+  "cn_latency_ms": 1070,
+  "cn_egress": "美国 伊利诺伊州 库克",
+  "cn_last": "2026-10-17T17:18:02Z"
+ },
+ "27f902350e6020e5c119f16d5594af137c9384b6": {
+  "cn_ok": true,
+  "cn_streak": 1,
+  "cn_fails": 0,
+  "cn_runs": 1,
+  "cn_pass": 1,
+  "cn_latency_ms": 1409,
+  "cn_egress": "英国",
+  "cn_last": "2026-10-17T17:18:02Z"
+ },
+ "42a01ec7cac0e5003be0ab5ba418a91e6e0e2eaf": {
+  "cn_ok": true,
+  "cn_streak": 1,
+  "cn_fails": 0,
+  "cn_runs": 1,
+  "cn_pass": 1,
+  "cn_latency_ms": 1336,
+  "cn_egress": "中国 香港   pccw.com",
+  "cn_last": "2026-10-17T17:18:02Z"
+ },
+ "3723affda57939ca903b9177bbc849c2d92b13ca": {
+  "cn_ok": true,
+  "cn_streak": 1,
+  "cn_fails": 0,
+  "cn_runs": 1,
+  "cn_pass": 1,
+  "cn_latency_ms": 1738,
+  "cn_egress": "美国 伊利诺伊州 库克",
+  "cn_last": "2026-10-17T17:18:02Z"
+ },
+ "951eb2206d132d68f6ddad37ab84f5c2af1942f6": {
+  "cn_ok": true,
+  "cn_streak": 1,
+  "cn_fails": 0,
+  "cn_runs": 1,
+  "cn_pass": 1,
+  "cn_latency_ms": 885,
+  "cn_egress": "美国",
+  "cn_last": "2026-10-17T17:18:02Z"
+ },
+ "3814c1c9b5544ba8d001842831e7b1a4dcd186b8": {
+  "cn_ok": true,
+  "cn_streak": 1,
+  "cn_fails": 0,
+  "cn_runs": 1,
+  "cn_pass": 1,
+  "cn_latency_ms": 3500,
+  "cn_egress": "美国 加利福尼亚州",
+  "cn_last": "2026-10-17T17:18:02Z"
+ },
+ "3bcd845f45b9a265a9be0e3124a8651c61322ec1": {
+  "cn_ok": true,
+  "cn_streak": 1,
+  "cn_fails": 0,
+  "cn_runs": 1,
+  "cn_pass": 1,
+  "cn_latency_ms": 2283,
+  "cn_egress": "美国 伊利诺伊州 库克",
+  "cn_last": "2026-10-17T17:18:02Z"
+ },
+ "80adcada294d18ad2b8113096242cc63adc2ee91": {
+  "cn_ok": true,
+  "cn_streak": 1,
+  "cn_fails": 0,
+  "cn_runs": 1,
+  "cn_pass": 1,
+  "cn_latency_ms": 1300,
+  "cn_egress": "美国",
+  "cn_last": "2026-10-17T17:18:02Z"
+ },
+ "5e6cd34ccc983b8006d21d1186fe5625df808568": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 1,
+  "cn_runs": 1,
   "cn_pass": 0,
-  "cn_last": "2026-10-17T00:18:01Z"
+  "cn_last": "2026-10-17T17:18:02Z"
+ },
+ "e1ef11e4e67e6a51aeffb1b857fbe85159a26d6f": {
+  "cn_ok": true,
+  "cn_streak": 1,
+  "cn_fails": 0,
+  "cn_runs": 1,
+  "cn_pass": 1,
+  "cn_latency_ms": 1795,
+  "cn_egress": "美国 亚利桑那州 凤凰城  oracle.com",
+  "cn_last": "2026-10-17T17:18:02Z"
+ },
+ "7dd3fc9ae7678669e52d165d088f2136ea66fb42": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-17T17:18:02Z"
  }
 }
