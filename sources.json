@@ -78,13 +78,6 @@
       "probation_runs": 3
     },
     {
-      "url": "https://raw.githubusercontent.com/free-nodes/clashfree/main/clash20261013.yml",
-      "origin": "discovered",
-      "added": "2026-10-14",
-      "repo": "free-nodes/clashfree",
-      "probation_runs": 3
-    },
-    {
       "url": "https://raw.githubusercontent.com/wuge0/free-nodes/main/output/clash.yaml",
       "origin": "discovered",
       "added": "2026-10-16",
@@ -164,6 +157,11 @@
       "url": "https://blog.ermao.net/sub/clash/ermao.net",
       "reason": "zero_unique_contribution:16runs",
       "date": "2026-10-16"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/free-nodes/clashfree/main/clash20261013.yml",
+      "reason": "consecutive_failures:4",
+      "date": "2026-10-18"
     }
   ],
   "deny_repos": []

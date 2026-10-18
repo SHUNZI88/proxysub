@@ -5,18 +5,11 @@
       "origin": "channel_web",
       "added": "2026-10-15",
       "first_seen": "2026-10-15",
-      "runs": 12,
+      "runs": 13,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
         {
-          "date": "2026-10-16",
-          "count": 496,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
           "date": "2026-10-17",
           "count": 496,
           "usable": 0,
@@ -46,6 +39,13 @@
         },
         {
           "date": "2026-10-17",
+          "count": 496,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-18",
           "count": 496,
           "usable": 0,
           "unique_new": 0,
@@ -77,17 +77,10 @@
       "required_runs": 3,
       "first_seen": "2026-10-16",
       "initial_nodes": 27,
-      "runs": 10,
+      "runs": 11,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-10-16",
-          "count": 1,
-          "usable": 1,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-10-17",
           "count": 1,
@@ -136,74 +129,10 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
-        }
-      ]
-    },
-    "https://raw.githubusercontent.com/go4sharing/sub/main/sub.yaml": {
-      "repo": "go4sharing/sub",
-      "stars": 142,
-      "repo_created": "2023-08-25T12:50:49Z",
-      "reputation": "ok",
-      "reputation_note": "stars=142,age=1148d",
-      "required_runs": 3,
-      "first_seen": "2026-10-16",
-      "initial_nodes": 22,
-      "runs": 9,
-      "good_streak": 0,
-      "fail_streak": 0,
-      "history": [
-        {
-          "date": "2026-10-16",
-          "count": 22,
-          "usable": 1,
-          "unique_new": 1,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-17",
-          "count": 22,
-          "usable": 1,
-          "unique_new": 1,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-17",
-          "count": 22,
-          "usable": 1,
-          "unique_new": 1,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-17",
-          "count": 11,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-17",
-          "count": 11,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-17",
-          "count": 11,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
         },
         {
           "date": "2026-10-18",
-          "count": 11,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-18",
-          "count": 11,
+          "count": 1,
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
@@ -215,7 +144,7 @@
       "origin": "channel_web",
       "added": "2026-10-16",
       "first_seen": "2026-10-16",
-      "runs": 7,
+      "runs": 8,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -249,6 +178,13 @@
         },
         {
           "date": "2026-10-17",
+          "count": 511,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-18",
           "count": 511,
           "usable": 0,
           "unique_new": 0,
@@ -276,10 +212,17 @@
       "origin": "channel_web",
       "added": "2026-10-17",
       "first_seen": "2026-10-17",
-      "runs": 2,
+      "runs": 3,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
+        {
+          "date": "2026-10-18",
+          "count": 524,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
         {
           "date": "2026-10-18",
           "count": 524,
@@ -503,6 +446,11 @@
       "reason": "no_stable_contribution",
       "date": "2026-10-18",
       "repo": "clashfreenodecom/clashfreenode.com"
+    },
+    "https://raw.githubusercontent.com/go4sharing/sub/main/sub.yaml": {
+      "reason": "cf_blocked:2/8",
+      "date": "2026-10-18",
+      "repo": "go4sharing/sub"
     }
   }
 }
