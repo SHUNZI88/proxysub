@@ -205,6 +205,8 @@ gh auth status          # 应显示 Logged in as SHUNZI88
 - 提交信息用 `.git/COMMIT_MSG.txt` + `git commit -F`，**避免中文引号导致的 shell 转义问题**。
 - 测试：`python3 -m pytest -q -p no:pylama`（`-p no:pylama` 是本环境必需的）。
 - 推送后核对：`git fetch && git log --oneline -1 HEAD origin/main` 应一致；`gh run list -L 5` 应全绿。
+- **🚩 最高优先级：改了 CI 依赖的代码，必须 push 并用「远端视角」验证生效**（2026-10-20 血的教训）：`git commit` 只写本地，CI 与线上 checkout 的是 `origin/main`。本次 5 个修复 commit（含 `VERIFICATION_MAX_AGE_S` 12h→24h 这一消除 150 覆盖的关键修复）**全部只 commit 未 push**，本地单测全绿、cron 日志也显示"修复生效"，但 CI 连续 3 天跑 12h 旧阈值，照样把实测集兜底覆盖成 150——**"本地验证通过" ≠ "线上生效"**。凡改动 `scripts/*.py` / `config.py` / `.github/workflows/*.yml`/`verification_fresh.py` 等 CI 会读取的文件，三步缺一不可：① `git status -sb` 不得残留 `ahead N`；② `git show origin/main:<文件>` 确认远端已是新值；③ 跑一次 `gh run list --workflow <wf> -L 3` 确认新 run 已用上新代码。**只提交不推送，等于没改。**
+- **沙箱 cron 会因休眠停摆，每次接手先查 `pgrep -x cron`**：`crontab -l` 有条目 ≠ 服务在跑。2026-10-20 接手时 cron 进程已死，沙箱产出停在 20 小时前，`main_asset_published_at` 逼近 24h 阈值、险些再次兜底成 150。修复动作：`service cron start`；并意识到沙箱长时间不活动会休眠——这是当前架构（沙箱本地 cron 做中国出口实测）的固有限制，须靠 24h 缓冲 + 人工/自动巡检兜底。
 - **声称落地的文件，必须真的进了 commit**：`git commit` 后用 `git show --stat HEAD` 核对本次文件清单，确认 message 里声称变更的文件**确实在列**。2026-10-15 教训：commit `caf0fc2` 的 message 声称"requirements.lock 带 hash 锁文件"，却因 `.gitignore` 的 `*.lock` 通配把它挡在库外，实际只提交了引用方——令 F2 的 `--require-hashes` 安装分支沦为**死代码**。**凡目标文件名可能被 `.gitignore` 通配误伤（`.lock` / `.log` / `.tmp` 等），`git add` 前先 `git check-ignore <file>`；被忽略的用 `!` 例外显式拉回，并在 commit 后核验落地。**
 
 ---
