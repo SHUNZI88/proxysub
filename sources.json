@@ -66,18 +66,6 @@
       "probation_runs": 5
     },
     {
-      "url": "https://raw.githubusercontent.com/ermaozi/get_subscribe/main/subscribe/v2ray.txt",
-      "origin": "static_channel",
-      "added": "2026-10-13"
-    },
-    {
-      "url": "https://raw.githubusercontent.com/free-nodes/clashfree/main/clash20261014.yml",
-      "origin": "discovered",
-      "added": "2026-10-14",
-      "repo": "free-nodes/clashfree",
-      "probation_runs": 3
-    },
-    {
       "url": "https://raw.githubusercontent.com/wuge0/free-nodes/main/output/clash.yaml",
       "origin": "discovered",
       "added": "2026-10-16",
@@ -162,6 +150,16 @@
       "url": "https://raw.githubusercontent.com/free-nodes/clashfree/main/clash20261013.yml",
       "reason": "consecutive_failures:4",
       "date": "2026-10-18"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/ermaozi/get_subscribe/main/subscribe/v2ray.txt",
+      "reason": "zero_real_ok:4runs",
+      "date": "2026-10-19"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/free-nodes/clashfree/main/clash20261014.yml",
+      "reason": "consecutive_failures:4",
+      "date": "2026-10-19"
     }
   ],
   "deny_repos": []

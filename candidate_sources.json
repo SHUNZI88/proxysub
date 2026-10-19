@@ -1,93 +1,15 @@
 {
   "candidates": {
-    "https://raw.githubusercontent.com/kooker/FreeSubsCheck/main/mihomo.yaml": {
-      "repo": "kooker/FreeSubsCheck",
-      "stars": 423,
-      "repo_created": "2026-04-07T08:10:32Z",
-      "reputation": "ok",
-      "reputation_note": "stars=423,age=192d",
-      "required_runs": 3,
-      "first_seen": "2026-10-16",
-      "initial_nodes": 27,
-      "runs": 15,
-      "good_streak": 0,
-      "fail_streak": 0,
-      "history": [
-        {
-          "date": "2026-10-17",
-          "count": 1,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-18",
-          "count": 1,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-18",
-          "count": 1,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-18",
-          "count": 1,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-18",
-          "count": 1,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-18",
-          "count": 1,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-19",
-          "count": 76,
-          "usable": 1,
-          "unique_new": 1,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-19",
-          "count": 76,
-          "usable": 1,
-          "unique_new": 1,
-          "tamper": 0
-        }
-      ]
-    },
     "https://clashgithub.com/clashnode-20261017.html": {
       "channel": "web:https://clashgithub.com/",
       "origin": "channel_web",
       "added": "2026-10-16",
       "first_seen": "2026-10-16",
-      "runs": 12,
+      "runs": 13,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
         {
-          "date": "2026-10-17",
-          "count": 511,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
           "date": "2026-10-18",
           "count": 511,
           "usable": 0,
@@ -117,6 +39,13 @@
         },
         {
           "date": "2026-10-18",
+          "count": 511,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-19",
           "count": 511,
           "usable": 0,
           "unique_new": 0,
@@ -144,7 +73,7 @@
       "origin": "channel_web",
       "added": "2026-10-17",
       "first_seen": "2026-10-17",
-      "runs": 7,
+      "runs": 8,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -178,6 +107,13 @@
         },
         {
           "date": "2026-10-18",
+          "count": 524,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-19",
           "count": 524,
           "usable": 0,
           "unique_new": 0,
@@ -205,10 +141,17 @@
       "origin": "channel_web",
       "added": "2026-10-18",
       "first_seen": "2026-10-18",
-      "runs": 2,
+      "runs": 3,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
+        {
+          "date": "2026-10-19",
+          "count": 25,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
         {
           "date": "2026-10-19",
           "count": 25,
@@ -442,6 +385,11 @@
       "reason": "no_stable_contribution",
       "date": "2026-10-19",
       "repo": null
+    },
+    "https://raw.githubusercontent.com/kooker/FreeSubsCheck/main/mihomo.yaml": {
+      "reason": "no_stable_contribution",
+      "date": "2026-10-19",
+      "repo": "kooker/FreeSubsCheck"
     }
   }
 }
