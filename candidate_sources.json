@@ -5,7 +5,7 @@
       "origin": "channel_web",
       "added": "2026-10-16",
       "first_seen": "2026-10-16",
-      "runs": 13,
+      "runs": 14,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -38,7 +38,7 @@
           "tamper": 0
         },
         {
-          "date": "2026-10-18",
+          "date": "2026-10-19",
           "count": 511,
           "usable": 0,
           "unique_new": 0,
@@ -73,7 +73,7 @@
       "origin": "channel_web",
       "added": "2026-10-17",
       "first_seen": "2026-10-17",
-      "runs": 8,
+      "runs": 9,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -106,7 +106,7 @@
           "tamper": 0
         },
         {
-          "date": "2026-10-18",
+          "date": "2026-10-19",
           "count": 524,
           "usable": 0,
           "unique_new": 0,
@@ -141,7 +141,7 @@
       "origin": "channel_web",
       "added": "2026-10-18",
       "first_seen": "2026-10-18",
-      "runs": 3,
+      "runs": 4,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -165,8 +165,54 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-19",
+          "count": 25,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ],
+      "required_runs": 3
+    },
+    "https://raw.githubusercontent.com/free-nodes/clashfree/main/clash20261017.yml": {
+      "repo": "free-nodes/clashfree",
+      "stars": 16996,
+      "repo_created": "2022-04-20T05:08:17Z",
+      "reputation": "ok",
+      "reputation_note": "stars=16996,age=1643d",
+      "required_runs": 3,
+      "first_seen": "2026-10-19",
+      "initial_nodes": 662,
+      "runs": 0,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": []
+    },
+    "https://raw.githubusercontent.com/free-nodes/clashfree/main/clash20261016.yml": {
+      "repo": "free-nodes/clashfree",
+      "stars": 16996,
+      "repo_created": "2022-04-20T05:08:17Z",
+      "reputation": "ok",
+      "reputation_note": "stars=16996,age=1643d",
+      "required_runs": 3,
+      "first_seen": "2026-10-19",
+      "initial_nodes": 638,
+      "runs": 0,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": []
+    },
+    "https://clashgithub.com/clashnode-20261020.html": {
+      "channel": "web:https://clashgithub.com/",
+      "origin": "channel_web",
+      "added": "2026-10-19",
+      "first_seen": "2026-10-19",
+      "runs": 0,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": [],
       "required_runs": 3
     }
   },
