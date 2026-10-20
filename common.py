@@ -496,6 +496,9 @@ def wilson_ci(k: int, n: int, z: float = 1.96) -> tuple[float, float]:
     """
     if n <= 0:
         return 0.0, 0.0
+    # 防御畸形数据（passed > tested 会让 p>1、根号内变负）：钳到合法区间。
+    # 上游数据来自沙箱报告聚合，不应出现，但崩溃比静默出错更贵。
+    k = min(max(k, 0), n)
     p = k / n
     denom = 1 + z * z / n
     center = (p + z * z / (2 * n)) / denom

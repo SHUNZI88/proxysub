@@ -55,7 +55,11 @@ from config import (  # 可调常量（P1-2 起独立模块）
     CF_BLOCKED_PENALTY,
     CHANNEL_NODES_KEY,
     CHANNEL_PROBE_QUOTA,
+    CN_DECISION_MAX_AGE_S,
+    CN_DEMOTE_STREAK,
     CN_HISTORY_FILE,
+    CN_LIFECYCLE_ENABLED,
+    CN_LOW_CI_HIGH,
     EXCLUDE_KEYWORDS,
     FALLBACK_INTERVAL,
     HISTORY_PASS_RATE_BONUS,   # noqa: F401  兼容面：测试经 fc.<name> 访问
@@ -86,6 +90,7 @@ from config import (  # 可调常量（P1-2 起独立模块）
     PROBE_PER_CANDIDATE,
     PROBE_PREFERRED_PER_REGION,
     PROBE_RESERVE_PER_REGION,
+    PROBE_SOURCE_SAMPLE_CAP,
     PROBE_URL,
     REGION_QUOTAS,
     REGION_RULES,
@@ -232,6 +237,7 @@ def select_probe_sample(
     survival: dict,
     today_str: str,
     source_keys=None,
+    cn_stats=None,
 ) -> list[str]:
     """从 TCP 存活节点中选出进入真实拨测的样本（顺序即优先级）。
 
@@ -249,12 +255,32 @@ def select_probe_sample(
     4) **渠道节点配额**（CHANNEL_PROBE_QUOTA）：多渠道搜集的节点既非正式源
        也非候选源 URL，此前的样本循环永远选不到它们，导致其在评分时全被
        cand_only 闸门丢弃（收集了却永不入选）。给予固定配额，与候选源同等
-       参与「通过拨测方可入榜」的试用机制。
+       参与「通过拨测方可入榜」的试用机制；
+    5) **cn 源级配额倾斜**（Phase B，2026-10-20）：有新鲜中国实测实证的源，
+       按 evolution.cn_fetch_tilt 的系数调整其占用拨测预算的额度——低产源
+       （Wilson 下界 < 5%）减半、高产源（下界 >= 30%）加倍；候选源按同一
+       系数缩放 PROBE_PER_CANDIDATE 试用配额。**无实证（缺数据/样本不足/
+       陈旧）一律不干预**，行为与改造前完全一致。单源基础上限
+       PROBE_SOURCE_SAMPLE_CAP 同样只对有实证的源生效（没证据就不擅自限死，
+       避免把未知源一刀切死）。
 
     曾经的阶段 1「轻量探活」已废除：它与 TCP 存活检查同为一次 TCP connect，
     对 3000 个节点重复一遍（通过率 99.7%）只拖慢运行，不提供任何新信息。
     """
     state_fresh = survival_state_fresh(survival, today_str)
+
+    # ---- Phase B：cn 源级拨测配额倾斜。主源口径与评分阶段一致
+    # （sorted(prov[fp])[0]）；tilt 按源记忆化，避免逐节点重复计算。----
+    tilt_cache: dict[str, float | None] = {}
+
+    def _tilt(url: str | None) -> float | None:
+        if url is None:
+            return None
+        if url not in tilt_cache:
+            tilt_cache[url] = (evolution.cn_fetch_tilt(url, cn_stats,
+                                                        max_age_s=CN_DECISION_MAX_AGE_S)
+                               if cn_stats else None)
+        return tilt_cache[url]
 
     def _probe_rank(fp: str) -> tuple:
         rec = survival.get(fp, {}) if state_fresh else {}
@@ -274,16 +300,40 @@ def select_probe_sample(
         by_region[classify_proxy(unique[fp].get("name", ""))].append(fp)
     sample: list[str] = []
     chosen: set[str] = set()
+    src_count: dict[str, int] = defaultdict(int)   # 主源已占用样本数（基础上限语义）
+
+    def _src_cap(fp: str) -> int | None:
+        """该节点主源的本轮拨测基础上限；无实证返回 None（不干预）。"""
+        if not cn_stats or not prov.get(fp):
+            return None
+        t = _tilt(sorted(prov[fp])[0])
+        return None if t is None else max(1, int(PROBE_SOURCE_SAMPLE_CAP * t))
+
+    def _take(fp: str) -> None:
+        sample.append(fp)
+        chosen.add(fp)
+        if prov.get(fp):
+            src_count[sorted(prov[fp])[0]] += 1
+
     for region, reserve in PROBE_RESERVE_PER_REGION.items():
         pool = by_region.get(region, [])
         pref_n = PROBE_PREFERRED_PER_REGION.get(region, 0)
         pref = [fp for fp in pool if is_preferred(unique[fp])]
         rest = [fp for fp in pool if fp not in pref]
         ordered = pref[:pref_n] + rest + pref[pref_n:]
-        for fp in ordered[:reserve]:
-            if fp not in chosen:
-                sample.append(fp)
-                chosen.add(fp)
+        # 上限内尽量填满本区配额：被 cn 上限挡掉的节点顺延到同区下一名
+        # （宁可少抓低产源的重复节点，也不把亚洲配额让给别的区）。
+        taken = 0
+        for fp in ordered:
+            if taken >= reserve:
+                break
+            if fp in chosen:
+                continue
+            cap = _src_cap(fp)
+            if cap is not None and src_count[sorted(prov[fp])[0]] >= cap:
+                continue
+            _take(fp)
+            taken += 1
     # 新节点保底配额：从未进入 survival 的节点优先占用固定名额。
     fresh = [fp for fp in alive_sorted if fp not in survival and fp not in chosen]
     for fp in fresh[:PROBE_FRESH_QUOTA]:
@@ -305,13 +355,20 @@ def select_probe_sample(
         if len(sample) >= PROBE_LIMIT_OFFICIAL:
             break
         if fp in official_fps and fp not in chosen:
-            sample.append(fp)
-            chosen.add(fp)
+            cap = _src_cap(fp)
+            if cap is not None and src_count[sorted(prov[fp])[0]] >= cap:
+                continue
+            _take(fp)
     for cu in cand_urls:
         extra = [fp for fp in alive_sorted if cu in prov[fp] and fp not in official_fps and fp not in chosen]
-        extra = extra[:PROBE_PER_CANDIDATE]
+        # 候选源按 cn 倾斜系数缩放试用配额（低产少试、高产多试；无实证原额）
+        tilt = _tilt(cu)
+        quota = PROBE_PER_CANDIDATE if tilt is None else max(1, int(PROBE_PER_CANDIDATE * tilt))
+        extra = extra[:quota]
         sample += extra
         chosen.update(extra)
+        for fp in extra:
+            src_count[sorted(prov[fp])[0]] += 1
     # 多渠道节点保底配额（Telegram/网页分享链接搜集）。
     if source_keys and CHANNEL_NODES_KEY in source_keys:
         ch_fps = [fp for fp in alive_sorted
@@ -524,17 +581,21 @@ def liveness_stage(unique: dict[str, dict]) -> tuple[dict[str, float], int]:
 
 def real_probe_stage(tcp_lat: dict[str, float], unique: dict[str, dict], prov: dict[str, set],
                      official_fps: set, cand_urls: list[str], per_source_keys,
-                     blocklist) -> ProbeStageResult:
+                     blocklist, cn_stats=None) -> ProbeStageResult:
     """阶段 5：真实拨测（输出的死活闸门）。
 
     拨测是输出的死活闸门（REQUIRE_REAL_PROBE_IN_OUTPUT）：只有本轮真实拨测
     通过的节点才进入最终列表，因此「选哪些节点去拨测」直接决定输出质量。
     样本选择原则见 select_probe_sample() 的 docstring——2026-10 质量回归后
-    修订：历史稳定优先仅在状态新鲜时生效 + 新节点保底配额 + 渠道节点配额。
+    修订：历史稳定优先仅在状态新鲜时生效 + 新节点保底配额 + 渠道节点配额；
+    2026-10-20 增加 cn 源级配额倾斜（低产源少占预算、高产源多占）。
 
     tcp_lat 由 liveness_stage() 预先算出（TCP 存活 + UDP 豁免的中性延迟）。
     mihomo 缺失时回退到 http/socks 简单真实探测；tamper 结果自动进 blocklist
     （共享主机按节点粒度封锁，见 host_users 判断）。
+
+    `cn_stats`（可选）：源级中国实测维度，透传给 select_probe_sample 做配额
+    倾斜；None/空 = 不干预（改造前行为）。
     """
     survival_pre = load_json(SURVIVAL_FILE, {})
     probe: dict[str, dict] = {}
@@ -546,7 +607,7 @@ def real_probe_stage(tcp_lat: dict[str, float], unique: dict[str, dict], prov: d
     else:
         sample = select_probe_sample(
             tcp_lat, unique, prov, official_fps, cand_urls,
-            survival_pre, _today(), per_source_keys,
+            survival_pre, _today(), per_source_keys, cn_stats,
         )
         state_fresh = survival_state_fresh(survival_pre, _today())
         print(f"拨测样本: {len(sample)}/{len(tcp_lat)}（TCP 存活节点中选出；"
@@ -650,8 +711,10 @@ def score_candidates(tcp_lat: dict[str, float], unique: dict[str, dict], prov: d
         penalty += protocol_penalty(unique[fp])
         penalty += china_feature_bonus(unique[fp])
         penalty += us_china_penalty(unique[fp], r)
-        # Phase 2.2 源级中国通过率加成：中国通过率高的源排更前、拿更多配额
-        _src = common.src_key(sorted(prov[fp])[0]) if prov.get(fp) else None
+        # Phase 2.2 源级中国通过率加成：中国通过率高的源排更前、拿更多配额。
+        # 键口径（2026-10-20）：传**完整 URL** 主键——cn_source_bonus 内部
+        # 「URL 优先、src_key 镜像兜底」，传镜像键只能走兜底路径读到陈旧数据。
+        _src = sorted(prov[fp])[0] if prov.get(fp) else None
         penalty += evolution.cn_source_bonus(_src, source_scores_cn)
         bonus = survival_bonus_ms(fp, score_survival)
         bonus += history_bonus(fp, score_survival)  # 历史真实通过率（持续通过的节点排更前）
@@ -932,32 +995,49 @@ def main() -> None:
     unique, prov, official_fps = sf.unique, sf.prov, sf.official_fps
     pre_reasons, src_flags = sf.pre_reasons, sf.src_flags
 
+    # ---- 3.5 进化引擎（Phase 2）：下载上轮沙箱实测报告，反哺本地数据/门槛 ----
+    # 提前到探测之前：cn 源级生命周期（拨测配额倾斜 / 源淘汰 / 候选晋升）与本轮
+    # 评分都要消费其产物。run_evolution 只依赖 sources.official 列表构造
+    # src_key->url 映射，与后续阶段无顺序耦合；写操作均带陈旧守卫（报告过旧
+    # 即跳过，见 evolution 模块 docstring），先跑先写不依赖本轮任何结果。
+    cn_hist, learned_params, source_scores_cn = load_evolution_inputs(REPO_ROOT, sources)
+    cn_stats = evolution.cn_source_stats(source_scores_cn) if CN_LIFECYCLE_ENABLED else {}
+    if cn_stats:
+        print(f"cn源级生命周期: {len(cn_stats)} 个源有中国实测实证"
+              f"（淘汰/晋升/拨测倾斜已启用）")
+    elif CN_LIFECYCLE_ENABLED:
+        print("cn源级生命周期: 无实证（报告缺失/陈旧——本轮流待观察，不干预）")
+
     # ---- 4+5. 存活性检查 + 真实拨测 ----
     tcp_lat, udp_exempt = liveness_stage(unique)
     ps = real_probe_stage(tcp_lat, unique, prov, official_fps, cand_urls,
-                          per_source.keys(), blocklist)
+                          per_source.keys(), blocklist, cn_stats)
     probe, sample, bin_path = ps.probe, ps.sample, ps.bin_path
     real_ok, tampered, probe_reasons = ps.real_ok, ps.tampered, ps.probe_reasons
     survival_pre = ps.survival_pre
 
-    # ---- 6. per-source metrics ----
+    # ---- 6. per-source metrics + 源级生命周期（cn 实证驱动的淘汰/晋升）----
     per_src = per_source_metrics(off_urls, cand_urls, off_set, per_source, prov,
                                  official_fps, unique, tcp_lat, real_ok, probe,
                                  tampered, fstats, src_flags, bin_path)
-    cand_rep = sm.evaluate_candidates(cands, {u: per_src[u] for u in cand_urls}, sources)
-    off_rep = sm.update_official(sources, history, {u: per_src[u] for u in off_urls})
+    cand_rep = sm.evaluate_candidates(cands, {u: per_src[u] for u in cand_urls},
+                                      sources, cn_stats)
+    off_rep = sm.update_official(sources, history, {u: per_src[u] for u in off_urls},
+                                 cn_stats)
     for u in cand_rep["promoted"]:
         print(f"候选源晋升为正式源: {u}")
     for u, why in {**cand_rep["rejected"], **off_rep["demoted"]}.items():
         print(f"移除源: {u} -> {why}")
+    cn_demoted = [u for u, why in off_rep["demoted"].items()
+                  if why.startswith("cn_low_pass_rate")]
+    if cn_demoted:
+        print(f"cn源级淘汰: {len(cn_demoted)} 个低产源（中国实测 Wilson 下界 "
+              f"< {CN_LOW_CI_HIGH:.0%}，连续 {CN_DEMOTE_STREAK} 轮）")
 
-    # ---- 6.5 进化引擎（Phase 2）：下载上轮沙箱实测报告，反哺本地数据/门槛 ----
-    cn_hist, learned_params, source_scores_cn = load_evolution_inputs(REPO_ROOT, sources)
+    # ---- 7. scoring ----
     cn_latency_cap = learned_params.get("CN_LATENCY_CAP_MS", MAX_ACCEPT_LATENCY_MS)
     us_latency_cap = learned_params.get("US_LATENCY_CAP_MS", MAX_ACCEPT_LATENCY_MS_US)
     score_latency_cap = learned_params.get("SCORE_LATENCY_CAP_MS", TCP_LATENCY_CAP_IN_SCORE)
-
-    # ---- 7. scoring ----
     sr = score_candidates(tcp_lat, unique, prov, official_fps, off_set, real_ok,
                           tampered, bin_path, survival_pre, cn_latency_cap,
                           source_scores_cn, cn_hist, real_probe_enabled(),

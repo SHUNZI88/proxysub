@@ -18,6 +18,8 @@ from urllib.parse import quote
 import requests
 
 import channels  # 多渠道搜集（Telegram / 网页 / 手工静态源）；本模块不反向依赖 sources_manager，无循环
+import config  # CN_* 源级中国实测反哺常量（叶子模块，无循环）
+from common import wilson_ci  # Wilson 95% 区间（唯一实现，与沙箱侧共用）
 from net_safety import safe_http_get  # SSRF 防护抓取（安全评估 F1）
 from safe_io import load_json, save_json  # 原子化读写；save_json 亦为测试/调用方接缝（sm.save_json）
 
@@ -130,6 +132,40 @@ def _recently_removed(sources: dict, url: str) -> bool:
 def _repo_of(url: str) -> str | None:
     m = re.match(r"https://raw\.githubusercontent\.com/([^/]+/[^/]+)/", url)
     return m.group(1).lower() if m else None
+
+
+def _age_s(ts) -> float:
+    """ISO8601 时间戳距今年秒数；缺失/不可解析返回 1e18（视为永不新鲜）。"""
+    if not ts:
+        return 1e18
+    try:
+        dt = datetime.fromisoformat(str(ts).replace("Z", "+00:00"))
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+    except Exception:
+        return 1e18
+    return (datetime.now(timezone.utc) - dt).total_seconds()
+
+
+def _cn_low_evidence(url: str, cn_stats: dict) -> tuple[bool, float, int, int]:
+    """源级低产实证判定（cn 维度，2026-10-20 新增决策层）。
+
+    返回 (判低, wilson 下界, tested, passed)。判 False 的所有情形（样本不足 /
+    数据陈旧 / 无 cn 记录）都视为"无实证"——调用方据此**清零** streak（保守
+    方向：宁可少汰，不可误汰）。
+
+    判据：cn_tested >= config.CN_MIN_SAMPLE 且 Wilson 95% **下界** <
+    config.CN_LOW_CI_HIGH。零通过源天然适用（0/n 下界恒 0）。
+    """
+    cn = (cn_stats or {}).get(url) or {}
+    tested = int(cn.get("cn_tested") or 0)
+    passed = int(cn.get("cn_passed") or 0)
+    if tested < config.CN_MIN_SAMPLE:
+        return False, 0.0, tested, passed
+    if _age_s(cn.get("cn_last")) > config.CN_DECISION_MAX_AGE_S:
+        return False, 0.0, tested, passed
+    lo, _ = wilson_ci(passed, tested)
+    return lo < config.CN_LOW_CI_HIGH, lo, tested, passed
 
 
 # ====================== GitHub discovery ======================
@@ -330,8 +366,17 @@ def discover(
 
 # ====================== probation / promotion / demotion ======================
 
-def evaluate_candidates(cands: dict, run: dict[str, dict], sources: dict) -> dict:
-    """run[url] = {ok, count, usable, unique_new, tamper, probed, flags}."""
+def evaluate_candidates(cands: dict, run: dict[str, dict], sources: dict,
+                        cn_stats: dict | None = None) -> dict:
+    """run[url] = {ok, count, usable, unique_new, tamper, probed, flags}。
+
+    `cn_stats`（可选，2026-10-20）：源级中国实测维度（格式同 update_official）。
+    **只影响晋升排序**（ready.sort），不改晋升资格判定：有正向 cn 实证
+    （cn_tested >= CN_MIN_SAMPLE_HIGH 且 cn_passed >= 1）的候选优先晋升，
+    组内按 Wilson 95% **下界**降序（同点估计下样本大者下界更高、证据更硬，
+    防 3/3 这类小样本虚高霸榜）；其余候选退化为按独有贡献降序。
+    cn_stats=None / 无实证时键恒为 (1, 0.0, -uniq)，与改造前完全一致。
+    """
     rep = {"promoted": [], "rejected": {}}
     ready = []
     for url, c in list(cands["candidates"].items()):
@@ -371,7 +416,19 @@ def evaluate_candidates(cands: dict, run: dict[str, dict], sources: dict) -> dic
             continue
         if c["good_streak"] >= int(c.get("required_runs", PROBATION_RUNS)):
             ready.append((url, c))
-    ready.sort(key=lambda kv: -sum(h.get("unique_new", 0) for h in kv[1].get("history", [])))
+
+    def _promo_key(kv) -> tuple:
+        url, c = kv
+        uniq = sum(h.get("unique_new", 0) for h in c.get("history", []))
+        cn = (cn_stats or {}).get(url) or {}
+        tested = int(cn.get("cn_tested") or 0)
+        passed = int(cn.get("cn_passed") or 0)
+        if tested >= config.CN_MIN_SAMPLE_HIGH and passed >= 1:
+            lo, _ = wilson_ci(passed, tested)
+            return (0, -lo, -uniq)   # 有正向实证：Wilson 下界降序，再按独有贡献
+        return (1, 0.0, -uniq)       # 无实证/小样本/零通过：原排序（独有贡献降序）
+
+    ready.sort(key=_promo_key)
     for url, c in ready[:MAX_PROMOTIONS_PER_RUN]:
         sources["official"].append({
             "url": url, "origin": "discovered", "added": _today(), "repo": c.get("repo"),
@@ -386,10 +443,29 @@ def evaluate_candidates(cands: dict, run: dict[str, dict], sources: dict) -> dic
     return rep
 
 
-def update_official(sources: dict, stats_hist: dict, run: dict[str, dict]) -> dict:
-    """Update per-source history and demote bad / surplus official sources."""
+def update_official(sources: dict, stats_hist: dict, run: dict[str, dict],
+                    cn_stats: dict | None = None) -> dict:
+    """Update per-source history and demote bad / surplus official sources.
+
+    `cn_stats`（可选，2026-10-20）：`{url: {cn_tested, cn_passed, cn_pass_rate,
+    cn_last}}` 源级中国实测维度（沙箱实证，见 evolution.cn_source_stats）。
+    **非空**时启用 cn 淘汰决策层（与 CI 侧判据**并联**，任一命中即淘汰）：
+
+      - 判低：cn_tested >= CN_MIN_SAMPLE 且 Wilson 95% 下界 < CN_LOW_CI_HIGH；
+      - streak：连续 CN_DEMOTE_STREAK 轮判低才淘汰；无实证/样本不足/陈旧 → 清零
+        （保守方向：宁可少汰，不可误汰）；
+      - 三重保底：① origin=manual 手工源永不因 cn 淘汰；② 单轮最多
+        MAX_CN_DEMOTE_PER_RUN 个；③ 淘汰后 official 不少于 MIN_OFFICIAL；
+      - 淘汰即清零 streak（防 30 天冷却回迁的源被旧 streak 瞬杀）。
+
+    无实证（缺数据/样本不足/陈旧）时 cn 层整体 no-op，行为与改造前完全一致。
+    """
     rep = {"demoted": {}}
-    for url in official_urls(sources):
+    cn_candidates: list[tuple[str, float, int, int]] = []
+    for entry in sources["official"]:
+        url = entry.get("url")
+        if not url:
+            continue
         r = run.get(url, {})
         h = stats_hist.setdefault(url, {
             "runs": 0, "ok_runs": 0, "fail_streak": 0, "zero_unique_streak": 0,
@@ -410,6 +486,21 @@ def update_official(sources: dict, stats_hist: dict, run: dict[str, dict]) -> di
         h["real_ema"] = round(0.7 * h.get("real_ema", 0.0) + 0.3 * real_n, 2)
         h["last"] = {"date": _today(), **{k: r.get(k) for k in ("count", "alive", "unique_alive", "real_ok", "probed", "tamper", "error")}}
 
+        # ---- cn 维度 streak 维护（与 CI 侧判据独立；无实证即清零）----
+        # cn_stats 为 None/空（功能关闭或无报告）时整段跳过：stats_hist 不新增
+        # 任何键，降级行为与改造前逐字节一致。
+        if cn_stats:
+            low, lo, cn_t, cn_p = _cn_low_evidence(url, cn_stats)
+            if low:
+                h["cn_low_streak"] = int(h.get("cn_low_streak", 0)) + 1
+                h["cn_low_last"] = {"date": _today(), "tested": cn_t, "passed": cn_p,
+                                    "ci_low": round(lo, 4)}
+            else:
+                h["cn_low_streak"] = 0
+                h.pop("cn_low_last", None)
+        else:
+            low, lo, cn_t, cn_p = False, 0.0, 0, 0
+
         reason = None
         tamper, probed = int(r.get("tamper", 0)), max(1, int(r.get("probed", 0)))
         # 转载我们诱饵节点的源（爬虫/聚合站盗用成果）立即淘汰
@@ -425,8 +516,22 @@ def update_official(sources: dict, stats_hist: dict, run: dict[str, dict]) -> di
             reason = f"zero_real_ok:{h['zero_real_streak']}runs"
         elif h["zero_unique_streak"] >= OFFICIAL_ZERO_UNIQUE_DEMOTE:
             reason = f"zero_unique_contribution:{h['zero_unique_streak']}runs"
+        # ---- cn 维度淘汰候选（streak 达标且非手工源；不在此刻生效，走三重保底）----
+        if (reason is None and low
+                and int(h.get("cn_low_streak", 0)) >= config.CN_DEMOTE_STREAK
+                and entry.get("origin") != "manual"):
+            cn_candidates.append((url, lo, cn_t, cn_p))
         if reason:
             rep["demoted"][url] = reason
+
+    # ---- cn 维度淘汰决策：三重保底（单轮上限 / 保底数量 / 最劣优先）----
+    if cn_candidates:
+        keep_n = len(sources["official"]) - len(rep["demoted"])
+        room = max(0, min(config.MAX_CN_DEMOTE_PER_RUN, keep_n - config.MIN_OFFICIAL))
+        # 最劣优先：Wilson 下界升序（越接近 0 越劣），同下界则样本大者优先（证据更硬）
+        cn_candidates.sort(key=lambda x: (x[1], -x[2]))
+        for url, lo, cn_t, cn_p in cn_candidates[:room]:
+            rep["demoted"][url] = f"cn_low_pass_rate:{cn_p}/{cn_t}"
 
     # N3：排序前一次性读入长期评分，避免在 keep.sort(key=score) 中对每个源
     # 重复 load_json（源多时 I/O 放大与锁竞争）；原写法每次比较都重读整个文件。
@@ -462,6 +567,10 @@ def update_official(sources: dict, stats_hist: dict, run: dict[str, dict]) -> di
         sources["official"] = keep
         for url, why in rep["demoted"].items():
             sources["removed"].append({"url": url, "reason": why, "date": _today()})
+            # 淘汰即清零 cn streak：防 30 天冷却后回迁的源被旧 streak 瞬杀
+            if url in stats_hist:
+                stats_hist[url]["cn_low_streak"] = 0
+                stats_hist[url].pop("cn_low_last", None)
         sources["removed"] = sources["removed"][-100:]
     return rep
 

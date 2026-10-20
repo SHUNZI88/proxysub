@@ -20,7 +20,9 @@ def test_fresh_report_passes():
 
 
 def test_stale_report_rejected():
-    assert vf.is_fresh(_report(13, 50), now=NOW) is False
+    # 阈值 VERIFICATION_MAX_AGE_S=24h（2026-10-17 由 12h 上调：容忍沙箱漏跑
+    # 一轮，防 cron 停摆/劣质运行误触 CI 兜底覆盖实测集）。25h > 24h → 不新鲜。
+    assert vf.is_fresh(_report(25, 50), now=NOW) is False
 
 
 def test_low_passed_rejected():
@@ -88,15 +90,15 @@ def test_main_asset_signal_saves_when_current_low():
     """2026-10-17 回归：本轮 passed<15，但最近有效发布仍新鲜 → 不兜底。
 
     修复前：cron 一轮 passed=12 上传 published=False，CI 误判并兜底 150
-    候选集覆盖实测集。修复后：main_asset_passed=17 且 <12h 内，信任沙箱。
+    候选集覆盖实测集。修复后：main_asset_passed=17 且在 24h 窗口内，信任沙箱。
     """
     r = _report_with_main(2, 12, 3, 17, published=True)
     assert vf.is_fresh(r, now=NOW) is True
 
 
 def test_main_asset_stale_does_not_save():
-    """最近有效发布已超 12h 窗口 → 即使 main_asset_passed≥15 也视为不新鲜。"""
-    r = _report_with_main(13, 12, 13, 17, published=True)
+    """最近有效发布已超 24h 窗口 → 即使 main_asset_passed≥15 也视为不新鲜。"""
+    r = _report_with_main(25, 12, 25, 17, published=True)
     assert vf.is_fresh(r, now=NOW) is False
 
 
