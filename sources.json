@@ -59,25 +59,18 @@
       "probation_runs": 3
     },
     {
-      "url": "https://raw.githubusercontent.com/OgdenThomas/freesub/main/output/clash.yaml",
+      "url": "https://raw.githubusercontent.com/free-nodes/clashfree/main/clash20261017.yml",
       "origin": "discovered",
-      "added": "2026-10-11",
-      "repo": "OgdenThomas/freesub",
-      "probation_runs": 5
+      "added": "2026-10-20",
+      "repo": "free-nodes/clashfree",
+      "probation_runs": 3
     },
     {
-      "url": "https://raw.githubusercontent.com/wuge0/free-nodes/main/output/clash.yaml",
+      "url": "https://raw.githubusercontent.com/free-nodes/clashfree/main/clash20261016.yml",
       "origin": "discovered",
-      "added": "2026-10-16",
-      "repo": "wuge0/free-nodes",
-      "probation_runs": 5
-    },
-    {
-      "url": "https://raw.githubusercontent.com/clashfreenodecom/clashfreenode.com/main/feed/clash-20261003.yaml",
-      "origin": "discovered",
-      "added": "2026-10-17",
-      "repo": "clashfreenodecom/clashfreenode.com",
-      "probation_runs": 11
+      "added": "2026-10-20",
+      "repo": "free-nodes/clashfree",
+      "probation_runs": 3
     }
   ],
   "removed": [
@@ -160,6 +153,21 @@
       "url": "https://raw.githubusercontent.com/free-nodes/clashfree/main/clash20261014.yml",
       "reason": "consecutive_failures:4",
       "date": "2026-10-19"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/clashfreenodecom/clashfreenode.com/main/feed/clash-20261003.yaml",
+      "reason": "cn_low_pass_rate:0/260",
+      "date": "2026-10-20"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/wuge0/free-nodes/main/output/clash.yaml",
+      "reason": "cn_low_pass_rate:2/74",
+      "date": "2026-10-20"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/OgdenThomas/freesub/main/output/clash.yaml",
+      "reason": "cn_low_pass_rate:2/48",
+      "date": "2026-10-20"
     }
   ],
   "deny_repos": []
