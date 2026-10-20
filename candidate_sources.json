@@ -1,79 +1,11 @@
 {
   "candidates": {
-    "https://clashgithub.com/clashnode-20261018.html": {
-      "channel": "web:https://clashgithub.com/",
-      "origin": "channel_web",
-      "added": "2026-10-17",
-      "first_seen": "2026-10-17",
-      "runs": 15,
-      "good_streak": 0,
-      "fail_streak": 0,
-      "history": [
-        {
-          "date": "2026-10-19",
-          "count": 524,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-19",
-          "count": 524,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-20",
-          "count": 524,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-20",
-          "count": 524,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-20",
-          "count": 524,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-20",
-          "count": 524,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-20",
-          "count": 524,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-20",
-          "count": 524,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        }
-      ],
-      "required_runs": 3
-    },
     "https://clashgithub.com/clashnode-20261019.html": {
       "channel": "web:https://clashgithub.com/",
       "origin": "channel_web",
       "added": "2026-10-18",
       "first_seen": "2026-10-18",
-      "runs": 10,
+      "runs": 11,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -85,7 +17,7 @@
           "tamper": 0
         },
         {
-          "date": "2026-10-19",
+          "date": "2026-10-20",
           "count": 25,
           "usable": 0,
           "unique_new": 0,
@@ -141,10 +73,17 @@
       "origin": "channel_web",
       "added": "2026-10-19",
       "first_seen": "2026-10-19",
-      "runs": 6,
+      "runs": 7,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
+        {
+          "date": "2026-10-20",
+          "count": 25,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
         {
           "date": "2026-10-20",
           "count": 25,
@@ -413,6 +352,11 @@
       "repo": "kooker/FreeSubsCheck"
     },
     "https://clashgithub.com/clashnode-20261017.html": {
+      "reason": "no_stable_contribution",
+      "date": "2026-10-20",
+      "repo": null
+    },
+    "https://clashgithub.com/clashnode-20261018.html": {
       "reason": "no_stable_contribution",
       "date": "2026-10-20",
       "repo": null
