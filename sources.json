@@ -45,13 +45,6 @@
       "probation_runs": 3
     },
     {
-      "url": "https://raw.githubusercontent.com/VPN-Subcription-Links/ClashX-V2Ray-TopFreeProxy/main/combine/clash.config.yaml",
-      "origin": "discovered",
-      "added": "2026-10-10",
-      "repo": "VPN-Subcription-Links/ClashX-V2Ray-TopFreeProxy",
-      "probation_runs": 3
-    },
-    {
       "url": "https://raw.githubusercontent.com/ovmvo/FreeSub/main/sub/permanent/mihomo.yaml",
       "origin": "discovered",
       "added": "2026-10-11",
@@ -167,6 +160,11 @@
     {
       "url": "https://raw.githubusercontent.com/OgdenThomas/freesub/main/output/clash.yaml",
       "reason": "cn_low_pass_rate:2/48",
+      "date": "2026-10-20"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VPN-Subcription-Links/ClashX-V2Ray-TopFreeProxy/main/combine/clash.config.yaml",
+      "reason": "cn_low_pass_rate:8/302",
       "date": "2026-10-20"
     }
   ],
