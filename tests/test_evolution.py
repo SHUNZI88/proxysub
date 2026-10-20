@@ -303,6 +303,42 @@ def test_update_source_scores_cn_falls_back_when_no_mapping(tmp_path):
     assert scores["owner/repo"]["cn_pass_rate"] == 1.0
 
 
+def test_update_source_scores_cn_purges_mirror_keys(tmp_path):
+    """Phase C：有 URL 主键对应的历史镜像键（owner/repo）被清理，零数据损失。
+
+    真实现象：键口径修复前 source_scores.json 积累了 33 个 owner/repo 短键，
+    与 URL 主键指向同一源，使 cn_source_stats 输出混入重复条目。
+    """
+    path = str(tmp_path / "source_scores.json")
+    url = "https://raw.githubusercontent.com/Au1rxx/xxx/main/sub.txt"
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump({url: {"score": 100.0, "cn_tested": 50},
+                   "Au1rxx/xxx": {"score": 42.0, "cn_tested": 30}}, f)
+    report = {
+        "generated_at": _now_iso(),
+        "counts": {"by_source": {"Au1rxx/xxx": {"tested": 100, "passed": 5}}},
+    }
+    scores = evolution.update_source_scores_cn(report, path, {"Au1rxx/xxx": url})
+    # 镜像键删除，URL 主键的 cn 维度与历史 score 都在
+    assert "Au1rxx/xxx" not in scores
+    assert scores[url]["cn_pass_rate"] == 0.05
+    assert scores[url]["score"] == 100.0
+
+
+def test_update_source_scores_cn_keeps_orphan_mirror_key(tmp_path):
+    """无 URL 主键对应的短键保守保留（源可能尚未入 official，待 URL 键出现后自愈）。"""
+    path = str(tmp_path / "source_scores.json")
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump({"orphan/repo": {"score": 10.0}}, f)
+    report = {
+        "generated_at": _now_iso(),
+        "counts": {"by_source": {"other/repo": {"tested": 10, "passed": 1}}},
+    }
+    scores = evolution.update_source_scores_cn(report, path, {"other/repo":
+                                            "https://raw.githubusercontent.com/other/repo/main/s.txt"})
+    assert "orphan/repo" in scores
+
+
 def test_prune_cn_history_removes_stale_never_passed(tmp_path):
     """清理「已陈旧且从未通过」的 cn_history 记录（控制体积，零评分损失）。
 

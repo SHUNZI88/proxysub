@@ -235,6 +235,20 @@ def update_source_scores_cn(report: dict, path: str = config.SOURCE_SCORES_FILE,
         entry["cn_pass_rate"] = round(passed / tested, 4) if tested else 0.0
         entry["cn_last"] = report.get("generated_at")
         scores[key] = entry
+    # 镜像键清理（Phase C，2026-10-20）：历史遗留的 owner/repo 短键（键口径
+    # 修复前写入）与 URL 主键指向同一源，留着会让 cn_source_stats /
+    # cn_source_bonus 的输出混入重复条目。仅当同文件内存在对应 URL 主键时
+    # 删除——URL 键才是 update_source_scores 的权威写入目标，此删除零数据
+    # 损失；暂无 URL 对应的短键保守保留（源可能尚未入 official，待 URL 键
+    # 出现后下一轮自然清理，自愈）。
+    if url_by_src:
+        src_of_url = {common.src_key(u): u for u in scores if "://" in str(u)}
+        for k in [k for k in scores if "://" not in str(k)]:
+            # 镜像键本身就是旧代码写入的 src_key(url) 形式，直接查原始键；
+            # src_key(k) 仅对极少数形态（如域名+路径截断）兜底。
+            u = src_of_url.get(str(k)) or src_of_url.get(common.src_key(k))
+            if u and u != k:
+                scores.pop(k, None)
     _save_json(path, scores)
     return scores
 
