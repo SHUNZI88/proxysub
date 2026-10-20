@@ -121,8 +121,11 @@ Content-Type: application/json
 | `requirements.txt` | Python 依赖（requests / PyYAML / filelock / pytest / pytest-cov / pyflakes） |
 | `scripts/doctor.py` | **上手自检（只读）**：fork 后 / 提 Issue 前跑 `python3 scripts/doctor.py`——依赖版本、配置 JSON 可解析性与结构一致性（反爬开启必须配 Release 资产名、正式源非空等）、工作流 YAML、mihomo 可发现性、`.corrupt` 自愈备份；退出码 0 = 通过（可含警告）、1 = 有错误。输出可直接贴进 Issue 表单 |
 | `scripts/dashboard.py` | **运行态面板生成**：读 `probe_history.jsonl` 产出单文件 HTML（内联 SVG 趋势图 / 通过构成堆叠条 / 源贡献表，无 JS 无外部依赖）；定时任务将其发布到独立滚动 Release（tag `status`），详见「运行态观测」一节 |
+| `scripts/cn_probe.py` | **中国出口实测轮**（沙箱侧入口）：轮次闸门 → 预算裁剪 → mihomo 拨测 → 出口取证 → 通过者覆盖发布主资产 + `verification_report.json`，详见「中国出口实测接力」一节与 `docs/cn_probe.md` |
+| `scripts/cron_watchdog.py` | **cron 看门狗**：每 2h 巡检 cron 守护进程（死亡自动拉起）与实测连续性（漏跑 >8h 自动补测），退出码恒 0，详见「中国出口实测接力」第 6 条 |
+| `scripts/install_cron.sh` | **cron 槽位幂等安装**：沙箱重建 / cron 丢失后一条命令恢复实测轮 + 看门狗两条定时条目（自检条目数，防重复） |
 | `.coveragerc` | 覆盖率门禁配置：语句覆盖 `fail_under=80`；计量范围为库模块（`tests/`、`scripts/` 运维脚本、monitor 一次性脚本按配置排除并注明理由） |
-| `tests/` | 单元 + 集成测试（544 项）：指纹去重、地区识别、静态门槛、订阅解析、原子写入、拨测样本选择、多格式输出、源评分；`test_main_pipeline.py`（mock 边界的 main() 全链路集成）+ `test_stage_functions.py`（阶段函数单测，配额/回填/加成等分支）+ `test_probe_mihomo.py`（mihomo 进程编排 mock）+ `test_sources_lifecycle.py`（源生命周期 mock）+ `test_dashboard.py`（面板解析容错 / 渲染 / HTML 转义注入防护） |
+| `tests/` | 单元 + 集成测试（655 项）：指纹去重、地区识别、静态门槛、订阅解析、原子写入、拨测样本选择、多格式输出、源评分、cn 源级生命周期（淘汰/晋升/配额倾斜/熔断）、cron 看门狗；`test_main_pipeline.py`（mock 边界的 main() 全链路集成）+ `test_stage_functions.py`（阶段函数单测，配额/回填/加成等分支）+ `test_probe_mihomo.py`（mihomo 进程编排 mock）+ `test_sources_lifecycle.py`（源生命周期 mock）+ `test_dashboard.py`（面板解析容错 / 渲染 / HTML 转义注入防护） |
 
 ## 探测流程（TCP 预筛 + 拨测闸门）
 
@@ -141,10 +144,11 @@ Content-Type: application/json
 云端拨测在美国进行，「美国能通、国内不通」的节点会混入订阅。为此增加第二实测 vantage：
 
 1. **CI 交接**：每轮运行把待测节点写成 `.publish/pending_probe.json`（待测集 = 拨测样本 ∪ 最终输出）与 `.publish/pending_rescue.json`（救援集：CI 淘汰但静态可行的节点，上限 100），随滚动 Release 发布；
-2. **沙箱实测**：定时任务（北京 09:18 / 16:18，CI 名义时段 06:17/12:17 后 ~45min，避开凌晨沙箱易休眠窗口）运行 `scripts/cn_probe.py`——**轮次闸门**（与上轮报告 `tested_round` 比对：新轮次立即测，年龄不是新鲜信号；等不到至多 20min，未测轮次顺延至下一实测轮、不丢失）→ **预算裁剪**（按剩余 1800s 预算折算节点上限、优先级 carryover>pending>rescue，硬保任务超时不击穿；未测节点由 CI 下轮待测文档自然再现）→ mihomo 中国出口拨测 → 出口 IP/地区取证 → 通过者覆盖发布为主资产（**订阅永久地址不变**）→ 发布 `verification_report.json`；
+2. **沙箱实测**：定时任务（北京 01:18/07:18/13:18/19:18 每日 4 轮，各接住 1 小时前的 CI 待测文档）运行 `scripts/cn_probe.py`——**轮次闸门**（与上轮报告 `tested_round` 比对：新轮次立即测，年龄不是新鲜信号；等不到至多 20min，未测轮次顺延至下一实测轮、不丢失）→ **预算裁剪**（按剩余 1800s 预算折算节点上限、优先级 carryover>pending>rescue，硬保任务超时不击穿；未测节点由 CI 下轮待测文档自然再现）→ mihomo 中国出口拨测 → 出口 IP/地区取证 → 通过者覆盖发布为主资产（**订阅永久地址不变**）→ 发布 `verification_report.json`；
 3. **滚动携带**：每轮测试集含上一轮验证集，通过的留、败的汰（免费节点寿命以小时计，自清洁）；通过数 <15 时保上轮验证集不动；
 4. **所有权切换**：验证报告新鲜（<24h 且通过数 ≥15，或最近一次有效发布 <24h 且通过数 ≥15）时 CI 不覆盖主资产（归实测集）；陈旧时 CI 兜底发布候选集到主资产，订阅永不枯竭。候选集以 `candidates_*` 固定名副本常驻备查；
 5. **熔断**：沙箱自身网络故障 / mihomo 异常 / 低通过率时绝不发布主资产，仅更新报告。
+6. **看门狗保活**（2026-10-20 事故后固化）：`scripts/cron_watchdog.py` 每 2h 巡检——cron 守护进程死亡自动拉起、漏跑（>8h 无活动）自动补测；`scripts/install_cron.sh` 幂等恢复全部 cron 槽位。与云端自动化补跑、CI 兜底共同构成四层触发保障，详见 `docs/cn_probe.md` §8。
 
 详见 `docs/cn_probe.md`（运行手册）。实测数据经进化引擎反哺 CI：节点级中国稳定性加成、源级中国通过率评分（淘汰/晋升/拨测配额倾斜，见下文「订阅源自动发现与淘汰」）、静态门槛自学习（延迟上限按实测分布收紧，含历史审计）。
 
