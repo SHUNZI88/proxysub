@@ -40,7 +40,6 @@ import argparse
 import datetime
 import fcntl
 import json
-import math
 import os
 import re
 import shutil
@@ -342,14 +341,11 @@ def _wilson_ci(k: int, n: int, z: float = 1.96) -> tuple[float, float]:
 
     用于协议分层统计（P2-a）：小样本协议（如 anytls n=8）的朴素通过率极不稳定，
     必须同时给出置信区间，才能避免"看数字下结论"（2026-10-15 复盘教训）。
+
+    实现已上收 `common.wilson_ci`（2026-10-20）：CI 侧源级淘汰/晋升/倾斜判据
+    共用同一实现，避免两侧漂移。本包装仅保留原名供既有调用与测试使用。
     """
-    if n == 0:
-        return 0.0, 0.0
-    p = k / n
-    denom = 1 + z * z / n
-    center = (p + z * z / (2 * n)) / denom
-    margin = z / denom * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n))
-    return max(0.0, center - margin), min(1.0, center + margin)
+    return common.wilson_ci(k, n, z)
 
 
 def _agg_two(nodes: list[dict], verified: list[dict], key_fn,

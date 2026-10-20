@@ -57,6 +57,40 @@ MIN_FINAL = 150
 MAX_FINAL = 300
 MAX_PER_SOURCE_FINAL = 25   # 单一订阅源在最终输出中的独占上限
 
+# ====================== 源级中国实测反哺（cn_source_lifecycle，2026-10-20）======================
+# 沙箱侧 verification_report.json 的 by_source 统计（每源 cn_tested/cn_passed）经
+# evolution.run_evolution 折回 source_scores.json 的 cn_* 维度后，在此作为**独立
+# 决策层**驱动源级生命周期。设计原则：CI 侧（美国环境）评分公式一行不动；cn 维度
+# 只做 CI 侧做不到的三件事——淘汰、晋升优先级、拨测配额；**无实证（缺数据/样本
+# 不足/数据陈旧）一律不干预**，降级行为 = 完全回到改造前的 CI 侧单轨逻辑。
+#
+# ---- 淘汰判据（sources_manager.update_official 消费）----
+CN_MIN_SAMPLE = 20            # cn_tested 下限；不足只观察不淘汰。护小源实证：
+                              # yy1588133 11测3过(27%)、ovmvo 11测7过(64%) 都是好源，
+                              # 而 Au1rxx 277测8过、clashfreenodecom 202测1过 确属低产。
+CN_LOW_CI_HIGH = 0.05         # 低产判据用 Wilson 95% **下界**（保守侧）而非裸通过率：
+                              # chengaopan 4/27 裸率14.8% 但下界5.9% 过关；0/58 下界恒0。
+CN_DEMOTE_STREAK = 2          # 连续 2 轮低产才淘汰（CI 4 次/天 ≈ 12h；单轮波动不误杀）
+CN_DECISION_MAX_AGE_S = 48 * 3600  # cn 数据决策新鲜度：容忍沙箱漏跑一轮（>此值视为
+                              # 无实证，streak 清零——保守方向：少汰不误汰）
+MAX_CN_DEMOTE_PER_RUN = 3     # 单轮淘汰上限（防一次砍太狠，给候选晋升留追赶时间）
+MIN_OFFICIAL = 6              # official 保底线：淘汰后不低于此数（防淘光无源可抓）
+
+# ---- 晋升判据（sources_manager.evaluate_candidates 消费）----
+CN_HIGH_YIELD = 0.30          # 高产源阈值，与 evolution.cn_source_bonus 的 30% 正加成同源；
+                              # 候选晋升时有 cn 实证者按通过率降序优先
+CN_MIN_SAMPLE_HIGH = 10       # 高产倾斜的样本下限（**低于**淘汰门槛 CN_MIN_SAMPLE=20）：
+                              # 非对称设计——淘汰（负向、误杀不可逆）要严，倾斜（正向、
+                              # 即便看错也只多花拨测时间，最终仍有 cn 终筛把关）可放宽。
+                              # 实证：ovmvo 11测7过(63.6%)、shaoyouvip 2测2过 都是好源，
+                              # 用点估计会被小样本噪声骗过，故判据用 Wilson 95% **下界**。
+
+# ---- 拨测配额倾斜（filter_clash.select_probe_sample 消费，Phase B）----
+PROBE_SOURCE_SAMPLE_CAP = 240 # 单源进入拨测样本的基础上限；仅对有新鲜 cn 实证的源生效
+                              # （拨测样本池量级 ~2000 节点，240 ≈ 12%，给低产源仍留翻身机会）
+CN_TILT_LOW = 0.5             # 低产源配额系数（少抓：省下的拨测时间让给高产源与新鲜节点）
+CN_TILT_HIGH = 1.5            # 高产源配额系数（多抓：把算力集中到真正中国可用的源）
+
 # ====================== 硬性静态门槛（协议白名单 + 关键参数校验）=====================
 # 云端剥离真实流量拨测后，源质量完全依赖静态门槛把关：
 #   1) 协议白名单：仅收录优质现代协议（Hysteria2 / VLESS-Reality / Trojan / TUIC 等），

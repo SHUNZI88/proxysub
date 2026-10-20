@@ -559,51 +559,39 @@ class _FakeResp:
         return False
 
 
-def test_real_traffic_test_google_robots_ok(monkeypatch):
-    """回归（2026-10-16）：真实流量测试经 mixed-port 访问 Google robots.txt
-    成功时应判为可用。"""
+def test_real_traffic_test_download_ok(monkeypatch):
+    """回归（2026-10-17 收紧）：真实流量闸门改为硬超时真实下载，预算内下载量
+    达 REAL_MIN_BYTES 时应判为可用；下载目标必须是 speed.cloudflare.com 真实数据。"""
     monkeypatch.setattr(cn_probe, "api_put", lambda *a, **k: True)
     captured = {}
 
-    class _Opener:
-        def open(self, req, timeout=None):
-            captured["url"] = req.full_url
-            # 模拟 Google robots.txt 响应
-            return _FakeResp(200, b"User-agent: *\nDisallow: /private/")
+    def _fake_download(proxy, url, timeout, min_bytes):
+        captured["url"] = url
+        captured["timeout"] = timeout
+        captured["min_bytes"] = min_bytes
+        return min_bytes  # 恰好达到阈值
 
-    monkeypatch.setattr(cn_probe.urllib.request, "build_opener", lambda *a, **k: _Opener())
+    monkeypatch.setattr(cn_probe, "_timed_download", _fake_download)
     res = cn_probe.real_traffic_test(9097, 7897, "node-x")
     assert res["ok"] is True
-    assert "google.com" in captured["url"]
+    assert res["bytes"] >= cn_probe.REAL_MIN_BYTES
+    assert "speed.cloudflare.com" in captured["url"]
 
 
-def test_real_traffic_test_falls_back_to_cloudflare(monkeypatch):
-    """真实流量测试应在首个 URL 失败时回退到下一个 URL。"""
+def test_real_traffic_test_slow_node_rejected(monkeypatch):
+    """回归（2026-10-17）：能握手但下载龟速/不足阈值的节点必须剔除——
+    这是旧「几行字 + 403 兜底」判据漏放、用户本地实测暴露无效的那类伪可用。"""
     monkeypatch.setattr(cn_probe, "api_put", lambda *a, **k: True)
-    urls = []
-
-    class _Opener:
-        def open(self, req, timeout=None):
-            urls.append(req.full_url)
-            if "google.com" in req.full_url:
-                raise OSError("timeout")
-            return _FakeResp(200, b"ip=1.2.3.4\nloc=HK")
-
-    monkeypatch.setattr(cn_probe.urllib.request, "build_opener", lambda *a, **k: _Opener())
+    monkeypatch.setattr(cn_probe, "_timed_download",
+                        lambda *a, **k: cn_probe.REAL_MIN_BYTES - 1)
     res = cn_probe.real_traffic_test(9097, 7897, "node-x")
-    assert res["ok"] is True
-    assert any("cloudflare.com" in u for u in urls)
+    assert res["ok"] is False
 
 
 def test_real_traffic_test_all_unreachable_returns_false(monkeypatch):
-    """所有真实流量目标均不可达时，必须返回失败，禁止假阳性。"""
+    """所有真实流量目标均不可达（下载 0 字节）时，必须返回失败，禁止假阳性。"""
     monkeypatch.setattr(cn_probe, "api_put", lambda *a, **k: True)
-
-    class _Opener:
-        def open(self, req, timeout=None):
-            raise OSError("blocked")
-
-    monkeypatch.setattr(cn_probe.urllib.request, "build_opener", lambda *a, **k: _Opener())
+    monkeypatch.setattr(cn_probe, "_timed_download", lambda *a, **k: 0)
     res = cn_probe.real_traffic_test(9097, 7897, "node-x")
     assert res["ok"] is False
 

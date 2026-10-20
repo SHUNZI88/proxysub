@@ -16,6 +16,7 @@ import datetime
 import json
 import os
 
+import common  # 叶子模块：wilson_ci / src_key（无循环依赖）
 import config
 
 
@@ -242,15 +243,78 @@ def cn_source_bonus(src: str | None, scores: dict, *, max_bonus: float = 60.0) -
     """源级中国通过率加成（ms 等价）：高通过率源排更前 / 拿更多配额。
 
     通过率 < 5% 给惩罚，>= 30% 给正加成，中间线性；缺数据返回 0。
+
+    键口径（2026-10-20 修复）：cn 维度主键是**完整 URL**
+    （`update_source_scores_cn` 传入 `url_by_src` 时写 URL 键），而调用方
+    历史上传 `common.src_key(url)` 镜像键，导致本加成长期读到陈旧镜像数据
+    （2026-10-14 的历史遗留键）。现改为「URL 主键优先、镜像键兜底」：传 URL
+    未命中时退回 `common.src_key` 查找，兼容过渡期。
     """
     if not src:
         return 0.0
-    rate = (scores.get(src) or {}).get("cn_pass_rate")
+    rec = scores.get(src)
+    if rec is None and "://" in str(src):
+        rec = scores.get(common.src_key(src))
+    rate = (rec or {}).get("cn_pass_rate")
     if rate is None:
         return 0.0
     if rate < 0.05:
         return -max_bonus
     return min(max_bonus, max_bonus * (rate - 0.05) / 0.25)
+
+
+def cn_source_stats(scores: dict) -> dict:
+    """从 source_scores.json 内容提取每 URL 的 cn 维度（仅含 cn_tested 的条目）。
+
+    调用方（源级淘汰/晋升/倾斜）按 URL 主键查找；历史遗留的 owner/repo 镜像键
+    不会被误用（它们在本函数输出中仍可能出现，但键形可辨，Phase C 清理前不影响
+    URL 主键查找的正确性）。
+    """
+    out: dict = {}
+    for url, rec in (scores or {}).items():
+        if isinstance(rec, dict) and "cn_tested" in rec:
+            out[url] = {k: rec.get(k) for k in
+                        ("cn_tested", "cn_passed", "cn_pass_rate", "cn_last")}
+    return out
+
+
+def cn_fetch_tilt(url: str | None, cn_stats: dict, *,
+                  max_age_s: int | None = None) -> float | None:
+    """源级拨测配额倾斜系数（Phase B 消费）。返回 None = 无实证，调用方不得干预。
+
+    判据（**非对称样本门槛**，理由见 config.CN_MIN_SAMPLE_HIGH 注释）：
+      - 低产：n >= CN_MIN_SAMPLE 且 Wilson 95% 下界 < CN_LOW_CI_HIGH -> CN_TILT_LOW
+      - 高产：n >= CN_MIN_SAMPLE_HIGH 且 Wilson 95% **下界** >= CN_HIGH_YIELD
+              -> CN_TILT_HIGH（用下界而非点估计，防 3/11 这类小样本虚高）
+      - 其余有实证者 -> 1.0
+      - 样本不足 / 数据陈旧 / 无 cn_last -> None（不干预）
+    """
+    if not url:
+        return None
+    cn = (cn_stats or {}).get(url) or {}
+    tested = int(cn.get("cn_tested") or 0)
+    if tested < config.CN_MIN_SAMPLE_HIGH:
+        return None
+    if max_age_s is not None:
+        last = cn.get("cn_last")
+        if not last:
+            return None
+        try:
+            dt = datetime.datetime.fromisoformat(str(last).replace("Z", "+00:00"))
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=datetime.timezone.utc)
+            age = (datetime.datetime.now(datetime.timezone.utc) - dt).total_seconds()
+        except Exception:
+            return None
+        if age > max_age_s:
+            return None
+    passed = int(cn.get("cn_passed") or 0)
+    lo, _ = common.wilson_ci(passed, tested)
+    if tested >= config.CN_MIN_SAMPLE and lo < config.CN_LOW_CI_HIGH:
+        return config.CN_TILT_LOW
+    if lo >= config.CN_HIGH_YIELD:
+        return config.CN_TILT_HIGH
+    return 1.0
 
 
 # ------------------------------------------------------------------ 2.3 门槛自学习

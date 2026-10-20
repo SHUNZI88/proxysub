@@ -17,6 +17,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import json
+import math
 import re
 import time
 from typing import Any
@@ -482,6 +483,26 @@ def _has_reality(proxy: dict) -> bool:
 
 
 # -------------------------------------------------- Phase 2 进化引擎基础工具
+def wilson_ci(k: int, n: int, z: float = 1.96) -> tuple[float, float]:
+    """Wilson 得分区间（95%）——小样本下比正态近似稳健（n=0 时返回 (0,0)）。
+
+    唯一实现：沙箱侧 `scripts/cn_probe.py::_wilson_ci` 已上收此处（改为委托），
+    CI 侧源级淘汰/晋升/倾斜共用，避免两侧实现漂移（2026-10-15 复盘教训：
+    镜像逻辑必须单一来源）。
+
+    为什么用 Wilson 而非裸通过率：小样本下点估计极不稳定——如 4/27 裸通过率
+    14.8% 看似中等，但其 95% 下界仅 5.9%；而 0/58 的下界恒为 0。源级淘汰判据
+    用下界（保守侧），确保"样本不足/偶发通过"的源不被误杀。
+    """
+    if n <= 0:
+        return 0.0, 0.0
+    p = k / n
+    denom = 1 + z * z / n
+    center = (p + z * z / (2 * n)) / denom
+    margin = z / denom * math.sqrt(p * (1 - p) / n + z * z / (4 * n * n))
+    return max(0.0, center - margin), min(1.0, center + margin)
+
+
 def src_key(url: str) -> str:
     """订阅源稳定短键：GitHub raw/owner/repo -> 'owner/repo'；其它 -> 域名+路径前段。
 
