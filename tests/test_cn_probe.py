@@ -601,3 +601,165 @@ def test_real_traffic_test_api_put_failure_returns_false(monkeypatch):
     monkeypatch.setattr(cn_probe, "api_put", lambda *a, **k: False)
     res = cn_probe.real_traffic_test(9097, 7897, "node-x")
     assert res["ok"] is False
+
+
+# ---------------------------------------------------------------- AI 可达性探测
+# 2026-10-20：沙箱诊断发现 29 个已发布节点中 13 个对全部 AI 域无响应，
+# 而既有闸门只测 Google/Cloudflare——新增 AI 维度探测（不构成闸门）。
+def test_ai_targets_use_root_paths():
+    """回归（v1 诊断坑③）：探针 URL 必须是站点根路径——早期用
+    /cdn-cgi/trace，非 Cloudflare 站点（gemini/copilot）没有该路径，
+    404 被误读为「不可达」。且 openai_api 必须打 /v1/models（有判据价值）。"""
+    assert set(cn_probe.AI_TARGETS) == {
+        "chatgpt", "claude", "gemini", "copilot", "openai_api"}
+    for label, url in cn_probe.AI_TARGETS.items():
+        assert url.startswith("https://"), label
+        assert "cdn-cgi" not in url, label
+    assert cn_probe.AI_TARGETS["openai_api"].endswith("/v1/models")
+
+
+def test_classify_ai_all_none_is_unreachable():
+    codes = {k: None for k in cn_probe.AI_TARGETS}
+    out = cn_probe.classify_ai(codes)
+    assert out["ai_reachable"] is False
+    assert out["ai_api"] is False
+    assert out["reach"] == []
+
+
+def test_classify_ai_403_counts_as_reachable():
+    """403（Cloudflare 区域拦截）是有效响应 = 可达，但不是 API 可用——
+    chatgpt 403 与 api.openai.com 401 必须分开判（v1 诊断坑②）。"""
+    out = cn_probe.classify_ai({"chatgpt": 403})
+    assert out["ai_reachable"] is True
+    assert out["ai_api"] is False
+    assert out["reach"] == ["chatgpt"]
+
+
+def test_classify_ai_openai_401_means_api_ok():
+    """api.openai.com 返回 401（无密钥的正常响应）⇒ API 层未被区域封锁，
+    是「真 AI 可用」的最强信号。"""
+    out = cn_probe.classify_ai({"chatgpt": 403, "openai_api": 401})
+    assert out["ai_reachable"] is True
+    assert out["ai_api"] is True
+
+
+def test_classify_ai_openai_403_means_api_blocked():
+    out = cn_probe.classify_ai({"openai_api": 403})
+    assert out["ai_reachable"] is True   # 有响应
+    assert out["ai_api"] is False        # 但 API 层被区域封锁
+
+
+def test_http_status_via_proxy_returns_error_code(monkeypatch):
+    """HTTPError（401/403 等）必须返回真实状态码而非 None——用 urllib 的
+    抛异常路径判失败正是 v1 诊断失真的原因之一。"""
+
+    class _Resp:
+        status = 200
+        def __enter__(self): return self
+        def __exit__(self, *a): return False
+
+    def _fake_opener(*a, **k):
+        class _O:
+            def open(self, req, timeout=None):
+                raise urllib.error.HTTPError(
+                    req.full_url, 401, "Unauthorized", {}, None)
+        return _O()
+
+    import urllib.error
+    monkeypatch.setattr(cn_probe.urllib.request, "build_opener", _fake_opener)
+    assert cn_probe._http_status_via_proxy(
+        "https://api.openai.com/v1/models", "http://127.0.0.1:7897", 8) == 401
+
+
+def test_http_status_via_proxy_success_status(monkeypatch):
+    import urllib.error  # noqa: F401  （与失败路径保持同一导入面）
+
+    class _Resp:
+        status = 200
+        def __enter__(self): return self
+        def __exit__(self, *a): return False
+
+    def _fake_opener(*a, **k):
+        class _O:
+            def open(self, req, timeout=None):
+                return _Resp()
+        return _O()
+
+    monkeypatch.setattr(cn_probe.urllib.request, "build_opener", _fake_opener)
+    assert cn_probe._http_status_via_proxy(
+        "https://chatgpt.com/", "http://127.0.0.1:7897", 8) == 200
+
+
+def test_http_status_via_proxy_timeout_returns_none(monkeypatch):
+    """连接失败/超时 = 无响应 = None（与 403 严格区分）。"""
+    def _fake_opener(*a, **k):
+        class _O:
+            def open(self, req, timeout=None):
+                raise TimeoutError("timed out")
+        return _O()
+
+    monkeypatch.setattr(cn_probe.urllib.request, "build_opener", _fake_opener)
+    assert cn_probe._http_status_via_proxy(
+        "https://chatgpt.com/", "http://127.0.0.1:7897", 8) is None
+
+
+def test_ai_probe_switches_group_and_classifies(monkeypatch):
+    """ai_probe：先切 PROBE 组，再逐域取状态码并归类；5 域并行、单次切换。"""
+    puts = []
+    monkeypatch.setattr(cn_probe, "api_put",
+                        lambda *a, **k: puts.append(a) or True)
+    codes = {"chatgpt": 403, "claude": 200, "gemini": None,
+             "copilot": 302, "openai_api": 401}
+    monkeypatch.setattr(cn_probe, "_http_status_via_proxy",
+                        lambda url, proxy, timeout: codes[
+                            next(k for k, v in cn_probe.AI_TARGETS.items()
+                                 if v == url)])
+    out = cn_probe.ai_probe(9097, 7897, "node-x")
+    # 恰好一次切组（selector=PROBE），不会为每个域重复切
+    assert len(puts) == 1 and puts[0][1] == "/proxies/PROBE"
+    assert out["codes"] == codes
+    assert out["ai_reachable"] is True
+    assert out["ai_api"] is True          # openai_api=401
+    assert set(out["reach"]) == {"chatgpt", "claude", "copilot", "openai_api"}
+
+
+def test_ai_probe_group_switch_failure_returns_empty(monkeypatch):
+    """切组失败（API 故障）时返回空 dict——调用方按「无数据」处理。"""
+    monkeypatch.setattr(cn_probe, "api_put", lambda *a, **k: False)
+    called = []
+    monkeypatch.setattr(cn_probe, "_http_status_via_proxy",
+                        lambda *a, **k: called.append(1) or 200)
+    assert cn_probe.ai_probe(9097, 7897, "node-x") == {}
+    assert not called
+
+
+def test_verified_rank_ai_first_then_vantage_then_latency():
+    """排序：AI API 可用 > AI 可达 > 无数据；同级内保持原「双 vantage
+    强者 + 低延迟」序。AI 维度只影响排序、不淘汰（无硬闸门）。"""
+    node = {"probe_name": "x", "us_ok": True, "final": True}
+
+    def results(ai):
+        return {"x": {"ok": True, "latency_ms": 100, "ai": ai}}
+
+    r_api = cn_probe.verified_rank(node, results({"ai_api": True}))
+    r_reach = cn_probe.verified_rank(node, results({"ai_reachable": True}))
+    r_none = cn_probe.verified_rank(node, results({}))
+    r_missing = cn_probe.verified_rank(
+        node, {"x": {"ok": True, "latency_ms": 100}})
+    assert r_api < r_reach < r_none == r_missing
+    # 次级判据不变：同 AI 层级下双 vantage 强者在前、延迟低者在前
+    weak = {"probe_name": "y", "us_ok": False, "final": False}
+    assert cn_probe.verified_rank(node, results({"ai_reachable": True})) < \
+        cn_probe.verified_rank(weak, results({"ai_reachable": True}))
+    slow = {"probe_name": "z", "us_ok": True, "final": True}
+    res_slow = {"z": {"ok": True, "latency_ms": 900, "ai": {}}}
+    res_fast = {"z": {"ok": True, "latency_ms": 10, "ai": {}}}
+    assert cn_probe.verified_rank(slow, res_fast) < cn_probe.verified_rank(slow, res_slow)
+
+
+def test_report_includes_ai_fields():
+    """报告契约：dimensions.ai 语义说明 + counts.ai 统计 + nodes[].ai 字段
+    均为新增增量字段，CI 侧（evolution.py）只读既有键，不受影响。"""
+    src = open(cn_probe.__file__, encoding="utf-8").read()
+    assert '"ai": ' in src and 'ai_reachable' in src
+    assert 'AI_BUDGET_S' in src and 'AI_CONCURRENCY' in src

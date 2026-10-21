@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """中国出口节点实测（沙箱侧）——Phase 1 核心工作者。
 
-定时任务（北京 09:18/16:18，即 CI 名义时段 06:17/12:17 后 ~45min，避开凌晨
-沙箱易休眠窗口）启动本脚本：
+定时任务（北京 01:18/07:18/13:18/19:18 四轮，cron 看门狗每 2h 巡检保活；
+等不到新轮次顺延、不丢失）启动本脚本：
 
   1. 自检：沙箱自身网络必须直连可用（否则节点全挂是冤枉的）；
   2. 下载 CI 交接文档 pending_probe.json / pending_rescue.json，按
@@ -17,10 +17,13 @@
      测试集——rescue 先裁、pending 次之、carryover 不裁；未测节点由 CI
      下轮待测文档从当前候选池重新生成时再现，不丢失；
   5. mihomo 并发拨测（external-controller delay API，gstatic generate_204，
-     HTTPS+204 双信号），通过节点逐个取出口 IP/地区证据；
+     HTTPS+204 双信号），通过节点逐个取出口 IP/地区证据；再对通过节点做
+     AI 服务可达性探测（chatgpt/claude/gemini/copilot/openai_api 状态码，
+     证据+排序信号，不构成闸门）；
   6. 合并发布：通过节点构建验证集（clash + sing-box + v2ray + proxies-only），
-     覆盖发布到主资产 p_*（订阅永久地址不变），并发布
-     verification_report.json（证据 + 统计，CI 据此切换主资产所有权）；
+     AI 可用节点排前（订阅顺序即用户可见性顺序），覆盖发布到主资产 p_*
+     （订阅永久地址不变），并发布 verification_report.json（证据 + 统计，
+     CI 据此切换主资产所有权）；
   7. 熔断：自检失败/mihomo 起不来/通过数 < VERIFICATION_MIN_PASSED 时
      绝不发布主资产（保留上一轮验证集或 CI 兜底候选集），仅出报告。
 
@@ -47,6 +50,7 @@ import socket
 import subprocess
 import sys
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
@@ -81,6 +85,31 @@ REAL_PROBE_URLS = [           # 仅作出口可达性辅助参考，不再单独
     "https://www.cloudflare.com/cdn-cgi/trace",
 ]
 GEO_URLS = ["https://cip.cc", "https://myip.ipip.net", "http://ip-api.com/json"]
+# AI 服务可达性探测（2026-10-20 新增）。背景：沙箱诊断发现已发布的 29 个
+# 节点中 13 个对全部 5 个 AI 域无任何 HTTP 响应，而既有闸门只验证
+# Google/Cloudflare 可达，对「能否连 AI」完全盲视——订阅地址节点数长期
+# 停在 29 且用户实际不可用的重要原因之一。判据要点（v1 诊断实测踩坑后确立）：
+#   ① 任何 HTTP 响应（含 403/302/401）都算「可达」——403 是 Cloudflare
+#      区域拦截（服务在、该出口被拒），与「无响应」必须分开记录；
+#   ② api.openai.com 返回非 403（典型 401 无密钥响应）⇒ API 层未被区域
+#      封锁，是「真 AI 可用」的最强信号；chatgpt.com 403 ≠ API 不可用；
+#   ③ 禁用 curl -f / urllib 抛异常判失败——它们把 403/404/401 吞成失败，
+#      正是 v1 诊断结论全盘失真的原因。
+# 探针 URL 一律用站点根路径（早期 v1 用 /cdn-cgi/trace，非 Cloudflare 站点
+# 没有该路径，404 被误读为「不可达」）。
+AI_TARGETS = {
+    "chatgpt": "https://chatgpt.com/",
+    "claude": "https://claude.ai/",
+    "gemini": "https://gemini.google.com/",
+    "copilot": "https://copilot.microsoft.com/",
+    "openai_api": "https://api.openai.com/v1/models",
+}
+AI_TIMEOUT_S = 8
+AI_CONCURRENCY = 5     # 单节点 5 个域并行（共享同一 PROBE 选择，节点间必须串行）
+AI_BUDGET_S = 120      # 与 GEO 证据同级的独立预算：超预算跳过剩余节点
+                       # （AI 探测不构成闸门，无数据不影响发布）。耗时上界：
+                       # 真实流量 ~24s + GEO ≤120s + AI ≤120s + 发布 ~60s
+                       # ≈ 324s < PUBLISH_RESERVE_S 360s。
 MIHOMO_VERSION = os.environ.get("MIHOMO_VERSION", "v1.19.32")
 DELAY_TIMEOUT_MS = 5000
 DELAY_CONCURRENCY = 12
@@ -647,6 +676,89 @@ def _parse_geo(text: str) -> dict:
     return ev if ev.get("exit_ip") else {}
 
 
+def _http_status_via_proxy(url: str, proxy: str, timeout: int) -> int | None:
+    """经代理取 URL 的 HTTP 状态码；任何响应（含 4xx/5xx）都算「有响应」。
+
+    不用 curl -f，也不用 urllib 抛异常判失败：403/401/302 都是有效响应，
+    正是 AI 可达性判据要区分的状态（v1 诊断用 curl -f 把它们吞成失败，
+    导致「13/29 节点完全不通 AI」的真实盲区被误判为方法学噪声）。
+    """
+    try:
+        opener = urllib.request.build_opener(
+            urllib.request.ProxyHandler({"http": proxy, "https": proxy}))
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        with opener.open(req, timeout=timeout) as r:
+            return int(r.status)
+    except urllib.error.HTTPError as e:
+        return int(e.code)  # 401/403/404 等：有响应，返回真实状态码
+    except Exception:
+        return None          # 超时/连接失败/DNS：无响应
+
+
+def classify_ai(codes: dict) -> dict:
+    """把各 AI 域 HTTP 状态码归并为 ai_reachable / ai_api 判据（纯函数）。
+
+    判据（2026-10-20 沙箱诊断确立）：
+      - 任何 HTTP 响应（含 403/302/401）= 可达；None/超时/连接失败 = 不可达；
+      - ai_api = openai_api 返回非 403 状态码——401（无密钥的正常响应）
+        说明 API 层未被区域封锁，是「真 AI 可用」的最强信号；
+      - chatgpt 403 只说明 Cloudflare 拒绝了该出口的网页端访问，与 API
+        可用性是两回事，两者分开记录、不可互推。
+    """
+    reach = [k for k, v in codes.items() if v]
+    oai = codes.get("openai_api")
+    return {
+        "codes": codes,
+        "reach": reach,
+        "ai_reachable": bool(reach),
+        "ai_api": bool(oai and oai != 403),
+    }
+
+
+def ai_probe(api_port: int, mixed_port: int, name: str) -> dict:
+    """探测指定节点的 AI 服务可达性（证据 + 排序信号，不构成闸门）。
+
+    切换 PROBE 组到 name 后经 mixed-port 并行请求 5 个 AI 域。仅对终筛
+    通过节点调用（~30 个，5 域并行下单节点最坏 8s）；节点间串行——所有
+    流量共享同一个 PROBE 选择器，并发切组会互相踩（v1 诊断教训）。
+    AI 不可达不是节点死亡：节点仍是可用代理，仅排序沉底、不淘汰。
+    """
+    if not api_put(api_port, "/proxies/PROBE", {"name": name}):
+        return {}
+    proxy = f"http://127.0.0.1:{mixed_port}"
+    items = list(AI_TARGETS.items())
+
+    def _one(item):
+        label, url = item
+        return label, _http_status_via_proxy(url, proxy, AI_TIMEOUT_S)
+
+    codes: dict = {}
+    with ThreadPoolExecutor(max_workers=AI_CONCURRENCY) as ex:
+        for label, code in ex.map(_one, items):
+            codes[label] = code
+    return classify_ai(codes)
+
+
+def verified_rank(n: dict, results: dict) -> tuple:
+    """验证集排序键：AI 可用性 > 双 vantage 强者 > 低延迟。
+
+    2026-10-20 起 AI 可达性占首位——订阅顺序即用户可见性顺序，用户核心
+    诉求是「可用于 AI 连接的纯净节点」；非 AI 节点不设硬闸门、仅沉底。
+    原「双 vantage 强者 + 延迟」序降为次级判据（保持不变）。
+    """
+    r = results.get(n["probe_name"], {})
+    ai = r.get("ai") or {}
+    if ai.get("ai_api"):
+        ai_tier = 0        # API 层未被封锁：配密钥即可用
+    elif ai.get("ai_reachable"):
+        ai_tier = 1        # 至少一个 AI 域有响应
+    else:
+        ai_tier = 2        # 未探测到或无响应（含探测超预算无数据）
+    return (ai_tier,
+            0 if (n["us_ok"] and n["final"]) else 1,
+            r.get("latency_ms") if r.get("latency_ms") is not None else 99999)
+
+
 # ---------------------------------------------------------------- 输出构建
 def _truthy(v) -> bool:
     return str(v).lower() in ("1", "true", "yes", "on")
@@ -939,6 +1051,32 @@ def main() -> int:
                 ev = exit_evidence(api_port, "PROBE", n["probe_name"], mixed_port)
                 if ev:
                     results[n["probe_name"]].update(ev)
+
+            # 5.5) AI 可达性探测（2026-10-20；仅通过节点，不构成闸门）
+            # 串行切组 + 组内 5 域并行；独立预算 AI_BUDGET_S，超预算跳过
+            # 剩余（无 ai 数据的节点按未知处理，排序沉底但不淘汰）。
+            ai_deadline = time.time() + AI_BUDGET_S
+            for i, n in enumerate(passed):
+                if time.time() > ai_deadline:
+                    log(f"AI 探测达到时间预算 {AI_BUDGET_S}s，跳过剩余 "
+                        f"{len(passed) - i} 个节点（AI 不构成闸门，无数据"
+                        f"节点仅排序沉底）")
+                    break
+                try:
+                    ai = ai_probe(api_port, mixed_port, n["probe_name"])
+                except Exception as e:
+                    log(f"AI 探测异常（节点 {n['probe_name']}，已跳过）："
+                        f"{type(e).__name__}: {e}")
+                    ai = {}
+                if ai:
+                    results[n["probe_name"]]["ai"] = ai
+            n_ai = sum(1 for n in passed
+                       if results[n["probe_name"]].get("ai", {}).get("ai_reachable"))
+            n_api = sum(1 for n in passed
+                        if results[n["probe_name"]].get("ai", {}).get("ai_api"))
+            log(f"AI 可达性探测完成: 任一可达 {n_ai}/{len(passed)}，"
+                f"API 层可用 {n_api}/{len(passed)}"
+                f"（{time.time() - (ai_deadline - AI_BUDGET_S):.0f}s）")
         except Exception as e:
             log(f"熔断: 拨测过程异常（{type(e).__name__}: {e}），不发布")
             return 3
@@ -949,13 +1087,8 @@ def main() -> int:
         except Exception:
             proc.kill()
 
-    # 6) 合并：通过即留、败即汰（自清洁）；双 vantage 强者排前
-    def rank(n: dict) -> tuple:
-        r = results.get(n["probe_name"], {})
-        return (0 if (n["us_ok"] and n["final"]) else 1,
-                r.get("latency_ms") if r.get("latency_ms") is not None else 99999)
-
-    verified = sorted(passed, key=rank)
+    # 6) 合并：通过即留、败即汰（自清洁）；AI 可用优先 + 双 vantage 强者排前
+    verified = sorted(passed, key=lambda n: verified_rank(n, results))
 
     # 6.5) 纯 carryover 轮次「保留已发布集」修复（2026-10-17，服务「固化闭环」）：
     # 当本轮没有新 CI 待测文档（n_pend==0 且 n_resc==0，测试集全为 carryover），
@@ -985,8 +1118,24 @@ def main() -> int:
     by_protocol = _agg_two(nodes, verified,
                            key_fn=lambda n: str(n["proxy"].get("type", "?")),
                            with_ci=True)
+    # AI 可达性统计（2026-10-20）：仅覆盖有 ai 数据的通过节点（探测受预算
+    # 约束可能跳过尾部）；ai_reachable/ai_api 判据见 classify_ai。
+    ai_probed = [n for n in passed if "ai" in results.get(n["probe_name"], {})]
+    ai_reach = [n for n in ai_probed
+                if results[n["probe_name"]]["ai"].get("ai_reachable")]
+    ai_api_ok = [n for n in ai_probed
+                 if results[n["probe_name"]]["ai"].get("ai_api")]
+    ai_by_domain = {
+        label: sum(1 for n in ai_probed
+                   if (results[n["probe_name"]]["ai"].get("codes") or {}).get(label))
+        for label in AI_TARGETS
+    }
     log(f"验证集: {len(verified)} 个（pending {by_origin['pending']} / "
         f"rescue {by_origin['rescue']} / carryover {by_origin['carryover']}）")
+    if ai_probed:
+        log(f"AI 可达性: 探测 {len(ai_probed)} 个，任一可达 {len(ai_reach)}，"
+            f"API 层可用 {len(ai_api_ok)}（分域名: "
+            + ", ".join(f"{k}={v}" for k, v in ai_by_domain.items()) + "）")
 
     report = {
         "round_id": round_id,
@@ -1005,6 +1154,8 @@ def main() -> int:
         "dimensions": {
             "us_ok": "美西拨测可达性（CI Runner，完整 HTTPS；False≠节点死亡）",
             "cn_ok": "中国实测可用性（本沙箱，延迟测试）",
+            "ai": "AI 服务可达性（本沙箱经节点探测 chatgpt/claude/gemini/"
+                  "copilot/openai_api；证据+排序信号，不构成闸门）",
             "note": "两维度探测目标/判定标准不同，不可互相替代或合并统计",
         },
         "counts": {
@@ -1015,11 +1166,18 @@ def main() -> int:
             "passed_by_origin": by_origin,
             "by_source": by_source,
             "by_protocol": by_protocol,
+            "ai": {
+                "probed": len(ai_probed),
+                "reachable": len(ai_reach),
+                "api_ok": len(ai_api_ok),
+                "by_domain": ai_by_domain,
+            },
         },
         "nodes": [{
             "fp": n["fp"], "name": n["name"], "origin": n["origin"],
             "final": n["final"], "us_ok": n["us_ok"], "src": n.get("src"),
             "cn": results.get(n["probe_name"], {}),
+            "ai": results.get(n["probe_name"], {}).get("ai"),
         } for n in nodes],
         "published": False,
     }

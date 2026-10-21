@@ -54,10 +54,15 @@ CI（GitHub Actions，美国出口）每轮产出「拟交沙箱待测节点文�
 6. **出口证据**：通过节点逐个切流量取出口 IP/地区（cip.cc → ipip →
    ip-api 依次回退），仅留痕、不构成闸门；顺序取证设 120s 时间预算
    （防极端情况击穿任务超时），超时跳过剩余节点；
-7. **合并发布**：通过节点按「双 vantage 强者优先 + 延迟」排序，构建
-   clash/sing-box/v2ray/proxies-only 四格式，覆盖发布到主资产
-   （p_* 随机名，**订阅永久地址不变**），并发布 `verification_report.json`；
-8. **轮转**：本轮消费的待测文档备份为 `pending_probe.prev.json`。
+7. **AI 可达性探测**（2026-10-20 新增）：通过节点逐个切组，经 mixed-port
+   并行请求 5 个 AI 域（chatgpt/claude/gemini/copilot/openai_api，站点根
+   路径 + 状态码捕获）；判据与已知坑见 §9。**不构成闸门**——AI 不可达的
+   节点仍是可用代理，仅排序沉底；
+8. **合并发布**：通过节点按「AI 可用性 > 双 vantage 强者 > 延迟」排序
+   （订阅顺序即用户可见性顺序），构建 clash/sing-box/v2ray/proxies-only
+   四格式，覆盖发布到主资产（p_* 随机名，**订阅永久地址不变**），并发布
+   `verification_report.json`；
+9. **轮转**：本轮消费的待测文档备份为 `pending_probe.prev.json`。
 
 ## 6. 1800s 预算加固（截止时间感知测试集上限）
 
@@ -96,7 +101,7 @@ CI 侧联动：`verification_report.json` 新鲜（<24h 且通过数 ≥15）时
 | `candidates_clash.yaml` 等 4 个 | CI | 候选集固定名副本，透明备查 |
 | `pending_probe.json` / `pending_rescue.json` | CI | 交接文档（待测/救援） |
 | `pending_probe.prev.json` | 本任务 | 上轮待测文档备份 |
-| `verification_report.json` | 本任务 | 证据+统计（每节点延迟/出口 IP/地区/vantage）；`tested_round` 字段记录已测轮次，供下一轮闸门判定 |
+| `verification_report.json` | 本任务 | 证据+统计（每节点延迟/出口 IP/地区/vantage/AI 可达性）；`tested_round` 字段记录已测轮次，供下一轮闸门判定 |
 
 ## 6. 手动执行（调试/补跑）
 
@@ -148,3 +153,57 @@ bash scripts/install_cron.sh
 观察到「活动停滞」，补测会被单实例锁挡回——需人工 `pkill -f cn_probe.py`
 后由下一拍补测。卡死识别与处置刻意不做自动化：误杀正在跑的实测轮代价
 高于漏跑（漏跑有 L3/L4 兜底，误杀没有）。
+
+## 9. AI 可达性探测（2026-10-20 新增，不构成闸门）
+
+### 9.1 背景：29 节点平稳的真因之一——AI 盲区
+
+订阅有效节点数长期停在 29，沙箱诊断（v1→v2）定位到三层原因，AI 盲区是
+既有闸门的设计缺口：
+
+| 诊断事实（29 个已发布节点） | 数字 |
+|---|---|
+| 任一 AI 域有 HTTP 响应 | 15～16 |
+| **对全部 5 个 AI 域均无响应** | **13** |
+| 沙箱直连基线（验证测试有效性） | chatgpt/copilot 不可达、claude 302、gemini 不可达——测试本身有效 |
+
+既有闸门只验证 Google 连通（generate_204）与 Cloudflare 下载，对
+「能否连 AI」完全盲视：约一半已发布节点对中国用户实际不可用于 AI 连接。
+
+### 9.2 判据（v1 诊断实测踩坑后确立）
+
+| 判据 | 定义 |
+|---|---|
+| `ai_reachable` | 任一 AI 域有 **HTTP 响应**（含 403/302/401） |
+| `ai_api` | `api.openai.com` 返回 **非 403**（典型 401 无密钥响应）⇒ API 层未被区域封锁 |
+
+- chatgpt.com 403 = Cloudflare 区域拦截（网页端被拒），**≠** API 不可用；
+  api.openai.com 401 = 无密钥的正常响应，是「真 AI 可用」的最强信号。两者
+  必须分开记录、不可互推。
+
+### 9.3 v1 诊断的三个方法学错误（修复记录，防复踩）
+
+1. **`mode:"global"` 使 select 组不生效**——所有流量同一出口，29 行结果全同、
+   country 全 China 是铁证；必须 `mode:"rule"` + `MATCH,PROBE`；
+2. **`curl -f` 把 403/404/401 吞成失败**——必须捕获状态码，任何响应都算
+   「有响应」（生产用 urllib 的 `HTTPError.code` 路径，见
+   `_http_status_via_proxy`）；
+3. **探针 URL 路径不当**——早期用 `/cdn-cgi/trace`，非 Cloudflare 站点
+   （gemini/copilot）没有该路径，404 被误读为「不可达」；一律用站点根路径。
+
+### 9.4 成本与边界
+
+- 仅对终筛通过节点执行（约 30 个）：组内 5 域并行、节点间串行（共享
+  PROBE 选择器，并发切组会互相踩），单节点最坏 8s；
+- 独立预算 `AI_BUDGET_S=120s`，与出口证据（120s）同级的第二预算；耗时
+  上界 真实流量 ~24s + GEO 120s + AI 120s + 发布 ~60s ≈ 324s <
+  `PUBLISH_RESERVE_S` 360s，不击穿任务超时；
+- **不设硬闸门**：AI 不可达不是节点死亡，节点仍是可用代理——仅排序沉底
+  （`verified_rank`：AI API 可用 > AI 可达 > 无数据 > 原双 vantage 序）。
+
+### 9.5 报告字段（增量，CI 侧只读既有键、不受影响）
+
+- `counts.ai`：`{probed, reachable, api_ok, by_domain}`——每轮 AI 盲区
+  量化，供后续源级反哺（哪些源产的节点 AI 可用率高）；
+- `nodes[].ai`：`{codes, reach, ai_reachable, ai_api}` 逐节点证据；
+- `dimensions.ai`：语义说明（与 us_ok/cn_ok 并列的第三测量维度）。
