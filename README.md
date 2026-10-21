@@ -155,7 +155,7 @@ Content-Type: application/json
 ## 订阅源自动发现与淘汰
 
 1. **发现（多渠道）**：每次运行除在 GitHub 搜索外，还会从 `channels.json` 配置的多渠道搜集订阅源：
-   - **GitHub 搜索**：用 Actions 自带 `GITHUB_TOKEN`（只读）搜最近 3 天有更新的相关仓库，查找 `clash.yaml / mihomo.yaml / list.meta.yml / proxies.yaml` 等文件（每次最多查看 20 个仓库、新增 10 个候选）。
+   - **GitHub 搜索**：用 Actions 自带 `GITHUB_TOKEN`（只读）搜最近 3 天有更新的相关仓库，查找 `clash.yaml / mihomo.yaml / list.meta.yml / proxies.yaml` 等文件（每次最多查看 25 个仓库、新增 15 个候选；16 个查询词含 clashnode / nodefree / 免费机场 / 节点分享等中文社区主流命名，按 6h 槽位轮换、24h 全覆盖——2026-10-20 扩容：实测候选池曾枯竭至 2 个，免费节点池 97% 死亡率下只能扩大源头吞吐；「免费机场」等词命中的招商站由仓库信誉的垃圾词过滤拒收）。
    - **Telegram 频道**：抓取 `https://t.me/s/<频道>` 的公开消息，提取订阅链接与节点分享链接（带 3s 限流，失败自动跳过）。
    - **网页**：抓取配置的网页，提取其中的订阅链接与节点链接（博客 / 聚合页 / 论坛帖等）。
    - **手工静态源**：`channels.json` 的 `static_sources` 里粘入从任意渠道搜集到的源，等同手工源**直接转正**为正式源，无需试用期。

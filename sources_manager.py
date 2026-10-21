@@ -34,7 +34,11 @@ PROBATION_RUNS = 3            # consecutive good runs needed (normal reputation)
 PROBATION_RUNS_LOW_REP = 5    # low-star / young repos are held longer
 PROBATION_MAX_RUNS = 16       # give up on a candidate after this many runs w/o promotion
 CANDIDATE_MAX_FAILS = 3
-MAX_ACTIVE_CANDIDATES = 15
+# 活跃候选窗口（2026-10-20 15→20）：实测候选池曾枯竭到仅 2 个（46 个被拒），
+# 15 槽窗口大量空转、发现的新源排队等待无意义。窗口即每轮实际拉取+拨测的
+# 候选源数，提高到 20 让新发现更快进入试用（每源仅多 1 次 HTTP 拉取；
+# 拨测预算 980 + 20/候选源，同步扩容）。
+MAX_ACTIVE_CANDIDATES = 20
 MIN_CANDIDATE_USABLE = 5      # usable (real-probe ok) nodes per run
 MIN_CANDIDATE_UNIQUE = 4      # of which not already offered by official sources
 OFFICIAL_FAIL_DEMOTE = 4      # consecutive failed runs (= ~24h at 6h cadence)
@@ -43,8 +47,13 @@ OFFICIAL_ZERO_REAL_DEMOTE = 4     # consecutive runs with probes but 0 real-ok (
 REMOVED_COOLDOWN_DAYS = 30
 
 # ---- discovery knobs ----
-DISCOVERY_MAX_NEW = 10        # new candidates per run
-DISCOVERY_MAX_REPOS = 20      # repo tree lookups per run
+# 每轮新候选 10→15（2026-10-20）：用户反馈有效节点数长期停在 29，根因之一是
+# 输入池窄（官方源仅 11/30、候选池枯竭至 2 个）——免费节点池绝对死亡率 97%
+# 的硬现实下，只有扩大源头吞吐才能提高期望产出。配套 DISCOVERY_MAX_REPOS
+# 20→25：15 个新候选需要更多仓库树 lookup 才能凑齐（大量仓库树无目标文件
+# 或解析不足 CANDIDATE_MIN_NODES，按 looked 计数会提前触顶）。
+DISCOVERY_MAX_NEW = 15        # new candidates per run
+DISCOVERY_MAX_REPOS = 25      # repo tree lookups per run
 DISCOVERY_QUERIES_PER_RUN = 4
 DISCOVERY_PUSHED_DAYS = 3
 REPO_MIN_AGE_DAYS = 7
@@ -53,6 +62,12 @@ REPO_LOW_REP_AGE_DAYS = 60
 CANDIDATE_MIN_NODES = 20
 MAX_FILE_BYTES = 8 * 1024 * 1024
 
+# 发现查询词（2026-10-20 由 8 扩至 16）：原 8 词聚焦 clash/v2ray 英文站，
+# 漏掉中文社区主流命名（clashnode / nodefree / 免费机场 / 节点分享）。GitHub
+# 仓库搜索匹配名称/描述/README；「免费机场」等词会命中招商站——由
+# repo_reputation 的 SPAM_RE（招商/推广/卖号关键词）拒收，节点内容另有
+# CANDIDATE_MIN_NODES + 蜜罐/篡改检测把关。轮换周期不变：每轮 4 词、
+# 槽位每 6h 推进，16 词 4 轮（24h）全覆盖。
 DISCOVERY_QUERIES = [
     "clash free nodes",
     "free clash subscribe",
@@ -62,6 +77,15 @@ DISCOVERY_QUERIES = [
     "v2ray free subscription",
     "free vpn subscriptions clash",
     "AutoMergePublicNodes",
+    # ---- 2026-10-20 扩容：中文社区主流命名 + 更宽的英文同义 ----
+    "clashnode",
+    "nodefree",
+    "免费机场 clash",
+    "免费节点分享",
+    "free proxy list",
+    "free clash config",
+    "v2ray free nodes",
+    "merge public nodes",
 ]
 CODE_QUERIES = [
     "proxies filename:list.meta.yml",
@@ -242,6 +266,18 @@ def repo_reputation(repo: dict) -> tuple[str, str]:
     return "ok", f"stars={stars},age={age_days}d"
 
 
+def queries_for_slot(slot: int) -> list[str]:
+    """按 6h 槽位轮换查询词（纯函数）：每轮 DISCOVERY_QUERIES_PER_RUN 个。
+
+    全量查询词在 len(DISCOVERY_QUERIES)/PER_RUN 个槽位（6h 节奏下即 24h）
+    内覆盖一遍、不重不漏——前提是词表长度是 PER_RUN 的整数倍（16%4==0），
+    该不变量由 test_query_rotation_covers_all_queries_in_one_day 锁定。
+    """
+    return [DISCOVERY_QUERIES[(slot * DISCOVERY_QUERIES_PER_RUN + i)
+                              % len(DISCOVERY_QUERIES)]
+            for i in range(DISCOVERY_QUERIES_PER_RUN)]
+
+
 def discover(
     sources: dict,
     cands: dict,
@@ -265,8 +301,7 @@ def discover(
 
     # rotate queries across runs so each run spends few search calls
     slot = int(time.time() // (6 * 3600))
-    qs = [DISCOVERY_QUERIES[(slot * DISCOVERY_QUERIES_PER_RUN + i) % len(DISCOVERY_QUERIES)]
-          for i in range(DISCOVERY_QUERIES_PER_RUN)]
+    qs = queries_for_slot(slot)
 
     repos: dict[str, dict] = {}
     for q in qs:

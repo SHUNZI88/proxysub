@@ -73,7 +73,8 @@ class TestSourceFiles:
     def test_active_candidate_urls_sorted_and_capped(self):
         cands = {
             "candidates": {
-                f"u{i}": {"first_seen": _days_ago(30 - i)} for i in range(18)
+                f"u{i}": {"first_seen": _days_ago(40 - i)}
+                for i in range(sm.MAX_ACTIVE_CANDIDATES + 3)
             }
         }
         out = sm.active_candidate_urls(cands)
@@ -781,3 +782,42 @@ class TestUpdateSourceScores:
             "unique_alive": 5, "real_ok": 5, "tamper": 8,
         }}, {})
         assert tampered["u"]["score"] < clean["u"]["score"]
+
+
+class TestDiscoveryThroughput:
+    """2026-10-20 扩容（任务#88）：用户反馈有效节点数长期 29 不动，根因之一是
+    输入池窄（候选池曾枯竭至 2 个、官方源仅 11/30）——免费池 97% 死亡率的
+    硬现实下只能扩大源头吞吐。锁定扩容参数与轮换不变量，防回退。"""
+
+    def test_knobs_raised_for_throughput(self):
+        assert sm.DISCOVERY_MAX_NEW >= 15        # 原 10
+        assert sm.DISCOVERY_MAX_REPOS >= 25      # 原 20：15 个新候选需更多树 lookup
+        assert sm.MAX_ACTIVE_CANDIDATES >= 20    # 原 15：窗口即每轮实测候选源数
+
+    def test_query_list_expanded_with_community_terms(self):
+        """扩容后覆盖中文社区主流命名（clashnode/nodefree/免费机场/节点分享）。"""
+        assert len(sm.DISCOVERY_QUERIES) == 16
+        assert len(set(sm.DISCOVERY_QUERIES)) == 16  # 无重复词
+        joined = " ".join(sm.DISCOVERY_QUERIES)
+        for term in ("clashnode", "nodefree", "免费机场", "免费节点分享",
+                     "free proxy list"):
+            assert term in joined, term
+
+    def test_query_rotation_covers_all_queries_in_one_day(self):
+        """6h 节奏下 4 个槽位覆盖全部 16 词、不重不漏（24h 全覆盖）；
+        单轮内 4 词互不相同。同时锁定 len % PER_RUN == 0 的轮换前提。"""
+        assert len(sm.DISCOVERY_QUERIES) % sm.DISCOVERY_QUERIES_PER_RUN == 0
+        seen: list[str] = []
+        for slot in range(len(sm.DISCOVERY_QUERIES) // sm.DISCOVERY_QUERIES_PER_RUN):
+            qs = sm.queries_for_slot(slot)
+            assert len(qs) == sm.DISCOVERY_QUERIES_PER_RUN
+            assert len(set(qs)) == len(qs)      # 单轮不重
+            seen.extend(qs)
+        assert sorted(seen) == sorted(sm.DISCOVERY_QUERIES)  # 全天不漏不重
+
+    def test_promo_airport_repo_still_rejected_by_spam_filter(self):
+        """「免费机场」查询词会命中招商站——SPAM_RE 必须继续拒收（扩容不放宽
+        招商过滤，只放宽查询覆盖面）。"""
+        repo = _repo("o/promo", description="免费机场 招商 TG@xxx 返利")
+        verdict, why = sm.repo_reputation(repo)
+        assert verdict == "reject" and why == "spam_keywords"
