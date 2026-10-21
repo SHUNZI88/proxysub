@@ -5,17 +5,10 @@
       "origin": "channel_web",
       "added": "2026-10-18",
       "first_seen": "2026-10-18",
-      "runs": 12,
+      "runs": 13,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-10-20",
-          "count": 25,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-10-20",
           "count": 25,
@@ -64,6 +57,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-21",
+          "count": 25,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ],
       "required_runs": 3
@@ -73,7 +73,7 @@
       "origin": "channel_web",
       "added": "2026-10-19",
       "first_seen": "2026-10-19",
-      "runs": 8,
+      "runs": 9,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -120,7 +120,7 @@
           "tamper": 0
         },
         {
-          "date": "2026-10-20",
+          "date": "2026-10-21",
           "count": 25,
           "usable": 0,
           "unique_new": 0,
