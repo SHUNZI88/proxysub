@@ -257,3 +257,31 @@ def test_main_swallows_internal_error_and_returns_zero(monkeypatch, tmp_path):
     monkeypatch.setattr(wd, "cron_alive", _boom)
 
     assert wd.main([]) == 0
+
+
+def test_run_catchup_uses_full_script_path(tmp_path, monkeypatch):
+    """回归（2026-10-21 事故）：补测命令路径必须是完整的
+    `<repo>/scripts/cn_probe.py`。曾误写为 `repo_root / CN_PROBE.name`
+    （只剩基名、丢掉 scripts/ 目录），看门狗每次补测都
+    "can't open file .../proxysub/cn_probe.py" 退出码 2——漏跑检测
+    形同虚设，订阅被 CI 兜底降级为候选集。该测试锁死路径形状。"""
+    # 构造一个最小假仓库：scripts/cn_probe.py 必须存在
+    (tmp_path / "scripts").mkdir()
+    (tmp_path / "scripts" / "cn_probe.py").write_text("# fake\n", encoding="utf-8")
+    seen = {}
+
+    class _R:
+        returncode = 0
+
+    def _fake_run(cmd, **kw):
+        seen["cmd"] = cmd
+        return _R()
+
+    monkeypatch.setattr(wd.subprocess, "run", _fake_run)
+    monkeypatch.setattr(wd, "PAT_FILE", tmp_path / "nonexistent.pat")
+    rc = wd.run_catchup(tmp_path)
+    assert rc == 0
+    script = seen["cmd"][-1]
+    assert script.endswith("scripts/cn_probe.py"), script
+    assert wd.Path(script).exists()          # 路径真实存在（不是拼错的名字）
+    assert wd.Path(script).parent == tmp_path / "scripts"

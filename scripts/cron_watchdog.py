@@ -147,6 +147,11 @@ def run_catchup(repo_root: Path) -> int:
 
     返回 cn_probe 退出码。同步执行而非后台化：看门狗 cron 槽无超时约束，
     且同步才能在日志里留下本轮结果（后台化会把结果丢进无人读的管道）。
+
+    路径必须拼全 `scripts/cn_probe.py`——2026-10-20 事故：曾写成
+    `repo_root / CN_PROBE.name`（只剩基名，丢掉 scripts/ 目录），补测命令
+    永远 "can't open file .../proxysub/cn_probe.py"，看门狗**从未成功补测
+    过一轮**，漏跑检测形同虚设。回归测试见 test_run_catchup_uses_full_script_path。
     """
     env = dict(os.environ)
     try:
@@ -154,8 +159,9 @@ def run_catchup(repo_root: Path) -> int:
             env["GITHUB_TOKEN"] = env["GH_TOKEN"] = PAT_FILE.read_text().strip()
     except OSError:
         pass
+    script = repo_root / "scripts" / CN_PROBE.name
     return subprocess.run(
-        [sys.executable, "-u", str(repo_root / CN_PROBE.name)], env=env
+        [sys.executable, "-u", str(script)], env=env
     ).returncode
 
 
