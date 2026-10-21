@@ -5,7 +5,7 @@
       "origin": "channel_web",
       "added": "2026-10-18",
       "first_seen": "2026-10-18",
-      "runs": 14,
+      "runs": 15,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -38,7 +38,7 @@
           "tamper": 0
         },
         {
-          "date": "2026-10-20",
+          "date": "2026-10-21",
           "count": 25,
           "usable": 0,
           "unique_new": 0,
@@ -73,7 +73,7 @@
       "origin": "channel_web",
       "added": "2026-10-19",
       "first_seen": "2026-10-19",
-      "runs": 10,
+      "runs": 11,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -106,7 +106,7 @@
           "tamper": 0
         },
         {
-          "date": "2026-10-20",
+          "date": "2026-10-21",
           "count": 25,
           "usable": 0,
           "unique_new": 0,
@@ -145,10 +145,18 @@
       "required_runs": 3,
       "first_seen": "2026-10-21",
       "initial_nodes": 385,
-      "runs": 0,
-      "good_streak": 0,
+      "runs": 1,
+      "good_streak": 1,
       "fail_streak": 0,
-      "history": []
+      "history": [
+        {
+          "date": "2026-10-21",
+          "count": 385,
+          "usable": 65,
+          "unique_new": 17,
+          "tamper": 0
+        }
+      ]
     },
     "https://raw.githubusercontent.com/ermaozi/get_subscribe/main/subscribe/reachable/clash.yml": {
       "repo": "ermaozi/get_subscribe",
@@ -159,10 +167,18 @@
       "required_runs": 3,
       "first_seen": "2026-10-21",
       "initial_nodes": 315,
-      "runs": 0,
-      "good_streak": 0,
+      "runs": 1,
+      "good_streak": 1,
       "fail_streak": 0,
-      "history": []
+      "history": [
+        {
+          "date": "2026-10-21",
+          "count": 315,
+          "usable": 59,
+          "unique_new": 17,
+          "tamper": 0
+        }
+      ]
     },
     "https://raw.githubusercontent.com/peacefish/nodefree/main/sub/sub_merge_clash.yaml": {
       "repo": "peacefish/nodefree",
@@ -173,10 +189,18 @@
       "required_runs": 3,
       "first_seen": "2026-10-21",
       "initial_nodes": 976,
-      "runs": 0,
+      "runs": 1,
       "good_streak": 0,
       "fail_streak": 0,
-      "history": []
+      "history": [
+        {
+          "date": "2026-10-21",
+          "count": 976,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        }
+      ]
     },
     "https://raw.githubusercontent.com/peacefish/nodefree/main/sub/clash_openshare.yaml": {
       "repo": "peacefish/nodefree",
@@ -187,10 +211,18 @@
       "required_runs": 3,
       "first_seen": "2026-10-21",
       "initial_nodes": 26,
-      "runs": 0,
+      "runs": 1,
       "good_streak": 0,
       "fail_streak": 0,
-      "history": []
+      "history": [
+        {
+          "date": "2026-10-21",
+          "count": 26,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        }
+      ]
     },
     "https://raw.githubusercontent.com/MrWQ/nodefreebot/master/mihomo.yml": {
       "repo": "MrWQ/nodefreebot",
@@ -201,10 +233,18 @@
       "required_runs": 3,
       "first_seen": "2026-10-21",
       "initial_nodes": 22,
-      "runs": 0,
+      "runs": 1,
       "good_streak": 0,
       "fail_streak": 0,
-      "history": []
+      "history": [
+        {
+          "date": "2026-10-21",
+          "count": 22,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        }
+      ]
     },
     "https://raw.githubusercontent.com/MrWQ/nodefreebot/master/clash.yml": {
       "repo": "MrWQ/nodefreebot",
@@ -215,10 +255,18 @@
       "required_runs": 3,
       "first_seen": "2026-10-21",
       "initial_nodes": 21,
-      "runs": 0,
+      "runs": 1,
       "good_streak": 0,
       "fail_streak": 0,
-      "history": []
+      "history": [
+        {
+          "date": "2026-10-21",
+          "count": 21,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        }
+      ]
     }
   },
   "rejected": {
