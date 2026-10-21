@@ -36,15 +36,96 @@ def test_parse_geo_no_ip():
     assert cn_probe._parse_geo("service unavailable") == {}
 
 
-# ---------------------------------------------------------------- exit_evidence
-def test_exit_evidence_uses_proxy_when_mixed_port(monkeypatch):
-    """P0-1：传入 mixed_port 时，GEO 请求必须经 mihomo 代理（而非裸直连）。
+# ---------------------------------------------------------------- node_evidence
+def test_node_evidence_single_switch_and_merges_geo_ai(monkeypatch):
+    """任务#91 合并版：一次切组 + GEO 3 源/AI 5 域并行，两类证据合并返回。
 
-    回归防线：早前版本裸 urlopen 直连，恒返回沙箱自身出口——此测试钉死
-    「每跳 GEO 请求都经 build_opener(ProxyHandler) 建立的 opener」。
+    同时是 P0-1 回归防线（2026-10-15）：GEO 请求必须经
+    build_opener(ProxyHandler) 建立的 opener 发出——裸 urlopen 直连拿到
+    的恒为沙箱自身出口，该字段对节点真实落地毫无判别力。
+    """
+    puts = []
+    monkeypatch.setattr(cn_probe, "api_put",
+                        lambda *a, **k: puts.append(a) or True)
+    geo_calls, ai_calls = [], []
+
+    def _fake_geo(url, proxy, timeout):
+        geo_calls.append((url, proxy))
+        return {"exit_ip": "9.9.9.9", "exit_loc": "中国 香港"}
+
+    def _fake_ai(url, proxy, timeout):
+        ai_calls.append((url, proxy))
+        codes = {"chatgpt": 403, "claude": 200, "gemini": None,
+                 "copilot": 302, "openai_api": 401}
+        return codes[next(k for k, v in cn_probe.AI_TARGETS.items() if v == url)]
+
+    monkeypatch.setattr(cn_probe, "_geo_evidence_via_proxy", _fake_geo)
+    monkeypatch.setattr(cn_probe, "_http_status_via_proxy", _fake_ai)
+    out = cn_probe.node_evidence(9097, 7897, "node-x")
+    # 恰好一次切组（selector=PROBE）——GEO 与 AI 合并后不得重复切组
+    assert len(puts) == 1 and puts[0][1] == "/proxies/PROBE"
+    # 8 路并行全部发出：GEO 3 源 + AI 5 域，且都经 mixed-port 代理
+    assert len(geo_calls) == 3 and len(ai_calls) == 5
+    assert all(p == "http://127.0.0.1:7897" for _, p in geo_calls + ai_calls)
+    # GEO 证据合并（首个成功源的 via 归属）
+    assert out["geo"]["exit_ip"] == "9.9.9.9"
+    assert out["geo"]["via"] == cn_probe.GEO_URLS[0]
+    # AI 证据合并（openai_api=401 ⇒ API 层可用）
+    assert out["ai"]["ai_reachable"] is True
+    assert out["ai"]["ai_api"] is True
+    assert set(out["ai"]["reach"]) == {"chatgpt", "claude", "copilot", "openai_api"}
+
+
+def test_node_evidence_geo_first_success_wins(monkeypatch):
+    """GEO 多源回退：首个失败的源跳过，首个成功源的 URL 记入 via。"""
+    monkeypatch.setattr(cn_probe, "api_put", lambda *a, **k: True)
+
+    def _fake_geo(url, proxy, timeout):
+        if url == cn_probe.GEO_URLS[0]:
+            return {}                      # 第一个源失败
+        if url == cn_probe.GEO_URLS[1]:
+            return {"exit_ip": "8.8.8.8"}  # 第二个源成功
+        return {}
+
+    monkeypatch.setattr(cn_probe, "_geo_evidence_via_proxy", _fake_geo)
+    monkeypatch.setattr(cn_probe, "_http_status_via_proxy",
+                        lambda url, proxy, timeout: None)
+    out = cn_probe.node_evidence(9097, 7897, "node-x")
+    assert out["geo"] == {"exit_ip": "8.8.8.8", "via": cn_probe.GEO_URLS[1]}
+    assert out["ai"]["ai_reachable"] is False   # 全部 None ⇒ 不可达但不丢证据
+
+
+def test_node_evidence_geo_all_fail_keeps_ai(monkeypatch):
+    """GEO 全失败时 geo={} 但 AI 证据仍返回——两类证据互不阻断。"""
+    monkeypatch.setattr(cn_probe, "api_put", lambda *a, **k: True)
+    monkeypatch.setattr(cn_probe, "_geo_evidence_via_proxy",
+                        lambda url, proxy, timeout: {})
+    monkeypatch.setattr(cn_probe, "_http_status_via_proxy",
+                        lambda url, proxy, timeout: 401)
+    out = cn_probe.node_evidence(9097, 7897, "node-x")
+    assert out["geo"] == {}
+    assert out["ai"]["ai_api"] is True
+
+
+def test_node_evidence_group_switch_failure_returns_empty(monkeypatch):
+    """切组失败（API 故障）时返回空 dict，且不得发出任何证据请求。"""
+    geo_calls, ai_calls = [], []
+    monkeypatch.setattr(cn_probe, "api_put", lambda *a, **k: False)
+    monkeypatch.setattr(cn_probe, "_geo_evidence_via_proxy",
+                        lambda *a, **k: geo_calls.append(1) or {})
+    monkeypatch.setattr(cn_probe, "_http_status_via_proxy",
+                        lambda *a, **k: ai_calls.append(1) or 200)
+    assert cn_probe.node_evidence(9097, 7897, "node-x") == {}
+    assert not geo_calls and not ai_calls
+
+
+def test_geo_evidence_via_proxy_uses_proxy_not_direct(monkeypatch):
+    """_geo_evidence_via_proxy：必须经 ProxyHandler opener（P0-1 回归）。
+
+    与 _http_status_via_proxy 同一模式：HTTPError 之外的异常吞掉返回 {}，
+    绝不向上抛（证据收集不构成闸门）。
     """
     captured = {}
-    monkeypatch.setattr(cn_probe, "api_put", lambda *a, **k: True)
 
     class _Resp:
         status = 200
@@ -68,26 +149,26 @@ def test_exit_evidence_uses_proxy_when_mixed_port(monkeypatch):
         return _Opener()
 
     monkeypatch.setattr(cn_probe.urllib.request, "build_opener", _fake_build_opener)
-    ev = cn_probe.exit_evidence(9097, "PROBE", "node-x", mixed_port=7897)
-    assert captured.get("proxied") is True          # 走了 opener，而非裸 urlopen
+    ev = cn_probe._geo_evidence_via_proxy(
+        "https://cip.cc", "http://127.0.0.1:7897", 8)
+    assert captured.get("proxied") is True
     assert ev["exit_ip"] == "9.9.9.9"
 
 
-def test_exit_evidence_no_proxy_without_mixed_port(monkeypatch):
-    """未传 mixed_port 时退回直连（兼容旧调用），不建立 opener。"""
-    monkeypatch.setattr(cn_probe, "api_put", lambda *a, **k: True)
-    built = {"called": False}
+def test_hard_timeout_call_truncates_slow_response():
+    """回归（2026-10-21 实测复踩）：urllib socket timeout 是每次 recv 超时，
+    龟速节点上的滴流响应可把单请求拖到 24s+（gemini 302 链实测 24.31s）。
+    _hard_timeout_call 必须线程级强制截断：超时返回 None。"""
+    import time
 
-    def _fake_build_opener(handler):
-        built["called"] = True
-        return None
+    def _slow():
+        time.sleep(5)
+        return "late"
 
-    monkeypatch.setattr(cn_probe.urllib.request, "build_opener", _fake_build_opener)
-    monkeypatch.setattr(cn_probe.urllib.request, "urlopen",
-                        lambda req, timeout=None: (_ for _ in ()).throw(OSError("no net")))
-    ev = cn_probe.exit_evidence(9097, "PROBE", "node-x")
-    assert built["called"] is False                  # 未建 opener
-    assert ev == {}                                  # 直连失败 -> 返回 {}
+    t0 = time.time()
+    assert cn_probe._hard_timeout_call(_slow, 0.2) is None
+    assert time.time() - t0 < 3          # 硬截断生效，没等满 5s
+    assert cn_probe._hard_timeout_call(lambda: "ok", 1) == "ok"
 
 
 # ---------------------------------------------------------------- dedup_nodes
@@ -407,6 +488,53 @@ def test_by_source_excludes_nodes_without_src():
     assert by_source == {"SHUNzi88/proxysub": {"tested": 2, "passed": 1}}
 
 
+# ---------------------------------------------------------------- 任务#92 分源 AI 证据口径
+def test_agg_source_ai_adds_three_ai_fields():
+    """_agg_source_ai：by_source 每行在 tested/passed 之外扩出
+    ai_tested/ai_reachable/ai_api 三口径（2026-10-21，任务#92）。
+
+    AI 口径只覆盖**有 ai 数据的通过节点**（证据收集仅对通过节点执行、
+    受预算约束可能跳过尾部）；排序沿用 tested/passed 口径。
+    """
+    nodes = [
+        {"src": "srcA", "probe_name": "a1"}, {"src": "srcA", "probe_name": "a2"},
+        {"src": "srcA", "probe_name": "a3"}, {"src": "srcB", "probe_name": "b1"},
+        {"src": "srcB", "probe_name": "b2"},
+    ]
+    verified = [
+        {"src": "srcA", "probe_name": "a1"}, {"src": "srcA", "probe_name": "a2"},
+        {"src": "srcB", "probe_name": "b1"},
+    ]
+    results = {
+        "a1": {"ok": True, "ai": {"ai_reachable": True, "ai_api": True}},
+        "a2": {"ok": True, "ai": {"ai_reachable": True, "ai_api": False}},
+        # a3 未通过；b1 通过但无 ai 数据（探测被预算跳过）
+        "b1": {"ok": True},
+    }
+    out = cn_probe._agg_source_ai(nodes, verified, results)
+    assert out["srcA"]["tested"] == 3 and out["srcA"]["passed"] == 2
+    assert out["srcA"]["ai_tested"] == 2
+    assert out["srcA"]["ai_reachable"] == 2
+    assert out["srcA"]["ai_api"] == 1
+    # srcB：1 通过但无 AI 证据 ⇒ 三项记 0 而非缺键（「无证据」与「零」可区分）
+    assert out["srcB"] == {"tested": 2, "passed": 1,
+                           "ai_tested": 0, "ai_reachable": 0, "ai_api": 0}
+    # 排序不变量：通过数降序
+    assert list(out) == ["srcA", "srcB"]
+
+
+def test_agg_source_ai_ignores_ai_on_unverified_nodes():
+    """回归防线：未通过节点的 ai 数据（若存在）不得计入分源 AI 口径——
+    证据收集只对通过节点执行，防未来误接线把死节点算成源效率。"""
+    nodes = [{"src": "srcA", "probe_name": "a1"}]
+    verified: list[dict] = []                    # 全部未通过
+    results = {"a1": {"ok": False,
+                      "ai": {"ai_reachable": True, "ai_api": True}}}
+    out = cn_probe._agg_source_ai(nodes, verified, results)
+    assert out["srcA"] == {"tested": 1, "passed": 0,
+                           "ai_tested": 0, "ai_reachable": 0, "ai_api": 0}
+
+
 def test_report_node_record_keeps_src_field():
     """回归：报告 nodes 记录必须保留 src 字段（供溯源与未来按源回放）。
 
@@ -703,36 +831,6 @@ def test_http_status_via_proxy_timeout_returns_none(monkeypatch):
         "https://chatgpt.com/", "http://127.0.0.1:7897", 8) is None
 
 
-def test_ai_probe_switches_group_and_classifies(monkeypatch):
-    """ai_probe：先切 PROBE 组，再逐域取状态码并归类；5 域并行、单次切换。"""
-    puts = []
-    monkeypatch.setattr(cn_probe, "api_put",
-                        lambda *a, **k: puts.append(a) or True)
-    codes = {"chatgpt": 403, "claude": 200, "gemini": None,
-             "copilot": 302, "openai_api": 401}
-    monkeypatch.setattr(cn_probe, "_http_status_via_proxy",
-                        lambda url, proxy, timeout: codes[
-                            next(k for k, v in cn_probe.AI_TARGETS.items()
-                                 if v == url)])
-    out = cn_probe.ai_probe(9097, 7897, "node-x")
-    # 恰好一次切组（selector=PROBE），不会为每个域重复切
-    assert len(puts) == 1 and puts[0][1] == "/proxies/PROBE"
-    assert out["codes"] == codes
-    assert out["ai_reachable"] is True
-    assert out["ai_api"] is True          # openai_api=401
-    assert set(out["reach"]) == {"chatgpt", "claude", "copilot", "openai_api"}
-
-
-def test_ai_probe_group_switch_failure_returns_empty(monkeypatch):
-    """切组失败（API 故障）时返回空 dict——调用方按「无数据」处理。"""
-    monkeypatch.setattr(cn_probe, "api_put", lambda *a, **k: False)
-    called = []
-    monkeypatch.setattr(cn_probe, "_http_status_via_proxy",
-                        lambda *a, **k: called.append(1) or 200)
-    assert cn_probe.ai_probe(9097, 7897, "node-x") == {}
-    assert not called
-
-
 def test_verified_rank_ai_first_then_vantage_then_latency():
     """排序：AI API 可用 > AI 可达 > 无数据；同级内保持原「双 vantage
     强者 + 低延迟」序。AI 维度只影响排序、不淘汰（无硬闸门）。"""
@@ -762,4 +860,7 @@ def test_report_includes_ai_fields():
     均为新增增量字段，CI 侧（evolution.py）只读既有键，不受影响。"""
     src = open(cn_probe.__file__, encoding="utf-8").read()
     assert '"ai": ' in src and 'ai_reachable' in src
-    assert 'AI_BUDGET_S' in src and 'AI_CONCURRENCY' in src
+    assert 'EVIDENCE_BUDGET_S' in src and 'EVIDENCE_CONCURRENCY' in src
+    assert 'def node_evidence' in src      # 任务#91：GEO+AI 单次切组合并
+    # 旧顺序循环（各 120s 预算、各覆盖一半节点）已下线，禁止复活
+    assert 'def exit_evidence' not in src and 'def ai_probe' not in src

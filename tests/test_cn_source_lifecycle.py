@@ -342,6 +342,104 @@ class TestUpdateOfficialCnDemote:
 
 
 # ===========================================================================
+# B2. 有效性守卫：零独有淘汰不误汰有实证高效率源（2026-10-21 任务#93）
+# ===========================================================================
+
+class TestZeroUniqueValidityGuard:
+    """零独有（proxy 指标）淘汰的有效性守卫。
+
+    事故锚点：blog.ermao.net cn 通过率 12.3%（16/130，全池第二高）因
+    zero_unique_contribution:16runs 被汰——用独有性代理指标淘汰了有效源。
+    守卫：有充足且新鲜 cn 实效实证（Wilson 下界 >= CN_LOW_CI_HIGH）的源
+    豁免零独有淘汰；无实证时守卫 inert（改造前行为），无效源仍由
+    zero_real_ok / fail_streak / cn_low 通道淘汰。
+    """
+
+    @staticmethod
+    def _zero_unique_run() -> dict:
+        return _ok_run(unique_alive=0)
+
+    def test_effective_source_guarded_from_zero_unique(self, monkeypatch):
+        """有实效实证 + 零独有 streak 达标 ⇒ 不淘汰，记入 rep["guarded"]。"""
+        monkeypatch.setattr(sm, "load_json", lambda *a, **k: {})
+        sources = _src([_entry("http://ermao/sub")])
+        hist: dict = {}
+        cn = {"http://ermao/sub": _cn(130, 16)}   # 事故数据：12.3%，下界 ~7.6% > 5%
+        rep = None
+        for _ in range(sm.OFFICIAL_ZERO_UNIQUE_DEMOTE + 2):
+            rep = sm.update_official(sources, hist,
+                                     {"http://ermao/sub": self._zero_unique_run()}, cn)
+        assert rep["demoted"] == {}
+        assert "http://ermao/sub" in [e["url"] for e in sources["official"]]
+        g = rep["guarded"]["http://ermao/sub"]
+        assert g["guard"] == "zero_unique_guarded_by_cn_evidence"
+        assert g["cn_tested"] == 130 and g["cn_passed"] == 16
+        assert g["wilson_ci_low"] >= config.CN_LOW_CI_HIGH
+        assert g["zero_unique_streak"] >= sm.OFFICIAL_ZERO_UNIQUE_DEMOTE
+
+    def test_no_evidence_zero_unique_still_demotes(self, monkeypatch):
+        """无实证（cn_stats=None）+ 零独有 streak 达标 ⇒ 照汰（守卫 inert）。"""
+        monkeypatch.setattr(sm, "load_json", lambda *a, **k: {})
+        sources = _src([_entry("http://dup/sub")])
+        hist: dict = {}
+        rep = None
+        for _ in range(sm.OFFICIAL_ZERO_UNIQUE_DEMOTE):
+            rep = sm.update_official(sources, hist,
+                                     {"http://dup/sub": self._zero_unique_run()})
+        assert rep["demoted"] == {
+            "http://dup/sub": f"zero_unique_contribution:{sm.OFFICIAL_ZERO_UNIQUE_DEMOTE}runs"}
+
+    def test_low_evidence_zero_unique_still_demotes(self, monkeypatch):
+        """cn 低产实证（0/20 下界 0）+ 零独有 ⇒ 照汰（无效源不漏网）。"""
+        monkeypatch.setattr(sm, "load_json", lambda *a, **k: {})
+        sources = _src([_entry("http://dead/sub")])
+        hist: dict = {}
+        cn = {"http://dead/sub": _cn(20, 0)}
+        rep = None
+        for _ in range(sm.OFFICIAL_ZERO_UNIQUE_DEMOTE):
+            rep = sm.update_official(sources, hist,
+                                     {"http://dead/sub": self._zero_unique_run()}, cn)
+        assert rep["demoted"] == {
+            "http://dead/sub": f"zero_unique_contribution:{sm.OFFICIAL_ZERO_UNIQUE_DEMOTE}runs"}
+
+    def test_small_sample_evidence_does_not_guard(self, monkeypatch):
+        """样本不足（10 < CN_MIN_SAMPLE=20）+ 零独有 ⇒ 照汰（无实证不放行）。"""
+        monkeypatch.setattr(sm, "load_json", lambda *a, **k: {})
+        sources = _src([_entry("http://small/sub")])
+        hist: dict = {}
+        cn = {"http://small/sub": _cn(10, 5)}      # 50% 通过但样本不足
+        rep = None
+        for _ in range(sm.OFFICIAL_ZERO_UNIQUE_DEMOTE):
+            rep = sm.update_official(sources, hist,
+                                     {"http://small/sub": self._zero_unique_run()}, cn)
+        assert rep["demoted"] == {
+            "http://small/sub": f"zero_unique_contribution:{sm.OFFICIAL_ZERO_UNIQUE_DEMOTE}runs"}
+
+    def test_stale_evidence_does_not_guard(self, monkeypatch):
+        """实证陈旧（72h > 48h）+ 零独有 ⇒ 照汰。"""
+        monkeypatch.setattr(sm, "load_json", lambda *a, **k: {})
+        sources = _src([_entry("http://old/sub")])
+        hist: dict = {}
+        cn = {"http://old/sub": _cn(30, 12, hours_ago=72)}
+        rep = None
+        for _ in range(sm.OFFICIAL_ZERO_UNIQUE_DEMOTE):
+            rep = sm.update_official(sources, hist,
+                                     {"http://old/sub": self._zero_unique_run()}, cn)
+        assert rep["demoted"] == {
+            "http://old/sub": f"zero_unique_contribution:{sm.OFFICIAL_ZERO_UNIQUE_DEMOTE}runs"}
+
+    def test_cn_effective_evidence_boundary(self):
+        """_cn_effective_evidence 判据边界：下界横跨门槛时按保守侧处理。"""
+        # 4/27 下界 ~5.9% > 5% ⇒ 有实效（与 test_borderline_chengaopan_not_low 同数据）
+        ok, lo, t, p = sm._cn_effective_evidence("u", {"u": _cn(27, 4)})
+        assert ok is True and lo >= config.CN_LOW_CI_HIGH and (t, p) == (27, 4)
+        # 无记录 / 样本不足 / 陈旧 ⇒ 无实效
+        assert sm._cn_effective_evidence("u", {})[0] is False
+        assert sm._cn_effective_evidence("u", {"u": _cn(10, 5)})[0] is False
+        assert sm._cn_effective_evidence("u", {"u": _cn(30, 12, hours_ago=72)})[0] is False
+
+
+# ===========================================================================
 # C. 晋升层：evaluate_candidates 的 cn 优先排序
 # ===========================================================================
 

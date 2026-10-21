@@ -17,8 +17,8 @@
      测试集——rescue 先裁、pending 次之、carryover 不裁；未测节点由 CI
      下轮待测文档从当前候选池重新生成时再现，不丢失；
   5. mihomo 并发拨测（external-controller delay API，gstatic generate_204，
-     HTTPS+204 双信号），通过节点逐个取出口 IP/地区证据；再对通过节点做
-     AI 服务可达性探测（chatgpt/claude/gemini/copilot/openai_api 状态码，
+     HTTPS+204 双信号），通过节点**单次切组并行**收集出口 IP/地区证据与
+     AI 服务可达性（chatgpt/claude/gemini/copilot/openai_api 状态码，
      证据+排序信号，不构成闸门）；
   6. 合并发布：通过节点构建验证集（clash + sing-box + v2ray + proxies-only），
      AI 可用节点排前（订阅顺序即用户可见性顺序），覆盖发布到主资产 p_*
@@ -49,6 +49,7 @@ import shutil
 import socket
 import subprocess
 import sys
+import threading
 import time
 import urllib.error
 import urllib.parse
@@ -105,18 +106,33 @@ AI_TARGETS = {
     "openai_api": "https://api.openai.com/v1/models",
 }
 AI_TIMEOUT_S = 8
-AI_CONCURRENCY = 5     # 单节点 5 个域并行（共享同一 PROBE 选择，节点间必须串行）
-AI_BUDGET_S = 120      # 与 GEO 证据同级的独立预算：超预算跳过剩余节点
-                       # （AI 探测不构成闸门，无数据不影响发布）。耗时上界：
-                       # 真实流量 ~24s + GEO ≤120s + AI ≤120s + 发布 ~60s
-                       # ≈ 324s < PUBLISH_RESERVE_S 360s。
+AI_CONCURRENCY = 5     # 单节点 5 个 AI 域并行（共享同一 PROBE 选择，节点间必须串行）
+EVIDENCE_CONCURRENCY = 8   # 单节点证据总并行度：GEO 3 源 + AI 5 域（任务#91 合并）
+# 证据收集时间预算（秒）：2026-10-21 合并（任务#91）——原 GEO 与 AI 是两个
+# 顺序循环、各 120s 预算，36 节点实测每循环各覆盖 18 个（各跳一半，一半
+# 节点没有 AI 数据）。合并为单次切组 + 8 路并行后，单节点耗时从
+# GEO(≤24s)+AI(≤8s) 降为 ≈ max(8s)，同预算内可全覆盖典型通过规模。
+# 实测修正（同日）：8 路并行经同一节点有带宽争抢，且 urllib socket timeout
+# 是每次 recv 超时——龟速节点上 gemini 302 链实测耗时 24.31s，单节点均摊
+# 10.5s、120s 仅覆盖 13/28。已加线程级硬超时（_hard_timeout_call：
+# socket 8s + 硬截断 10s）封顶单请求成本。
+# 证据仅留痕、不构成闸门，无数据不影响发布。耗时上界：真实流量 ~24s +
+# 证据 ≤120s + 发布 ~60s ≈ 204s < PUBLISH_RESERVE_S 300s。
+EVIDENCE_BUDGET_S = 120
 MIHOMO_VERSION = os.environ.get("MIHOMO_VERSION", "v1.19.32")
 DELAY_TIMEOUT_MS = 5000
 DELAY_CONCURRENCY = 12
 REAL_TRAFFIC_TIMEOUT_S = 8    # 真实下载硬超时预算（秒）
 REAL_TRAFFIC_CONCURRENCY = 12
-GEO_TIMEOUT_S = 8
+# 出口证据节点数上限（顺序取证时代的限量残留；预算由 EVIDENCE_BUDGET_S
+# 统一封顶，此上限仅在极端通过规模下兜底）。
 GEO_MAX_NODES = 120
+# GEO socket 超时（5s）**低于** AI_TIMEOUT_S（8s）：实测单节点成本常被
+# cip.cc 的 8s 超时主导（myip/ip-api 1~2s 即回），而 GEO 证据是信息性的
+# （仅喂 cn_history.cn_egress，非闸门）——三源并行取首个成功，收紧 GEO
+# 超时不丢证据（另两源兜底），却能把预算内覆盖节点数提升 ~60%。
+# AI 状态码是排序信号，值得满 8s。两者硬截断分别为 7s/10s（_hard_timeout_call）。
+GEO_TIMEOUT_S = 5
 SELFCHECK_URLS = ["https://www.baidu.com", "https://api.github.com"]
 ASSET_RE = re.compile(r"^p_[0-9a-f]+_([cpsv])\.(yaml|json|txt)$")
 ASSET_FORMAT = {"c": "clash", "p": "proxies_only", "s": "singbox", "v": "v2ray"}
@@ -132,19 +148,18 @@ VERIFIED_FILE = {
 # 必须留余量。等不到新轮次不影响正确性：该轮次由轮次闸门顺延到
 # 下一实测轮测试（不丢失），本轮退化为仅测 carryover 保订阅新鲜。
 PENDING_POLL_WINDOW_MIN = 20
-# 出口证据时间预算（秒）：证据仅留痕、不构成闸门；顺序取证最坏
-# 120 节点 × 24s（三源回退各 8s 超时）会击穿任务超时，设硬预算，
-# 超时跳过剩余节点（无证据不影响发布）。
-GEO_BUDGET_S = 120
 # 总时间预算（秒）：与定时任务 timeout 对齐（scheduler-api 上限）。
 # 本轮实测 1193 节点端到端 902s（拨测 ~0.62s/节点）；但轮询等待
 # 最多 20min 会挤占预算，最坏 1200+902=2102s 击穿超时——故按
 # 剩余预算裁剪测试集（见 cap_test_set）。
 TASK_BUDGET_S = 1800
-# 拨测后预留（秒）：真实流量测试 + 出口证据（≤GEO_BUDGET_S）+ 多格式输出
-# + 发布 + 收尾开销。真实流量测试加入后，通过节点需经 mixed-port 二次
-# 访问海外目标，预留从 300s 提升到 360s。
-PUBLISH_RESERVE_S = 360
+# 拨测后预留（秒）：真实流量测试 + 证据收集（GEO+AI 合并，≤EVIDENCE_BUDGET_S）
+# + 多格式输出 + 发布 + 收尾开销。真实流量测试加入后，通过节点需经 mixed-port
+# 二次访问海外目标，预留从 300s 提升到 360s。
+# 2026-10-21 重算（任务#91）：证据段从「GEO ≤120s + AI ≤120s 两个顺序循环」
+# 合并为单次切组 8 路并行（≤120s 封顶），预留按 真实流量 ~24s + 证据 ≤120s
+# + 发布 ~60s ≈ 204s 估算，降为 300s（留 ~47% 余量）。
+PUBLISH_RESERVE_S = 300
 # 单节点拨测耗时悲观估计（秒），用于 cap_test_set 预算裁剪。
 # 实测耗时构成：delay 初筛（并发 12，约 0.66s/节点，是绝对大头）
 # + 真实流量终筛（仅对 delay 通过的少数节点跑，1142 节点轮仅 6s 边际，
@@ -408,6 +423,42 @@ def _agg_two(nodes: list[dict], verified: list[dict], key_fn,
     return out
 
 
+def _agg_source_ai(nodes: list[dict], verified: list[dict],
+                   results: dict) -> dict:
+    """分源聚合：tested/passed + AI 证据三口径（2026-10-21，任务#92）。
+
+    `by_source` 每行由 `{tested, passed}` 扩为 `{tested, passed,
+    ai_tested, ai_reachable, ai_api}`。AI 口径只覆盖**有 ai 数据的
+    通过节点**——证据收集仅对通过节点执行且受 EVIDENCE_BUDGET_S 约束
+    （可能跳过尾部），ai_tested 即该源实际探测数；无 AI 数据的源三项
+    记 0 而非缺键（「无证据」与「零」必须可区分，下游按 ai_tested==0
+    判无证据）。排序沿用 tested/passed 口径（通过数降序、待测数降序）。
+
+    用途（任务#94 接线）：CI 侧 evolution 据此计算分源 AI 效率，作为
+    候选晋升与拨测配额倾斜的**有效性**判据——源的反哺口径必须是节点
+    真实可用性（cn 通过 + AI 可达），而非独有性等代理指标。
+    """
+    rows = _agg_two(nodes, verified, key_fn=lambda n: n["src"])
+    ai_t: dict[str, int] = {}
+    ai_r: dict[str, int] = {}
+    ai_a: dict[str, int] = {}
+    for n in verified:
+        ai = results.get(n["probe_name"], {}).get("ai")
+        if not ai:
+            continue
+        k = n["src"]
+        ai_t[k] = ai_t.get(k, 0) + 1
+        if ai.get("ai_reachable"):
+            ai_r[k] = ai_r.get(k, 0) + 1
+        if ai.get("ai_api"):
+            ai_a[k] = ai_a.get(k, 0) + 1
+    for k, row in rows.items():
+        row["ai_tested"] = ai_t.get(k, 0)
+        row["ai_reachable"] = ai_r.get(k, 0)
+        row["ai_api"] = ai_a.get(k, 0)
+    return rows
+
+
 # ---------------------------------------------------------------- 自检
 def sandbox_selfcheck() -> bool:
     for url in SELFCHECK_URLS:
@@ -632,37 +683,28 @@ def real_traffic_test(api_port: int, mixed_port: int, name: str) -> dict:
     return {"ok": False}
 
 
-def exit_evidence(port: int, selector: str, name: str, mixed_port: int | None = None) -> dict:
-    """把流量切到指定节点，取出口 IP/地区（证据留痕，不构成闸门）。
+def _geo_evidence_via_proxy(url: str, proxy: str, timeout: int) -> dict:
+    """经代理取 GEO 站点响应并解析出口证据；任何异常吞掉返回 {}。
 
-    ⚠️ 必须先经 mihomo 的 mixed-port 代理再请求 GEO 站：早前版本用裸
-    `urlopen` 直连 GEO，未指向 mihomo，导致每次拿到的都是**沙箱自身出口**
-    （exit_ip 恒为沙箱 IP、exit_loc 恒为沙箱所在地），该字段对「节点真实
-    落地」毫无判别力。修复后请求走 mihomo 所选节点出口，才能反映节点归属。
+    与 `_http_status_via_proxy` 同一模式（异常绝不向上抛）：证据收集不构成
+    闸门，单源失败由其余源兜底。⚠️ P0-1 教训（2026-10-15）：GEO 请求
+    **必须**经 mihomo mixed-port 代理再发出——裸 urlopen 直连拿到的恒为
+    沙箱自身出口（exit_ip 恒为沙箱 IP），该字段对「节点真实落地」毫无
+    判别力。整体硬超时见 `_hard_timeout_call`。回归防线见
+    tests/test_cn_probe.py 的 node_evidence 代理断言。
     """
-    if not api_put(port, f"/proxies/{urllib.parse.quote(selector, safe='')}",
-                   {"name": name}):
-        return {}
-    # 经 mihomo mixed-port 代理；mixed_port 缺省时退回直连（仅兼容旧调用，
-    # 主线总会传入——见 run_probe 的 free_port 分配）。
-    opener = None
-    if mixed_port:
-        proxy = f"http://127.0.0.1:{mixed_port}"
-        opener = urllib.request.build_opener(
-            urllib.request.ProxyHandler({"http": proxy, "https": proxy}))
-    for url in GEO_URLS:
+    def _req():
         try:
+            opener = urllib.request.build_opener(
+                urllib.request.ProxyHandler({"http": proxy, "https": proxy}))
             req = urllib.request.Request(url, headers={"User-Agent": "curl/8"})
-            openfn = opener.open if opener else urllib.request.urlopen
-            with openfn(req, timeout=GEO_TIMEOUT_S) as r:
+            with opener.open(req, timeout=timeout) as r:
                 text = r.read().decode("utf-8", "replace")
-            ev = _parse_geo(text)
-            if ev:
-                ev["via"] = url
-                return ev
+            return _parse_geo(text)
         except Exception:
-            continue
-    return {}
+            return {}
+    out = _hard_timeout_call(_req, timeout)
+    return out if out is not None else {}
 
 
 def _parse_geo(text: str) -> dict:
@@ -676,23 +718,55 @@ def _parse_geo(text: str) -> dict:
     return ev if ev.get("exit_ip") else {}
 
 
+def _hard_timeout_call(fn, timeout: float):
+    """线程级硬超时执行 fn()；超时/异常返回 None。
+
+    为什么必须线程级强制截断（2026-10-21 实测复踩 2026-10-17 教训）：
+    urllib 的 socket timeout 是**每次 recv 超时**而非整体超时——龟速节点
+    上的滴流响应（实测 gemini.google.com 302 重定向链经慢节点耗时 24.31s，
+    而 socket timeout 只有 8s）会把单次证据请求拖到数倍预算，8 路并行下单
+    节点成本失控（合并循环实测均摊 10.5s/节点，120s 预算只覆盖 13/28）。
+    与 `_timed_download` 同一教训：整体硬超时，超时按「无数据」处理。
+
+    实现要点：用 **daemon 线程 + join(timeout+2)**，不用
+    `ThreadPoolExecutor` 的 `with` 块——后者退出时 shutdown(wait=True)
+    会把已超时的线程重新等满（首版即此 bug：测试实测截断失效，控制权
+    仍被拖住 5s）。daemon 线程不阻塞解释器退出。
+    """
+    box: dict = {}
+
+    def _run():
+        try:
+            box["r"] = fn()
+        except BaseException as e:  # 证据收集不构成闸门：任何失败按无数据处理
+            box["err"] = e
+
+    t = threading.Thread(target=_run, daemon=True)
+    t.start()
+    t.join(timeout + 2)
+    return None if t.is_alive() else box.get("r")
+
+
 def _http_status_via_proxy(url: str, proxy: str, timeout: int) -> int | None:
     """经代理取 URL 的 HTTP 状态码；任何响应（含 4xx/5xx）都算「有响应」。
 
     不用 curl -f，也不用 urllib 抛异常判失败：403/401/302 都是有效响应，
     正是 AI 可达性判据要区分的状态（v1 诊断用 curl -f 把它们吞成失败，
     导致「13/29 节点完全不通 AI」的真实盲区被误判为方法学噪声）。
+    整体硬超时见 `_hard_timeout_call`。
     """
-    try:
-        opener = urllib.request.build_opener(
-            urllib.request.ProxyHandler({"http": proxy, "https": proxy}))
-        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-        with opener.open(req, timeout=timeout) as r:
-            return int(r.status)
-    except urllib.error.HTTPError as e:
-        return int(e.code)  # 401/403/404 等：有响应，返回真实状态码
-    except Exception:
-        return None          # 超时/连接失败/DNS：无响应
+    def _req():
+        try:
+            opener = urllib.request.build_opener(
+                urllib.request.ProxyHandler({"http": proxy, "https": proxy}))
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+            with opener.open(req, timeout=timeout) as r:
+                return int(r.status)
+        except urllib.error.HTTPError as e:
+            return int(e.code)  # 401/403/404 等：有响应，返回真实状态码
+        except Exception:
+            return None          # 超时/连接失败/DNS：无响应
+    return _hard_timeout_call(_req, timeout)
 
 
 def classify_ai(codes: dict) -> dict:
@@ -715,28 +789,38 @@ def classify_ai(codes: dict) -> dict:
     }
 
 
-def ai_probe(api_port: int, mixed_port: int, name: str) -> dict:
-    """探测指定节点的 AI 服务可达性（证据 + 排序信号，不构成闸门）。
+def node_evidence(api_port: int, mixed_port: int, name: str) -> dict:
+    """单次切组，并行收集出口证据 + AI 可达性证据（2026-10-21 合并，任务#91）。
 
-    切换 PROBE 组到 name 后经 mixed-port 并行请求 5 个 AI 域。仅对终筛
-    通过节点调用（~30 个，5 域并行下单节点最坏 8s）；节点间串行——所有
-    流量共享同一个 PROBE 选择器，并发切组会互相踩（v1 诊断教训）。
-    AI 不可达不是节点死亡：节点仍是可用代理，仅排序沉底、不淘汰。
+    原实现是两个顺序循环：`exit_evidence`（逐节点切组 + GEO 3 源**顺序**
+    回退，最坏 24s/节点）与 `ai_probe`（再逐节点切组 + 5 域并行，8s/节点），
+    各自 120s 预算——36 节点实测每循环各覆盖 18 个，**一半通过节点没有
+    AI 数据**（排序时按「未知」沉底，有效节点被埋）。两者共用同一个
+    PROBE 选择器与 mixed-port，合并为一次切组 + 8 路并行（GEO 3 + AI 5）
+    后，单节点耗时从 ≈24s+8s 降为 ≈max(8s)，同预算内可全覆盖。
+
+    返回 `{"geo": {...} or {}, "ai": classify_ai(codes)}`；切组失败
+    （API 故障）返回 `{}`——调用方按「无数据」处理，不影响发布。
     """
     if not api_put(api_port, "/proxies/PROBE", {"name": name}):
         return {}
     proxy = f"http://127.0.0.1:{mixed_port}"
-    items = list(AI_TARGETS.items())
-
-    def _one(item):
-        label, url = item
-        return label, _http_status_via_proxy(url, proxy, AI_TIMEOUT_S)
-
-    codes: dict = {}
-    with ThreadPoolExecutor(max_workers=AI_CONCURRENCY) as ex:
-        for label, code in ex.map(_one, items):
-            codes[label] = code
-    return classify_ai(codes)
+    # 8 路并行：GEO 3 源 + AI 5 域。各任务内部吞异常（_geo_evidence_via_proxy
+    # 返回 {}、_http_status_via_proxy 返回 None），result() 不会抛。
+    with ThreadPoolExecutor(max_workers=EVIDENCE_CONCURRENCY) as ex:
+        geo_futs = [ex.submit(_geo_evidence_via_proxy, u, proxy, GEO_TIMEOUT_S)
+                    for u in GEO_URLS]
+        ai_futs = [ex.submit(_http_status_via_proxy, u, proxy, AI_TIMEOUT_S)
+                   for u in AI_TARGETS.values()]
+        geo_results = [f.result() for f in geo_futs]
+        ai_codes = dict(zip(AI_TARGETS, (f.result() for f in ai_futs)))
+    geo_ev: dict = {}
+    for url, ev in zip(GEO_URLS, geo_results):
+        if ev:
+            ev["via"] = url
+            geo_ev = ev
+            break
+    return {"geo": geo_ev, "ai": classify_ai(ai_codes)}
 
 
 def verified_rank(n: dict, results: dict) -> tuple:
@@ -1039,44 +1123,36 @@ def main() -> int:
             log(f"拨测完成: 最终通过 {sum(1 for r in results.values() if r['ok'])}/{len(nodes)}"
                 f"（{time.time() - t0:.0f}s）")
 
-            # 5) 出口证据（仅通过节点，限量 + 限时顺序执行）
+            # 5) 证据收集（出口 IP/地区 + AI 可达性，单次切组 8 路并行，
+            #    2026-10-21 任务#91 合并）。仅通过节点；限量 + 限时，
+            #    证据仅留痕、不构成闸门。
             passed = [n for n in nodes if results.get(n["probe_name"], {}).get("ok")]
-            geo_deadline = time.time() + GEO_BUDGET_S
-            for i, n in enumerate(passed[:GEO_MAX_NODES]):
-                if time.time() > geo_deadline:
-                    log(f"出口证据达到时间预算 {GEO_BUDGET_S}s，跳过剩余 "
-                        f"{len(passed[:GEO_MAX_NODES]) - i} 个节点"
-                        f"（证据仅留痕，不构成闸门）")
-                    break
-                ev = exit_evidence(api_port, "PROBE", n["probe_name"], mixed_port)
-                if ev:
-                    results[n["probe_name"]].update(ev)
-
-            # 5.5) AI 可达性探测（2026-10-20；仅通过节点，不构成闸门）
-            # 串行切组 + 组内 5 域并行；独立预算 AI_BUDGET_S，超预算跳过
-            # 剩余（无 ai 数据的节点按未知处理，排序沉底但不淘汰）。
-            ai_deadline = time.time() + AI_BUDGET_S
-            for i, n in enumerate(passed):
-                if time.time() > ai_deadline:
-                    log(f"AI 探测达到时间预算 {AI_BUDGET_S}s，跳过剩余 "
-                        f"{len(passed) - i} 个节点（AI 不构成闸门，无数据"
-                        f"节点仅排序沉底）")
+            ev_deadline = time.time() + EVIDENCE_BUDGET_S
+            ev_nodes = passed[:GEO_MAX_NODES]
+            n_geo = 0
+            for i, n in enumerate(ev_nodes):
+                if time.time() > ev_deadline:
+                    log(f"证据收集达到时间预算 {EVIDENCE_BUDGET_S}s，跳过剩余 "
+                        f"{len(ev_nodes) - i} 个节点（证据仅留痕，不构成闸门）")
                     break
                 try:
-                    ai = ai_probe(api_port, mixed_port, n["probe_name"])
+                    ev = node_evidence(api_port, mixed_port, n["probe_name"])
                 except Exception as e:
-                    log(f"AI 探测异常（节点 {n['probe_name']}，已跳过）："
+                    log(f"证据收集异常（节点 {n['probe_name']}，已跳过）："
                         f"{type(e).__name__}: {e}")
-                    ai = {}
-                if ai:
-                    results[n["probe_name"]]["ai"] = ai
+                    ev = {}
+                if ev.get("geo"):
+                    results[n["probe_name"]].update(ev["geo"])
+                    n_geo += 1
+                if ev.get("ai"):
+                    results[n["probe_name"]]["ai"] = ev["ai"]
             n_ai = sum(1 for n in passed
                        if results[n["probe_name"]].get("ai", {}).get("ai_reachable"))
             n_api = sum(1 for n in passed
                         if results[n["probe_name"]].get("ai", {}).get("ai_api"))
-            log(f"AI 可达性探测完成: 任一可达 {n_ai}/{len(passed)}，"
-                f"API 层可用 {n_api}/{len(passed)}"
-                f"（{time.time() - (ai_deadline - AI_BUDGET_S):.0f}s）")
+            log(f"证据收集完成: 出口证据 {n_geo}/{len(passed)}，"
+                f"AI 任一可达 {n_ai}/{len(passed)}，API 层可用 {n_api}/{len(passed)}"
+                f"（{time.time() - (ev_deadline - EVIDENCE_BUDGET_S):.0f}s）")
         except Exception as e:
             log(f"熔断: 拨测过程异常（{type(e).__name__}: {e}），不发布")
             return 3
@@ -1110,9 +1186,11 @@ def main() -> int:
     # 分源/分协议聚合（Phase 2.2）：tested/passed 双口径，供 CI 源级评分与门槛自学习
     # 分源仅统计带 src 的节点（carryover 等无源节点不归任何源，避免产生 "?" 伪源
     # 污染源级评分）；分协议仍覆盖全部节点。
+    # 分源行带 AI 证据三口径（任务#92）：ai_tested/ai_reachable/ai_api，
+    # 供 CI 侧计算分源 AI 效率（有效性反哺，见 _agg_source_ai）。
     src_nodes = [n for n in nodes if n.get("src")]
     src_verified = [n for n in verified if n.get("src")]
-    by_source = _agg_two(src_nodes, src_verified, key_fn=lambda n: n["src"])
+    by_source = _agg_source_ai(src_nodes, src_verified, results)
     # 分协议带置信区间（P2-a）：小样本协议（anytls/hysteria 等）的通过率必须配
     # 95% Wilson 区间与 sample_ok 标记，避免"看单轮数字就加权"（2026-10-15 教训）。
     by_protocol = _agg_two(nodes, verified,

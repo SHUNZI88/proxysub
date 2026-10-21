@@ -51,13 +51,16 @@ CI（GitHub Actions，美国出口）每轮产出「拟交沙箱待测节点文�
    验证集，硬保 1800s 任务超时不被击穿。见 §6。
 5. **拨测**：mihomo external-controller delay API，`generate_204`
    （HTTPS+204 双信号），12 并发，失败重试一次；
-6. **出口证据**：通过节点逐个切流量取出口 IP/地区（cip.cc → ipip →
-   ip-api 依次回退），仅留痕、不构成闸门；顺序取证设 120s 时间预算
-   （防极端情况击穿任务超时），超时跳过剩余节点；
-7. **AI 可达性探测**（2026-10-20 新增）：通过节点逐个切组，经 mixed-port
-   并行请求 5 个 AI 域（chatgpt/claude/gemini/copilot/openai_api，站点根
-   路径 + 状态码捕获）；判据与已知坑见 §9。**不构成闸门**——AI 不可达的
-   节点仍是可用代理，仅排序沉底；
+6. **证据收集**（2026-10-21 合并，任务#91）：通过节点**单次切组 + 8 路
+   并行**收集出口证据（cip.cc → ipip → ip-api，取首个成功）与 AI 可达性
+   （chatgpt/claude/gemini/copilot/openai_api 状态码）；统一预算 120s
+   （`EVIDENCE_BUDGET_S`），仅留痕、不构成闸门。合并前是两个顺序循环
+   （各 120s、各覆盖一半节点）；单请求有线程级硬超时（GEO socket 5s /
+   AI 8s，硬截断 +2s）——urllib socket timeout 是每次 recv 超时，龟速
+   节点上的滴流响应实测可拖到 24s+（见 §9.4）；
+7. **AI 可达性判据**：任何 HTTP 响应（含 403/401/302）算可达，
+   api.openai.com 非 403 算 API 层可用；**不构成闸门**——AI 不可达的
+   节点仍是可用代理，仅排序沉底。判据与已知坑见 §9；
 8. **合并发布**：通过节点按「AI 可用性 > 双 vantage 强者 > 延迟」排序
    （订阅顺序即用户可见性顺序），构建 clash/sing-box/v2ray/proxies-only
    四格式，覆盖发布到主资产（p_* 随机名，**订阅永久地址不变**），并发布
@@ -70,8 +73,10 @@ CI（GitHub Actions，美国出口）每轮产出「拟交沙箱待测节点文�
 0.62s/节点）；但轮询等待最多 20min（1200s）会挤占预算，最坏
 1200+902=2102s **击穿超时**。措施：
 
-- 常量：`TASK_BUDGET_S=1800`、`PUBLISH_RESERVE_S=300`（出口证据 ≤120s +
-  多格式输出 + 发布 + 收尾）、`PER_NODE_S=1.0`（实测 0.62s/节点取悲观 ×1.6）；
+- 常量：`TASK_BUDGET_S=1800`、`PUBLISH_RESERVE_S=300`（2026-10-21 重算：
+  真实流量 ~24s + 证据收集 ≤120s + 多格式输出/发布/收尾 ~60s ≈ 204s，
+  合并证据段后由 360s 降回 300s）、`PER_NODE_S=1.2`（实测 0.62s/节点
+  取悲观 ×2；2.0 过度保守曾误裁 413 节点，见 §8.1）；
 - `cap_test_set(nodes, budget_s)`：按优先级填充裁剪，保留集规模恒
   `≤ int(budget_s / PER_NODE_S)`，硬保不超时；
 - 优先级：carryover > pending > rescue（rescue 产能低、未测节点由 CI 下轮
@@ -217,11 +222,20 @@ Runner，或把 L3 落实为可观测、可验证的真实任务。
 
 ### 9.4 成本与边界
 
-- 仅对终筛通过节点执行（约 30 个）：组内 5 域并行、节点间串行（共享
-  PROBE 选择器，并发切组会互相踩），单节点最坏 8s；
-- 独立预算 `AI_BUDGET_S=120s`，与出口证据（120s）同级的第二预算；耗时
-  上界 真实流量 ~24s + GEO 120s + AI 120s + 发布 ~60s ≈ 324s <
-  `PUBLISH_RESERVE_S` 360s，不击穿任务超时；
+- 仅对终筛通过节点执行（约 30 个）：**单次切组 + 8 路并行**（GEO 3 源 +
+  AI 5 域），节点间串行（共享 PROBE 选择器，并发切组会互相踩）；
+- 2026-10-21 合并（任务#91）：原 GEO 与 AI 是两个顺序循环、各 120s 预算，
+  手动轮实测每循环各覆盖一半通过节点——**一半节点没有 AI 数据**，排序时
+  按「未知」沉底，有效节点被埋。合并为 `node_evidence`（一次切组 + 8 路
+  并行）后同预算覆盖率达 54%（15/28，旧实现 AI 50%+GEO 28% 且总耗时
+  240s → 合并后 122s）；
+- **单请求线程级硬超时**（`_hard_timeout_call`）：urllib socket timeout
+  是每次 recv 超时而非整体超时——实测龟速节点上 gemini 302 链耗时
+  24.31s（socket timeout 仅 8s），单节点均摊 10.5s、120s 只覆盖 13/28。
+  GEO socket 5s / AI 8s、硬截断各 +2s；GEO 收紧不丢证据（三源并行取
+  首个成功，且 GEO 仅信息性留痕）；
+- 统一预算 `EVIDENCE_BUDGET_S=120s`；耗时上界 真实流量 ~24s + 证据
+  ≤120s + 发布 ~60s ≈ 204s < `PUBLISH_RESERVE_S` 300s，不击穿任务超时；
 - **不设硬闸门**：AI 不可达不是节点死亡，节点仍是可用代理——仅排序沉底
   （`verified_rank`：AI API 可用 > AI 可达 > 无数据 > 原双 vantage 序）。
 
@@ -229,5 +243,9 @@ Runner，或把 L3 落实为可观测、可验证的真实任务。
 
 - `counts.ai`：`{probed, reachable, api_ok, by_domain}`——每轮 AI 盲区
   量化，供后续源级反哺（哪些源产的节点 AI 可用率高）；
+- `counts.by_source[*]`：2026-10-21 起（任务#92）在 `{tested, passed}`
+  之外扩出 `{ai_tested, ai_reachable, ai_api}`——分源 AI 证据口径
+  （只覆盖有 ai 数据的通过节点；无证据记 0 而非缺键），CI 侧据此计算
+  分源 AI 效率，接入候选晋升与拨测配额倾斜（任务#94）；
 - `nodes[].ai`：`{codes, reach, ai_reachable, ai_api}` 逐节点证据；
 - `dimensions.ai`：语义说明（与 us_ok/cn_ok 并列的第三测量维度）。

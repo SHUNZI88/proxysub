@@ -1028,6 +1028,12 @@ def main() -> None:
         print(f"候选源晋升为正式源: {u}")
     for u, why in {**cand_rep["rejected"], **off_rep["demoted"]}.items():
         print(f"移除源: {u} -> {why}")
+    for u, g in off_rep.get("guarded", {}).items():
+        # 有效性守卫（2026-10-21 任务#93）：零独有达标但有 cn 实效实证的源
+        # 不淘汰——代理指标不得淘汰有效源，留痕供审计。
+        print(f"源保留（零独有守卫）: {u} -> cn 实证 {g['cn_passed']}/{g['cn_tested']}"
+              f"（Wilson 下界 {g['wilson_ci_low']:.1%}），零独有 "
+              f"{g['zero_unique_streak']} 轮未汰")
     cn_demoted = [u for u, why in off_rep["demoted"].items()
                   if why.startswith("cn_low_pass_rate")]
     if cn_demoted:

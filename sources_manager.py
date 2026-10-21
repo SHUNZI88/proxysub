@@ -171,6 +171,21 @@ def _age_s(ts) -> float:
     return (datetime.now(timezone.utc) - dt).total_seconds()
 
 
+def _cn_window(url: str, cn_stats: dict) -> tuple[int, int, bool]:
+    """提取源级 cn 实证窗口（tested, passed, 样本充足且新鲜）。
+
+    样本不足（< CN_MIN_SAMPLE）或数据陈旧（> CN_DECISION_MAX_AGE_S）时
+    fresh=False——调用方按「无实证」处理：淘汰侧清零 streak（宁可少汰），
+    守卫侧不放行（宁可不豁免）。
+    """
+    cn = (cn_stats or {}).get(url) or {}
+    tested = int(cn.get("cn_tested") or 0)
+    passed = int(cn.get("cn_passed") or 0)
+    fresh = (tested >= config.CN_MIN_SAMPLE
+             and _age_s(cn.get("cn_last")) <= config.CN_DECISION_MAX_AGE_S)
+    return tested, passed, fresh
+
+
 def _cn_low_evidence(url: str, cn_stats: dict) -> tuple[bool, float, int, int]:
     """源级低产实证判定（cn 维度，2026-10-20 新增决策层）。
 
@@ -181,15 +196,33 @@ def _cn_low_evidence(url: str, cn_stats: dict) -> tuple[bool, float, int, int]:
     判据：cn_tested >= config.CN_MIN_SAMPLE 且 Wilson 95% **下界** <
     config.CN_LOW_CI_HIGH。零通过源天然适用（0/n 下界恒 0）。
     """
-    cn = (cn_stats or {}).get(url) or {}
-    tested = int(cn.get("cn_tested") or 0)
-    passed = int(cn.get("cn_passed") or 0)
-    if tested < config.CN_MIN_SAMPLE:
-        return False, 0.0, tested, passed
-    if _age_s(cn.get("cn_last")) > config.CN_DECISION_MAX_AGE_S:
+    tested, passed, fresh = _cn_window(url, cn_stats)
+    if not fresh:
         return False, 0.0, tested, passed
     lo, _ = wilson_ci(passed, tested)
     return lo < config.CN_LOW_CI_HIGH, lo, tested, passed
+
+
+def _cn_effective_evidence(url: str, cn_stats: dict) -> tuple[bool, float, int, int]:
+    """源级「有实效」实证判定（cn 维度，2026-10-21 任务#93 反哺口径）。
+
+    与 `_cn_low_evidence` 共用同一证据窗口，但只认**样本充足且新鲜、
+    且 Wilson 下界 >= CN_LOW_CI_HIGH** 为「有实效」：样本不足/陈旧/无记录
+    都返回 False（无实证——守卫不放行，无效源仍由 zero_real_ok /
+    fail_streak / cn_low 通道淘汰）。
+
+    用途：零独有淘汰（proxy 指标：连续 N 轮无独有存活节点）不得误汰有
+    实证高效率的源。2026-10-16 事故：blog.ermao.net cn 通过率 12.3%
+    （16/130，全池第二高）因 zero_unique_contribution:16runs 被汰——
+    用独有性代理指标淘汰了有效源（其节点与其他聚合源重复，去重后仍在
+    池中，但方法学错误真实存在）。用户口径：源的生命周期必须由**节点
+    有效性**反哺，而非代理指标。
+    """
+    tested, passed, fresh = _cn_window(url, cn_stats)
+    if not fresh:
+        return False, 0.0, tested, passed
+    lo, _ = wilson_ci(passed, tested)
+    return lo >= config.CN_LOW_CI_HIGH, lo, tested, passed
 
 
 # ====================== GitHub discovery ======================
@@ -493,9 +526,17 @@ def update_official(sources: dict, stats_hist: dict, run: dict[str, dict],
         MAX_CN_DEMOTE_PER_RUN 个；③ 淘汰后 official 不少于 MIN_OFFICIAL；
       - 淘汰即清零 streak（防 30 天冷却回迁的源被旧 streak 瞬杀）。
 
+    零独有淘汰的有效性守卫（2026-10-21 任务#93）：zero_unique_streak 达标的
+    源，若持有**充足且新鲜的 cn 实效实证**（Wilson 下界 >= CN_LOW_CI_HIGH，
+    见 `_cn_effective_evidence`），不淘汰——记入 rep["guarded"]（含实证
+    数字，供审计）。无实证时守卫 inert，行为与改造前一致。设计动机：零独有
+    是代理指标（节点与其他源重复≠源无效），2026-10-16 曾据它汰掉 cn 通过率
+    全池第二高的 blog.ermao.net；真正无效的源（零真实流量通过/连续抓取失败/
+    cn 低产）由既有通道淘汰，不因守卫漏网。
+
     无实证（缺数据/样本不足/陈旧）时 cn 层整体 no-op，行为与改造前完全一致。
     """
-    rep = {"demoted": {}}
+    rep = {"demoted": {}, "guarded": {}}
     cn_candidates: list[tuple[str, float, int, int]] = []
     for entry in sources["official"]:
         url = entry.get("url")
@@ -550,7 +591,22 @@ def update_official(sources: dict, stats_hist: dict, run: dict[str, dict],
         elif h.get("zero_real_streak", 0) >= OFFICIAL_ZERO_REAL_DEMOTE:
             reason = f"zero_real_ok:{h['zero_real_streak']}runs"
         elif h["zero_unique_streak"] >= OFFICIAL_ZERO_UNIQUE_DEMOTE:
-            reason = f"zero_unique_contribution:{h['zero_unique_streak']}runs"
+            # 有效性守卫（2026-10-21 任务#93）：零独有是**代理指标**——聚合源
+            # 的节点与其他源重复（去重后仍在池中、仍可通过 cn 实测）不代表源
+            # 无效。有 cn 实证（样本充足且新鲜、Wilson 下界 >= CN_LOW_CI_HIGH）
+            # 的源豁免零独有淘汰；无实证的源仍可汰（真正无效的源由
+            # zero_real_ok / fail_streak / cn_low 通道负责，不会漏网）。
+            # 事故锚点：blog.ermao.net 12.3% 通过率（全池第二高）因零独有被汰。
+            effective, lo, cn_t, cn_p = _cn_effective_evidence(url, cn_stats)
+            if effective:
+                rep["guarded"][url] = {
+                    "guard": "zero_unique_guarded_by_cn_evidence",
+                    "zero_unique_streak": h["zero_unique_streak"],
+                    "cn_tested": cn_t, "cn_passed": cn_p,
+                    "wilson_ci_low": round(lo, 4),
+                }
+            else:
+                reason = f"zero_unique_contribution:{h['zero_unique_streak']}runs"
         # ---- cn 维度淘汰候选（streak 达标且非手工源；不在此刻生效，走三重保底）----
         if (reason is None and low
                 and int(h.get("cn_low_streak", 0)) >= config.CN_DEMOTE_STREAK
