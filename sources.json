@@ -50,20 +50,6 @@
       "added": "2026-10-11",
       "repo": "ovmvo/FreeSub",
       "probation_runs": 3
-    },
-    {
-      "url": "https://raw.githubusercontent.com/free-nodes/clashfree/main/clash20261017.yml",
-      "origin": "discovered",
-      "added": "2026-10-20",
-      "repo": "free-nodes/clashfree",
-      "probation_runs": 3
-    },
-    {
-      "url": "https://raw.githubusercontent.com/free-nodes/clashfree/main/clash20261016.yml",
-      "origin": "discovered",
-      "added": "2026-10-20",
-      "repo": "free-nodes/clashfree",
-      "probation_runs": 3
     }
   ],
   "removed": [
@@ -166,6 +152,16 @@
       "url": "https://raw.githubusercontent.com/VPN-Subcription-Links/ClashX-V2Ray-TopFreeProxy/main/combine/clash.config.yaml",
       "reason": "cn_low_pass_rate:8/302",
       "date": "2026-10-20"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/free-nodes/clashfree/main/clash20261016.yml",
+      "reason": "consecutive_failures:4",
+      "date": "2026-10-21"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/free-nodes/clashfree/main/clash20261017.yml",
+      "reason": "cn_low_pass_rate:0/75",
+      "date": "2026-10-21"
     }
   ],
   "deny_repos": []

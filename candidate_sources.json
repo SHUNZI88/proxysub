@@ -5,7 +5,7 @@
       "origin": "channel_web",
       "added": "2026-10-18",
       "first_seen": "2026-10-18",
-      "runs": 13,
+      "runs": 14,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -45,7 +45,7 @@
           "tamper": 0
         },
         {
-          "date": "2026-10-20",
+          "date": "2026-10-21",
           "count": 25,
           "usable": 0,
           "unique_new": 0,
@@ -73,7 +73,7 @@
       "origin": "channel_web",
       "added": "2026-10-19",
       "first_seen": "2026-10-19",
-      "runs": 9,
+      "runs": 10,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -113,7 +113,7 @@
           "tamper": 0
         },
         {
-          "date": "2026-10-20",
+          "date": "2026-10-21",
           "count": 25,
           "usable": 0,
           "unique_new": 0,
@@ -135,6 +135,90 @@
         }
       ],
       "required_runs": 3
+    },
+    "https://raw.githubusercontent.com/ermaozi/get_subscribe/main/subscribe/clash.yml": {
+      "repo": "ermaozi/get_subscribe",
+      "stars": 9373,
+      "repo_created": "2021-07-24T01:42:43Z",
+      "reputation": "ok",
+      "reputation_note": "stars=9373,age=1915d",
+      "required_runs": 3,
+      "first_seen": "2026-10-21",
+      "initial_nodes": 385,
+      "runs": 0,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": []
+    },
+    "https://raw.githubusercontent.com/ermaozi/get_subscribe/main/subscribe/reachable/clash.yml": {
+      "repo": "ermaozi/get_subscribe",
+      "stars": 9373,
+      "repo_created": "2021-07-24T01:42:43Z",
+      "reputation": "ok",
+      "reputation_note": "stars=9373,age=1915d",
+      "required_runs": 3,
+      "first_seen": "2026-10-21",
+      "initial_nodes": 315,
+      "runs": 0,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": []
+    },
+    "https://raw.githubusercontent.com/peacefish/nodefree/main/sub/sub_merge_clash.yaml": {
+      "repo": "peacefish/nodefree",
+      "stars": 33,
+      "repo_created": "2023-01-30T21:30:42Z",
+      "reputation": "ok",
+      "reputation_note": "stars=33,age=1359d",
+      "required_runs": 3,
+      "first_seen": "2026-10-21",
+      "initial_nodes": 976,
+      "runs": 0,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": []
+    },
+    "https://raw.githubusercontent.com/peacefish/nodefree/main/sub/clash_openshare.yaml": {
+      "repo": "peacefish/nodefree",
+      "stars": 33,
+      "repo_created": "2023-01-30T21:30:42Z",
+      "reputation": "ok",
+      "reputation_note": "stars=33,age=1359d",
+      "required_runs": 3,
+      "first_seen": "2026-10-21",
+      "initial_nodes": 26,
+      "runs": 0,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": []
+    },
+    "https://raw.githubusercontent.com/MrWQ/nodefreebot/master/mihomo.yml": {
+      "repo": "MrWQ/nodefreebot",
+      "stars": 6,
+      "repo_created": "2023-04-20T01:52:44Z",
+      "reputation": "ok",
+      "reputation_note": "stars=6,age=1280d",
+      "required_runs": 3,
+      "first_seen": "2026-10-21",
+      "initial_nodes": 22,
+      "runs": 0,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": []
+    },
+    "https://raw.githubusercontent.com/MrWQ/nodefreebot/master/clash.yml": {
+      "repo": "MrWQ/nodefreebot",
+      "stars": 6,
+      "repo_created": "2023-04-20T01:52:44Z",
+      "reputation": "ok",
+      "reputation_note": "stars=6,age=1280d",
+      "required_runs": 3,
+      "first_seen": "2026-10-21",
+      "initial_nodes": 21,
+      "runs": 0,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": []
     }
   },
   "rejected": {
