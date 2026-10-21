@@ -1,7 +1,7 @@
 """cn 源级生命周期（cn_source_lifecycle，2026-10-20）专项测试。
 
 沙箱 verification_report.json 的 by_source 统计经 evolution 折回
-source_scores.json 的 cn_* 维度后，驱动**独立于 CI 侧评分**的源级决策层。
+source_scores.json 的 cn_*/ai_* 维度后，驱动**独立于 CI 侧评分**的源级决策层。
 本文件覆盖四层 + 熔断：
 
   A. 数据层：evolution.cn_source_stats 提取口径（只取含 cn_tested 的条目）/
@@ -9,12 +9,19 @@ source_scores.json 的 cn_* 维度后，驱动**独立于 CI 侧评分**的源�
   B. 淘汰层：sources_manager.update_official 的 cn streak 判低、连续轮数
      淘汰、三重保底（manual 豁免 / 单轮上限 MAX_CN_DEMOTE_PER_RUN / 保底
      MIN_OFFICIAL）、无实证清零、淘汰清零 streak；
-  C. 晋升层：evaluate_candidates 的 cn 实证优先排序（Wilson 下界降序）、
+  C. 晋升层：evaluate_candidates 的 cn/AI 实证优先排序（Wilson 下界降序）、
      cn_stats=None/空时与改造前排序完全一致；
   D. 拨测层：select_probe_sample 的单源基础上限 PROBE_SOURCE_SAMPLE_CAP
-     （仅对有新鲜实证的源生效）与候选源配额倾斜；无实证不干预；
-  E. 熔断层：config.CN_LIFECYCLE_ENABLED=False 时 main() 不构造 cn_stats，
-     三个消费点全部退化为改造前行为。
+     （仅对有新鲜实证的源生效）、候选源配额倾斜、cn×AI 复合封顶；
+  E. 熔断层：config.CN_LIFECYCLE_ENABLED / AI_LIFECYCLE_ENABLED=False 时
+     main() 不构造对应 stats，各消费点全部退化为改造前行为。
+
+2026-10-21 任务#94 起追加 AI 源级生命周期（F 区，插在 D/E 之间）：
+报告 by_source 的 `{ai_tested, ai_reachable, ai_api}` 口径（任务#92）折回
+source_scores 的 ai_* 字段 → ai_source_stats / ai_fetch_tilt /
+evaluate_candidates AI 优先晋升 / select_probe_sample 复合倾斜
+（相乘封顶 PROBE_TILT_MAX=2.0）。AI 维度非对称：**无低产档**——
+AI 不可达≠节点死亡，低产 down-tilt 由 cn 通道负责。
 
 全部走 mock：无网络、不读写真实状态文件（load_json 已 patch）。
 """
@@ -22,6 +29,7 @@ source_scores.json 的 cn_* 维度后，驱动**独立于 CI 侧评分**的源�
 from __future__ import annotations
 
 import datetime as dt
+import json
 
 import config
 import evolution
@@ -507,10 +515,10 @@ class TestEvaluateCandidatesCnPriority:
 # ===========================================================================
 
 def _run_sample(tcp_lat, unique, prov, official, cand_urls=(), survival=None,
-                today=TODAY, source_keys=None, cn_stats=None):
+                today=TODAY, source_keys=None, cn_stats=None, ai_stats=None):
     return fc.select_probe_sample(
         tcp_lat, unique, prov, set(official), list(cand_urls),
-        survival or {}, today, source_keys, cn_stats,
+        survival or {}, today, source_keys, cn_stats, ai_stats,
     )
 
 
@@ -620,19 +628,357 @@ class TestSelectProbeCnTilt:
 
 
 # ===========================================================================
-# E. 熔断层：CN_LIFECYCLE_ENABLED=False 时 main() 不构造 cn_stats
+# F. AI 源级生命周期（2026-10-21 任务#94）
+# ===========================================================================
+#
+# 数据链：cn_probe 报告 by_source[*].{ai_tested,ai_reachable,ai_api}（任务#92）
+# → evolution.update_source_scores_ai 折回 source_scores 的 ai_* 字段
+# → ai_source_stats / ai_fetch_tilt / evaluate_candidates AI 优先晋升
+# → select_probe_sample 复合倾斜（相乘封顶 PROBE_TILT_MAX=2.0）。
+# AI 维度对 cn 的三处刻意非对称：
+#   ① 只在 ai_tested>0 时写（无证据不抹零）；
+#   ② 样本门槛 AI_MIN_SAMPLE=6（AI 证据只覆盖通过节点，非对称低门槛）；
+#   ③ **无低产档**：AI 不可达≠节点死亡，低产 down-tilt 由 cn 通道负责。
+
+def _ai(tested: int, api: int, reachable: int | None = None,
+        hours_ago: float = 1.0) -> dict:
+    """一条源级 AI 实证记录（ai_last 默认 1 小时前，视为新鲜）。"""
+    last = (NOW - dt.timedelta(hours=hours_ago)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    return {"ai_tested": tested,
+            "ai_reachable": api if reachable is None else reachable,
+            "ai_api": api,
+            "ai_api_rate": (api / tested) if tested else 0.0,
+            "ai_last": last}
+
+
+def _ai_report(by_source_ai: dict, stale: bool = False) -> dict:
+    """最小化报告：counts.by_source 每行带 AI 证据口径（任务#92 的字段名）。
+
+    stale=True 时 generated_at 置 2020 年——超过 VERIFICATION_MAX_AGE_S=24h，
+    所有写函数必须原样跳过（陈旧守卫）。
+    """
+    return {
+        "round_id": "20261021T0702Z",
+        "generated_at": ("2020-01-01T00:00:00Z" if stale else
+                         dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")),
+        "counts": {"by_source": by_source_ai},
+    }
+
+
+def _ready_cands_ai(specs: dict[str, tuple[int, dict | None, dict | None]]
+                    ) -> tuple[dict, dict, dict, dict]:
+    """specs: url -> (unique_new, cn_entry or None, ai_entry or None)。
+
+    返回 (cands, run, cn, ai)；unique_new 必须 >= MIN_CANDIDATE_UNIQUE(4)
+    候选才 ready（同 _ready_cands 口径）。
+    """
+    cands = {"candidates": {u: _cand() for u in specs}, "rejected": {}}
+    run = {u: _ok_run(unique_new=n) for u, (n, _, _) in specs.items()}
+    cn = {u: e for u, (_, e, _) in specs.items() if e}
+    ai = {u: e for u, (_, _, e) in specs.items() if e}
+    return cands, run, cn, ai
+
+
+class TestAiSourceStats:
+    def test_extracts_only_ai_entries(self):
+        scores = {
+            "http://a/sub": {"score": 100, "ai_tested": 12, "ai_api": 6,
+                             "ai_reachable": 9, "ai_api_rate": 0.5, "ai_last": "t"},
+            "http://b/sub": {"score": 80},                      # 无 AI 维度
+            "owner/repo": {"score": 60, "ai_tested": 5},        # 历史镜像键也提取
+        }
+        out = evolution.ai_source_stats(scores)
+        assert set(out) == {"http://a/sub", "owner/repo"}
+        assert out["http://a/sub"] == {"ai_tested": 12, "ai_reachable": 9,
+                                       "ai_api": 6, "ai_api_rate": 0.5,
+                                       "ai_last": "t"}
+
+    def test_empty_and_none_safe(self):
+        assert evolution.ai_source_stats({}) == {}
+        assert evolution.ai_source_stats(None) == {}
+
+
+class TestUpdateSourceScoresAi:
+    def test_writes_ai_fields(self, tmp_path):
+        out = str(tmp_path / "source_scores.json")
+        with open(out, "w") as f:
+            json.dump({"owner/repo": {"score": 100.0, "runs": 5}}, f)
+        report = _ai_report({"owner/repo": {"tested": 20, "passed": 10,
+                                            "ai_tested": 12, "ai_reachable": 9,
+                                            "ai_api": 6}})
+        res = evolution.update_source_scores_ai(report, out)
+        e = res["owner/repo"]
+        assert e["ai_tested"] == 12 and e["ai_reachable"] == 9 and e["ai_api"] == 6
+        assert e["ai_api_rate"] == 0.5
+        assert "ai_last" in e
+        assert e["score"] == 100.0 and e["runs"] == 5   # 不动既有 CI 评分字段
+
+    def test_no_ai_evidence_does_not_erase(self, tmp_path):
+        """ai_tested=0：不写也不抹——上一轮实证不得被无证据轮清零（差异①）。
+
+        场景：该源本轮无通过节点/证据预算跳过尾部 → by_source 无 AI 口径；
+        若按 cn 口径无条件覆写，一个空轮就把高产源打回无知状态。
+        """
+        out = str(tmp_path / "source_scores.json")
+        prev = {"ai_tested": 12, "ai_api": 6, "ai_api_rate": 0.5, "ai_last": "t0"}
+        with open(out, "w") as f:
+            json.dump({"owner/repo": dict(prev)}, f)
+        report = _ai_report({"owner/repo": {"tested": 20, "passed": 0,
+                                            "ai_tested": 0, "ai_reachable": 0,
+                                            "ai_api": 0}})
+        res = evolution.update_source_scores_ai(report, out)
+        assert res["owner/repo"] == dict(prev)
+
+    def test_stale_report_skipped(self, tmp_path):
+        out = str(tmp_path / "source_scores.json")
+        with open(out, "w") as f:
+            json.dump({"owner/repo": {"score": 100.0}}, f)
+        report = _ai_report({"owner/repo": {"ai_tested": 12, "ai_api": 6}}, stale=True)
+        res = evolution.update_source_scores_ai(report, out)
+        assert "ai_tested" not in res["owner/repo"]
+
+    def test_unknown_pseudo_key_skipped(self, tmp_path):
+        """carryover 无源伪键 "?" 不写（同 cn 维度口径）。"""
+        out = str(tmp_path / "source_scores.json")
+        with open(out, "w") as f:
+            json.dump({}, f)
+        report = _ai_report({"?": {"ai_tested": 8, "ai_reachable": 8, "ai_api": 8},
+                             "good/repo": {"ai_tested": 8, "ai_reachable": 8,
+                                           "ai_api": 4}})
+        res = evolution.update_source_scores_ai(report, out)
+        assert "?" not in res
+        assert res["good/repo"]["ai_api"] == 4
+
+    def test_url_by_src_mapping(self, tmp_path):
+        """url_by_src 提供时写 URL 主键（与 update_source_scores_cn 同口径）。"""
+        out = str(tmp_path / "source_scores.json")
+        with open(out, "w") as f:
+            json.dump({"http://real/sub": {"score": 50.0}}, f)
+        report = _ai_report({"owner/repo": {"ai_tested": 10, "ai_reachable": 8,
+                                            "ai_api": 8}})
+        res = evolution.update_source_scores_ai(report, out,
+                                                {"owner/repo": "http://real/sub"})
+        assert res["http://real/sub"]["ai_tested"] == 10
+        assert "owner/repo" not in res
+
+
+class TestAiFetchTilt:
+    def test_none_when_no_evidence(self):
+        assert evolution.ai_fetch_tilt("http://a/sub", {}) is None
+        assert evolution.ai_fetch_tilt(None, {"http://a/sub": _ai(12, 6)}) is None
+        # 样本不足 AI_MIN_SAMPLE=6：不干预（非对称低门槛，但不下探到噪声区）
+        assert evolution.ai_fetch_tilt("http://a/sub",
+                                       {"http://a/sub": _ai(5, 5)}) is None
+
+    def test_high_yield_one_and_half(self):
+        # 6/6：点估计 100%，Wilson 下界 61% >= 40%
+        assert evolution.ai_fetch_tilt("http://a/sub",
+                                       {"http://a/sub": _ai(6, 6)}) == config.AI_TILT_HIGH
+        # 8/10：点估计 80%，下界 49% >= 40%
+        assert evolution.ai_fetch_tilt("http://a/sub",
+                                       {"http://a/sub": _ai(10, 8)}) == config.AI_TILT_HIGH
+
+    def test_neutral_one_for_middling(self):
+        # 3/6：点估计 50%，下界 18.8% < 40% → 中性
+        assert evolution.ai_fetch_tilt("http://a/sub",
+                                       {"http://a/sub": _ai(6, 3)}) == 1.0
+        # 6/12：点估计 50% 且样本更大，下界 25.4% 仍 < 40% → 中性
+        # （防小样本虚高的镜像案例：同 cn 维度 10/20 压线）
+        assert evolution.ai_fetch_tilt("http://a/sub",
+                                       {"http://a/sub": _ai(12, 6)}) == 1.0
+
+    def test_no_low_tilt_for_zero_api(self):
+        """AI 非对称设计：0/6 零 API 可达也只中性 1.0，**无低产档**减半。
+
+        AI 不可达≠节点死亡（仍是可用代理）；对低 AI 源减配会饿死通用
+        节点供给，低产 down-tilt 由 cn 通道（cn_low/zero_real_ok）负责。
+        """
+        assert evolution.ai_fetch_tilt("http://a/sub",
+                                       {"http://a/sub": _ai(6, 0)}) == 1.0
+
+    def test_stale_data_returns_none(self):
+        stats = {"http://a/sub": _ai(6, 6, hours_ago=72)}
+        assert evolution.ai_fetch_tilt("http://a/sub", stats,
+                                       max_age_s=config.CN_DECISION_MAX_AGE_S) is None
+        # max_age_s=None 时调用方自控新鲜度，本函数不做年龄筛选
+        assert evolution.ai_fetch_tilt("http://a/sub", stats) == config.AI_TILT_HIGH
+
+    def test_missing_ai_last_with_max_age_returns_none(self):
+        rec = _ai(12, 6)
+        rec.pop("ai_last")
+        assert evolution.ai_fetch_tilt("http://a/sub", {"http://a/sub": rec},
+                                       max_age_s=config.CN_DECISION_MAX_AGE_S) is None
+
+    def test_unparsable_ai_last_returns_none(self):
+        rec = _ai(12, 6)
+        rec["ai_last"] = "not-a-time"
+        assert evolution.ai_fetch_tilt("http://a/sub", {"http://a/sub": rec},
+                                       max_age_s=config.CN_DECISION_MAX_AGE_S) is None
+
+
+class TestEvaluateCandidatesAiPriority:
+    """AI 实证优先于 cn 实证（任务#94）：用户核心诉求是可用于 AI 连接的节点。
+
+    排序键：(ai_tier, -ai_lo, cn_tier, -cn_lo, -uniq)——
+    有正向 AI 实证（ai_tested>=AI_MIN_SAMPLE 且 ai_api>=1）排最前，
+    组内 Wilson 下界降序；无实证者退化到 cn 口径。
+    """
+
+    def test_none_ai_stats_matches_cn_only_order(self):
+        """ai_stats=None：AI 前缀恒为 (1, 0.0)，排序即 cn 口径（改造前一致）。"""
+        cands, run, cn = _ready_cands({"u0": (10, None), "u1": (4, _cn(11, 11))})
+        rep = sm.evaluate_candidates(cands, run, {"official": []}, cn, None)
+        assert rep["promoted"] == ["u1", "u0"]
+
+    def test_ai_evidence_beats_cn_evidence(self):
+        """同待晋升：有 AI 实证者压过有 cn 实证者（AI 排最前）。"""
+        cands, run, cn, ai = _ready_cands_ai({
+            "u0": (10, _cn(11, 11), None),      # cn 下界 ~74%，贡献 10
+            "u1": (4, None, _ai(6, 6)),          # AI 下界 ~61%，贡献 4
+        })
+        rep = sm.evaluate_candidates(cands, run, {"official": []}, cn, ai)
+        assert rep["promoted"] == ["u1", "u0"]
+
+    def test_wilson_lower_bound_prefers_larger_ai_sample(self):
+        """同点估计（80%）样本大者下界更高：12/15（~55%）压过 8/10（~49%）。"""
+        cands, run, cn, ai = _ready_cands_ai({
+            "u0": (5, None, _ai(10, 8)),
+            "u1": (5, None, _ai(15, 12)),
+        })
+        rep = sm.evaluate_candidates(cands, run, {"official": []}, cn, ai)
+        assert rep["promoted"][0] == "u1"
+
+    def test_small_sample_gets_no_ai_priority(self):
+        """5/5 满分但 n=5 < AI_MIN_SAMPLE=6：不享受 AI 实证优先。"""
+        cands, run, cn, ai = _ready_cands_ai({
+            "u0": (4, None, _ai(5, 5)),
+            "u1": (5, None, None),
+        })
+        rep = sm.evaluate_candidates(cands, run, {"official": []}, cn, ai)
+        assert rep["promoted"][0] == "u1"
+
+    def test_zero_api_evidence_not_prioritized(self):
+        """0/6 有实证但零 API 可达：不进 AI 优先组（ai_api>=1 才优先）。"""
+        cands, run, cn, ai = _ready_cands_ai({
+            "u0": (4, None, _ai(6, 0)),
+            "u1": (5, None, None),
+        })
+        rep = sm.evaluate_candidates(cands, run, {"official": []}, cn, ai)
+        assert rep["promoted"][0] == "u1"
+
+    def test_ai_priority_does_not_bypass_cn_demote_side(self):
+        """AI 只影响晋升排序，不动淘汰侧：update_official 不接 ai_stats。"""
+        import inspect
+        sig = inspect.signature(sm.update_official)
+        assert "ai_stats" not in sig.parameters
+
+    def test_promotion_still_capped(self):
+        """AI 优先只改顺序不改名额：MAX_PROMOTIONS_PER_RUN=2 仍生效。"""
+        cands, run, cn, ai = _ready_cands_ai({
+            "u0": (10, None, None),
+            "u1": (4, None, _ai(6, 6)),
+            "u2": (8, None, _ai(10, 8)),
+        })
+        rep = sm.evaluate_candidates(cands, run, {"official": []}, cn, ai)
+        assert rep["promoted"] == ["u1", "u2"]   # 两个 AI 实证者占满名额
+        assert "u0" in cands["candidates"]
+
+
+class TestSelectProbeAiTilt:
+    """拨测层：cn×AI 复合倾斜（相乘封顶 PROBE_TILT_MAX=2.0）。
+
+    复合语义：两侧皆无实证 → None 不干预；单侧有实证 → 另一侧按 1.0
+    中性参与；双侧实证 → 相乘后封顶 2.0（防单一源霸占拨测预算）。
+    """
+
+    def test_ai_high_yield_only_widens_cap(self):
+        """AI 高产实证（cn 无实证）：上限 = 240*1.5 = 360（_src_cap 守卫必须
+        两侧联判——首版只查 cn_stats 会在此场景把复合结果悄悄短路）。"""
+        fps, tcp_lat, unique, prov, survival = _official_nodes("aihi", 400, "http://aihi/sub")
+        ai = {"http://aihi/sub": _ai(6, 6)}
+        sample = _run_sample(tcp_lat, unique, prov, fps, survival=survival, ai_stats=ai)
+        assert sum(1 for fp in fps if fp in sample) == 360
+
+    def test_ai_low_yield_does_not_down_tilt(self):
+        """AI 零可达（0/6）：只按中性封基础顶 240，**不**按 cn 低产档砍半。
+
+        对照 cn 低产（0/30 → 120）：AI 无低产档，不可达≠节点死亡。
+        """
+        fps, tcp_lat, unique, prov, survival = _official_nodes("ailow", 300, "http://ailow/sub")
+        ai = {"http://ailow/sub": _ai(6, 0)}
+        sample = _run_sample(tcp_lat, unique, prov, fps, survival=survival, ai_stats=ai)
+        assert sum(1 for fp in fps if fp in sample) == 240
+
+    def test_composite_capped_at_max(self):
+        """双侧高产（cn 1.5 × AI 1.5 = 2.25）：封顶 PROBE_TILT_MAX=2.0 → 480。"""
+        fps, tcp_lat, unique, prov, survival = _official_nodes("both", 600, "http://both/sub")
+        cn = {"http://both/sub": _cn(30, 30)}
+        ai = {"http://both/sub": _ai(6, 6)}
+        sample = _run_sample(tcp_lat, unique, prov, fps, survival=survival,
+                             cn_stats=cn, ai_stats=ai)
+        assert sum(1 for fp in fps if fp in sample) == 480
+
+    def test_ai_stale_does_not_cap(self):
+        """AI 证据陈旧（72h > 48h 决策窗）且 cn 无实证：两侧皆无实证不干预。"""
+        fps, tcp_lat, unique, prov, survival = _official_nodes("aiold", 300, "http://aiold/sub")
+        ai = {"http://aiold/sub": _ai(6, 6, hours_ago=72)}
+        sample = _run_sample(tcp_lat, unique, prov, fps, survival=survival, ai_stats=ai)
+        assert sum(1 for fp in fps if fp in sample) == 300
+
+    def test_candidate_quota_scaled_by_ai(self):
+        """高产候选源 AI 实证：试用配额 20*1.5=30，30 个节点全试。"""
+        tcp_lat, unique, prov, survival = {}, {}, {}, {}
+        cand = "http://cand-aihi/sub"
+        fps = []
+        for i in range(30):
+            fp = f"cah-{i}"
+            unique[fp] = _proxy("ss", fp, lat=float(200 + i), server=fp)
+            tcp_lat[fp] = float(200 + i)
+            prov[fp] = {cand}
+            survival[fp] = _survival_rec()
+            fps.append(fp)
+        ai = {cand: _ai(6, 6)}
+        sample = _run_sample(tcp_lat, unique, prov, [], cand_urls=[cand],
+                             survival=survival, ai_stats=ai)
+        assert sum(1 for fp in fps if fp in sample) == 30
+
+    def test_candidate_quota_not_reduced_for_low_ai(self):
+        """低 AI 候选源不减配：20*1.0=20（cn 亦无实证时只封基础顶）。"""
+        tcp_lat, unique, prov, survival = {}, {}, {}, {}
+        cand = "http://cand-ailow/sub"
+        fps = []
+        for i in range(30):
+            fp = f"cal-{i}"
+            unique[fp] = _proxy("ss", fp, lat=float(200 + i), server=fp)
+            tcp_lat[fp] = float(200 + i)
+            prov[fp] = {cand}
+            survival[fp] = _survival_rec()
+            fps.append(fp)
+        ai = {cand: _ai(6, 0)}
+        sample = _run_sample(tcp_lat, unique, prov, [], cand_urls=[cand],
+                             survival=survival, ai_stats=ai)
+        assert sum(1 for fp in fps if fp in sample) == 20
+
+
+# ===========================================================================
+# E. 熔断层：CN/AI_LIFECYCLE_ENABLED=False 时 main() 不构造对应 stats
 # ===========================================================================
 
 class TestCircuitBreaker:
-    """经 main() 全流程验证熔断：三个消费点收到的 cn_stats 必须为空。"""
+    """经 main() 全流程验证熔断：各消费点收到的 stats 必须为空。
+
+    cn 与 AI 两个维度**独立熔断**（共用一份 source_scores，消费点不同）：
+    cn 三个消费点（晋升/淘汰/拨测），AI 两个（晋升/拨测）。
+    """
 
     @staticmethod
-    def _patch_main(monkeypatch, scores_cn: dict, seen: dict):
+    def _patch_main(monkeypatch, scores: dict, seen: dict):
         monkeypatch.setattr(fc, "load_evolution_inputs",
-                            lambda root, sources=None: ({}, {}, scores_cn))
+                            lambda root, sources=None: ({}, {}, scores))
 
-        def _eval(cands, run, sources, cn_stats=None):
+        def _eval(cands, run, sources, cn_stats=None, ai_stats=None):
             seen["eval"] = cn_stats
+            seen["eval_ai"] = ai_stats
             return {"promoted": [], "rejected": {}}
 
         def _upd(sources, hist, run, cn_stats=None):
@@ -641,6 +987,7 @@ class TestCircuitBreaker:
 
         def _probe(*a, **k):
             seen["probe"] = k.get("cn_stats", a[7] if len(a) > 7 else None)
+            seen["probe_ai"] = k.get("ai_stats", a[8] if len(a) > 8 else None)
             return _orig_probe(*a, **k)
 
         _orig_probe = fc.real_probe_stage
@@ -648,22 +995,47 @@ class TestCircuitBreaker:
         monkeypatch.setattr(fc.sm, "update_official", _upd)
         monkeypatch.setattr(fc, "real_probe_stage", _probe)
 
-    def test_breaker_on_passes_cn_stats(self, pipeline, monkeypatch):
-        scores_cn = {"http://low.example/sub": _cn(30, 0)}
+    def test_breaker_on_passes_both_stats(self, pipeline, monkeypatch):
+        """双熔断开启：cn/AI 两维度各自提取后送达消费点（互不串味）。"""
+        scores = {"http://cn.example/sub": _cn(30, 0),
+                  "http://ai.example/sub": _ai(6, 6)}
         seen: dict = {}
-        self._patch_main(monkeypatch, scores_cn, seen)
+        self._patch_main(monkeypatch, scores, seen)
         monkeypatch.setattr(fc, "CN_LIFECYCLE_ENABLED", True)
+        monkeypatch.setattr(fc, "AI_LIFECYCLE_ENABLED", True)
         fc.main()
-        assert seen["eval"] == scores_cn
-        assert seen["upd"] == scores_cn
-        assert seen["probe"] == scores_cn
+        assert seen["eval"] == evolution.cn_source_stats(scores)
+        assert seen["eval_ai"] == evolution.ai_source_stats(scores)
+        assert seen["upd"] == evolution.cn_source_stats(scores)
+        assert seen["probe"] == evolution.cn_source_stats(scores)
+        assert seen["probe_ai"] == evolution.ai_source_stats(scores)
 
     def test_breaker_off_passes_empty(self, pipeline, monkeypatch):
-        scores_cn = {"http://low.example/sub": _cn(30, 0)}
+        """双熔断关闭：两个维度全部退化为改造前行为（空 stats）。"""
+        scores = {"http://cn.example/sub": _cn(30, 0),
+                  "http://ai.example/sub": _ai(6, 6)}
         seen: dict = {}
-        self._patch_main(monkeypatch, scores_cn, seen)
+        self._patch_main(monkeypatch, scores, seen)
         monkeypatch.setattr(fc, "CN_LIFECYCLE_ENABLED", False)
+        monkeypatch.setattr(fc, "AI_LIFECYCLE_ENABLED", False)
         fc.main()
         assert seen["eval"] == {}
+        assert seen["eval_ai"] == {}
         assert seen["upd"] == {}
         assert seen["probe"] == {}
+        assert seen["probe_ai"] == {}
+
+    def test_ai_breaker_off_only(self, pipeline, monkeypatch):
+        """CN 开 / AI 关：cn_stats 照常送达，ai_stats 必须为空（独立熔断）。"""
+        scores = {"http://cn.example/sub": _cn(30, 0),
+                  "http://ai.example/sub": _ai(6, 6)}
+        seen: dict = {}
+        self._patch_main(monkeypatch, scores, seen)
+        monkeypatch.setattr(fc, "CN_LIFECYCLE_ENABLED", True)
+        monkeypatch.setattr(fc, "AI_LIFECYCLE_ENABLED", False)
+        fc.main()
+        assert seen["eval"] == evolution.cn_source_stats(scores)
+        assert seen["upd"] == evolution.cn_source_stats(scores)
+        assert seen["probe"] == evolution.cn_source_stats(scores)
+        assert seen["eval_ai"] == {}
+        assert seen["probe_ai"] == {}

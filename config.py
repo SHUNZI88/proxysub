@@ -94,6 +94,25 @@ CN_LIFECYCLE_ENABLED = True   # cn 源级生命周期总熔断（淘汰/晋升�
                               # main() 不构造 cn_stats，三个消费点全部退化为改造前行为
                               # （无实证 = 不干预），无需回滚代码即可止血
 
+# ---- AI 源级生命周期（2026-10-21 任务#94，消费沙箱报告 by_source 的 AI 证据口径）----
+# 数据链：cn_probe 报告 by_source[*].{ai_tested,ai_reachable,ai_api}（任务#92）
+# → evolution.update_source_scores_ai 折回 source_scores.json 的 ai_* 字段
+# → ai_source_stats / ai_fetch_tilt / evaluate_candidates 的 AI 优先晋升。
+AI_MIN_SAMPLE = 6             # ai_tested 下限：AI 证据只覆盖**有 ai 数据的通过节点**
+                              # （证据收集受预算约束可能跳过尾部），样本量级远小于
+                              # cn_tested（全测试集），故非对称取低门槛；不足不干预
+AI_HIGH_YIELD = 0.4           # 高产判据：ai_api/ai_tested 的 Wilson 95% **下界**
+                              # >= 0.4（用下界防小样本虚高，同 cn 维度口径）
+AI_TILT_HIGH = 1.5            # AI 高产源配额系数（与 CN_TILT_HIGH 同语义：多抓）
+                              # 注意非对称：**无 AI_TILT_LOW**——AI 不可达≠节点死亡
+                              # （仍是可用代理），对低 AI 源减配会饿死通用节点供给；
+                              # 低产 down-tilt 由 cn 通道负责（zero_real_ok/cn_low）
+PROBE_TILT_MAX = 2.0          # cn×AI 复合倾斜封顶：单源双侧实证最多拿 2 倍拨测配额
+                              # （PROBE_SOURCE_SAMPLE_CAP 240×2.0=480≈样本池 24%），
+                              # 防单一源霸占拨测预算、挤掉新鲜节点试用机会
+AI_LIFECYCLE_ENABLED = True   # AI 源级生命周期总熔断（晋升优先/拨测倾斜）：置 False 时
+                              # main() 不构造 ai_stats，两个消费点退化为改造前行为
+
 # ====================== 硬性静态门槛（协议白名单 + 关键参数校验）=====================
 # 云端剥离真实流量拨测后，源质量完全依赖静态门槛把关：
 #   1) 协议白名单：仅收录优质现代协议（Hysteria2 / VLESS-Reality / Trojan / TUIC 等），

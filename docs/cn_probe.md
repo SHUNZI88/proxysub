@@ -245,7 +245,9 @@ Runner，或把 L3 落实为可观测、可验证的真实任务。
   量化，供后续源级反哺（哪些源产的节点 AI 可用率高）；
 - `counts.by_source[*]`：2026-10-21 起（任务#92）在 `{tested, passed}`
   之外扩出 `{ai_tested, ai_reachable, ai_api}`——分源 AI 证据口径
-  （只覆盖有 ai 数据的通过节点；无证据记 0 而非缺键），CI 侧据此计算
-  分源 AI 效率，接入候选晋升与拨测配额倾斜（任务#94）；
+  （只覆盖有 ai 数据的通过节点；无证据记 0 而非缺键）。CI 侧
+  `evolution.update_source_scores_ai` 据此折回 `source_scores.json` 的
+  `ai_*` 字段（只在 `ai_tested>0` 时写、不抹零），接入候选晋升 AI 优先
+  与拨测复合倾斜（cn×AI 相乘封顶 2.0，任务#94，2026-10-21 完成）；
 - `nodes[].ai`：`{codes, reach, ai_reachable, ai_api}` 逐节点证据；
 - `dimensions.ai`：语义说明（与 us_ok/cn_ok 并列的第三测量维度）。

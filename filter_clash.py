@@ -45,6 +45,7 @@ from common import (  # 叶子工具函数（配置常量见下面 config import
     survival_state_fresh,
 )
 from config import (  # 可调常量（P1-2 起独立模块）
+    AI_LIFECYCLE_ENABLED,
     ASIA_REGIONS,
     BAD_SOURCES_FILE,
     CANDIDATES_CLASH,
@@ -91,6 +92,7 @@ from config import (  # 可调常量（P1-2 起独立模块）
     PROBE_PREFERRED_PER_REGION,
     PROBE_RESERVE_PER_REGION,
     PROBE_SOURCE_SAMPLE_CAP,
+    PROBE_TILT_MAX,
     PROBE_URL,
     REGION_QUOTAS,
     REGION_RULES,
@@ -238,6 +240,7 @@ def select_probe_sample(
     today_str: str,
     source_keys=None,
     cn_stats=None,
+    ai_stats=None,
 ) -> list[str]:
     """从 TCP 存活节点中选出进入真实拨测的样本（顺序即优先级）。
 
@@ -262,24 +265,41 @@ def select_probe_sample(
        系数缩放 PROBE_PER_CANDIDATE 试用配额。**无实证（缺数据/样本不足/
        陈旧）一律不干预**，行为与改造前完全一致。单源基础上限
        PROBE_SOURCE_SAMPLE_CAP 同样只对有实证的源生效（没证据就不擅自限死，
-       避免把未知源一刀切死）。
+       避免把未知源一刀切死）；
+    6) **AI 源级配额倾斜**（2026-10-21 任务#94）：有新鲜 AI 高产实证的源
+       （ai_api/ai_tested 的 Wilson 下界 >= AI_HIGH_YIELD，见
+       evolution.ai_fetch_tilt）按 AI_TILT_HIGH 加倍；与 cn 倾斜**相乘
+       后封顶 PROBE_TILT_MAX**（双侧实证最多 2 倍，防单一源霸占预算）。
+       非对称设计：AI 只有高产档、无低产档——AI 不可达≠节点死亡，减配会
+       饿死通用节点供给。两侧都无实证时不干预。
 
     曾经的阶段 1「轻量探活」已废除：它与 TCP 存活检查同为一次 TCP connect，
     对 3000 个节点重复一遍（通过率 99.7%）只拖慢运行，不提供任何新信息。
     """
     state_fresh = survival_state_fresh(survival, today_str)
 
-    # ---- Phase B：cn 源级拨测配额倾斜。主源口径与评分阶段一致
-    # （sorted(prov[fp])[0]）；tilt 按源记忆化，避免逐节点重复计算。----
+    # ---- Phase B：cn/AI 源级拨测配额倾斜。主源口径与评分阶段一致
+    # （sorted(prov[fp])[0]）；tilt 按源记忆化，避免逐节点重复计算。
+    # 复合规则：cn_tilt × ai_tilt，封顶 PROBE_TILT_MAX；两侧皆无实证
+    # （None）才整体不干预——单侧有实证时另一侧按 1.0 中性参与。----
     tilt_cache: dict[str, float | None] = {}
 
     def _tilt(url: str | None) -> float | None:
         if url is None:
             return None
         if url not in tilt_cache:
-            tilt_cache[url] = (evolution.cn_fetch_tilt(url, cn_stats,
-                                                        max_age_s=CN_DECISION_MAX_AGE_S)
-                               if cn_stats else None)
+            cn_t = (evolution.cn_fetch_tilt(url, cn_stats,
+                                            max_age_s=CN_DECISION_MAX_AGE_S)
+                    if cn_stats else None)
+            ai_t = (evolution.ai_fetch_tilt(url, ai_stats,
+                                            max_age_s=CN_DECISION_MAX_AGE_S)
+                    if ai_stats else None)
+            if cn_t is None and ai_t is None:
+                tilt_cache[url] = None
+            else:
+                tilt_cache[url] = min(PROBE_TILT_MAX,
+                                      (cn_t if cn_t is not None else 1.0)
+                                      * (ai_t if ai_t is not None else 1.0))
         return tilt_cache[url]
 
     def _probe_rank(fp: str) -> tuple:
@@ -303,8 +323,13 @@ def select_probe_sample(
     src_count: dict[str, int] = defaultdict(int)   # 主源已占用样本数（基础上限语义）
 
     def _src_cap(fp: str) -> int | None:
-        """该节点主源的本轮拨测基础上限；无实证返回 None（不干预）。"""
-        if not cn_stats or not prov.get(fp):
+        """该节点主源的本轮拨测基础上限；无实证返回 None（不干预）。
+
+        守卫必须两侧联判（cn_stats 与 ai_stats 皆空才返回）——首版只查
+        cn_stats，会在「cn 无实证但 AI 有实证」时把 _tilt 的复合结果
+        悄悄短路掉（任务#94 接线自查发现）。
+        """
+        if (not cn_stats and not ai_stats) or not prov.get(fp):
             return None
         t = _tilt(sorted(prov[fp])[0])
         return None if t is None else max(1, int(PROBE_SOURCE_SAMPLE_CAP * t))
@@ -361,7 +386,9 @@ def select_probe_sample(
             _take(fp)
     for cu in cand_urls:
         extra = [fp for fp in alive_sorted if cu in prov[fp] and fp not in official_fps and fp not in chosen]
-        # 候选源按 cn 倾斜系数缩放试用配额（低产少试、高产多试；无实证原额）
+        # 候选源按 cn×AI 复合倾斜系数缩放试用配额（低产少试、高产多试；
+        # 无实证原额）。与官方源基础上限共用 _tilt——AI 只有高产档：
+        # 低 AI 不减配额（AI 不可达≠节点死亡），低产 down-tilt 由 cn 负责。
         tilt = _tilt(cu)
         quota = PROBE_PER_CANDIDATE if tilt is None else max(1, int(PROBE_PER_CANDIDATE * tilt))
         extra = extra[:quota]
@@ -581,7 +608,7 @@ def liveness_stage(unique: dict[str, dict]) -> tuple[dict[str, float], int]:
 
 def real_probe_stage(tcp_lat: dict[str, float], unique: dict[str, dict], prov: dict[str, set],
                      official_fps: set, cand_urls: list[str], per_source_keys,
-                     blocklist, cn_stats=None) -> ProbeStageResult:
+                     blocklist, cn_stats=None, ai_stats=None) -> ProbeStageResult:
     """阶段 5：真实拨测（输出的死活闸门）。
 
     拨测是输出的死活闸门（REQUIRE_REAL_PROBE_IN_OUTPUT）：只有本轮真实拨测
@@ -595,7 +622,9 @@ def real_probe_stage(tcp_lat: dict[str, float], unique: dict[str, dict], prov: d
     （共享主机按节点粒度封锁，见 host_users 判断）。
 
     `cn_stats`（可选）：源级中国实测维度，透传给 select_probe_sample 做配额
-    倾斜；None/空 = 不干预（改造前行为）。
+    倾斜；None/空 = 不干预（改造前行为）。`ai_stats`（可选，2026-10-21
+    任务#94）：源级 AI 实证维度，与 cn 倾斜复合（相乘封顶 PROBE_TILT_MAX）；
+    None/空 = 不干预。
     """
     survival_pre = load_json(SURVIVAL_FILE, {})
     probe: dict[str, dict] = {}
@@ -607,7 +636,7 @@ def real_probe_stage(tcp_lat: dict[str, float], unique: dict[str, dict], prov: d
     else:
         sample = select_probe_sample(
             tcp_lat, unique, prov, official_fps, cand_urls,
-            survival_pre, _today(), per_source_keys, cn_stats,
+            survival_pre, _today(), per_source_keys, cn_stats, ai_stats,
         )
         state_fresh = survival_state_fresh(survival_pre, _today())
         print(f"拨测样本: {len(sample)}/{len(tcp_lat)}（TCP 存活节点中选出；"
@@ -1007,11 +1036,20 @@ def main() -> None:
               f"（淘汰/晋升/拨测倾斜已启用）")
     elif CN_LIFECYCLE_ENABLED:
         print("cn源级生命周期: 无实证（报告缺失/陈旧——本轮流待观察，不干预）")
+    # AI 源级生命周期（2026-10-21 任务#94）：与 cn 共用同一份
+    # source_scores（ai_* 字段由 evolution.update_source_scores_ai 写入），
+    # 消费点=候选晋升 AI 优先 + 拨测配额复合倾斜；总熔断 AI_LIFECYCLE_ENABLED。
+    ai_stats = evolution.ai_source_stats(source_scores_cn) if AI_LIFECYCLE_ENABLED else {}
+    if ai_stats:
+        print(f"AI源级生命周期: {len(ai_stats)} 个源有 AI 可达性实证"
+              f"（晋升优先/拨测倾斜已启用）")
+    elif AI_LIFECYCLE_ENABLED:
+        print("AI源级生命周期: 无实证（报告缺失/陈旧或证据预算跳过——不干预）")
 
     # ---- 4+5. 存活性检查 + 真实拨测 ----
     tcp_lat, udp_exempt = liveness_stage(unique)
     ps = real_probe_stage(tcp_lat, unique, prov, official_fps, cand_urls,
-                          per_source.keys(), blocklist, cn_stats)
+                          per_source.keys(), blocklist, cn_stats, ai_stats)
     probe, sample, bin_path = ps.probe, ps.sample, ps.bin_path
     real_ok, tampered, probe_reasons = ps.real_ok, ps.tampered, ps.probe_reasons
     survival_pre = ps.survival_pre
@@ -1021,7 +1059,7 @@ def main() -> None:
                                  official_fps, unique, tcp_lat, real_ok, probe,
                                  tampered, fstats, src_flags, bin_path)
     cand_rep = sm.evaluate_candidates(cands, {u: per_src[u] for u in cand_urls},
-                                      sources, cn_stats)
+                                      sources, cn_stats, ai_stats)
     off_rep = sm.update_official(sources, history, {u: per_src[u] for u in off_urls},
                                  cn_stats)
     for u in cand_rep["promoted"]:

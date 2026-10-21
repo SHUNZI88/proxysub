@@ -253,6 +253,97 @@ def update_source_scores_cn(report: dict, path: str = config.SOURCE_SCORES_FILE,
     return scores
 
 
+def update_source_scores_ai(report: dict, path: str = config.SOURCE_SCORES_FILE,
+                            url_by_src: dict | None = None) -> dict:
+    """把报告 by_source 的 AI 证据口径折回 source_scores.json 的 ai_* 字段。
+
+    2026-10-21 任务#94（数据生产者是任务#92 的报告字段）：by_source 每行的
+    `{ai_tested, ai_reachable, ai_api}` → source_scores.json 主键 URL 上的
+    `{ai_tested, ai_reachable, ai_api, ai_api_rate, ai_last}`。键口径与
+    `update_source_scores_cn` 一致（url_by_src 映射，未传退回 src 镜像键）。
+
+    与 cn 维度的两处刻意差异：
+      ① **只在 ai_tested > 0 时写**——AI 证据只覆盖有 ai 数据的通过节点，
+         某轮无证据（该源无通过节点/证据预算跳过）不得把上一轮的实证抹成 0；
+         陈旧由消费侧 ai_last 年龄守卫自然过期；
+      ② 不做镜像键清理（cn 函数已做，ai 键只写 URL 主键形态）。
+    守卫：报告陈旧跳过；"?" 伪源不写。
+    """
+    if _report_age_s(report) > config.VERIFICATION_MAX_AGE_S:
+        return _load_json(path, {})
+    scores = _load_json(path, {})
+    by_source = report.get("counts", {}).get("by_source", {})
+    for src, c in by_source.items():
+        if not src or src == "?":
+            continue
+        tested = int(c.get("ai_tested") or 0)
+        if tested <= 0:
+            continue                    # 无 AI 证据：不写也不抹（见 docstring ①）
+        key = (url_by_src or {}).get(src, src)
+        entry = scores.get(key, {})
+        api = int(c.get("ai_api") or 0)
+        entry["ai_tested"] = tested
+        entry["ai_reachable"] = int(c.get("ai_reachable") or 0)
+        entry["ai_api"] = api
+        entry["ai_api_rate"] = round(api / tested, 4)
+        entry["ai_last"] = report.get("generated_at")
+        scores[key] = entry
+    _save_json(path, scores)
+    return scores
+
+
+def ai_source_stats(scores: dict) -> dict:
+    """从 source_scores.json 内容提取每 URL 的 AI 维度（仅含 ai_tested 的条目）。
+
+    与 `cn_source_stats` 同构：调用方（晋升/拨测倾斜）按 URL 主键查找。
+    """
+    out: dict = {}
+    for url, rec in (scores or {}).items():
+        if isinstance(rec, dict) and "ai_tested" in rec:
+            out[url] = {k: rec.get(k) for k in
+                        ("ai_tested", "ai_reachable", "ai_api", "ai_api_rate", "ai_last")}
+    return out
+
+
+def ai_fetch_tilt(url: str | None, ai_stats: dict, *,
+                  max_age_s: int | None = None) -> float | None:
+    """源级 AI 高产拨测配额倾斜系数（任务#94）。返回 None = 无实证，不干预。
+
+    判据（非对称设计，理由见 config.AI_TILT_HIGH 注释）：
+      - ai_tested >= AI_MIN_SAMPLE 且 ai_api/ai_tested 的 Wilson 95% **下界**
+        >= AI_HIGH_YIELD -> AI_TILT_HIGH（AI 实证高产源多抓：把拨测算力集中
+        到真能连 AI 的源，直接服务「可用于人工智能连接的纯净节点」诉求）；
+      - 其余有实证者 -> 1.0；
+      - 样本不足 / 数据陈旧 / 无 ai_last / 无记录 -> None（不干预）。
+    **没有低产档**：AI 不可达≠节点死亡，对低 AI 源减配会饿死通用节点供给，
+    低产 down-tilt 由 cn 通道（cn_low/zero_real_ok）负责。
+    """
+    if not url:
+        return None
+    ai = (ai_stats or {}).get(url) or {}
+    tested = int(ai.get("ai_tested") or 0)
+    if tested < config.AI_MIN_SAMPLE:
+        return None
+    if max_age_s is not None:
+        last = ai.get("ai_last")
+        if not last:
+            return None
+        try:
+            dt = datetime.datetime.fromisoformat(str(last).replace("Z", "+00:00"))
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=datetime.timezone.utc)
+            age = (datetime.datetime.now(datetime.timezone.utc) - dt).total_seconds()
+        except Exception:
+            return None
+        if age > max_age_s:
+            return None
+    api = int(ai.get("ai_api") or 0)
+    lo, _ = common.wilson_ci(api, tested)
+    if lo >= config.AI_HIGH_YIELD:
+        return config.AI_TILT_HIGH
+    return 1.0
+
+
 def cn_source_bonus(src: str | None, scores: dict, *, max_bonus: float = 60.0) -> float:
     """源级中国通过率加成（ms 等价）：高通过率源排更前 / 拿更多配额。
 
@@ -478,15 +569,16 @@ def update_protocol_history(report: dict,
 # ------------------------------------------------------------------ 编排
 def run_evolution(report: dict, repo_root: str = ".",
                   url_by_src: dict | None = None) -> dict:
-    """CI 侧一次性编排 4 个闭环；返回各产物摘要（供 main 打印/提交）。
+    """CI 侧一次性编排 5 个闭环；返回各产物摘要（供 main 打印/提交）。
 
-    `url_by_src`（src_key(url) -> url）：供源级 cn 维度写入正确的主键 URL，
+    `url_by_src`（src_key(url) -> url）：供源级 cn/ai 维度写入正确的主键 URL，
     见 update_source_scores_cn 的键口径说明。
     """
     def _p(name):
         return os.path.join(repo_root, name)
     cn_hist = update_cn_history(report, _p(config.CN_HISTORY_FILE))
     src = update_source_scores_cn(report, _p(config.SOURCE_SCORES_FILE), url_by_src)
+    update_source_scores_ai(report, _p(config.SOURCE_SCORES_FILE), url_by_src)
     proto_hist = update_protocol_history(report, _p(config.PROTOCOL_HISTORY_FILE))
     params = learn_thresholds(report, _p(config.LEARNED_THRESHOLDS_FILE),
                               _p(config.THRESHOLD_HISTORY_FILE))
@@ -494,6 +586,7 @@ def run_evolution(report: dict, repo_root: str = ".",
     return {
         "cn_history_nodes": len(cn_hist),
         "source_scores_with_cn": sum(1 for v in src.values() if "cn_pass_rate" in v),
+        "source_scores_with_ai": sum(1 for v in src.values() if "ai_tested" in v),
         "protocol_history_protocols": len(proto_hist),
         "learned": params,
         "probe_history_line": line,

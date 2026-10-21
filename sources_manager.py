@@ -435,7 +435,8 @@ def discover(
 # ====================== probation / promotion / demotion ======================
 
 def evaluate_candidates(cands: dict, run: dict[str, dict], sources: dict,
-                        cn_stats: dict | None = None) -> dict:
+                        cn_stats: dict | None = None,
+                        ai_stats: dict | None = None) -> dict:
     """run[url] = {ok, count, usable, unique_new, tamper, probed, flags}。
 
     `cn_stats`（可选，2026-10-20）：源级中国实测维度（格式同 update_official）。
@@ -444,6 +445,14 @@ def evaluate_candidates(cands: dict, run: dict[str, dict], sources: dict,
     组内按 Wilson 95% **下界**降序（同点估计下样本大者下界更高、证据更硬，
     防 3/3 这类小样本虚高霸榜）；其余候选退化为按独有贡献降序。
     cn_stats=None / 无实证时键恒为 (1, 0.0, -uniq)，与改造前完全一致。
+
+    `ai_stats`（可选，2026-10-21 任务#94）：源级 AI 实证维度（格式同
+    cn_stats，见 evolution.ai_source_stats）。**只影响晋升排序**：有正向
+    AI 实证（ai_tested >= AI_MIN_SAMPLE 且 ai_api >= 1）的候选排在 cn 实证
+    之前——用户核心诉求是「可用于 AI 连接的节点」，AI 高产源应优先补入
+    正式源池；组内按 ai_api 的 Wilson 下界降序，再按 cn 下界、独有贡献。
+    ai_stats=None / 无实证时排序键退化为 cn 口径（前缀恒为 (1, 0.0)），
+    与改造前完全一致。
     """
     rep = {"promoted": [], "rejected": {}}
     ready = []
@@ -489,12 +498,23 @@ def evaluate_candidates(cands: dict, run: dict[str, dict], sources: dict,
         url, c = kv
         uniq = sum(h.get("unique_new", 0) for h in c.get("history", []))
         cn = (cn_stats or {}).get(url) or {}
-        tested = int(cn.get("cn_tested") or 0)
-        passed = int(cn.get("cn_passed") or 0)
-        if tested >= config.CN_MIN_SAMPLE_HIGH and passed >= 1:
-            lo, _ = wilson_ci(passed, tested)
-            return (0, -lo, -uniq)   # 有正向实证：Wilson 下界降序，再按独有贡献
-        return (1, 0.0, -uniq)       # 无实证/小样本/零通过：原排序（独有贡献降序）
+        cn_t = int(cn.get("cn_tested") or 0)
+        cn_p = int(cn.get("cn_passed") or 0)
+        cn_tier, cn_lo = 1, 0.0
+        if cn_t >= config.CN_MIN_SAMPLE_HIGH and cn_p >= 1:
+            cn_lo, _ = wilson_ci(cn_p, cn_t)
+            cn_tier = 0               # 有正向实证：Wilson 下界降序，再按独有贡献
+        # AI 实证优先（任务#94）：用户核心诉求是可用于 AI 连接的节点，
+        # AI 高产源排最前；无 ai_stats 时 tier 恒 1、lo 恒 0.0，键形态
+        # 与改造前一致（只是多了恒定前缀）。
+        ai = (ai_stats or {}).get(url) or {}
+        ai_t = int(ai.get("ai_tested") or 0)
+        ai_p = int(ai.get("ai_api") or 0)
+        ai_tier, ai_lo = 1, 0.0
+        if ai_t >= config.AI_MIN_SAMPLE and ai_p >= 1:
+            ai_lo, _ = wilson_ci(ai_p, ai_t)
+            ai_tier = 0
+        return (ai_tier, -ai_lo, cn_tier, -cn_lo, -uniq)
 
     ready.sort(key=_promo_key)
     for url, c in ready[:MAX_PROMOTIONS_PER_RUN]:
