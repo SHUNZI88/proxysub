@@ -52,13 +52,6 @@
       "probation_runs": 3
     },
     {
-      "url": "https://raw.githubusercontent.com/ermaozi/get_subscribe/main/subscribe/clash.yml",
-      "origin": "discovered",
-      "added": "2026-10-22",
-      "repo": "ermaozi/get_subscribe",
-      "probation_runs": 3
-    },
-    {
       "url": "https://raw.githubusercontent.com/ermaozi/get_subscribe/main/subscribe/reachable/clash.yml",
       "origin": "discovered",
       "added": "2026-10-22",
@@ -176,6 +169,11 @@
       "url": "https://raw.githubusercontent.com/free-nodes/clashfree/main/clash20261017.yml",
       "reason": "cn_low_pass_rate:0/75",
       "date": "2026-10-21"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/ermaozi/get_subscribe/main/subscribe/clash.yml",
+      "reason": "cn_low_pass_rate:5/49",
+      "date": "2026-10-22"
     }
   ],
   "deny_repos": []
