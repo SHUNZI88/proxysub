@@ -5,7 +5,7 @@
       "origin": "channel_web",
       "added": "2026-10-19",
       "first_seen": "2026-10-19",
-      "runs": 12,
+      "runs": 13,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -24,13 +24,6 @@
           "tamper": 0
         },
         {
-          "date": "2026-10-20",
-          "count": 25,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
           "date": "2026-10-21",
           "count": 25,
           "usable": 0,
@@ -60,6 +53,13 @@
         },
         {
           "date": "2026-10-21",
+          "count": 25,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-22",
           "count": 25,
           "usable": 0,
           "unique_new": 0,
@@ -67,64 +67,6 @@
         }
       ],
       "required_runs": 3
-    },
-    "https://raw.githubusercontent.com/ermaozi/get_subscribe/main/subscribe/clash.yml": {
-      "repo": "ermaozi/get_subscribe",
-      "stars": 9373,
-      "repo_created": "2021-07-24T01:42:43Z",
-      "reputation": "ok",
-      "reputation_note": "stars=9373,age=1915d",
-      "required_runs": 3,
-      "first_seen": "2026-10-21",
-      "initial_nodes": 385,
-      "runs": 2,
-      "good_streak": 2,
-      "fail_streak": 0,
-      "history": [
-        {
-          "date": "2026-10-21",
-          "count": 385,
-          "usable": 65,
-          "unique_new": 17,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-21",
-          "count": 385,
-          "usable": 68,
-          "unique_new": 15,
-          "tamper": 0
-        }
-      ]
-    },
-    "https://raw.githubusercontent.com/ermaozi/get_subscribe/main/subscribe/reachable/clash.yml": {
-      "repo": "ermaozi/get_subscribe",
-      "stars": 9373,
-      "repo_created": "2021-07-24T01:42:43Z",
-      "reputation": "ok",
-      "reputation_note": "stars=9373,age=1915d",
-      "required_runs": 3,
-      "first_seen": "2026-10-21",
-      "initial_nodes": 315,
-      "runs": 2,
-      "good_streak": 2,
-      "fail_streak": 0,
-      "history": [
-        {
-          "date": "2026-10-21",
-          "count": 315,
-          "usable": 59,
-          "unique_new": 17,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-21",
-          "count": 315,
-          "usable": 62,
-          "unique_new": 15,
-          "tamper": 0
-        }
-      ]
     },
     "https://raw.githubusercontent.com/peacefish/nodefree/main/sub/sub_merge_clash.yaml": {
       "repo": "peacefish/nodefree",
@@ -135,7 +77,7 @@
       "required_runs": 3,
       "first_seen": "2026-10-21",
       "initial_nodes": 976,
-      "runs": 2,
+      "runs": 3,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -148,6 +90,13 @@
         },
         {
           "date": "2026-10-21",
+          "count": 976,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-22",
           "count": 976,
           "usable": 0,
           "unique_new": 0,
@@ -164,7 +113,7 @@
       "required_runs": 3,
       "first_seen": "2026-10-21",
       "initial_nodes": 26,
-      "runs": 2,
+      "runs": 3,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -177,6 +126,13 @@
         },
         {
           "date": "2026-10-21",
+          "count": 26,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-22",
           "count": 26,
           "usable": 0,
           "unique_new": 0,
@@ -193,7 +149,7 @@
       "required_runs": 3,
       "first_seen": "2026-10-21",
       "initial_nodes": 22,
-      "runs": 2,
+      "runs": 3,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -206,6 +162,13 @@
         },
         {
           "date": "2026-10-21",
+          "count": 22,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-22",
           "count": 22,
           "usable": 0,
           "unique_new": 0,
@@ -222,7 +185,7 @@
       "required_runs": 3,
       "first_seen": "2026-10-21",
       "initial_nodes": 21,
-      "runs": 2,
+      "runs": 3,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -235,6 +198,13 @@
         },
         {
           "date": "2026-10-21",
+          "count": 21,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-22",
           "count": 21,
           "usable": 0,
           "unique_new": 0,

@@ -622,6 +622,12 @@
       "added": "2026-10-19",
       "expires": "2026-11-02",
       "source": "https://raw.githubusercontent.com/clashfreenodecom/clashfreenode.com/main/feed/clash-20261003.yaml"
+    },
+    "172.67.152.148": {
+      "reason": "tls_mitm:certificate verify failed: Hostname mismatch, certificate is not valid for ",
+      "added": "2026-10-22",
+      "expires": "2026-11-05",
+      "source": "https://raw.githubusercontent.com/chengaopan/AutoMergePublicNodes/master/list.meta.yml"
     }
   }
 }
