@@ -1,54 +1,51 @@
 # proxysub 健康报告
 
-更新时间：2026-10-22 21:33 UTC
+更新时间：2026-10-23 00:56 UTC
 运行模式：**mihomo**
 
 ## 概览
 
-- 最终节点：**118**（合规 74，高风险隔离 44）
-- 真实拨测通过率：**46.2%**（363/786）
-- TCP 存活：1046 | 正式源 9 个 | 候选源 5 个
+- 最终节点：**144**（合规 106，高风险隔离 38）
+- 真实拨测通过率：**46.3%**（353/763）
+- TCP 存活：1022 | 正式源 9 个 | 候选源 5 个
 
 ## 协议分布
 
 | 协议 | 数量 |
 |---|---|
-| VLESS-TLS | 35 |
-| Hysteria2 | 32 |
-| VLESS-Reality | 27 |
-| Trojan | 15 |
-| Anytls | 5 |
+| VLESS-TLS | 51 |
+| VLESS-Reality | 37 |
+| Hysteria2 | 28 |
+| Trojan | 20 |
+| Anytls | 4 |
 | Hysteria | 4 |
 
 ## 区域分布
 
 | 区域 | 数量 |
 |---|---|
-| 🌐 其他 | 94 |
-| 🇺🇸 美国 | 8 |
-| 🇯🇵 日本 | 5 |
-| 🇸🇬 新加坡 | 5 |
-| 🇭🇰 香港 | 4 |
-| 🇹🇼 台湾 | 1 |
-| 🇰🇷 韩国 | 1 |
+| 🌐 其他 | 111 |
+| 🇸🇬 新加坡 | 11 |
+| 🇯🇵 日本 | 10 |
+| 🇭🇰 香港 | 5 |
+| 🇺🇸 美国 | 4 |
+| 🇬🇧 英国 | 3 |
 
 ## 源贡献 Top 10（正式源）
 
 | 源 | 真实通过 | 独有存活 | 存活 |
 |---|---|---|---|
-| `Au1rxx/free-vpn-subscriptions` | 147 | 409 | 416 |
-| `yy1588133/proxy-pool` | 126 | 207 | 410 |
-| `peasoft/NoMoreWalls` | 78 | 19 | 204 |
-| `chengaopan/AutoMergePublicNodes` | 78 | 2 | 202 |
-| `ermaozi/get_subscribe` | 58 | 22 | 152 |
-| `lanzm/MetaFetch` | 25 | 74 | 78 |
-| `ovmvo/FreeSub` | 11 | 17 | 17 |
-| `shaoyouvip/free` | 10 | 9 | 10 |
+| `Au1rxx/free-vpn-subscriptions` | 165 | 426 | 428 |
+| `yy1588133/proxy-pool` | 102 | 248 | 407 |
+| `chengaopan/AutoMergePublicNodes` | 82 | 0 | 199 |
+| `peasoft/NoMoreWalls` | 82 | 0 | 199 |
+| `lanzm/MetaFetch` | 37 | 80 | 81 |
+| `shaoyouvip/free` | 13 | 11 | 13 |
+| `ovmvo/FreeSub` | 12 | 16 | 16 |
 | `Russ534/clash` | 0 | 1 | 1 |
 | `awesome-vpn/awesome-vpn` | 0 | 0 | 0 |
 
 ## 警告
 
-- 淘汰源 `https://raw.githubusercontent.com/ermaozi/get_subscribe/main/subscribe/reachable/clash.yml`：cn_low_pass_rate:5/49
-- 可疑源结构：Au1rxx: template_cluster:d501ee79:103.106.229.0/24(46/92)
-- ⚠️ 最终节点数 118 低于下限 150（候选池不足）
+- 本轮无源被淘汰
+- ⚠️ 最终节点数 144 低于下限 150（候选池不足）
