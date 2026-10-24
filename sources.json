@@ -1,178 +1,178 @@
 {
- "_doc": "official: 正式源（每次都抓取）。origin=manual 为手工添加，discovered 为自动发现后晋升。removed: 被淘汰的源及原因（30 天内不会被重新发现）。deny_repos: 永不自动收录的仓库 owner/repo。",
- "max_official": 30,
- "official": [
-  {
-   "url": "https://raw.githubusercontent.com/Au1rxx/free-vpn-subscriptions/main/output/clash.yaml",
-   "origin": "manual",
-   "added": "2026-10-10"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/yy1588133/proxy-pool/main/clash.yaml",
-   "origin": "manual",
-   "added": "2026-10-10"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/chengaopan/AutoMergePublicNodes/master/list.meta.yml",
-   "origin": "manual",
-   "added": "2026-10-10"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/Russ534/clash/cdf534db8f8c9306d61c630b840d0a1936d09dd2/bp.yaml",
-   "origin": "manual",
-   "added": "2026-10-10"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/shaoyouvip/free/main/mihomo.yaml",
-   "origin": "manual",
-   "added": "2026-10-10"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/lanzm/MetaFetch/master/list.meta.yml",
-   "origin": "manual",
-   "added": "2026-10-10"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/peasoft/NoMoreWalls/master/list.meta.yml",
-   "origin": "manual",
-   "added": "2026-10-10"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/awesome-vpn/awesome-vpn/master/clash.yaml",
-   "origin": "discovered",
-   "added": "2026-10-10",
-   "repo": "awesome-vpn/awesome-vpn",
-   "probation_runs": 3
-  },
-  {
-   "url": "https://blog.ermao.net/sub/clash/ermao.net",
-   "origin": "manual",
-   "added": "2026-10-24",
-   "recall_note": "2026-10-24 召回（任务#105）：原淘汰原因 zero_unique_contribution:16runs；cf_blocked 整源淘汰已废除、低产判据改绝对零通过"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/ovmvo/FreeSub/main/sub/permanent/mihomo.yaml",
-   "origin": "manual",
-   "added": "2026-10-24",
-   "recall_note": "2026-10-24 召回（任务#105）：原淘汰原因 cf_blocked:7/20；cf_blocked 整源淘汰已废除、低产判据改绝对零通过"
-  }
- ],
- "removed": [
-  {
-   "url": "https://raw.githubusercontent.com/zhuhaiuk/free-nodes/main/clash_config.yaml",
-   "reason": "honeypot_tamper:4/9",
-   "date": "2026-10-10"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/PuddinCat/BestClash/refs/heads/main/proxies.yaml",
-   "reason": "cf_blocked:4/12",
-   "date": "2026-10-11"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/Ruk1ng001/freeSub/main/clash.yaml",
-   "reason": "cf_blocked:4/12",
-   "date": "2026-10-11"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/snakem982/proxypool/main/source/clash-meta-2.yaml",
-   "reason": "cf_blocked:8/23",
-   "date": "2026-10-12"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/zhangkaiitugithub/passcro/main/speednodes.yaml",
-   "reason": "zero_unique_contribution:16runs",
-   "date": "2026-10-12"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/F0rc3Run/F0rc3Run/main/Best-Results/clash.yaml",
-   "reason": "zero_unique_contribution:16runs",
-   "date": "2026-10-13"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/F0rc3Run/F0rc3Run/main/Best-Results/clash-provider.yaml",
-   "reason": "zero_unique_contribution:16runs",
-   "date": "2026-10-13"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/xiaocongyu66/proxypool/main/output/clash.yml",
-   "reason": "zero_unique_contribution:16runs",
-   "date": "2026-10-14"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/anaer/Sub/main/clash.yaml",
-   "reason": "zero_real_ok:4runs",
-   "date": "2026-10-14"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/Barabama/FreeNodes/main/nodes/nodefree.yaml",
-   "reason": "zero_real_ok:4runs",
-   "date": "2026-10-14"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/OgdenThomas/freesub/main/output/by-country/clash-US.yaml",
-   "reason": "zero_unique_contribution:16runs",
-   "date": "2026-10-15"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/mahdibland/V2RayAggregator/master/Eternity.yml",
-   "reason": "cf_blocked:5/15",
-   "date": "2026-10-15"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/free-nodes/clashfree/main/clash20261013.yml",
-   "reason": "consecutive_failures:4",
-   "date": "2026-10-18"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/ermaozi/get_subscribe/main/subscribe/v2ray.txt",
-   "reason": "zero_real_ok:4runs",
-   "date": "2026-10-19"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/free-nodes/clashfree/main/clash20261014.yml",
-   "reason": "consecutive_failures:4",
-   "date": "2026-10-19"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/clashfreenodecom/clashfreenode.com/main/feed/clash-20261003.yaml",
-   "reason": "cn_low_pass_rate:0/260",
-   "date": "2026-10-20"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/wuge0/free-nodes/main/output/clash.yaml",
-   "reason": "cn_low_pass_rate:2/74",
-   "date": "2026-10-20"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/OgdenThomas/freesub/main/output/clash.yaml",
-   "reason": "cn_low_pass_rate:2/48",
-   "date": "2026-10-20"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/VPN-Subcription-Links/ClashX-V2Ray-TopFreeProxy/main/combine/clash.config.yaml",
-   "reason": "cn_low_pass_rate:8/302",
-   "date": "2026-10-20"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/free-nodes/clashfree/main/clash20261016.yml",
-   "reason": "consecutive_failures:4",
-   "date": "2026-10-21"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/free-nodes/clashfree/main/clash20261017.yml",
-   "reason": "cn_low_pass_rate:0/75",
-   "date": "2026-10-21"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/ermaozi/get_subscribe/main/subscribe/clash.yml",
-   "reason": "cn_low_pass_rate:5/49",
-   "date": "2026-10-22"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/ermaozi/get_subscribe/main/subscribe/reachable/clash.yml",
-   "reason": "cn_low_pass_rate:5/49",
-   "date": "2026-10-22"
-  }
- ],
- "deny_repos": []
+  "_doc": "official: 正式源（每次都抓取）。origin=manual 为手工添加，discovered 为自动发现后晋升。removed: 被淘汰的源及原因（30 天内不会被重新发现）。deny_repos: 永不自动收录的仓库 owner/repo。",
+  "max_official": 30,
+  "official": [
+    {
+      "url": "https://raw.githubusercontent.com/chengaopan/AutoMergePublicNodes/master/list.meta.yml",
+      "origin": "manual",
+      "added": "2026-10-10"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Russ534/clash/cdf534db8f8c9306d61c630b840d0a1936d09dd2/bp.yaml",
+      "origin": "manual",
+      "added": "2026-10-10"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/shaoyouvip/free/main/mihomo.yaml",
+      "origin": "manual",
+      "added": "2026-10-10"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/peasoft/NoMoreWalls/master/list.meta.yml",
+      "origin": "manual",
+      "added": "2026-10-10"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/awesome-vpn/awesome-vpn/master/clash.yaml",
+      "origin": "discovered",
+      "added": "2026-10-10",
+      "repo": "awesome-vpn/awesome-vpn",
+      "probation_runs": 3
+    },
+    {
+      "url": "https://blog.ermao.net/sub/clash/ermao.net",
+      "origin": "manual",
+      "added": "2026-10-24",
+      "recall_note": "2026-10-24 召回（任务#105）：原淘汰原因 zero_unique_contribution:16runs；cf_blocked 整源淘汰已废除、低产判据改绝对零通过"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/ovmvo/FreeSub/main/sub/permanent/mihomo.yaml",
+      "origin": "manual",
+      "added": "2026-10-24",
+      "recall_note": "2026-10-24 召回（任务#105）：原淘汰原因 cf_blocked:7/20；cf_blocked 整源淘汰已废除、低产判据改绝对零通过"
+    }
+  ],
+  "removed": [
+    {
+      "url": "https://raw.githubusercontent.com/zhuhaiuk/free-nodes/main/clash_config.yaml",
+      "reason": "honeypot_tamper:4/9",
+      "date": "2026-10-10"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/PuddinCat/BestClash/refs/heads/main/proxies.yaml",
+      "reason": "cf_blocked:4/12",
+      "date": "2026-10-11"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Ruk1ng001/freeSub/main/clash.yaml",
+      "reason": "cf_blocked:4/12",
+      "date": "2026-10-11"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/snakem982/proxypool/main/source/clash-meta-2.yaml",
+      "reason": "cf_blocked:8/23",
+      "date": "2026-10-12"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/zhangkaiitugithub/passcro/main/speednodes.yaml",
+      "reason": "zero_unique_contribution:16runs",
+      "date": "2026-10-12"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/F0rc3Run/F0rc3Run/main/Best-Results/clash.yaml",
+      "reason": "zero_unique_contribution:16runs",
+      "date": "2026-10-13"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/F0rc3Run/F0rc3Run/main/Best-Results/clash-provider.yaml",
+      "reason": "zero_unique_contribution:16runs",
+      "date": "2026-10-13"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/xiaocongyu66/proxypool/main/output/clash.yml",
+      "reason": "zero_unique_contribution:16runs",
+      "date": "2026-10-14"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/anaer/Sub/main/clash.yaml",
+      "reason": "zero_real_ok:4runs",
+      "date": "2026-10-14"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Barabama/FreeNodes/main/nodes/nodefree.yaml",
+      "reason": "zero_real_ok:4runs",
+      "date": "2026-10-14"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/OgdenThomas/freesub/main/output/by-country/clash-US.yaml",
+      "reason": "zero_unique_contribution:16runs",
+      "date": "2026-10-15"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/mahdibland/V2RayAggregator/master/Eternity.yml",
+      "reason": "cf_blocked:5/15",
+      "date": "2026-10-15"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/free-nodes/clashfree/main/clash20261013.yml",
+      "reason": "consecutive_failures:4",
+      "date": "2026-10-18"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/ermaozi/get_subscribe/main/subscribe/v2ray.txt",
+      "reason": "zero_real_ok:4runs",
+      "date": "2026-10-19"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/free-nodes/clashfree/main/clash20261014.yml",
+      "reason": "consecutive_failures:4",
+      "date": "2026-10-19"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/clashfreenodecom/clashfreenode.com/main/feed/clash-20261003.yaml",
+      "reason": "cn_low_pass_rate:0/260",
+      "date": "2026-10-20"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/wuge0/free-nodes/main/output/clash.yaml",
+      "reason": "cn_low_pass_rate:2/74",
+      "date": "2026-10-20"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/OgdenThomas/freesub/main/output/clash.yaml",
+      "reason": "cn_low_pass_rate:2/48",
+      "date": "2026-10-20"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VPN-Subcription-Links/ClashX-V2Ray-TopFreeProxy/main/combine/clash.config.yaml",
+      "reason": "cn_low_pass_rate:8/302",
+      "date": "2026-10-20"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/free-nodes/clashfree/main/clash20261016.yml",
+      "reason": "consecutive_failures:4",
+      "date": "2026-10-21"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/free-nodes/clashfree/main/clash20261017.yml",
+      "reason": "cn_low_pass_rate:0/75",
+      "date": "2026-10-21"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/ermaozi/get_subscribe/main/subscribe/clash.yml",
+      "reason": "cn_low_pass_rate:5/49",
+      "date": "2026-10-22"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/ermaozi/get_subscribe/main/subscribe/reachable/clash.yml",
+      "reason": "cn_low_pass_rate:5/49",
+      "date": "2026-10-22"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/yy1588133/proxy-pool/main/clash.yaml",
+      "reason": "cn_low_pass_rate:0/236",
+      "date": "2026-10-24"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Au1rxx/free-vpn-subscriptions/main/output/clash.yaml",
+      "reason": "cn_low_pass_rate:0/311",
+      "date": "2026-10-24"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/lanzm/MetaFetch/master/list.meta.yml",
+      "reason": "cn_low_pass_rate:0/86",
+      "date": "2026-10-24"
+    }
+  ],
+  "deny_repos": []
 }
