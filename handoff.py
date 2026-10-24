@@ -21,7 +21,7 @@ from collections import defaultdict
 
 from common import src_key
 from config import (HANDOFF_GENERATOR, PENDING_PROBE_FILE, PENDING_RESCUE_FILE,
-                    RESCUE_PER_PROTO_MIN, RESCUE_QUOTA)
+                    RESCUE_PER_PROTO_MIN, RESCUE_QUOTA, RESCUE_TCP_FAILED_MIN)
 
 
 def round_stamp(now: datetime.datetime | None = None) -> tuple[str, str]:
@@ -86,13 +86,21 @@ def build_pending_doc(*, round_id: str, generated_at: str, sample_fps: list[str]
 def select_rescue(*, tcp_lat: dict[str, float], unique: dict[str, dict],
                   tampered: set[str], excluded: set[str], quota: int = RESCUE_QUOTA,
                   is_preferred, protocol_tier,
-                  per_proto_min: int = RESCUE_PER_PROTO_MIN) -> list[str]:
-    """救援集：TCP 存活、未篡改、未入待测集，按协议档位/延迟取前 quota 个。
+                  per_proto_min: int = RESCUE_PER_PROTO_MIN,
+                  static_pool: dict[str, dict] | None = None,
+                  tcp_failed_min: int = RESCUE_TCP_FAILED_MIN) -> list[str]:
+    """救援集：静态可行、未篡改、未入待测集，按协议档位/延迟取前 quota 个。
 
     这是「美国不通、中国通」节点的 lost-and-found 池：拨测样本有配额上限，
     被挤出但静态可行的节点仍有中国可用可能，交沙箱复测。排序与主线评分
     同向——协议档位优先（hy2/reality 等 tier 0/1 对中国路径最友好），
     其次偏好特征，最后 TCP 延迟（UDP 协议的中性 9999 在同档内排最后）。
+
+    **静态通过全集纳入（2026-10-24 任务#103）**：旧实现 pool 键=tcp_lat，
+    「美国 TCP 必须先通」——与注释声称的「美国不通、中国通」恰好相反，
+    美国探针被当成了国内生死证的前置。现 static_pool（静态通过全集）中
+    TCP 失败的节点按协议档位/偏好排序保底 `tcp_failed_min` 个入池
+    （RESCUE_TCP_FAILED_MIN），任务#102 的裁决在救援池的落地。
 
     **协议多样化（2026-10-15 修复）**：实测 rescue 池 100 个**全是 vless**，
     通过率仅 3.0%（与 pending 4.7% 同档），沦为低效配额。根因是 `protocol_tier`
@@ -104,19 +112,32 @@ def select_rescue(*, tcp_lat: dict[str, float], unique: dict[str, dict],
     （按档位/偏好/延迟排序取），余量再按原全局排序填充。保证小众高通过率
     协议有实测机会，不改变总量与其它池的边界。
     """
+    # 0) TCP 失败者保底（任务#103）：静态通过但美国 TCP 未握手的节点。
+    #    这些节点在 tcp_lat 中不存在，单独按协议档位/偏好排序抽取。
+    reserved: list[str] = []
+    chosen: set[str] = set()
+    if static_pool and tcp_failed_min > 0:
+        tcp_failed = [fp for fp in static_pool
+                      if fp not in tcp_lat and fp not in excluded
+                      and fp not in tampered and fp in unique]
+        tcp_failed.sort(key=lambda fp: (protocol_tier(unique[fp]),
+                                        0 if is_preferred(unique[fp]) else 1))
+        for fp in tcp_failed[:tcp_failed_min]:
+            reserved.append(fp)
+            chosen.add(fp)
+    reserved = reserved[:quota]
     pool = [fp for fp in tcp_lat
             if fp not in excluded and fp not in tampered and fp in unique]
     pool.sort(key=lambda fp: (protocol_tier(unique[fp]),
                               0 if is_preferred(unique[fp]) else 1,
                               tcp_lat[fp]))
-    if not pool:
+    if not pool and not reserved:
         return []
     # 1) 每协议保底：优先给「被全局排序挤在后面」的小众协议实测机会。
     by_proto: dict[str, list[str]] = defaultdict(list)
     for fp in pool:
         by_proto[str(unique[fp].get("type", "?"))].append(fp)
-    reserved: list[str] = []
-    chosen: set[str] = set()
+    # （reserved/chosen 已在 TCP 失败保底段初始化，此处不得重复声明清零）
     if per_proto_min > 0:
         # 协议按「全局最优代表的名次」排序——名次越靠后（越被挤掉）越优先保底。
         rank = {fp: i for i, fp in enumerate(pool)}

@@ -112,6 +112,46 @@ def test_select_rescue_ordering_and_quota():
     assert len(picked3) == 3
 
 
+def test_select_rescue_tcp_failed_baseline():
+    """TCP 失败保底（任务#103，2026-10-24）：静态通过但美国 TCP 未握手的
+    节点必须进入救援集——旧实现 pool 键=tcp_lat，把美国探针当成国内生死
+    证的前置，「美国不通、中国通」类节点（1292 交叉表 33 个实证）连救援
+    池都进不了。保底按协议档位/偏好排序，配额 tcp_failed_min。"""
+    unique = {
+        "fp_alive": _proxy(type_="vless"),
+        "fp_fail1": _proxy(type_="vless"),
+        "fp_fail2": _proxy(type_="trojan"),
+    }
+    tcp_lat = {"fp_alive": 50.0}
+    static_pool = dict(unique)  # 静态通过全集含 TCP 失败者
+
+    picked = handoff.select_rescue(
+        tcp_lat=tcp_lat, unique=unique, tampered=set(), excluded=set(),
+        is_preferred=lambda p: False,
+        protocol_tier=lambda p: {"vless": 1, "trojan": 1}[p["type"]],
+        per_proto_min=0, quota=50, tcp_failed_min=2, static_pool=static_pool,
+    )
+    assert "fp_fail1" in picked and "fp_fail2" in picked and "fp_alive" in picked
+    # 失败者保底占位在前（reserved 段先于全局排序段）
+    assert picked[:2] == ["fp_fail1", "fp_fail2"]
+    # static_pool 缺省（None）时行为与旧实现一致：失败者不进池
+    picked2 = handoff.select_rescue(
+        tcp_lat=tcp_lat, unique=unique, tampered=set(), excluded=set(),
+        is_preferred=lambda p: False,
+        protocol_tier=lambda p: {"vless": 1, "trojan": 1}[p["type"]],
+        per_proto_min=0, quota=50,
+    )
+    assert picked2 == ["fp_alive"]
+    # excluded 节点不因保底绕过排除
+    picked3 = handoff.select_rescue(
+        tcp_lat=tcp_lat, unique=unique, tampered=set(), excluded={"fp_fail1"},
+        is_preferred=lambda p: False,
+        protocol_tier=lambda p: {"vless": 1, "trojan": 1}[p["type"]],
+        per_proto_min=0, quota=50, tcp_failed_min=2, static_pool=static_pool,
+    )
+    assert "fp_fail1" not in picked3 and "fp_fail2" in picked3
+
+
 def test_select_rescue_per_protocol_min_diversifies():
     """协议多样化：小众协议须获得保底实测配额，不被主流协议（vless）挤空。
 

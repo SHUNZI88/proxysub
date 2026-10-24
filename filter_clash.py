@@ -1262,7 +1262,8 @@ def _persist_stage(ac_enabled, ac, config, final_proxies, insecure_proxies,
                     rescue_fps=handoff.select_rescue(
                         tcp_lat=tcp_lat, unique=unique, tampered=tampered,
                         excluded=set(sample) | set(final_name_by_fp),
-                        is_preferred=is_preferred, protocol_tier=protocol_tier),
+                        is_preferred=is_preferred, protocol_tier=protocol_tier,
+                        static_pool=unique),
                     unique=unique, prov=prov),
             )
             ac_report.update({
