@@ -9,7 +9,7 @@
       "required_runs": 3,
       "first_seen": "2026-10-21",
       "initial_nodes": 976,
-      "runs": 13,
+      "runs": 14,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -21,13 +21,6 @@
           "tamper": 0
         },
         {
-          "date": "2026-10-22",
-          "count": 976,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
           "date": "2026-10-23",
           "count": 976,
           "usable": 0,
@@ -57,6 +50,13 @@
         },
         {
           "date": "2026-10-23",
+          "count": 976,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-24",
           "count": 976,
           "usable": 0,
           "unique_new": 0,
@@ -80,7 +80,7 @@
       "required_runs": 3,
       "first_seen": "2026-10-21",
       "initial_nodes": 26,
-      "runs": 13,
+      "runs": 14,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -92,13 +92,6 @@
           "tamper": 0
         },
         {
-          "date": "2026-10-22",
-          "count": 26,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
           "date": "2026-10-23",
           "count": 26,
           "usable": 0,
@@ -128,6 +121,13 @@
         },
         {
           "date": "2026-10-23",
+          "count": 26,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-24",
           "count": 26,
           "usable": 0,
           "unique_new": 0,
@@ -151,7 +151,7 @@
       "required_runs": 3,
       "first_seen": "2026-10-21",
       "initial_nodes": 22,
-      "runs": 13,
+      "runs": 14,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -163,13 +163,6 @@
           "tamper": 0
         },
         {
-          "date": "2026-10-22",
-          "count": 22,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
           "date": "2026-10-23",
           "count": 22,
           "usable": 0,
@@ -199,6 +192,13 @@
         },
         {
           "date": "2026-10-23",
+          "count": 22,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-24",
           "count": 22,
           "usable": 0,
           "unique_new": 0,
@@ -222,17 +222,10 @@
       "required_runs": 3,
       "first_seen": "2026-10-21",
       "initial_nodes": 21,
-      "runs": 13,
+      "runs": 14,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-10-22",
-          "count": 21,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-10-22",
           "count": 21,
@@ -281,6 +274,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-24",
+          "count": 21,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -289,7 +289,7 @@
       "origin": "channel_web",
       "added": "2026-10-22",
       "first_seen": "2026-10-22",
-      "runs": 7,
+      "runs": 8,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -330,6 +330,13 @@
         },
         {
           "date": "2026-10-23",
+          "count": 25,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-24",
           "count": 25,
           "usable": 0,
           "unique_new": 0,
@@ -350,10 +357,17 @@
       "origin": "channel_web",
       "added": "2026-10-23",
       "first_seen": "2026-10-23",
-      "runs": 1,
+      "runs": 2,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
+        {
+          "date": "2026-10-24",
+          "count": 25,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
         {
           "date": "2026-10-24",
           "count": 25,
@@ -373,6 +387,28 @@
       "required_runs": 3,
       "first_seen": "2026-10-24",
       "initial_nodes": 36,
+      "runs": 1,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": [
+        {
+          "date": "2026-10-24",
+          "count": 36,
+          "usable": 3,
+          "unique_new": 3,
+          "tamper": 0
+        }
+      ]
+    },
+    "https://raw.githubusercontent.com/hamzawih0/zorVPN/main/clash.yaml": {
+      "repo": "hamzawih0/zorVPN",
+      "stars": 1,
+      "repo_created": "2026-10-01T14:53:15Z",
+      "reputation": "low",
+      "reputation_note": "stars=1,age=22d",
+      "required_runs": 5,
+      "first_seen": "2026-10-24",
+      "initial_nodes": 50,
       "runs": 0,
       "good_streak": 0,
       "fail_streak": 0,
