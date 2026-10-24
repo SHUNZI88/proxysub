@@ -193,6 +193,23 @@ def test_dedup_nodes_priority_and_unique_names():
     assert len(set(names)) == 2  # 同名冲突已加后缀
 
 
+def test_dedup_nodes_carryover_wins_duplicate_fp():
+    """回归（任务#99，2026-10-24）：调用方分组顺序改为 carryover 最先——
+    已发布节点与 pending 重复时必须保留 carryover 身份（cap_test_set 不裁剪），
+    否则时间预算吃紧时好节点被「静默消失」（实测 50 发布节点仅 37 进测试集）。"""
+    dup = _proxy(name="same", server="a.example")
+    groups = [
+        ("carryover", [{"fp": "fp1", "name": "n1-old", "proxy": dup,
+                        "origin": "carryover", "final": False, "us_ok": False}]),
+        ("pending", [{"fp": "fp1", "name": "n1", "proxy": dup,
+                      "origin": "pending", "final": True, "us_ok": True}]),
+    ]
+    out = cn_probe.dedup_nodes(groups)
+    assert len(out) == 1
+    assert out[0]["origin"] == "carryover"
+    assert out[0]["name"] == "n1-old"
+
+
 def test_dedup_nodes_suffixed_original_name_no_collision():
     """回归：原始名已带 `#2` 后缀时，不得与计数生成名撞车（2026-10-16 修复）。
 
@@ -274,7 +291,9 @@ def test_load_carryover_parses_main_asset(tmp_path):
     p.write_text(yaml.dump(cfg, allow_unicode=True), encoding="utf-8")
     nodes = cn_probe.load_carryover(str(p))
     assert [n["origin"] for n in nodes] == ["carryover", "carryover"]
-    assert nodes[0]["final"] is True
+    # final 语义修正（任务#96）：carryover 继承节点不再硬编码 final=True，
+    # 只有本轮实测通过才置位——上一轮通过≠本轮通过。
+    assert nodes[0]["final"] is False
 
 
 # ---------------------------------------------------------------- 杂项
@@ -716,6 +735,29 @@ def test_real_traffic_test_slow_node_rejected(monkeypatch):
     assert res["ok"] is False
 
 
+def test_real_traffic_test_degraded_tier(monkeypatch):
+    """双档闸门（任务#97）：下载量在 [REAL_SLOW_MIN_BYTES, REAL_MIN_BYTES)
+    区间时判 degraded=True（能连但慢），ok 恒 False——不进主资产但汇入
+    第二资产；低于慢档阈值则无 degraded 标记。"""
+    monkeypatch.setattr(cn_probe, "api_put", lambda *a, **k: True)
+    # 慢档区间内 → degraded
+    monkeypatch.setattr(cn_probe, "_timed_download",
+                        lambda *a, **k: cn_probe.REAL_SLOW_MIN_BYTES)
+    res = cn_probe.real_traffic_test(9097, 7897, "node-x")
+    assert res["ok"] is False and res["degraded"] is True
+    assert res["bytes"] == cn_probe.REAL_SLOW_MIN_BYTES
+    # 快档下限-1 仍属慢档
+    monkeypatch.setattr(cn_probe, "_timed_download",
+                        lambda *a, **k: cn_probe.REAL_MIN_BYTES - 1)
+    res = cn_probe.real_traffic_test(9097, 7897, "node-x")
+    assert res["ok"] is False and res["degraded"] is True
+    # 低于慢档阈值 → 彻底失败，无 degraded 标记
+    monkeypatch.setattr(cn_probe, "_timed_download",
+                        lambda *a, **k: cn_probe.REAL_SLOW_MIN_BYTES - 1)
+    res = cn_probe.real_traffic_test(9097, 7897, "node-x")
+    assert res["ok"] is False and "degraded" not in res
+
+
 def test_real_traffic_test_all_unreachable_returns_false(monkeypatch):
     """所有真实流量目标均不可达（下载 0 字节）时，必须返回失败，禁止假阳性。"""
     monkeypatch.setattr(cn_probe, "api_put", lambda *a, **k: True)
@@ -845,11 +887,14 @@ def test_verified_rank_ai_first_then_vantage_then_latency():
     r_missing = cn_probe.verified_rank(
         node, {"x": {"ok": True, "latency_ms": 100}})
     assert r_api < r_reach < r_none == r_missing
-    # 次级判据不变：同 AI 层级下双 vantage 强者在前、延迟低者在前
-    weak = {"probe_name": "y", "us_ok": False, "final": False}
+    # 次级判据（任务#96）：双 vantage 强者 > carryover 复测存活 > 仅本轮新通过
+    weak = {"probe_name": "y", "us_ok": False, "final": False, "origin": "pending"}
     assert cn_probe.verified_rank(node, results({"ai_reachable": True})) < \
         cn_probe.verified_rank(weak, results({"ai_reachable": True}))
-    slow = {"probe_name": "z", "us_ok": True, "final": True}
+    survivor = {"probe_name": "s", "us_ok": False, "final": True, "origin": "carryover"}
+    assert cn_probe.verified_rank(survivor, results({"ai_reachable": True})) < \
+        cn_probe.verified_rank(weak, results({"ai_reachable": True}))
+    slow = {"probe_name": "z", "us_ok": True, "final": True, "origin": "pending"}
     res_slow = {"z": {"ok": True, "latency_ms": 900, "ai": {}}}
     res_fast = {"z": {"ok": True, "latency_ms": 10, "ai": {}}}
     assert cn_probe.verified_rank(slow, res_fast) < cn_probe.verified_rank(slow, res_slow)

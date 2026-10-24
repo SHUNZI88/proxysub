@@ -81,6 +81,11 @@ GENERATE_204 = "https://www.google.com/robots.txt"
 # 「硬超时真实下载速度」闸门（见 real_traffic_test / _timed_download）。
 REAL_DOWNLOAD_URL = "https://speed.cloudflare.com/__down?bytes=1000000"  # 1MB
 REAL_MIN_BYTES = 250 * 1024   # 预算内至少下载 250KB（≈31KB/s）才算真能应用
+# 慢档阈值（2026-10-24 任务#97）：8s 内有真实流量但不足快档——「能连但慢」。
+# 这类节点不进主资产（快档标准不放松），但进第二资产 p_*_d.yaml 供用户备选。
+# 依据：用户本地测速只要求「有延迟反应」，32KB（≈4KB/s）即有明显体感；
+# 旧口径一刀切淘汰了大批「能连但慢」节点，是 326 节点源 0 通过的成因之一。
+REAL_SLOW_MIN_BYTES = 32 * 1024
 REAL_PROBE_URLS = [           # 仅作出口可达性辅助参考，不再单独作为闸门
     "https://www.google.com/robots.txt",
     "https://www.cloudflare.com/cdn-cgi/trace",
@@ -134,8 +139,9 @@ GEO_MAX_NODES = 120
 # AI 状态码是排序信号，值得满 8s。两者硬截断分别为 7s/10s（_hard_timeout_call）。
 GEO_TIMEOUT_S = 5
 SELFCHECK_URLS = ["https://www.baidu.com", "https://api.github.com"]
-ASSET_RE = re.compile(r"^p_[0-9a-f]+_([cpsv])\.(yaml|json|txt)$")
-ASSET_FORMAT = {"c": "clash", "p": "proxies_only", "s": "singbox", "v": "v2ray"}
+ASSET_RE = re.compile(r"^p_[0-9a-f]+_([cpsvd])\.(yaml|json|txt)$")
+ASSET_FORMAT = {"c": "clash", "p": "proxies_only", "s": "singbox", "v": "v2ray",
+                "d": "degraded"}
 VERIFIED_FILE = {
     "clash": "verified_clash.yaml",
     "proxies_only": "verified_proxies_only.yaml",
@@ -519,7 +525,12 @@ def load_carryover(main_clash: str) -> list[dict]:
             "name": str(p.get("name") or "node"),
             "proxy": dict(p),
             "origin": "carryover",
-            "final": True,
+            # final 语义修正（2026-10-24 任务#96）：final = 本轮实测通过，
+            # 由 main() 在拨测通过后统一置位。carryover 继承自上一轮发布集，
+            # 上一轮通过≠本轮通过，此处不再硬编码 True（否则报告 nodes[] 里
+            # 未复测/未通过的 carryover 节点会带着 final=True「带病上榜」，
+            # 且 verified_rank 的双 vantage 判据被继承标记污染）。
+            "final": False,
             "us_ok": False,  # 上一轮是美国视角，未知；仅作参考
         })
     return nodes
@@ -680,7 +691,11 @@ def real_traffic_test(api_port: int, mixed_port: int, name: str) -> dict:
     n = _timed_download(proxy, REAL_DOWNLOAD_URL, REAL_TRAFFIC_TIMEOUT_S, REAL_MIN_BYTES)
     if n >= REAL_MIN_BYTES:
         return {"ok": True, "bytes": n}
-    return {"ok": False}
+    # 双档闸门（2026-10-24 任务#97）：快档不足但达慢档——标记 degraded，
+    # 不进主资产，由调用方汇入第二资产。ok 恒 False，闸门口径不放松。
+    if n >= REAL_SLOW_MIN_BYTES:
+        return {"ok": False, "degraded": True, "bytes": n}
+    return {"ok": False, "bytes": n}
 
 
 def _geo_evidence_via_proxy(url: str, proxy: str, timeout: int) -> dict:
@@ -839,7 +854,11 @@ def verified_rank(n: dict, results: dict) -> tuple:
     else:
         ai_tier = 2        # 未探测到或无响应（含探测超预算无数据）
     return (ai_tier,
-            0 if (n["us_ok"] and n["final"]) else 1,
+            # 次级判据（2026-10-24 任务#96）：双 vantage 强者 >
+            # carryover 复测存活（长寿命实证，用户体感最好）> 仅本轮新通过。
+            # 注意 final 此时已被 main() 在通过后统一置 True，不再区分。
+            0 if (n["us_ok"] and n["final"])
+            else (1 if n.get("origin") == "carryover" else 2),
             r.get("latency_ms") if r.get("latency_ms") is not None else 99999)
 
 
@@ -1026,7 +1045,13 @@ def main() -> int:
     ) else []
     pend = load_doc_nodes(pend_path, "pending") if fresh else []
     resc = load_doc_nodes(rescue_path, "rescue") if fresh else []
-    nodes = dedup_nodes([("pending", pend), ("rescue", resc), ("carryover", carry)])
+    # 去重优先级（2026-10-24 任务#99）：carryover 最先——上一轮已发布节点若
+    # 与本轮 pending 重复，必须保留 carryover 身份（cap_test_set 中不裁剪、
+    # 永远进测试集）。旧顺序 pending 在前，会把已发布节点改标成 pending，
+    # 一旦时间预算吃紧被裁剪，好节点就「静默消失」（2026-10-24 实测：
+    # 上一轮 50 个发布节点仅 37 个以 carryover 身份进入测试集）。
+    # 代价：这批节点的 src 归属让位给滚动保障（分源统计少计十余条，可接受）。
+    nodes = dedup_nodes([("carryover", carry), ("pending", pend), ("rescue", resc)])
     if not nodes:
         log("无任何可测节点（无待测文档且主资产为空），退出")
         return 4
@@ -1120,6 +1145,10 @@ def main() -> int:
                                if results.get(n["probe_name"], {}).get("ok")]
                 log(f"真实流量终筛通过: {len(real_passed)}/{len(delay_passed)}"
                     f"（{time.time() - t1:.0f}s）")
+            # 慢档收集（任务#97）：快档不足但有真实流量的节点 → 第二资产
+            degraded = [n for n in delay_passed
+                        if results.get(n["probe_name"], {}).get("real_traffic", {})
+                        .get("degraded")]
             log(f"拨测完成: 最终通过 {sum(1 for r in results.values() if r['ok'])}/{len(nodes)}"
                 f"（{time.time() - t0:.0f}s）")
 
@@ -1127,12 +1156,22 @@ def main() -> int:
             #    2026-10-21 任务#91 合并）。仅通过节点；限量 + 限时，
             #    证据仅留痕、不构成闸门。
             passed = [n for n in nodes if results.get(n["probe_name"], {}).get("ok")]
-            ev_deadline = time.time() + EVIDENCE_BUDGET_S
+            # final 置位（2026-10-24 任务#96）：实测通过才算 final=True。
+            # 继承自 CI 文档/上一轮发布集的 final 标记在进入本轮后一律作废，
+            # 报告 nodes[].final 从此严格等于「本轮实测通过」。
+            for _n in passed:
+                _n["final"] = True
+            # 动态证据预算（2026-10-24 任务#98）：旧固定 120s 在通过节点较多时
+            # 只能覆盖一半（本轮 30 个只探到 17 个），无 AI 证据的节点在排序中
+            # 被「未知」沉底——有效节点被埋。单节点 ≈8s，按通过数给足预算
+            # （下限 120s 兜底，上限 300s 防极端），保证全覆盖。
+            ev_budget = min(300, max(EVIDENCE_BUDGET_S, len(passed) * 12))
+            ev_deadline = time.time() + ev_budget
             ev_nodes = passed[:GEO_MAX_NODES]
             n_geo = 0
             for i, n in enumerate(ev_nodes):
                 if time.time() > ev_deadline:
-                    log(f"证据收集达到时间预算 {EVIDENCE_BUDGET_S}s，跳过剩余 "
+                    log(f"证据收集达到时间预算 {ev_budget}s，跳过剩余 "
                         f"{len(ev_nodes) - i} 个节点（证据仅留痕，不构成闸门）")
                     break
                 try:
@@ -1239,6 +1278,8 @@ def main() -> int:
         "counts": {
             "tested": len(nodes),
             "passed": len(verified),
+            # 慢档统计（任务#97）：快档不足但有真实流量的节点数，仅留痕
+            "degraded": len(degraded),
             "by_origin": {"pending": n_pend, "rescue": n_resc,
                           "carryover": n_carry},
             "passed_by_origin": by_origin,
@@ -1316,6 +1357,33 @@ def main() -> int:
             uploaded.append(target)
         else:
             log(f"警告: 上传 {target} 失败: {r.stderr.strip()[:200]}")
+    # 8.5) 第二资产（2026-10-24 任务#97）：慢档节点（能连但慢）单独发布，
+    # 不稀释主资产——主资产口径不变（全部快档通过），慢档按延迟排序上限
+    # 50 个，供用户「主资产连不上时备选」。资产名沿用主资产随机前缀 _d.yaml。
+    if degraded:
+        deg_sorted = sorted(
+            degraded,
+            key=lambda n: (results.get(n["probe_name"], {}).get("latency_ms")
+                           if results.get(n["probe_name"], {}).get("latency_ms")
+                           is not None else 99999))[:50]
+        deg_cfg = build_verified_config(deg_sorted)
+        deg_path = os.path.join(
+            workdir, VERIFIED_FILE["clash"].replace(
+                "verified_clash", "verified_degraded_clash"))
+        with open(deg_path, "w", encoding="utf-8") as f:
+            yaml.dump(deg_cfg, f, allow_unicode=True, sort_keys=False)
+        m_main = asset_by_fmt.get("clash")
+        mm = re.match(r"^(p_[0-9a-f]+)_", m_main) if m_main else None
+        deg_name = (mm.group(1) + "_d.yaml") if mm else "verified_degraded_clash.yaml"
+        staged = os.path.join(workdir, deg_name)
+        shutil.copyfile(deg_path, staged)
+        r = run(["gh", "release", "upload", tag, "--clobber", staged])
+        if r.returncode == 0:
+            log(f"第二资产已发布: {deg_name}（慢档 {len(deg_sorted)} 个）")
+            report["degraded_asset"] = deg_name
+            report["degraded_count"] = len(deg_sorted)
+        else:
+            log(f"警告: 第二资产上传失败: {r.stderr.strip()[:200]}")
     run(["gh", "release", "upload", tag, "--clobber", report_path])
     report["published"] = bool(uploaded)
     report["main_assets"] = uploaded
