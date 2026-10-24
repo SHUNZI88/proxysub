@@ -218,6 +218,14 @@ def update_source_scores_cn(report: dict, path: str = config.SOURCE_SCORES_FILE,
     """
     if _report_age_s(report) > config.VERIFICATION_MAX_AGE_S:
         return _load_json(path, {})
+    # 任务#106（2026-10-24）：纯 carryover 复测轮（pending=0 且 rescue=0）
+    # 的 by_source 样本主要是旧节点重测（pass_rate 常年 ≈1.0，零信息量），
+    # 写入会虚假抬高源级中国通过率。cn 维度只在有新池实证的轮次更新。
+    _counts = report.get("counts", {}) or {}
+    if "by_origin" in _counts:  # 键缺失=旧版报告，保守放行
+        _bo = _counts.get("by_origin", {}) or {}
+        if not int(_bo.get("pending") or 0) and not int(_bo.get("rescue") or 0):
+            return _load_json(path, {})
     scores = _load_json(path, {})
     by_source = report.get("counts", {}).get("by_source", {})
     # 无源伪键 "?" 不写入；并清理历史残留（修复前报告曾写入该键，
@@ -532,6 +540,14 @@ def update_protocol_history(report: dict,
     """
     if _report_age_s(report) > config.VERIFICATION_MAX_AGE_S:
         return {}
+    # 任务#106（2026-10-24）：纯 carryover 复测轮不累加——旧节点重测的
+    # 100% 通过率会把协议权重污染成虚假高值。只在 pending 或 rescue > 0
+    # 的轮次累加（新池证据）。
+    _counts = report.get("counts", {}) or {}
+    if "by_origin" in _counts:  # 键缺失=旧版报告，保守放行
+        _bo = _counts.get("by_origin", {}) or {}
+        if not int(_bo.get("pending") or 0) and not int(_bo.get("rescue") or 0):
+            return {}
     counts = report.get("counts", {})
     by_proto = counts.get("by_protocol", {}) or {}
     if not by_proto:

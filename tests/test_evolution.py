@@ -434,3 +434,41 @@ def test_update_protocol_history_keeps_recent_bounded(tmp_path):
     hist = json.load(open(p))
     assert hist["hysteria2"]["rounds"] == n          # 累计不丢
     assert len(hist["hysteria2"]["recent"]) == config.PROTOCOL_HISTORY_KEEP_ROUNDS
+
+
+def test_update_source_scores_cn_skips_pure_carryover_round(tmp_path):
+    """任务#106（2026-10-24）：纯 carryover 复测轮（pending=0 且 rescue=0）
+    不更新 cn 维度——旧节点重测 pass_rate≈1.0 零信息量，写入会虚假抬高
+    源级中国通过率。by_origin 键缺失（旧版报告）保守放行。"""
+    path = str(tmp_path / "source_scores.json")
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump({"existing/src": {"score": 50}}, f)
+    pure = {"generated_at": _now_iso(),
+            "counts": {"by_origin": {"pending": 0, "rescue": 0, "carryover": 30},
+                       "by_source": {"existing/src": {"tested": 30, "passed": 30}}}}
+    scores = evolution.update_source_scores_cn(pure, path)
+    assert "cn_pass_rate" not in scores["existing/src"]
+    # 有新池实证的轮次正常写入
+    fresh = {"generated_at": _now_iso(),
+             "counts": {"by_origin": {"pending": 800, "rescue": 100, "carryover": 30},
+                        "by_source": {"existing/src": {"tested": 200, "passed": 10}}}}
+    scores = evolution.update_source_scores_cn(fresh, path)
+    assert scores["existing/src"]["cn_pass_rate"] == 0.05
+
+
+def test_update_protocol_history_skips_pure_carryover_round(tmp_path):
+    """任务#106：纯 carryover 轮不累加协议历史——100% 重测通过率会把协议
+    权重污染成虚假高值；protocol_history.json 从 10-14 停在 1 轮正是旧空转
+    轮被守卫拦下后的真实状态（不该被假数据填满）。"""
+    path = str(tmp_path / "protocol_history.json")
+    pure = {"generated_at": _now_iso(), "round_id": "R2",
+            "counts": {"by_origin": {"pending": 0, "rescue": 0, "carryover": 30},
+                       "by_protocol": {"hysteria2": {"tested": 30, "passed": 30}}}}
+    hist = evolution.update_protocol_history(pure, path)
+    assert hist == {}
+    fresh = {"generated_at": _now_iso(), "round_id": "R3",
+             "counts": {"by_origin": {"pending": 800, "rescue": 100, "carryover": 30},
+                        "by_protocol": {"hysteria2": {"tested": 50, "passed": 4}}}}
+    hist = evolution.update_protocol_history(fresh, path)
+    assert hist["hysteria2"]["rounds"] == 1
+    assert hist["hysteria2"]["passed"] == 4

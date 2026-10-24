@@ -1052,8 +1052,17 @@ def main() -> int:
             log(f"警告: 交接文档轮次 {doc_round} 已检出，但 rescue 文档下载失败，"
                 "本轮仅测 pending + carryover（rescue 顺延至下次实测）")
     else:
-        log("无新轮次待测文档（CI 调度延迟或故障）：本轮仅测 carryover；"
-            "未测轮次顺延至下一实测轮，不丢失")
+        # 任务#106（2026-10-24）：轮次闸门挡的是「同一 round_id 文档二次整测」，
+        # 不代表池里没有未测节点——上轮 cap_test_set 裁剪后尾部大量节点从未
+        # 进过实测（如 09:05 轮 815 个 pending 只测了样本）。下载当前/残留
+        # 交接文档补测未测尾部（dedup 中 carryover 优先，已发布节点不受影响），
+        # 避免把 pass_rate=1.0 的零信息轮写进源级与协议级实证。
+        got = gh_download(tag, config.PENDING_PROBE_FILE, pend_path)
+        if got:
+            gh_download(tag, config.PENDING_RESCUE_FILE, rescue_path)
+            log("无新轮次（同 round_id 已消费）：本轮 = carryover + 当前交接文档未测尾部")
+        else:
+            log("无新轮次且交接文档下载失败：本轮仅测 carryover")
 
     # 3) 测试集 = carryover ∪ pending ∪ rescue
     assets = release_assets(tag)
@@ -1062,8 +1071,13 @@ def main() -> int:
     carry = load_carryover(os.path.join(workdir, "main_clash.yaml")) if (
         main_clash and gh_download(tag, main_clash, os.path.join(workdir, "main_clash.yaml"))
     ) else []
-    pend = load_doc_nodes(pend_path, "pending") if fresh else []
-    resc = load_doc_nodes(rescue_path, "rescue") if fresh else []
+    # 任务#106：非 fresh 轮也加载交接文档（当前/残留）——闸门只挡「同轮
+    # 二次整测」的 fresh 标记，未测尾部照常并入（dedup 保 carryover 优先）。
+    # 下载失败的 fresh 轮 pend_path 不存在，加载自然为空，与原行为一致。
+    pend = load_doc_nodes(pend_path, "pending") if (
+        fresh or os.path.exists(pend_path)) else []
+    resc = load_doc_nodes(rescue_path, "rescue") if (
+        fresh or os.path.exists(rescue_path)) else []
     # 去重优先级（2026-10-24 任务#99）：carryover 最先——上一轮已发布节点若
     # 与本轮 pending 重复，必须保留 carryover 身份（cap_test_set 中不裁剪、
     # 永远进测试集）。旧顺序 pending 在前，会把已发布节点改标成 pending，
