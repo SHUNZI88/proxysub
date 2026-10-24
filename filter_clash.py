@@ -73,6 +73,7 @@ from config import (  # 可调常量（P1-2 起独立模块）
     MAX_OTHER,
     MAX_PER_CREDENTIAL,
     MAX_PER_EGRESS_IP,
+    MAX_PER_EGRESS_IP_PREFERRED,
     MAX_PER_SOURCE_FINAL,
     MAX_US_SHARE,
     MAX_WORKERS,
@@ -777,7 +778,11 @@ def score_candidates(tcp_lat: dict[str, float], unique: dict[str, dict], prov: d
         fp = fingerprint(item[0])
         cred = hp.credential_of(item[0])
         eg = (real_ok.get(fp) or {}).get("egress")
-        if (cred and cred_n[cred] >= MAX_PER_CREDENTIAL) or (eg and egress_n[eg] >= MAX_PER_EGRESS_IP):
+        # 出口 IP 帽按协议分档（任务#104）：hy2/reality（tier 0）常经 CDN
+        # /中转撞同一出口 IP，3 的帽子把活节点成批削掉；放宽到 8。
+        eg_cap = (MAX_PER_EGRESS_IP_PREFERRED
+                  if protocol_tier(item[0]) == 0 else MAX_PER_EGRESS_IP)
+        if (cred and cred_n[cred] >= MAX_PER_CREDENTIAL) or (eg and egress_n[eg] >= eg_cap):
             diversity_dropped += 1
             continue
         if cred:
@@ -788,7 +793,10 @@ def score_candidates(tcp_lat: dict[str, float], unique: dict[str, dict], prov: d
     scored = diversified
 
     # per-source cap: one aggregator feed must not dominate the output
-    scored, src_dropped = cap_single_source(scored, prov, MAX_PER_SOURCE_FINAL)
+    # 任务#104：中国实测已通过的节点不占名额（cn_ok 为最近一轮中国实测滚动值）
+    cn_exempt = {fp for fp, v in (cn_hist or {}).items() if v.get("cn_ok")}
+    scored, src_dropped = cap_single_source(scored, prov, MAX_PER_SOURCE_FINAL,
+                                            cn_exempt=cn_exempt)
     if src_dropped:
         print(f"单一源独占上限 {MAX_PER_SOURCE_FINAL}: 再去掉 {src_dropped} 个（防聚合源垄断）")
     return ScoringResult(scored, survival, diversity_dropped)

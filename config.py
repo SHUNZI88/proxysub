@@ -300,6 +300,9 @@ MULTI_SOURCE_BONUS = 80.0        # ms-equivalent: appear in multiple official so
 SEEN_DAYS_WEIGHT = 55            # longevity: lifetime seen_days (capped)
 MAX_PER_CREDENTIAL = 6           # diversity (slightly looser so floor can be met)
 MAX_PER_EGRESS_IP = 3            # diversity (slightly looser)
+# 同一出口 IP 对 tier 0（hy2/reality）的放宽帽（任务#104，2026-10-24）：
+# 这两类协议常经 CDN/中转落地到同一出口 IP，3 的帽子把活节点成批削掉。
+MAX_PER_EGRESS_IP_PREFERRED = 8
 # Hard rejects only; cf_blocked is soft (many China-usable nodes are CF-risked).
 TAMPER_STATUSES = ("tamper_http", "tamper_https", "tls_mitm", "bad_egress")
 # 云端拨测 = 「美西可达性」闸门（**口径已修正，2026-10-15**）：

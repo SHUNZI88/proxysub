@@ -78,3 +78,20 @@ def test_cap_single_source_multi_source_nodes_exempt():
     # 前 5 个多源节点全部保留；单源节点仅占 4 个名额
     assert len(out) == 9
     assert dropped == 1
+
+
+def test_cap_single_source_cn_verified_exempt():
+    """中国已通过节点不占单源名额（任务#104，2026-10-24）：封顶防的是
+    「一家挂了全军覆没」，不是把唯一供给源的已验证节点削掉——帽子只扣
+    只有美国证据的独有节点。"""
+    rows = [_row(i) for i in range(10)]
+    prov = {fc.fingerprint(r[0]): {"https://one.example/feed"} for r in rows}
+    # 前 6 个节点中国实测已通过
+    cn_exempt = {fc.fingerprint(r[0]) for r in rows[:6]}
+    out, dropped = fc.cap_single_source(rows, prov, cap=4, cn_exempt=cn_exempt)
+    # 6 个 cn 豁免全保留 + 4 个名额给未豁免者 = 10 全保留
+    assert len(out) == 10
+    assert dropped == 0
+    # 无豁免时同样 10 个只留 4
+    out2, dropped2 = fc.cap_single_source(rows, prov, cap=4)
+    assert len(out2) == 4 and dropped2 == 6

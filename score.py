@@ -50,18 +50,26 @@ def is_preferred(proxy: dict) -> bool:
         return True
     return False
 
-def cap_single_source(scored_rows: list, prov: dict, cap: int) -> tuple[list, int]:
+def cap_single_source(scored_rows: list, prov: dict, cap: int,
+                      cn_exempt: set | None = None) -> tuple[list, int]:
     """每个订阅源最多贡献 cap 个节点，防单一聚合源灌满输出。
 
     实测：VPN-Subcription-Links 一家就 905 个 TCP 存活、Au1rxx 742 个唯一存活，
     不限制就会垄断整个输出（单一源挂掉 = 输出团灭）。节点归属其来源 URL 集合；
-    仅出现在一个源里的节点占该源名额，多源节点不占任何单源名额。"""
+    仅出现在一个源里的节点占该源名额，多源节点不占任何单源名额。
+
+    cn_exempt（2026-10-24 任务#104）：中国实测已通过的节点不占单源名额——
+    封顶防的是「一家挂了全军覆没」，不是把唯一供给源的已验证节点削掉
+    （今早 Au1rxx 154 个美国已通过几乎全独有，25 的帽子削掉 84%）。
+    帽子只扣「只有美国证据、没有中国证据」的独有节点。"""
+    cn_exempt = cn_exempt or set()
     out: list = []
     dropped = 0
     src_n: dict[str, int] = defaultdict(int)
     for item in scored_rows:
-        urls = sorted(prov.get(fingerprint(item[0]), set()))
-        if len(urls) == 1:
+        fp = fingerprint(item[0])
+        urls = sorted(prov.get(fp, set()))
+        if len(urls) == 1 and fp not in cn_exempt:
             if src_n[urls[0]] >= cap:
                 dropped += 1
                 continue
