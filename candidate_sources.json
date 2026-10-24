@@ -9,7 +9,7 @@
       "required_runs": 3,
       "first_seen": "2026-10-21",
       "initial_nodes": 976,
-      "runs": 12,
+      "runs": 13,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -28,13 +28,6 @@
           "tamper": 0
         },
         {
-          "date": "2026-10-22",
-          "count": 976,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
           "date": "2026-10-23",
           "count": 976,
           "usable": 0,
@@ -64,6 +57,13 @@
         },
         {
           "date": "2026-10-23",
+          "count": 976,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-24",
           "count": 976,
           "usable": 0,
           "unique_new": 0,
@@ -80,7 +80,7 @@
       "required_runs": 3,
       "first_seen": "2026-10-21",
       "initial_nodes": 26,
-      "runs": 12,
+      "runs": 13,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -99,13 +99,6 @@
           "tamper": 0
         },
         {
-          "date": "2026-10-22",
-          "count": 26,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
           "date": "2026-10-23",
           "count": 26,
           "usable": 0,
@@ -135,6 +128,13 @@
         },
         {
           "date": "2026-10-23",
+          "count": 26,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-24",
           "count": 26,
           "usable": 0,
           "unique_new": 0,
@@ -151,7 +151,7 @@
       "required_runs": 3,
       "first_seen": "2026-10-21",
       "initial_nodes": 22,
-      "runs": 12,
+      "runs": 13,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -170,13 +170,6 @@
           "tamper": 0
         },
         {
-          "date": "2026-10-22",
-          "count": 22,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
           "date": "2026-10-23",
           "count": 22,
           "usable": 0,
@@ -206,6 +199,13 @@
         },
         {
           "date": "2026-10-23",
+          "count": 22,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-24",
           "count": 22,
           "usable": 0,
           "unique_new": 0,
@@ -222,7 +222,7 @@
       "required_runs": 3,
       "first_seen": "2026-10-21",
       "initial_nodes": 21,
-      "runs": 12,
+      "runs": 13,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -241,13 +241,6 @@
           "tamper": 0
         },
         {
-          "date": "2026-10-22",
-          "count": 21,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
           "date": "2026-10-23",
           "count": 21,
           "usable": 0,
@@ -277,6 +270,13 @@
         },
         {
           "date": "2026-10-23",
+          "count": 21,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-24",
           "count": 21,
           "usable": 0,
           "unique_new": 0,
@@ -289,7 +289,7 @@
       "origin": "channel_web",
       "added": "2026-10-22",
       "first_seen": "2026-10-22",
-      "runs": 6,
+      "runs": 7,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -330,6 +330,13 @@
         },
         {
           "date": "2026-10-23",
+          "count": 25,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-24",
           "count": 25,
           "usable": 0,
           "unique_new": 0,
@@ -343,11 +350,33 @@
       "origin": "channel_web",
       "added": "2026-10-23",
       "first_seen": "2026-10-23",
+      "runs": 1,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": [
+        {
+          "date": "2026-10-24",
+          "count": 25,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        }
+      ],
+      "required_runs": 3
+    },
+    "https://raw.githubusercontent.com/anaer/Sub/main/proxies.yaml": {
+      "repo": "anaer/Sub",
+      "stars": 3671,
+      "repo_created": "2021-11-04T11:09:58Z",
+      "reputation": "ok",
+      "reputation_note": "stars=3671,age=1814d",
+      "required_runs": 3,
+      "first_seen": "2026-10-24",
+      "initial_nodes": 36,
       "runs": 0,
       "good_streak": 0,
       "fail_streak": 0,
-      "history": [],
-      "required_runs": 3
+      "history": []
     }
   },
   "rejected": {

@@ -43,13 +43,6 @@
       "added": "2026-10-10",
       "repo": "awesome-vpn/awesome-vpn",
       "probation_runs": 3
-    },
-    {
-      "url": "https://raw.githubusercontent.com/ovmvo/FreeSub/main/sub/permanent/mihomo.yaml",
-      "origin": "discovered",
-      "added": "2026-10-11",
-      "repo": "ovmvo/FreeSub",
-      "probation_runs": 3
     }
   ],
   "removed": [
@@ -172,6 +165,11 @@
       "url": "https://raw.githubusercontent.com/ermaozi/get_subscribe/main/subscribe/reachable/clash.yml",
       "reason": "cn_low_pass_rate:5/49",
       "date": "2026-10-22"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/ovmvo/FreeSub/main/sub/permanent/mihomo.yaml",
+      "reason": "cf_blocked:7/20",
+      "date": "2026-10-24"
     }
   ],
   "deny_repos": []

@@ -1,9 +1,9 @@
 {
   "https://raw.githubusercontent.com/Au1rxx/free-vpn-subscriptions/main/output/clash.yaml": {
     "score": 100.0,
-    "runs": 59,
+    "runs": 60,
     "role": "official",
-    "last": "2026-10-23",
+    "last": "2026-10-24",
     "cn_tested": 328,
     "cn_passed": 4,
     "cn_pass_rate": 0.0122,
@@ -11,9 +11,9 @@
   },
   "https://raw.githubusercontent.com/yy1588133/proxy-pool/main/clash.yaml": {
     "score": 100.0,
-    "runs": 59,
+    "runs": 60,
     "role": "official",
-    "last": "2026-10-23",
+    "last": "2026-10-24",
     "cn_tested": 206,
     "cn_passed": 14,
     "cn_pass_rate": 0.068,
@@ -27,9 +27,9 @@
   },
   "https://raw.githubusercontent.com/chengaopan/AutoMergePublicNodes/master/list.meta.yml": {
     "score": 100.0,
-    "runs": 59,
+    "runs": 60,
     "role": "official",
-    "last": "2026-10-23",
+    "last": "2026-10-24",
     "cn_tested": 182,
     "cn_passed": 6,
     "cn_pass_rate": 0.033,
@@ -37,9 +37,9 @@
   },
   "https://raw.githubusercontent.com/Russ534/clash/cdf534db8f8c9306d61c630b840d0a1936d09dd2/bp.yaml": {
     "score": 100.0,
-    "runs": 59,
+    "runs": 60,
     "role": "official",
-    "last": "2026-10-23",
+    "last": "2026-10-24",
     "cn_tested": 1,
     "cn_passed": 0,
     "cn_pass_rate": 0.0,
@@ -47,9 +47,9 @@
   },
   "https://raw.githubusercontent.com/shaoyouvip/free/main/mihomo.yaml": {
     "score": 100.0,
-    "runs": 59,
+    "runs": 60,
     "role": "official",
-    "last": "2026-10-23",
+    "last": "2026-10-24",
     "cn_tested": 13,
     "cn_passed": 6,
     "cn_pass_rate": 0.4615,
@@ -73,9 +73,9 @@
   },
   "https://raw.githubusercontent.com/lanzm/MetaFetch/master/list.meta.yml": {
     "score": 100.0,
-    "runs": 59,
+    "runs": 60,
     "role": "official",
-    "last": "2026-10-23",
+    "last": "2026-10-24",
     "cn_tested": 80,
     "cn_passed": 7,
     "cn_pass_rate": 0.0875,
@@ -83,9 +83,9 @@
   },
   "https://raw.githubusercontent.com/peasoft/NoMoreWalls/master/list.meta.yml": {
     "score": 100.0,
-    "runs": 59,
+    "runs": 60,
     "role": "official",
-    "last": "2026-10-23",
+    "last": "2026-10-24",
     "cn_tested": 11,
     "cn_passed": 2,
     "cn_pass_rate": 0.1818,
@@ -105,9 +105,9 @@
   },
   "https://raw.githubusercontent.com/awesome-vpn/awesome-vpn/master/clash.yaml": {
     "score": 100.0,
-    "runs": 59,
+    "runs": 60,
     "role": "official",
-    "last": "2026-10-23",
+    "last": "2026-10-24",
     "cn_tested": 1,
     "cn_passed": 0,
     "cn_pass_rate": 0.0,
@@ -131,9 +131,9 @@
   },
   "https://raw.githubusercontent.com/ovmvo/FreeSub/main/sub/permanent/mihomo.yaml": {
     "score": 100.0,
-    "runs": 59,
+    "runs": 60,
     "role": "official",
-    "last": "2026-10-23",
+    "last": "2026-10-24",
     "cn_tested": 16,
     "cn_passed": 4,
     "cn_pass_rate": 0.25,
@@ -484,33 +484,39 @@
     "cn_last": "2026-10-22T07:04:43Z"
   },
   "https://raw.githubusercontent.com/peacefish/nodefree/main/sub/sub_merge_clash.yaml": {
-    "score": 92.89,
-    "runs": 12,
+    "score": 93.96,
+    "runs": 13,
     "role": "candidate",
-    "last": "2026-10-23"
+    "last": "2026-10-24"
   },
   "https://raw.githubusercontent.com/peacefish/nodefree/main/sub/clash_openshare.yaml": {
-    "score": 92.89,
-    "runs": 12,
+    "score": 93.96,
+    "runs": 13,
     "role": "candidate",
-    "last": "2026-10-23"
+    "last": "2026-10-24"
   },
   "https://raw.githubusercontent.com/MrWQ/nodefreebot/master/mihomo.yml": {
-    "score": 92.89,
-    "runs": 12,
+    "score": 93.96,
+    "runs": 13,
     "role": "candidate",
-    "last": "2026-10-23"
+    "last": "2026-10-24"
   },
   "https://raw.githubusercontent.com/MrWQ/nodefreebot/master/clash.yml": {
-    "score": 92.89,
-    "runs": 12,
+    "score": 93.96,
+    "runs": 13,
     "role": "candidate",
-    "last": "2026-10-23"
+    "last": "2026-10-24"
   },
   "https://clashgithub.com/clashnode-20261023.html": {
-    "score": 81.15,
-    "runs": 6,
+    "score": 83.98,
+    "runs": 7,
     "role": "candidate",
-    "last": "2026-10-23"
+    "last": "2026-10-24"
+  },
+  "https://clashgithub.com/clashnode-20261024.html": {
+    "score": 57.5,
+    "runs": 1,
+    "role": "candidate",
+    "last": "2026-10-24"
   }
 }

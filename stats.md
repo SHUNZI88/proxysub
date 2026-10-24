@@ -1,51 +1,51 @@
 # proxysub 健康报告
 
-更新时间：2026-10-23 21:35 UTC
+更新时间：2026-10-24 01:00 UTC
 运行模式：**mihomo**
 
 ## 概览
 
-- 最终节点：**97**（合规 64，高风险隔离 33）
-- 真实拨测通过率：**34.2%**（276/808）
-- TCP 存活：1234 | 正式源 9 个 | 候选源 6 个
+- 最终节点：**116**（合规 83，高风险隔离 33）
+- 真实拨测通过率：**38.5%**（314/815）
+- TCP 存活：1198 | 正式源 8 个 | 候选源 7 个
 
 ## 协议分布
 
 | 协议 | 数量 |
 |---|---|
-| VLESS-Reality | 33 |
-| Hysteria2 | 26 |
-| VLESS-TLS | 22 |
-| Trojan | 11 |
-| Hysteria | 3 |
-| Anytls | 2 |
+| VLESS-Reality | 40 |
+| VLESS-TLS | 37 |
+| Trojan | 18 |
+| Hysteria2 | 13 |
+| Anytls | 6 |
+| Hysteria | 2 |
 
 ## 区域分布
 
 | 区域 | 数量 |
 |---|---|
-| 🌐 其他 | 81 |
-| 🇺🇸 美国 | 7 |
-| 🇸🇬 新加坡 | 5 |
-| 🇭🇰 香港 | 3 |
-| 🇯🇵 日本 | 1 |
+| 🌐 其他 | 93 |
+| 🇺🇸 美国 | 10 |
+| 🇸🇬 新加坡 | 6 |
+| 🇬🇧 英国 | 3 |
+| 🇭🇰 香港 | 2 |
+| 🇯🇵 日本 | 2 |
 
 ## 源贡献 Top 10（正式源）
 
 | 源 | 真实通过 | 独有存活 | 存活 |
 |---|---|---|---|
-| `Au1rxx/free-vpn-subscriptions` | 130 | 509 | 512 |
-| `peasoft/NoMoreWalls` | 64 | 23 | 208 |
-| `yy1588133/proxy-pool` | 50 | 321 | 489 |
-| `chengaopan/AutoMergePublicNodes` | 42 | 2 | 197 |
-| `shaoyouvip/free` | 26 | 25 | 26 |
-| `lanzm/MetaFetch` | 19 | 83 | 84 |
-| `ovmvo/FreeSub` | 18 | 26 | 27 |
+| `Au1rxx/free-vpn-subscriptions` | 173 | 514 | 515 |
+| `yy1588133/proxy-pool` | 81 | 311 | 488 |
+| `chengaopan/AutoMergePublicNodes` | 60 | 0 | 208 |
+| `peasoft/NoMoreWalls` | 60 | 0 | 208 |
+| `lanzm/MetaFetch` | 20 | 84 | 84 |
+| `shaoyouvip/free` | 17 | 17 | 17 |
+| `ovmvo/FreeSub` | 16 | 17 | 20 |
 | `awesome-vpn/awesome-vpn` | 3 | 5 | 5 |
 | `Russ534/clash` | 0 | 1 | 1 |
 
 ## 警告
 
-- 本轮无源被淘汰
-- 可疑源结构：shaoyouvip: shared_cred:20/27
-- ⚠️ 最终节点数 97 低于下限 150（候选池不足）
+- 淘汰源 `https://raw.githubusercontent.com/ovmvo/FreeSub/main/sub/permanent/mihomo.yaml`：cf_blocked:7/20
+- ⚠️ 最终节点数 116 低于下限 150（候选池不足）
