@@ -257,6 +257,27 @@ def test_build_verified_config_groups():
     assert len(cfg["proxies"]) == 3
 
 
+def test_build_verified_config_ai_group():
+    """AI 可用组（2026-10-24）：有 ai_reachable 证据的节点进「🤖 AI 可用」
+    url-test 组并置于节点选择首位；无 results/无证据时不出现该组。"""
+    nodes = [
+        {"proxy": _proxy(name="HK 01", server="a.example"), "probe_name": "p0"},
+        {"proxy": _proxy(name="SG 02", server="b.example"), "probe_name": "p1"},
+    ]
+    results = {"p0": {"ok": True, "ai": {"ai_reachable": True}},
+               "p1": {"ok": True, "ai": {}}}
+    cfg = cn_probe.build_verified_config(nodes, results)
+    gnames = [g["name"] for g in cfg["proxy-groups"]]
+    assert "🤖 AI 可用" in gnames
+    ai = next(g for g in cfg["proxy-groups"] if g["name"] == "🤖 AI 可用")
+    assert ai["proxies"] == ["HK 01"]
+    sel = next(g for g in cfg["proxy-groups"] if g["name"] == "🚀 节点选择")
+    assert sel["proxies"][0] == "🤖 AI 可用"
+    # 无证据 → 无 AI 组
+    cfg2 = cn_probe.build_verified_config(nodes)
+    assert "🤖 AI 可用" not in [g["name"] for g in cfg2["proxy-groups"]]
+
+
 def test_build_verified_config_region_groups():
     nodes = [{"proxy": _proxy(name=f"🇭🇰 香港 0{i}", server=f"s{i}")}
              for i in range(3)]

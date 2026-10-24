@@ -889,8 +889,13 @@ def _unique_names(proxies: list[dict]) -> list[str]:
     return out
 
 
-def build_verified_config(nodes: list[dict]) -> dict:
-    """验证集 clash 配置：合规节点进自动/地区组，Insecure 独立隔离组。"""
+def build_verified_config(nodes: list[dict], results: dict | None = None) -> dict:
+    """验证集 clash 配置：合规节点进自动/地区组，Insecure 独立隔离组。
+
+    results（2026-10-24 新增）：本轮拨测结果；有 AI 可达证据的节点进
+    「🤖 AI 可用」组并置于节点选择首位——用户客户端一键切换 AI 通道
+    （任务#96 后 AI 证据全覆盖，该组在纯快照轮亦可靠）。
+    """
     proxies = [dict(n["proxy"]) for n in nodes]
     names = _unique_names(proxies)  # 先统一分配唯一名，再回填 proxy.name 供分组引用
     for p, nm in zip(proxies, names):
@@ -899,12 +904,25 @@ def build_verified_config(nodes: list[dict]) -> dict:
     insecure = [p for p in proxies if _truthy(p.get("skip-cert-verify"))]
     compliant_names = [p["name"] for p in compliant]
     insecure_names = [p["name"] for p in insecure]
+    # AI 可达名单（与 compliant_names 同序对齐）
+    ai_names = []
+    if results:
+        for n, nm in zip(nodes, names):
+            r = results.get(n.get("probe_name", ""), {})
+            if (r.get("ai") or {}).get("ai_reachable"):
+                ai_names.append(nm)
     groups = [
         {"name": "🚀 节点选择", "type": "select",
          "proxies": ["♻️ 自动选择", "DIRECT"] + compliant_names},
         {"name": "♻️ 自动选择", "type": "url-test", "proxies": compliant_names,
          "url": config.PROBE_URL, "interval": 300, "tolerance": 50},
     ]
+    if ai_names:
+        # AI 组置顶（插在「节点选择」引用的首位），url-test 自动选最快 AI 节点
+        groups.append({"name": "🤖 AI 可用", "type": "url-test",
+                       "proxies": ai_names, "url": config.PROBE_URL,
+                       "interval": 300, "tolerance": 50})
+        groups[0]["proxies"].insert(0, "🤖 AI 可用")
     if classify_proxy is not None:
         regions: dict[str, list[str]] = {}
         for p in compliant:
@@ -929,9 +947,10 @@ def build_verified_config(nodes: list[dict]) -> dict:
     }
 
 
-def write_verified_outputs(nodes: list[dict], workdir: str) -> dict[str, str]:
+def write_verified_outputs(nodes: list[dict], workdir: str,
+                           results: dict | None = None) -> dict[str, str]:
     paths = {}
-    cfg = build_verified_config(nodes)
+    cfg = build_verified_config(nodes, results)
     clash_path = os.path.join(workdir, VERIFIED_FILE["clash"])
     with open(clash_path, "w", encoding="utf-8") as f:
         yaml.dump(cfg, f, allow_unicode=True, sort_keys=False)
@@ -1220,6 +1239,20 @@ def main() -> int:
             f"保留已发布集 {n_carry} 个（不随单快照波动侵蚀）")
         verified = list(carry)  # carry 即上一轮已发布集，直接整体保留
 
+    # 6.6) AI 慢档提级（2026-10-24，用户硬性诉求「无论如何保证 AI 可用节点」）：
+    # 快档不足但 AI 可达的慢档节点升入主资产。依据：AI 聊天/API 流量极小
+    # （单条消息几 KB），32KB/s（≈4KB/s 起步）远够 chatgpt/claude 网页与
+    # API 使用——「下载速度」闸门对 AI 场景过严，导致 AI 可用节点被误汰。
+    # 置于 6.5 之后：纯 carryover 轮的整集保留不冲掉提级结果。
+    ai_slow = [n for n in degraded
+               if (results.get(n["probe_name"], {}).get("ai") or {})
+               .get("ai_reachable")]
+    if ai_slow:
+        log(f"AI 慢档提级: {len(ai_slow)} 个 AI 可达的慢档节点并入主资产")
+        verified = sorted(verified + ai_slow,
+                          key=lambda n: verified_rank(n, results))
+        degraded = [n for n in degraded if n not in ai_slow]
+
     by_origin = {o: sum(1 for n in verified if n["origin"] == o)
                  for o in ("pending", "rescue", "carryover")}
     # 分源/分协议聚合（Phase 2.2）：tested/passed 双口径，供 CI 源级评分与门槛自学习
@@ -1279,7 +1312,9 @@ def main() -> int:
             "tested": len(nodes),
             "passed": len(verified),
             # 慢档统计（任务#97）：快档不足但有真实流量的节点数，仅留痕
-            "degraded": len(degraded),
+            "degraded": len(degraded) + len(ai_slow),
+            # AI 慢档提级数（6.6）：已并入主资产
+            "ai_slow_promoted": len(ai_slow),
             "by_origin": {"pending": n_pend, "rescue": n_resc,
                           "carryover": n_carry},
             "passed_by_origin": by_origin,
@@ -1331,7 +1366,7 @@ def main() -> int:
         return 0
 
     # 8) 发布验证集到主资产（p_* 随机名，订阅永久地址不变）
-    paths = write_verified_outputs(verified, workdir)
+    paths = write_verified_outputs(verified, workdir, results)
     asset_by_fmt = {}
     for a in assets:
         m = ASSET_RE.match(a.get("name", ""))
@@ -1366,7 +1401,7 @@ def main() -> int:
             key=lambda n: (results.get(n["probe_name"], {}).get("latency_ms")
                            if results.get(n["probe_name"], {}).get("latency_ms")
                            is not None else 99999))[:50]
-        deg_cfg = build_verified_config(deg_sorted)
+        deg_cfg = build_verified_config(deg_sorted, results)
         deg_path = os.path.join(
             workdir, VERIFIED_FILE["clash"].replace(
                 "verified_clash", "verified_degraded_clash"))

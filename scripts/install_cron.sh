@@ -31,9 +31,9 @@ crontab -l 2>/dev/null \
 # 2) 追加新标记块
 {
     echo "$MARK_CN"
-    # L1: 每日 4 轮中国出口实测（CST 01:18/07:18/13:18/19:18，
-    # 分别接住 CI 00:17/06:17/12:17/18:17 产出的待测文档）
-    echo "18 1,7,13,19 * * * cd $REPO_ROOT && export GITHUB_TOKEN=\"\$(cat /root/.github_pat)\" && export GH_TOKEN=\"\$GITHUB_TOKEN\" && $PY -u $REPO_ROOT/scripts/cn_probe.py >> /tmp/cn_probe/cron.log 2>&1"
+    # L1: 每日 6 轮中国出口实测（CST 01:18/09:18/12:18/15:18/18:18/21:18，
+    # 白天 3h 一轮缩短验证陈旧窗口——免费节点 3h 衰减可达 30-50%）
+    echo "18 1,9,12,15,18,21 * * * cd $REPO_ROOT && export GITHUB_TOKEN=\"\$(cat /root/.github_pat)\" && export GH_TOKEN=\"\$GITHUB_TOKEN\" && $PY -u $REPO_ROOT/scripts/cn_probe.py >> /tmp/cn_probe/cron.log 2>&1"
     echo "$MARK_WD"
     # L2: 看门狗每 2h 一拍——cron 保活 + 漏跑补测
     echo "17 */2 * * * $PY -u $REPO_ROOT/scripts/cron_watchdog.py >> /tmp/cn_probe/watchdog.log 2>&1"
