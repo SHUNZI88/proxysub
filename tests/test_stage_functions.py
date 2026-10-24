@@ -189,12 +189,25 @@ class TestScoreCandidates:
             us_latency_cap, score_latency_cap)
 
     def test_liveness_gate_drops_unprobed_when_mihomo_present(self):
-        """mihomo 在场时未通过拨测的节点被死活闸门丢弃。"""
+        """语义翻转（任务#102，2026-10-24）：默认开关关闭——未过拨测节点
+        保留进评分、带 NO_REAL_PROBE_PENALTY 沉底；显式打开开关时恢复旧
+        死活闸门行为（保留一键回滚能力）。"""
         nodes = [_vless(), _hy2()]
         ok = {fc.fingerprint(_hy2()): {"status": "ok", "latency": 100.0, "https_ok": True}}
         r = self._run(nodes, real_ok=ok)
-        assert len(r.scored) == 1
+        assert len(r.scored) == 2  # 未拨测的 vless 不再被丢弃
+        # 带惩罚沉底：hy2（已拨测）排前，vless（未拨测）排后
         assert r.scored[0][0]["type"] == "hysteria2"
+        assert r.scored[1][0]["type"] == "vless"
+        # 开关显式打开 → 旧死活闸门行为
+        monkeypatch = __import__("pytest").MonkeyPatch()
+        monkeypatch.setattr(fc, "REQUIRE_REAL_PROBE_IN_OUTPUT", True)
+        try:
+            r2 = self._run(nodes, real_ok=ok)
+            assert len(r2.scored) == 1
+            assert r2.scored[0][0]["type"] == "hysteria2"
+        finally:
+            monkeypatch.undo()
 
     def test_no_gate_without_mihomo(self):
         """无 mihomo 时 TCP 存活节点全部保留（带 NO_REAL_PROBE_PENALTY）。"""
@@ -253,10 +266,17 @@ class TestScoreCandidates:
         assert abs((s_hi - s_low) - 400.0) < 1e-6
 
     def test_candidate_only_must_pass_probe(self):
-        """候选源节点必须通过拨测（与正式源同标准）。"""
+        """语义翻转（任务#102，2026-10-24）：候选源未过拨测节点不再直接
+        剔除——NO_REAL_PROBE_PENALTY + CANDIDATE_ONLY_PENALTY 双重软惩罚
+        沉底，中国实测才是生死证。"""
         nodes = [_vless()]
         r = self._run(nodes, official_fps=set(), real_ok={})
-        assert not r.scored
+        assert len(r.scored) == 1
+        # 惩罚确实在评分里生效（与正式源已拨测对照拉开距离）
+        r_off_probed = self._run([_vless()], official_fps={fc.fingerprint(_vless())},
+                                 real_ok={fc.fingerprint(_vless()): {
+                                     "status": "ok", "latency": 100.0, "https_ok": True}})
+        assert r.scored[0][1] > r_off_probed.scored[0][1]
 
     def test_https_gate_drops_cf_blocked_https_fail(self, monkeypatch):
         # 注意 patch 目标：score_candidates 引用的是 fc 命名空间的裸名

@@ -244,8 +244,10 @@ def select_probe_sample(
 ) -> list[str]:
     """从 TCP 存活节点中选出进入真实拨测的样本（顺序即优先级）。
 
-    拨测是输出的死活闸门（REQUIRE_REAL_PROBE_IN_OUTPUT）：只有本轮拨测通过的
-    节点才能进入最终列表，因此「选谁去拨测」直接决定输出质量。选择原则：
+    拨测曾经是输出的死活闸门（REQUIRE_REAL_PROBE_IN_OUTPUT）——2026-10-24
+    起（任务#102）降级为评分特征：未过拨测节点经 NO_REAL_PROBE_PENALTY
+    软惩罚沉底，发布权唯一归属沙箱中国实测。但「选谁去拨测」仍直接决定
+    拨测样本覆盖面与 real_hist/特征数据质量。选择原则：
 
     1) **不迷信历史**：survival.json 可能因任何原因停更（2026-10 曾因工作流
        `git add` 原子失败冻结多轮）。文件一旦陈旧（无今日记录，见
@@ -609,10 +611,11 @@ def liveness_stage(unique: dict[str, dict]) -> tuple[dict[str, float], int]:
 def real_probe_stage(tcp_lat: dict[str, float], unique: dict[str, dict], prov: dict[str, set],
                      official_fps: set, cand_urls: list[str], per_source_keys,
                      blocklist, cn_stats=None, ai_stats=None) -> ProbeStageResult:
-    """阶段 5：真实拨测（输出的死活闸门）。
+    """阶段 5：真实拨测（2026-10-24 任务#102 起降级为评分特征）。
 
-    拨测是输出的死活闸门（REQUIRE_REAL_PROBE_IN_OUTPUT）：只有本轮真实拨测
-    通过的节点才进入最终列表，因此「选哪些节点去拨测」直接决定输出质量。
+    美西拨测 ok 曾是输出的死活闸门（REQUIRE_REAL_PROBE_IN_OUTPUT）——
+    现已关闭：未过拨测节点经软惩罚进入排序沉底，发布权唯一归属沙箱中国
+    实测（cn.ok）。拨测样本选择仍决定特征数据质量。
     样本选择原则见 select_probe_sample() 的 docstring——2026-10 质量回归后
     修订：历史稳定优先仅在状态新鲜时生效 + 新节点保底配额 + 渠道节点配额；
     2026-10-20 增加 cn 源级配额倾斜（低产源少占预算、高产源多占）。
@@ -706,10 +709,14 @@ def score_candidates(tcp_lat: dict[str, float], unique: dict[str, dict], prov: d
             continue
         cand_only = fp not in official_fps
         r = real_ok.get(fp)
+        # 任务#102（2026-10-24）：美西拨测降级为评分特征——REQUIRE_…
+        # 已置 False，未过拨测节点进入评分，走 NO_REAL_PROBE_PENALTY 软
+        # 惩罚沉底；发布权唯一归属沙箱中国实测。开关保留，可一键回滚。
         if bin_path and REQUIRE_REAL_PROBE_IN_OUTPUT and not r:
-            continue  # 死活闸门：本轮未通过真实拨测的节点不进最终列表
-        if cand_only and bin_path and not r:
-            continue  # probation-source nodes must pass the real probe
+            continue  # 死活闸门（默认关闭）：本轮未通过真实拨测的节点不进最终列表
+        # 试用期源硬卡点同步拆除（任务#102）：cand_only 且未过拨测的节点
+        # 不再直接剔除——NO_REAL_PROBE_PENALTY + CANDIDATE_ONLY_PENALTY
+        # 双重软惩罚已覆盖排序，中国实测才是它们的生死证。
         if bin_path and REQUIRE_HTTPS_OK_IN_OUTPUT and r and not r.get("https_ok"):
             continue  # AI/CF sites need working HTTPS egress
         display = r["latency"] if r else tlat

@@ -308,7 +308,15 @@ TAMPER_STATUSES = ("tamper_http", "tamper_https", "tls_mitm", "bad_egress")
 # 的静态可行节点交沙箱复测，含协议多样化保底）——但实测 rescue 与 pending
 # 通过率同档（3% vs 4.7%），故扩大该闸门放宽幅度**无数据支撑**，暂不实施。
 # 探测延迟不参与排序（见 TCP_LATENCY_CAP_IN_SCORE）。
-REQUIRE_REAL_PROBE_IN_OUTPUT = True
+REQUIRE_REAL_PROBE_IN_OUTPUT = False
+# 2026-10-24 翻转（任务#102，用户裁决）：美西拨测从「输出死活闸门」降级为
+# 评分特征（未过拨测走既有 NO_REAL_PROBE_PENALTY 软惩罚 + 排序后沉）。
+# 依据：① 1292 节点交叉表 33 个「美西不通、国内通」实证美西探测不回答
+# 国内可用性；② 中国通过率才是订阅的终极口径（10-23 沙箱 50/887），
+# 279 个美西通过里只有 50 个国内可用——美西闸门把关的是错误的目标；
+# ③ 源级复盘显示该闸门与 cf_blocked 硬淘汰叠加，把 ovmvo/ermao 等真源
+# 挤出池子。旧注释「放宽无数据支撑」所缺的正是这一组数据，现已补齐。
+# 发布权唯一归属：沙箱中国实测（cn.ok）。
 # CF HTTPS trace is soft — do NOT hard-exclude; apply NO_HTTPS_PENALTY instead.
 REQUIRE_HTTPS_OK_IN_OUTPUT = False
 # Soft latency gate: US runner RTT ≠ China RTT; only drop extreme outliers.
