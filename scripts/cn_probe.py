@@ -1191,7 +1191,7 @@ def main() -> int:
                         if results[n["probe_name"]].get("ai", {}).get("ai_api"))
             log(f"证据收集完成: 出口证据 {n_geo}/{len(passed)}，"
                 f"AI 任一可达 {n_ai}/{len(passed)}，API 层可用 {n_api}/{len(passed)}"
-                f"（{time.time() - (ev_deadline - EVIDENCE_BUDGET_S):.0f}s）")
+                f"（{ev_budget - max(0, ev_deadline - time.time()):.0f}s）")
         except Exception as e:
             log(f"熔断: 拨测过程异常（{type(e).__name__}: {e}），不发布")
             return 3
