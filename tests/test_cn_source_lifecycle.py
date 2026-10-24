@@ -238,10 +238,14 @@ class TestUpdateOfficialCnDemote:
         assert len(sources["official"]) == 1
 
     def test_demote_capped_at_three_worst_first(self, monkeypatch):
-        """4 个低产源同轮达标，但单轮上限 3：Wilson 下界最劣的 3 个先汰。"""
+        """4 个零通过源同轮达标，但单轮上限 3：Wilson 下界最劣的 3 个先汰。
+
+        任务#105（2026-10-24）后淘汰需「绝对通过数 = 0」——原用例的
+        1/25、2/25、3/25 低产非零源不再淘汰（由 cn_source_bonus 倾斜减配额），
+        故数据改为全零通过，验证单轮上限与最劣优先逻辑不变。"""
         monkeypatch.setattr(sm, "load_json", lambda *a, **k: {})
-        lows = [("http://l0/sub", 0, 25), ("http://l1/sub", 1, 25),
-                ("http://l2/sub", 2, 25), ("http://l3/sub", 3, 25)]
+        lows = [("http://l0/sub", 0, 25), ("http://l1/sub", 0, 25),
+                ("http://l2/sub", 0, 25), ("http://l3/sub", 0, 25)]
         entries = [_entry(u) for u, _, _ in lows]
         entries += [_entry(f"http://h{i}/sub") for i in range(5)]  # 保底数量外 healthy
         sources = _src(entries)
@@ -252,12 +256,45 @@ class TestUpdateOfficialCnDemote:
         cn.update({f"http://h{i}/sub": _cn(25, 20) for i in range(5)})
         for _ in range(config.CN_DEMOTE_STREAK):
             rep = sm.update_official(sources, hist, run, cn)
-        # 下界升序：0/25(0.0) < 1/25(~0.007) < 2/25(~0.022) < 3/25(~0.042)
-        assert set(rep["demoted"]) == {"http://l0/sub", "http://l1/sub", "http://l2/sub"}
-        assert rep["demoted"]["http://l0/sub"] == "cn_low_pass_rate:0/25"
+        # 同为 0/25 下界并列，任取 3 个最劣出局
+        assert len(rep["demoted"]) == 3
+        assert all(v == "cn_low_pass_rate:0/25" for v in rep["demoted"].values())
         # 最劣 3 个出局后 official 剩 6（= MIN_OFFICIAL），第 4 劣留下继续观察
-        assert "http://l3/sub" in [e["url"] for e in sources["official"]]
         assert len(sources["official"]) == 6
+
+    def test_low_but_nonzero_pass_never_demoted(self, monkeypatch):
+        """判据收紧（任务#105）：低产但绝对通过数非零的源不淘汰——
+        VPN-Links 8/302 被汰是旧 5% 下界的误杀（绝对通过数是 Au1rxx 两倍）。
+        非零低产由 cn_source_bonus 按源级通过率自动倾斜减配额。"""
+        monkeypatch.setattr(sm, "load_json", lambda *a, **k: {})
+        entries = [_entry("http://low/sub")] + [_entry(f"http://h{i}/sub") for i in range(5)]
+        sources = _src(entries)
+        hist: dict = {}
+        run = {"http://low/sub": _ok_run(),
+               **{f"http://h{i}/sub": _ok_run() for i in range(5)}}
+        cn = {"http://low/sub": _cn(302, 8),  # 8/302：下界 ~1.5% < 3%，但非零
+              **{f"http://h{i}/sub": _cn(25, 20) for i in range(5)}}
+        for _ in range(config.CN_DEMOTE_STREAK + 2):
+            rep = sm.update_official(sources, hist, run, cn)
+        assert rep["demoted"] == {}
+        assert "http://low/sub" in [e["url"] for e in sources["official"]]
+
+    def test_manual_source_cn_demoted_same_rule(self, monkeypatch):
+        """手工源取消 cn 豁免（任务#105）：origin=manual 只豁免发现流程，
+        不豁免质量判据——绝对零通过的源不论来历同判。"""
+        monkeypatch.setattr(sm, "load_json", lambda *a, **k: {})
+        e = _entry("http://manual0/sub")
+        e["origin"] = "manual"
+        entries = [e] + [_entry(f"http://h{i}/sub") for i in range(8)]  # 共 9，留淘汰空间
+        sources = _src(entries)
+        hist: dict = {}
+        run = {"http://manual0/sub": _ok_run(),
+               **{f"http://h{i}/sub": _ok_run() for i in range(8)}}
+        cn = {"http://manual0/sub": _cn(30, 0),  # 0/30 绝对零通过
+              **{f"http://h{i}/sub": _cn(25, 20) for i in range(8)}}
+        for _ in range(config.CN_DEMOTE_STREAK):
+            rep = sm.update_official(sources, hist, run, cn)
+        assert "http://manual0/sub" in rep["demoted"]
 
     def test_min_official_floor_blocks_all_demotion(self, monkeypatch):
         """official 已贴保底线 MIN_OFFICIAL=6：本轮一个都不汰（防淘光无源可抓）。"""

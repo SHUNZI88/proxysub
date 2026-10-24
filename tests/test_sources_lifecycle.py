@@ -591,10 +591,14 @@ class TestEvaluateCandidates:
         assert rep["rejected"]["u"] == "honeypot_tamper:1/5"
 
     def test_rejects_by_cf_blocked(self):
+        """语义翻转（任务#105，2026-10-24）：cf_blocked 不再拒绝候选——
+        CF 拦美西 Runner 是探测点位问题（ovmvo 10-21 中国通过 33% 仍被汰），
+        节点级 CF_BLOCKED_PENALTY 软惩罚保留。"""
         cands = {"candidates": {"u": _cand()}, "rejected": {}}
         rep = sm.evaluate_candidates(cands, {"u": _good_run(cf_blocked=2, probed=8)},
                                      {"official": []})
-        assert rep["rejected"]["u"] == "cf_blocked:2/8"
+        assert "rejected" not in rep or "u" not in rep.get("rejected", {})
+        assert "u" in cands["candidates"]
 
     def test_rejects_by_consecutive_failures(self):
         cands = {"candidates": {"u": _cand()}, "rejected": {}}
@@ -677,9 +681,11 @@ class TestUpdateOfficial:
         assert rep["demoted"] == {"u": "honeypot_tamper:3/10"}
 
     def test_demotes_on_cf_blocked(self):
+        """语义翻转（任务#105）：cf_blocked 不再整源淘汰——ovmvo 事故复盘
+        （中国通过 6/18=33% 的源因 7/20 被 CF 硬杀）后废除，节点级软惩罚保留。"""
         sources = self._src()
         rep = sm.update_official(sources, {}, {"u": {"ok": True, "cf_blocked": 4, "probed": 10}})
-        assert rep["demoted"] == {"u": "cf_blocked:4/10"}
+        assert rep["demoted"] == {}
 
     def test_demotes_on_consecutive_failures(self):
         sources = self._src()

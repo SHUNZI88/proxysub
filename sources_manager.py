@@ -480,8 +480,8 @@ def evaluate_candidates(cands: dict, run: dict[str, dict], sources: dict,
                 else ("honeypot_structure:" + ";".join(r["flags"]))
         elif tamper >= 3 or (tamper >= 1 and tamper / probed >= 0.2):
             reason = f"honeypot_tamper:{tamper}/{probed}"
-        elif int(r.get("cf_blocked", 0)) >= 2 and int(r.get("cf_blocked", 0)) / probed >= 0.25:
-            reason = f"cf_blocked:{r.get('cf_blocked')}/{probed}"
+        # cf_blocked 候选拒绝已删（任务#105）：同 official 侧——CF 拦美西
+        # Runner 是探测点位问题，节点级软惩罚保留。
         elif c["fail_streak"] >= CANDIDATE_MAX_FAILS:
             reason = "fetch_failures"
         elif c["runs"] >= PROBATION_MAX_RUNS:
@@ -604,8 +604,11 @@ def update_official(sources: dict, stats_hist: dict, run: dict[str, dict],
             reason = "redistributes_bait"
         elif tamper >= 3 and tamper / probed >= 0.25:
             reason = f"honeypot_tamper:{tamper}/{probed}"
-        elif int(r.get("cf_blocked", 0)) >= 4 and int(r.get("cf_blocked", 0)) / probed >= 0.3:
-            reason = f"cf_blocked:{r.get('cf_blocked')}/{probed}"
+        # cf_blocked 整源淘汰已删（任务#105，2026-10-24）：CF 对美西 Runner
+        # 拦截是探测点位问题（探针纯度 URL 恒被 CF 盯上），不是源质量问题；
+        # 国内可用节点经常过不了 CF——节点级 CF_BLOCKED_PENALTY 软惩罚保留。
+        # 事故锚点：ovmvo 10-21 中国通过 6/18=33%（全池最高档）因 7/20 被 CF
+        # 硬淘汰。
         elif h["fail_streak"] >= OFFICIAL_FAIL_DEMOTE:
             reason = f"consecutive_failures:{h['fail_streak']}"
         elif h.get("zero_real_streak", 0) >= OFFICIAL_ZERO_REAL_DEMOTE:
@@ -627,10 +630,13 @@ def update_official(sources: dict, stats_hist: dict, run: dict[str, dict],
                 }
             else:
                 reason = f"zero_unique_contribution:{h['zero_unique_streak']}runs"
-        # ---- cn 维度淘汰候选（streak 达标且非手工源；不在此刻生效，走三重保底）----
-        if (reason is None and low
-                and int(h.get("cn_low_streak", 0)) >= config.CN_DEMOTE_STREAK
-                and entry.get("origin") != "manual"):
+        # ---- cn 维度淘汰候选（streak 达标且绝对零通过；不在此刻生效，走三重保底）----
+        # 任务#105（2026-10-24）：① 判据加「绝对通过数 = 0」——低产但非零的源
+        # （VPN-Links 8/302、Au1rxx 4/328）不再淘汰，由 cn_source_bonus 按源级
+        # 通过率自动倾斜减配额；② 手工源（origin=manual）取消 cn 豁免——手工
+        # 添加只豁免发现流程，不豁免质量判据（Au1rxx 1.2% 不再永远占满拨测）。
+        if (reason is None and low and cn_p == 0
+                and int(h.get("cn_low_streak", 0)) >= config.CN_DEMOTE_STREAK):
             cn_candidates.append((url, lo, cn_t, cn_p))
         if reason:
             rep["demoted"][url] = reason
