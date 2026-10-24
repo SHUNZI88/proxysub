@@ -146,8 +146,17 @@ def test_bad_sni_rejected():
     assert fc.protocol_gate_reason(_hy2(sni="not a valid sni!!")) == "bad_sni"
 
 
-def test_ip_literal_sni_rejected():
-    assert fc.protocol_gate_reason(_hy2(sni="1.2.3.4")) == "bad_sni"
+def test_ip_literal_sni_accepted_for_hy2():
+    """语义翻转（任务#101，2026-10-24）：IP SNI 对非 Reality 协议合法——
+    旧断言（hy2 IP SNI 拒绝）把 47% 的 hy2 节点在 TCP 之前误杀，正是
+    「源里很多、发出去很少」的初筛漏网主因之一。Reality 仍强制域名。"""
+    assert fc.protocol_gate_reason(_hy2(sni="1.2.3.4")) is None
+    # Reality 的 IP SNI 仍拒（借用真实站点证书，SNI 必须可解析域名）
+    reality = _hy2(sni="1.2.3.4")
+    reality["type"] = "vless"
+    reality["uuid"] = "e13cf851-b4fd-413b-8d49-146e6eb8e5d4"
+    reality["reality-opts"] = {"public-key": "a" * 43, "short-id": ""}
+    assert fc.protocol_gate_reason(reality) == "bad_sni"
 
 
 def test_valid_sni_accepted():

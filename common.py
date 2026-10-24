@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import base64
 import hashlib
+import ipaddress
 import json
 import math
 import re
@@ -105,11 +106,34 @@ def _sni_of(proxy: dict) -> str:
     return str(proxy.get("servername") or proxy.get("sni") or "").strip()
 
 def _bad_sni_reason(proxy: dict) -> str | None:
-    """SNI 必须是合法主机名（Reality 借用真实站点证书，SNI 必须可解析成域名形态）。"""
+    """SNI 合法性判定（2026-10-24 修正，任务#101）。
+
+    域名形态强制**只针对 Reality**——Reality 借用真实站点证书，SNI 必须可
+    解析成域名，这条规则原本就是为它写的；旧实现把它无差别套到所有协议，
+    导致 Hysteria2 大量 IP SNI / host:port SNI 的完整节点在 TCP 与拨测之前
+    被静默丢弃（实测 Au1rxx 152 个 hy2 误杀 72 个，47%）。
+
+    非 Reality 规则：截掉端口/路径后是合法域名 → 通过；是合法 IP → 通过
+    （hy2/tuic/vless 直连 IP 均合法）；两者都不是（含 %0a、整段 URI 等
+    垃圾串）→ 仍拒。
+    """
     sni = _sni_of(proxy)
-    if sni and not hp.HOST_RE.match(sni):
+    if not sni:
+        return None
+    if hp.HOST_RE.match(sni):
+        return None
+    ro = proxy.get("reality-opts")
+    if isinstance(ro, dict) and ro:
+        return "bad_sni"  # Reality：域名强制，不放宽
+    # 非 Reality：截端口与路径后复核
+    host = sni.split(":", 1)[0].split("/", 1)[0].strip()
+    if host and hp.HOST_RE.match(host):
+        return None
+    try:  # 合法 IP（v4/v6）放行
+        ipaddress.ip_address(host)
+        return None
+    except ValueError:
         return "bad_sni"
-    return None
 
 def _gate_hysteria2(p: dict) -> str | None:
     if not str(p.get("password") or "").strip():
