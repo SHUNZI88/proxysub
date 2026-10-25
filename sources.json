@@ -31,12 +31,6 @@
       "recall_note": "2026-10-24 召回（任务#105）：原淘汰原因 zero_unique_contribution:16runs；cf_blocked 整源淘汰已废除、低产判据改绝对零通过"
     },
     {
-      "url": "https://raw.githubusercontent.com/ovmvo/FreeSub/main/sub/permanent/mihomo.yaml",
-      "origin": "manual",
-      "added": "2026-10-24",
-      "recall_note": "2026-10-24 召回（任务#105）：原淘汰原因 cf_blocked:7/20；cf_blocked 整源淘汰已废除、低产判据改绝对零通过"
-    },
-    {
       "url": "https://raw.githubusercontent.com/Au1rxx/free-vpn-subscriptions/main/output/stable/clash-0001.yaml",
       "origin": "discovered",
       "added": "2026-10-25",
@@ -178,6 +172,11 @@
     {
       "url": "https://raw.githubusercontent.com/chengaopan/AutoMergePublicNodes/master/list.meta.yml",
       "reason": "cn_low_pass_rate:0/65",
+      "date": "2026-10-25"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/ovmvo/FreeSub/main/sub/permanent/mihomo.yaml",
+      "reason": "cn_low_pass_rate:0/23",
       "date": "2026-10-25"
     }
   ],
