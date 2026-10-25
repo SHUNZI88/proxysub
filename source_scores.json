@@ -27,9 +27,9 @@
   },
   "https://raw.githubusercontent.com/chengaopan/AutoMergePublicNodes/master/list.meta.yml": {
     "score": 100.0,
-    "runs": 64,
+    "runs": 65,
     "role": "official",
-    "last": "2026-10-24",
+    "last": "2026-10-25",
     "cn_tested": 173,
     "cn_passed": 8,
     "cn_pass_rate": 0.0462,
@@ -37,9 +37,9 @@
   },
   "https://raw.githubusercontent.com/Russ534/clash/cdf534db8f8c9306d61c630b840d0a1936d09dd2/bp.yaml": {
     "score": 100.0,
-    "runs": 64,
+    "runs": 65,
     "role": "official",
-    "last": "2026-10-24",
+    "last": "2026-10-25",
     "cn_tested": 1,
     "cn_passed": 0,
     "cn_pass_rate": 0.0,
@@ -47,9 +47,9 @@
   },
   "https://raw.githubusercontent.com/shaoyouvip/free/main/mihomo.yaml": {
     "score": 100.0,
-    "runs": 64,
+    "runs": 65,
     "role": "official",
-    "last": "2026-10-24",
+    "last": "2026-10-25",
     "cn_tested": 3,
     "cn_passed": 1,
     "cn_pass_rate": 0.3333,
@@ -63,9 +63,9 @@
   },
   "https://blog.ermao.net/sub/clash/ermao.net": {
     "score": 100.0,
-    "runs": 26,
+    "runs": 27,
     "role": "official",
-    "last": "2026-10-24",
+    "last": "2026-10-25",
     "cn_tested": 130,
     "cn_passed": 16,
     "cn_pass_rate": 0.1231,
@@ -83,9 +83,9 @@
   },
   "https://raw.githubusercontent.com/peasoft/NoMoreWalls/master/list.meta.yml": {
     "score": 100.0,
-    "runs": 64,
+    "runs": 65,
     "role": "official",
-    "last": "2026-10-24",
+    "last": "2026-10-25",
     "cn_tested": 45,
     "cn_passed": 4,
     "cn_pass_rate": 0.0889,
@@ -105,9 +105,9 @@
   },
   "https://raw.githubusercontent.com/awesome-vpn/awesome-vpn/master/clash.yaml": {
     "score": 100.0,
-    "runs": 64,
+    "runs": 65,
     "role": "official",
-    "last": "2026-10-24",
+    "last": "2026-10-25",
     "cn_tested": 3,
     "cn_passed": 0,
     "cn_pass_rate": 0.0,
@@ -131,9 +131,9 @@
   },
   "https://raw.githubusercontent.com/ovmvo/FreeSub/main/sub/permanent/mihomo.yaml": {
     "score": 100.0,
-    "runs": 63,
+    "runs": 64,
     "role": "official",
-    "last": "2026-10-24",
+    "last": "2026-10-25",
     "cn_tested": 16,
     "cn_passed": 4,
     "cn_pass_rate": 0.25,
@@ -508,28 +508,34 @@
     "last": "2026-10-24"
   },
   "https://clashgithub.com/clashnode-20261023.html": {
-    "score": 91.64,
-    "runs": 11,
+    "score": 92.89,
+    "runs": 12,
     "role": "candidate",
-    "last": "2026-10-24"
+    "last": "2026-10-25"
   },
   "https://clashgithub.com/clashnode-20261024.html": {
-    "score": 77.82,
-    "runs": 5,
+    "score": 81.15,
+    "runs": 6,
     "role": "candidate",
-    "last": "2026-10-24"
+    "last": "2026-10-25"
   },
   "https://raw.githubusercontent.com/anaer/Sub/main/proxies.yaml": {
     "score": 100.0,
-    "runs": 4,
+    "runs": 5,
     "role": "candidate",
-    "last": "2026-10-24"
+    "last": "2026-10-25"
   },
   "https://raw.githubusercontent.com/hamzawih0/zorVPN/main/clash.yaml": {
-    "score": 81.42,
-    "runs": 3,
+    "score": 88.04,
+    "runs": 4,
     "role": "candidate",
-    "last": "2026-10-24"
+    "last": "2026-10-25"
+  },
+  "https://raw.githubusercontent.com/Au1rxx/free-vpn-subscriptions/main/output/stable/clash-0001.yaml": {
+    "score": 69.76,
+    "runs": 2,
+    "role": "candidate",
+    "last": "2026-10-25"
   },
   "anaer/Sub": {
     "ai_tested": 1,
@@ -538,10 +544,22 @@
     "ai_api_rate": 1.0,
     "ai_last": "2026-10-24T13:04:01Z"
   },
-  "https://raw.githubusercontent.com/Au1rxx/free-vpn-subscriptions/main/output/stable/clash-0001.yaml": {
-    "score": 61.5,
+  "https://raw.githubusercontent.com/tomjiu/proxy-pipeline/main/dist/online/clash.yaml": {
+    "score": 67.84,
     "runs": 1,
     "role": "candidate",
-    "last": "2026-10-24"
+    "last": "2026-10-25"
+  },
+  "https://raw.githubusercontent.com/tomjiu/proxy-pipeline/main/dist/clean/clash-renamed.yaml": {
+    "score": 76.96,
+    "runs": 1,
+    "role": "candidate",
+    "last": "2026-10-25"
+  },
+  "https://clashgithub.com/clashnode-20261025.html": {
+    "score": 57.5,
+    "runs": 1,
+    "role": "candidate",
+    "last": "2026-10-25"
   }
 }

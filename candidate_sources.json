@@ -5,7 +5,7 @@
       "origin": "channel_web",
       "added": "2026-10-22",
       "first_seen": "2026-10-22",
-      "runs": 11,
+      "runs": 12,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -24,13 +24,6 @@
           "tamper": 0
         },
         {
-          "date": "2026-10-23",
-          "count": 25,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
           "date": "2026-10-24",
           "count": 25,
           "usable": 0,
@@ -60,6 +53,13 @@
         },
         {
           "date": "2026-10-24",
+          "count": 25,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-25",
           "count": 25,
           "usable": 0,
           "unique_new": 0,
@@ -73,7 +73,7 @@
       "origin": "channel_web",
       "added": "2026-10-23",
       "first_seen": "2026-10-23",
-      "runs": 5,
+      "runs": 6,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -107,6 +107,13 @@
         },
         {
           "date": "2026-10-24",
+          "count": 25,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-25",
           "count": 25,
           "usable": 0,
           "unique_new": 0,
@@ -124,7 +131,7 @@
       "required_runs": 3,
       "first_seen": "2026-10-24",
       "initial_nodes": 36,
-      "runs": 4,
+      "runs": 5,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -155,6 +162,13 @@
           "usable": 3,
           "unique_new": 3,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-25",
+          "count": 36,
+          "usable": 3,
+          "unique_new": 3,
+          "tamper": 0
         }
       ]
     },
@@ -167,8 +181,8 @@
       "required_runs": 5,
       "first_seen": "2026-10-24",
       "initial_nodes": 50,
-      "runs": 3,
-      "good_streak": 0,
+      "runs": 4,
+      "good_streak": 1,
       "fail_streak": 0,
       "history": [
         {
@@ -191,6 +205,13 @@
           "usable": 5,
           "unique_new": 3,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-25",
+          "count": 50,
+          "usable": 6,
+          "unique_new": 4,
+          "tamper": 0
         }
       ]
     },
@@ -203,8 +224,8 @@
       "required_runs": 3,
       "first_seen": "2026-10-24",
       "initial_nodes": 1990,
-      "runs": 1,
-      "good_streak": 1,
+      "runs": 2,
+      "good_streak": 2,
       "fail_streak": 0,
       "history": [
         {
@@ -212,6 +233,13 @@
           "count": 1990,
           "usable": 101,
           "unique_new": 101,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-25",
+          "count": 1990,
+          "usable": 68,
+          "unique_new": 68,
           "tamper": 0
         }
       ]
@@ -225,10 +253,18 @@
       "required_runs": 5,
       "first_seen": "2026-10-24",
       "initial_nodes": 1139,
-      "runs": 0,
-      "good_streak": 0,
+      "runs": 1,
+      "good_streak": 1,
       "fail_streak": 0,
-      "history": []
+      "history": [
+        {
+          "date": "2026-10-25",
+          "count": 1133,
+          "usable": 161,
+          "unique_new": 161,
+          "tamper": 0
+        }
+      ]
     },
     "https://raw.githubusercontent.com/tomjiu/proxy-pipeline/main/dist/clean/clash-renamed.yaml": {
       "repo": "tomjiu/proxy-pipeline",
@@ -239,20 +275,36 @@
       "required_runs": 5,
       "first_seen": "2026-10-24",
       "initial_nodes": 404,
-      "runs": 0,
-      "good_streak": 0,
+      "runs": 1,
+      "good_streak": 1,
       "fail_streak": 0,
-      "history": []
+      "history": [
+        {
+          "date": "2026-10-25",
+          "count": 404,
+          "usable": 131,
+          "unique_new": 131,
+          "tamper": 0
+        }
+      ]
     },
     "https://clashgithub.com/clashnode-20261025.html": {
       "channel": "web:https://clashgithub.com/",
       "origin": "channel_web",
       "added": "2026-10-24",
       "first_seen": "2026-10-24",
-      "runs": 0,
+      "runs": 1,
       "good_streak": 0,
       "fail_streak": 0,
-      "history": [],
+      "history": [
+        {
+          "date": "2026-10-25",
+          "count": 25,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        }
+      ],
       "required_runs": 3
     }
   },
