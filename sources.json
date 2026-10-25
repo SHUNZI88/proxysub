@@ -31,11 +31,18 @@
       "recall_note": "2026-10-24 召回（任务#105）：原淘汰原因 zero_unique_contribution:16runs；cf_blocked 整源淘汰已废除、低产判据改绝对零通过"
     },
     {
-      "url": "https://raw.githubusercontent.com/Au1rxx/free-vpn-subscriptions/main/output/stable/clash-0001.yaml",
+      "url": "https://raw.githubusercontent.com/tomjiu/proxy-pipeline/main/dist/online/clash.yaml",
       "origin": "discovered",
       "added": "2026-10-25",
-      "repo": "Au1rxx/free-vpn-subscriptions",
-      "probation_runs": 3
+      "repo": "tomjiu/proxy-pipeline",
+      "probation_runs": 5
+    },
+    {
+      "url": "https://raw.githubusercontent.com/tomjiu/proxy-pipeline/main/dist/clean/clash-renamed.yaml",
+      "origin": "discovered",
+      "added": "2026-10-25",
+      "repo": "tomjiu/proxy-pipeline",
+      "probation_runs": 5
     }
   ],
   "removed": [
@@ -177,6 +184,11 @@
     {
       "url": "https://raw.githubusercontent.com/ovmvo/FreeSub/main/sub/permanent/mihomo.yaml",
       "reason": "cn_low_pass_rate:0/23",
+      "date": "2026-10-25"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Au1rxx/free-vpn-subscriptions/main/output/stable/clash-0001.yaml",
+      "reason": "cn_low_pass_rate:0/199",
       "date": "2026-10-25"
     }
   ],
