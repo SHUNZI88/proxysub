@@ -3,11 +3,6 @@
   "max_official": 30,
   "official": [
     {
-      "url": "https://raw.githubusercontent.com/chengaopan/AutoMergePublicNodes/master/list.meta.yml",
-      "origin": "manual",
-      "added": "2026-10-10"
-    },
-    {
       "url": "https://raw.githubusercontent.com/Russ534/clash/cdf534db8f8c9306d61c630b840d0a1936d09dd2/bp.yaml",
       "origin": "manual",
       "added": "2026-10-10"
@@ -40,6 +35,13 @@
       "origin": "manual",
       "added": "2026-10-24",
       "recall_note": "2026-10-24 召回（任务#105）：原淘汰原因 cf_blocked:7/20；cf_blocked 整源淘汰已废除、低产判据改绝对零通过"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Au1rxx/free-vpn-subscriptions/main/output/stable/clash-0001.yaml",
+      "origin": "discovered",
+      "added": "2026-10-25",
+      "repo": "Au1rxx/free-vpn-subscriptions",
+      "probation_runs": 3
     }
   ],
   "removed": [
@@ -172,6 +174,11 @@
       "url": "https://raw.githubusercontent.com/lanzm/MetaFetch/master/list.meta.yml",
       "reason": "cn_low_pass_rate:0/86",
       "date": "2026-10-24"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/chengaopan/AutoMergePublicNodes/master/list.meta.yml",
+      "reason": "cn_low_pass_rate:0/65",
+      "date": "2026-10-25"
     }
   ],
   "deny_repos": []

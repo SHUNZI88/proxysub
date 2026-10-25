@@ -1,49 +1,49 @@
 # proxysub 健康报告
 
-更新时间：2026-10-25 00:33 UTC
+更新时间：2026-10-25 09:21 UTC
 运行模式：**mihomo**
 
 ## 概览
 
-- 最终节点：**162**（合规 135，高风险隔离 27）
-- 真实拨测通过率：**58.6%**（370/631）
-- TCP 存活：1636 | 正式源 7 个 | 候选源 8 个
+- 最终节点：**163**（合规 108，高风险隔离 55）
+- 真实拨测通过率：**44.4%**（214/482）
+- TCP 存活：1625 | 正式源 7 个 | 候选源 7 个
 
 ## 协议分布
 
 | 协议 | 数量 |
 |---|---|
-| VLESS-Reality | 97 |
-| Hysteria2 | 31 |
-| VLESS-TLS | 23 |
-| Trojan | 9 |
-| Anytls | 2 |
+| VLESS-Reality | 71 |
+| Hysteria2 | 51 |
+| Trojan | 20 |
+| VLESS-TLS | 17 |
+| Anytls | 4 |
 
 ## 区域分布
 
 | 区域 | 数量 |
 |---|---|
 | 🌐 其他 | 60 |
-| 🇸🇬 新加坡 | 30 |
 | 🇺🇸 美国 | 30 |
+| 🇸🇬 新加坡 | 24 |
 | 🇭🇰 香港 | 15 |
-| 🇯🇵 日本 | 15 |
-| 🇰🇷 韩国 | 9 |
-| 🇹🇼 台湾 | 2 |
-| 🇬🇧 英国 | 1 |
+| 🇯🇵 日本 | 13 |
+| 🇰🇷 韩国 | 10 |
+| 🇹🇼 台湾 | 8 |
+| 🇬🇧 英国 | 3 |
 
 ## 源贡献 Top 10（正式源）
 
 | 源 | 真实通过 | 独有存活 | 存活 |
 |---|---|---|---|
-| `sub/clash` | 70 | 69 | 195 |
-| `chengaopan/AutoMergePublicNodes` | 70 | 0 | 191 |
-| `peasoft/NoMoreWalls` | 70 | 0 | 191 |
-| `shaoyouvip/free` | 13 | 12 | 14 |
-| `ovmvo/FreeSub` | 12 | 20 | 21 |
-| `awesome-vpn/awesome-vpn` | 2 | 3 | 3 |
+| `sub/clash` | 52 | 79 | 229 |
+| `chengaopan/AutoMergePublicNodes` | 35 | 17 | 161 |
+| `peasoft/NoMoreWalls` | 33 | 5 | 158 |
+| `ovmvo/FreeSub` | 11 | 22 | 22 |
+| `shaoyouvip/free` | 8 | 7 | 8 |
 | `Russ534/clash` | 0 | 1 | 1 |
+| `awesome-vpn/awesome-vpn` | 0 | 0 | 0 |
 
 ## 警告
 
-- 本轮无源被淘汰
+- 淘汰源 `https://raw.githubusercontent.com/chengaopan/AutoMergePublicNodes/master/list.meta.yml`：cn_low_pass_rate:0/65

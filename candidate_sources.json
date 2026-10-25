@@ -5,17 +5,10 @@
       "origin": "channel_web",
       "added": "2026-10-22",
       "first_seen": "2026-10-22",
-      "runs": 12,
+      "runs": 13,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-10-23",
-          "count": 25,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-10-23",
           "count": 25,
@@ -64,6 +57,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-25",
+          "count": 25,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ],
       "required_runs": 3
@@ -73,7 +73,7 @@
       "origin": "channel_web",
       "added": "2026-10-23",
       "first_seen": "2026-10-23",
-      "runs": 6,
+      "runs": 7,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -107,6 +107,13 @@
         },
         {
           "date": "2026-10-24",
+          "count": 25,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-25",
           "count": 25,
           "usable": 0,
           "unique_new": 0,
@@ -131,7 +138,7 @@
       "required_runs": 3,
       "first_seen": "2026-10-24",
       "initial_nodes": 36,
-      "runs": 5,
+      "runs": 6,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -169,6 +176,13 @@
           "usable": 3,
           "unique_new": 3,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-25",
+          "count": 36,
+          "usable": 3,
+          "unique_new": 3,
+          "tamper": 0
         }
       ]
     },
@@ -181,8 +195,8 @@
       "required_runs": 5,
       "first_seen": "2026-10-24",
       "initial_nodes": 50,
-      "runs": 4,
-      "good_streak": 1,
+      "runs": 5,
+      "good_streak": 2,
       "fail_streak": 0,
       "history": [
         {
@@ -212,34 +226,12 @@
           "usable": 6,
           "unique_new": 4,
           "tamper": 0
-        }
-      ]
-    },
-    "https://raw.githubusercontent.com/Au1rxx/free-vpn-subscriptions/main/output/stable/clash-0001.yaml": {
-      "repo": "Au1rxx/free-vpn-subscriptions",
-      "stars": 1031,
-      "repo_created": "2026-04-09T05:22:45Z",
-      "reputation": "ok",
-      "reputation_note": "stars=1031,age=198d",
-      "required_runs": 3,
-      "first_seen": "2026-10-24",
-      "initial_nodes": 1990,
-      "runs": 2,
-      "good_streak": 2,
-      "fail_streak": 0,
-      "history": [
-        {
-          "date": "2026-10-24",
-          "count": 1990,
-          "usable": 101,
-          "unique_new": 101,
-          "tamper": 0
         },
         {
           "date": "2026-10-25",
-          "count": 1990,
-          "usable": 68,
-          "unique_new": 68,
+          "count": 98,
+          "usable": 39,
+          "unique_new": 33,
           "tamper": 0
         }
       ]
@@ -253,8 +245,8 @@
       "required_runs": 5,
       "first_seen": "2026-10-24",
       "initial_nodes": 1139,
-      "runs": 1,
-      "good_streak": 1,
+      "runs": 2,
+      "good_streak": 2,
       "fail_streak": 0,
       "history": [
         {
@@ -262,6 +254,13 @@
           "count": 1133,
           "usable": 161,
           "unique_new": 161,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-25",
+          "count": 1119,
+          "usable": 76,
+          "unique_new": 70,
           "tamper": 0
         }
       ]
@@ -275,8 +274,8 @@
       "required_runs": 5,
       "first_seen": "2026-10-24",
       "initial_nodes": 404,
-      "runs": 1,
-      "good_streak": 1,
+      "runs": 2,
+      "good_streak": 2,
       "fail_streak": 0,
       "history": [
         {
@@ -284,6 +283,13 @@
           "count": 404,
           "usable": 131,
           "unique_new": 131,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-25",
+          "count": 404,
+          "usable": 32,
+          "unique_new": 32,
           "tamper": 0
         }
       ]
@@ -293,10 +299,17 @@
       "origin": "channel_web",
       "added": "2026-10-24",
       "first_seen": "2026-10-24",
-      "runs": 1,
+      "runs": 2,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
+        {
+          "date": "2026-10-25",
+          "count": 25,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
         {
           "date": "2026-10-25",
           "count": 25,
