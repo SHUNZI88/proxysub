@@ -41,7 +41,11 @@ def is_fresh(report: dict, now: datetime.datetime | None = None) -> bool:
     now = now or datetime.datetime.now(datetime.timezone.utc)
     age = (now - gen).total_seconds()
     passed = int((report.get("counts") or {}).get("passed", 0) or 0)
-    current_ok = 0 <= age < config.VERIFICATION_MAX_AGE_S and passed >= config.VERIFICATION_MIN_PASSED
+    # 显式 published=False = 本轮实测达标但熔断未发布（2026-10-26：发布下限
+    # 校准后 12≥8 会越过旧的隐式拦截）——此类报告不得作为新鲜发布信号，
+    # 须走第二层 main_asset 背书。字段缺失（旧报告）保守视为可发布。
+    explicit_unpublished = report.get("published") is False
+    current_ok = (not explicit_unpublished) and 0 <= age < config.VERIFICATION_MAX_AGE_S and passed >= config.VERIFICATION_MIN_PASSED
     if current_ok:
         return True
     # 第二层：最近有效发布是否仍新鲜（须 published 背书，防伪造/历史报告）

@@ -270,7 +270,11 @@ VERIFICATION_REPORT_FILE = "verification_report.json"
 # 150 个候选集（本地实测可用 <15）。兜底是"保不枯竭"的降级手段而非常态，
 # 故把持有期放宽，避免频繁跌落。超过 24h 仍会兜底，不会永久枯竭。
 VERIFICATION_MAX_AGE_S = 24 * 3600
-VERIFICATION_MIN_PASSED = 15
+# 2026-10-24 质量改判后校准：15 是按旧宽松闸门（250KB/8s、无延迟上限）
+# 标定的下限；快档提到 768KB + RTT≤2.5s 降级后，20261026 实测轮仅 10 个
+# 严格通过——宁发 10 个真可用，不发 15 个凑数。降为 8（AI 保障轮实证
+# 8-10 为新常态），避免「达标但不发布→用户只能用 2 天前死节点」的倒挂。
+VERIFICATION_MIN_PASSED = 8
 PROBE_BATCH = 100
 PROBE_CONCURRENCY = 32
 # Reserve real-probe slots: Asia heavy, US light.
