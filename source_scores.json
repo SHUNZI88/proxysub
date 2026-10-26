@@ -37,23 +37,23 @@
   },
   "https://raw.githubusercontent.com/Russ534/clash/cdf534db8f8c9306d61c630b840d0a1936d09dd2/bp.yaml": {
     "score": 100.0,
-    "runs": 70,
+    "runs": 71,
     "role": "official",
     "last": "2026-10-26",
-    "cn_tested": 15,
+    "cn_tested": 16,
     "cn_passed": 0,
     "cn_pass_rate": 0.0,
-    "cn_last": "2026-10-25T13:04:31Z"
+    "cn_last": "2026-10-26T09:45:39Z"
   },
   "https://raw.githubusercontent.com/shaoyouvip/free/main/mihomo.yaml": {
     "score": 100.0,
-    "runs": 70,
+    "runs": 71,
     "role": "official",
     "last": "2026-10-26",
-    "cn_tested": 11,
-    "cn_passed": 0,
-    "cn_pass_rate": 0.0,
-    "cn_last": "2026-10-25T13:04:31Z"
+    "cn_tested": 13,
+    "cn_passed": 2,
+    "cn_pass_rate": 0.1538,
+    "cn_last": "2026-10-26T09:45:39Z"
   },
   "https://raw.githubusercontent.com/zhangkaiitugithub/passcro/main/speednodes.yaml": {
     "score": 63.88,
@@ -63,13 +63,13 @@
   },
   "https://blog.ermao.net/sub/clash/ermao.net": {
     "score": 100.0,
-    "runs": 32,
+    "runs": 33,
     "role": "official",
     "last": "2026-10-26",
-    "cn_tested": 142,
-    "cn_passed": 1,
-    "cn_pass_rate": 0.007,
-    "cn_last": "2026-10-25T13:04:31Z"
+    "cn_tested": 140,
+    "cn_passed": 2,
+    "cn_pass_rate": 0.0143,
+    "cn_last": "2026-10-26T09:45:39Z"
   },
   "https://raw.githubusercontent.com/lanzm/MetaFetch/master/list.meta.yml": {
     "score": 100.0,
@@ -83,7 +83,7 @@
   },
   "https://raw.githubusercontent.com/peasoft/NoMoreWalls/master/list.meta.yml": {
     "score": 100.0,
-    "runs": 70,
+    "runs": 71,
     "role": "official",
     "last": "2026-10-26",
     "cn_tested": 5,
@@ -105,7 +105,7 @@
   },
   "https://raw.githubusercontent.com/awesome-vpn/awesome-vpn/master/clash.yaml": {
     "score": 100.0,
-    "runs": 70,
+    "runs": 71,
     "role": "official",
     "last": "2026-10-26",
     "cn_tested": 3,
@@ -514,20 +514,20 @@
     "last": "2026-10-25"
   },
   "https://clashgithub.com/clashnode-20261024.html": {
-    "score": 91.64,
-    "runs": 11,
+    "score": 92.89,
+    "runs": 12,
     "role": "candidate",
     "last": "2026-10-26"
   },
   "https://raw.githubusercontent.com/anaer/Sub/main/proxies.yaml": {
     "score": 100.0,
-    "runs": 10,
+    "runs": 11,
     "role": "candidate",
     "last": "2026-10-26"
   },
   "https://raw.githubusercontent.com/hamzawih0/zorVPN/main/clash.yaml": {
     "score": 100.0,
-    "runs": 9,
+    "runs": 10,
     "role": "candidate",
     "last": "2026-10-26"
   },
@@ -543,36 +543,50 @@
   },
   "https://raw.githubusercontent.com/tomjiu/proxy-pipeline/main/dist/online/clash.yaml": {
     "score": 100.0,
-    "runs": 6,
+    "runs": 7,
     "role": "official",
     "last": "2026-10-26",
-    "cn_tested": 170,
-    "cn_passed": 0,
-    "cn_pass_rate": 0.0,
-    "cn_last": "2026-10-25T13:04:31Z"
+    "cn_tested": 311,
+    "cn_passed": 2,
+    "cn_pass_rate": 0.0064,
+    "cn_last": "2026-10-26T09:45:39Z"
   },
   "https://raw.githubusercontent.com/tomjiu/proxy-pipeline/main/dist/clean/clash-renamed.yaml": {
     "score": 100.0,
-    "runs": 6,
+    "runs": 7,
     "role": "official",
     "last": "2026-10-26"
   },
   "https://clashgithub.com/clashnode-20261025.html": {
-    "score": 81.15,
-    "runs": 6,
+    "score": 83.98,
+    "runs": 7,
     "role": "candidate",
     "last": "2026-10-26"
   },
   "https://raw.githubusercontent.com/chengaopan/AutoMergePublicNodes/master/snippets/nodes.meta.yml": {
-    "score": 85.26,
-    "runs": 2,
+    "score": 99.4,
+    "runs": 3,
     "role": "candidate",
     "last": "2026-10-26"
   },
   "https://clashgithub.com/clashnode-20261026.html": {
-    "score": 57.5,
-    "runs": 1,
+    "score": 63.88,
+    "runs": 2,
     "role": "candidate",
     "last": "2026-10-26"
+  },
+  "chengaopan/AutoMergePublicNodes": {
+    "ai_tested": 2,
+    "ai_reachable": 2,
+    "ai_api": 2,
+    "ai_api_rate": 1.0,
+    "ai_last": "2026-10-26T09:45:39Z"
+  },
+  "anaer/Sub": {
+    "ai_tested": 1,
+    "ai_reachable": 1,
+    "ai_api": 1,
+    "ai_api_rate": 1.0,
+    "ai_last": "2026-10-26T09:45:39Z"
   }
 }
