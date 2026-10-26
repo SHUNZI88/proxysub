@@ -80,12 +80,19 @@ GENERATE_204 = "https://www.google.com/robots.txt"
 # 「能握手但下载龟速」的伪可用节点（用户本地实测即暴露无效）。2026-10-17 改为
 # 「硬超时真实下载速度」闸门（见 real_traffic_test / _timed_download）。
 REAL_DOWNLOAD_URL = "https://speed.cloudflare.com/__down?bytes=1000000"  # 1MB
-REAL_MIN_BYTES = 250 * 1024   # 预算内至少下载 250KB（≈31KB/s）才算真能应用
+# 2026-10-24 收紧（实证改判）：250KB/8s≈31KB/s 的旧门槛在沙箱判「通过」、
+# 用户本地却「能用不到 3 个」——31KB/s 连网页都刷不开。快档提到 768KB/8s
+# ≈96KB/s（可流畅打开网页的底线）；AI 提级走慢档路径不受影响。
+REAL_MIN_BYTES = 768 * 1024   # 预算内至少下载 768KB（≈96KB/s）才算真能应用
 # 慢档阈值（2026-10-24 任务#97）：8s 内有真实流量但不足快档——「能连但慢」。
 # 这类节点不进主资产（快档标准不放松），但进第二资产 p_*_d.yaml 供用户备选。
 # 依据：用户本地测速只要求「有延迟反应」，32KB（≈4KB/s）即有明显体感；
 # 旧口径一刀切淘汰了大批「能连但慢」节点，是 326 节点源 0 通过的成因之一。
 REAL_SLOW_MIN_BYTES = 32 * 1024
+# 主资产延迟上限（2026-10-24）：初筛 RTT 超限者降级第二资产，不进主资产。
+# 实证：已发布 25 个通过节点中 12 个 RTT>1.5s（最高 3.2s），沙箱「能通」
+# 但用户本地体感即「不能用」。AI 可达者仍可经慢档提级路径回主资产。
+CN_MAX_PUBLISH_LATENCY_MS = 2500
 REAL_PROBE_URLS = [           # 仅作出口可达性辅助参考，不再单独作为闸门
     "https://www.google.com/robots.txt",
     "https://www.cloudflare.com/cdn-cgi/trace",
@@ -859,6 +866,9 @@ def verified_rank(n: dict, results: dict) -> tuple:
             # 注意 final 此时已被 main() 在通过后统一置 True，不再区分。
             0 if (n["us_ok"] and n["final"])
             else (1 if n.get("origin") == "carryover" else 2),
+            # 实测下载量降序（2026-10-24）：bytes/8s 即实测速度代理指标，
+            # 同档位内快者排前——订阅顺序即用户点击顺序。
+            -(r.get("real_traffic", {}).get("bytes") or 0),
             r.get("latency_ms") if r.get("latency_ms") is not None else 99999)
 
 
@@ -1238,20 +1248,34 @@ def main() -> int:
     # 6) 合并：通过即留、败即汰（自清洁）；AI 可用优先 + 双 vantage 强者排前
     verified = sorted(passed, key=lambda n: verified_rank(n, results))
 
+    # 6.05) 高延迟降级（2026-10-24）：初筛 RTT 超上限的通过节点降级第二资产。
+    # 沙箱「能通」≠ 本地可用——延迟 2.5s+ 的节点用户点开即弃。置于此处：
+    # 早于波动带判定（降级者计入缺口）与 AI 慢档提级（AI 可达者仍可回升）。
+    _slow = [n for n in verified
+             if (results.get(n["probe_name"], {}).get("latency_ms") or 99999)
+             > CN_MAX_PUBLISH_LATENCY_MS]
+    if _slow:
+        verified = [n for n in verified if n not in _slow]
+        degraded = degraded + _slow
+        log(f"高延迟降级: {len(_slow)} 个节点 RTT > "
+            f"{CN_MAX_PUBLISH_LATENCY_MS}ms，降级第二资产（AI 可达者可提级回升）")
+
     # 6.5) 纯 carryover 轮次「保留已发布集」修复（2026-10-17，服务「固化闭环」）：
     # 当本轮没有新 CI 待测文档（n_pend==0 且 n_resc==0，测试集全为 carryover），
-    # 且重测通过数相对已发布集的缺口 ≤ 波动带时，发布「完整 carryover 集」而非
-    # 重测通过的子集。依据：carryover 加载的即上一轮已发布/已验证集合；单快照
-    # 波动（用户自述约 6 个节点浮动）会让重测子集略小于已发布集，若据此发布更小
-    # 集合将随轮次持续侵蚀已验证质量（39→37→…）。缺口在波动带内即视为健康，
-    # 整体保留；缺口超带则归为真实退化，走正常自清洁。新 CI 轮次仍正常清洁。
+    # 且缺口在波动带内，则不触发「真实退化自清洁」，但主资产只发复测存活者。
+    # 2026-10-24 改判：旧逻辑把重测已死的节点也整集保留（本轮实证 5/30 复测
+    # 失败仍发布），用户本地实测「能用节点不到 3 个」的直接元凶。防侵蚀诉求
+    # 改由「失败者降级第二资产保留身份，后续轮复测存活可回升」承接。
     if (n_pend == 0 and n_resc == 0 and n_carry > 0
             and len(verified) >= config.VERIFICATION_MIN_PASSED
             and (n_carry - len(verified)) <= CARRYOVER_FLUCTUATION_BAND):
+        _failed_carry = [n for n in carry if n not in verified]
+        if _failed_carry:
+            degraded = degraded + _failed_carry
         log(f"纯 carryover 轮次：重测通过 {len(verified)}/{n_carry}，缺口 "
-            f"{n_carry - len(verified)} ≤ 波动带 {CARRYOVER_FLUCTUATION_BAND}，"
-            f"保留已发布集 {n_carry} 个（不随单快照波动侵蚀）")
-        verified = list(carry)  # carry 即上一轮已发布集，直接整体保留
+            f"{n_carry - len(verified)} ≤ 波动带 {CARRYOVER_FLUCTUATION_BAND}；"
+            f"主资产只发复测存活者，{len(_failed_carry)} 个失败者降级第二资产"
+            f"（不随单快照波动侵蚀身份，也不占主资产）")
 
     # 6.6) AI 慢档提级（2026-10-24，用户硬性诉求「无论如何保证 AI 可用节点」）：
     # 快档不足但 AI 可达的慢档节点升入主资产。依据：AI 聊天/API 流量极小

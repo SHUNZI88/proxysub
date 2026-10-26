@@ -930,3 +930,26 @@ def test_report_includes_ai_fields():
     assert 'def node_evidence' in src      # 任务#91：GEO+AI 单次切组合并
     # 旧顺序循环（各 120s 预算、各覆盖一半节点）已下线，禁止复活
     assert 'def exit_evidence' not in src and 'def ai_probe' not in src
+
+
+def test_verified_rank_prefers_higher_measured_bytes():
+    """2026-10-24：同 AI/同 vantage 档位内，实测下载量高者排前（速度代理）。"""
+    fast = {"probe_name": "f", "us_ok": False, "final": True, "origin": "carryover"}
+    slow = {"probe_name": "s", "us_ok": False, "final": True, "origin": "carryover"}
+    rf = {"f": {"ok": True, "latency_ms": 900,
+                "real_traffic": {"ok": True, "bytes": 900 * 1024}, "ai": {}}}
+    rs = {"s": {"ok": True, "latency_ms": 900,
+                "real_traffic": {"ok": True, "bytes": 300 * 1024}, "ai": {}}}
+    assert cn_probe.verified_rank(fast, rf) < cn_probe.verified_rank(slow, rs)
+    # 无测速数据者不因缺字段报错，按 0 处理排后
+    rn = {"n": {"ok": True, "latency_ms": 900, "ai": {}}}
+    no_rt = {"probe_name": "n", "us_ok": False, "final": True, "origin": "carryover"}
+    assert cn_probe.verified_rank(fast, rf) < cn_probe.verified_rank(no_rt, rn)
+
+
+def test_real_min_bytes_threshold_tightened():
+    """2026-10-24 实证改判：快档门槛 ≥768KB/8s（≈96KB/s），31KB/s 旧口径
+    在沙箱判通过、用户本地不可用。慢档（AI 提级路径）保持 32KB 不变。"""
+    assert cn_probe.REAL_MIN_BYTES >= 768 * 1024
+    assert cn_probe.REAL_SLOW_MIN_BYTES == 32 * 1024
+    assert cn_probe.CN_MAX_PUBLISH_LATENCY_MS == 2500
