@@ -727,69 +727,123 @@ class _FakeResp:
         return False
 
 
+def _mk_speed(bps, size):
+    """构造 curl 测速返回（_curl_speed 三字段）。"""
+    return {"bytes": size, "bps": bps, "code": 200}
+
+
 def test_real_traffic_test_download_ok(monkeypatch):
-    """回归（2026-10-17 收紧）：真实流量闸门改为硬超时真实下载，预算内下载量
-    达 REAL_MIN_BYTES 时应判为可用；下载目标必须是 speed.cloudflare.com 真实数据。"""
+    """多源交叉（2026-10-26）：三个源都达标 + 两轮复测均通过 → ok=True。
+    测速引擎必须是 curl（urllib 经代理会抛 EOF 被误判为死节点）。"""
     monkeypatch.setattr(cn_probe, "api_put", lambda *a, **k: True)
-    captured = {}
+    monkeypatch.setattr(cn_probe.time, "sleep", lambda *_: None)
+    seen_sources = []
 
-    def _fake_download(proxy, url, timeout, min_bytes):
-        captured["url"] = url
-        captured["timeout"] = timeout
-        captured["min_bytes"] = min_bytes
-        return min_bytes  # 恰好达到阈值
+    def _fake(proxy, url, budget):
+        seen_sources.append(url)
+        return _mk_speed(2 * 1024 * 1024, 6 * 1024 * 1024)
 
-    monkeypatch.setattr(cn_probe, "_timed_download", _fake_download)
+    monkeypatch.setattr(cn_probe, "_curl_speed", _fake)
+    res = cn_probe.real_traffic_test(9097, 7897, "node-x")
+    assert res["ok"] is True and res["stable"] is True
+    assert res["rounds"] == 2
+    # 三个互不相关基建都要被测到（CF / OVH / 阿里云）
+    urls = set(seen_sources)
+    assert any("cloudflare" in u for u in urls)
+    assert any("ovh" in u for u in urls)
+    assert any("aliyun" in u for u in urls)
+
+
+def test_real_traffic_test_single_source_not_enough(monkeypatch):
+    """单源达标不足以通过（2026-10-26）：实证机场会对单一 CDN 做 QoS 优化，
+    只有 1/3 源达标仍是假速度快。至少 2 源达标才发布。"""
+    monkeypatch.setattr(cn_probe, "api_put", lambda *a, **k: True)
+    monkeypatch.setattr(cn_probe.time, "sleep", lambda *_: None)
+    calls = {"n": 0}
+
+    def _fake(proxy, url, budget):
+        calls["n"] += 1
+        # 只有第一个源快，其余龟速
+        if calls["n"] % 3 == 1:
+            return _mk_speed(2 * 1024 * 1024, 6 * 1024 * 1024)
+        return _mk_speed(20 * 1024, 100 * 1024)
+
+    monkeypatch.setattr(cn_probe, "_curl_speed", _fake)
+    res = cn_probe.real_traffic_test(9097, 7897, "node-x")
+    assert res["ok"] is False
+
+
+def test_real_traffic_test_unstable_rejected(monkeypatch):
+    """稳定性采样（2026-10-26 核心修复）：首轮达标、复测不达标 = 「先快后断」，
+    必须判 degraded 而非通过。这是「沙箱测活、用户用死」的直接成因。"""
+    monkeypatch.setattr(cn_probe, "api_put", lambda *a, **k: True)
+    monkeypatch.setattr(cn_probe.time, "sleep", lambda *_: None)
+    state = {"round": 0, "n": 0}
+
+    def _fake(proxy, url, budget):
+        state["n"] += 1
+        # 每 3 次算一轮；第二轮全部归零
+        state["round"] = (state["n"] - 1) // 3
+        if state["round"] == 0:
+            return _mk_speed(2 * 1024 * 1024, 6 * 1024 * 1024)
+        return _mk_speed(0, 0)
+
+    monkeypatch.setattr(cn_probe, "_curl_speed", _fake)
+    res = cn_probe.real_traffic_test(9097, 7897, "node-x")
+    assert res["ok"] is False
+    assert res["unstable"] is True and res["degraded"] is True
+
+
+def test_real_traffic_test_rate_limit_source_not_counted(monkeypatch):
+    """被限流的源（HTTP 429/403/503）不计入分母，也不单独判失败：
+    目标站风控不应把好节点误杀。"""
+    monkeypatch.setattr(cn_probe, "api_put", lambda *a, **k: True)
+    monkeypatch.setattr(cn_probe.time, "sleep", lambda *_: None)
+    seq = iter([429, 200, 200] * 2)
+
+    def _fake(proxy, url, budget):
+        code = next(seq)
+        if code != 200:
+            return {"bytes": 0, "bps": 0, "code": code}
+        return _mk_speed(2 * 1024 * 1024, 6 * 1024 * 1024)
+
+    monkeypatch.setattr(cn_probe, "_curl_speed", _fake)
     res = cn_probe.real_traffic_test(9097, 7897, "node-x")
     assert res["ok"] is True
-    assert res["bytes"] >= cn_probe.REAL_MIN_BYTES
-    assert "speed.cloudflare.com" in captured["url"]
 
 
 def test_real_traffic_test_slow_node_rejected(monkeypatch):
-    """回归（2026-10-17）：能握手但下载龟速/不足阈值的节点必须剔除——
-    这是旧「几行字 + 403 兜底」判据漏放、用户本地实测暴露无效的那类伪可用。"""
+    """回归（2026-10-17）：能握手但下载龟速/不足阈值的节点必须剔除。"""
     monkeypatch.setattr(cn_probe, "api_put", lambda *a, **k: True)
-    monkeypatch.setattr(cn_probe, "_timed_download",
-                        lambda *a, **k: cn_probe.REAL_MIN_BYTES - 1)
+    monkeypatch.setattr(cn_probe.time, "sleep", lambda *_: None)
+    monkeypatch.setattr(cn_probe, "_curl_speed",
+                        lambda *a, **k: _mk_speed(10 * 1024, cn_probe.REAL_MIN_BYTES - 1))
     res = cn_probe.real_traffic_test(9097, 7897, "node-x")
     assert res["ok"] is False
 
 
 def test_real_traffic_test_degraded_tier(monkeypatch):
-    """双档闸门（任务#97）：下载量在 [REAL_SLOW_MIN_BYTES, REAL_MIN_BYTES)
-    区间时判 degraded=True（能连但慢），ok 恒 False——不进主资产但汇入
-    第二资产；低于慢档阈值则无 degraded 标记。"""
+    """双档闸门（任务#97）：有真实流量但未达快档 → degraded=True；只有
+    低于慢档阈值才无 degraded 标记（彻底失败）。"""
     monkeypatch.setattr(cn_probe, "api_put", lambda *a, **k: True)
+    monkeypatch.setattr(cn_probe.time, "sleep", lambda *_: None)
     # 慢档区间内 → degraded
-    monkeypatch.setattr(cn_probe, "_timed_download",
-                        lambda *a, **k: cn_probe.REAL_SLOW_MIN_BYTES)
-    res = cn_probe.real_traffic_test(9097, 7897, "node-x")
-    assert res["ok"] is False and res["degraded"] is True
-    assert res["bytes"] == cn_probe.REAL_SLOW_MIN_BYTES
-    # 快档下限-1 仍属慢档
-    monkeypatch.setattr(cn_probe, "_timed_download",
-                        lambda *a, **k: cn_probe.REAL_MIN_BYTES - 1)
+    monkeypatch.setattr(cn_probe, "_curl_speed",
+                        lambda *a, **k: _mk_speed(8 * 1024, cn_probe.REAL_SLOW_MIN_BYTES))
     res = cn_probe.real_traffic_test(9097, 7897, "node-x")
     assert res["ok"] is False and res["degraded"] is True
     # 低于慢档阈值 → 彻底失败，无 degraded 标记
-    monkeypatch.setattr(cn_probe, "_timed_download",
-                        lambda *a, **k: cn_probe.REAL_SLOW_MIN_BYTES - 1)
+    monkeypatch.setattr(cn_probe, "_curl_speed",
+                        lambda *a, **k: _mk_speed(1 * 1024, cn_probe.REAL_SLOW_MIN_BYTES - 1))
     res = cn_probe.real_traffic_test(9097, 7897, "node-x")
     assert res["ok"] is False and "degraded" not in res
 
 
 def test_real_traffic_test_all_unreachable_returns_false(monkeypatch):
-    """所有真实流量目标均不可达（下载 0 字节）时，必须返回失败，禁止假阳性。"""
+    """所有源均不可达（0 字节）时，必须返回失败，禁止假阳性。"""
     monkeypatch.setattr(cn_probe, "api_put", lambda *a, **k: True)
-    monkeypatch.setattr(cn_probe, "_timed_download", lambda *a, **k: 0)
-    res = cn_probe.real_traffic_test(9097, 7897, "node-x")
-    assert res["ok"] is False
-
-
-def test_real_traffic_test_api_put_failure_returns_false(monkeypatch):
-    """若 mihomo API 切换节点失败，真实流量测试直接失败。"""
-    monkeypatch.setattr(cn_probe, "api_put", lambda *a, **k: False)
+    monkeypatch.setattr(cn_probe.time, "sleep", lambda *_: None)
+    monkeypatch.setattr(cn_probe, "_curl_speed", lambda *a, **k: _mk_speed(0, 0))
     res = cn_probe.real_traffic_test(9097, 7897, "node-x")
     assert res["ok"] is False
 

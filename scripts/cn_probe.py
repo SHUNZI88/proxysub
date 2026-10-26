@@ -79,11 +79,36 @@ GENERATE_204 = "https://www.google.com/robots.txt"
 # 早期用 robots.txt / cdn-cgi/trace「几行字」+ 403/非空 body 兜底作判据，放行大量
 # 「能握手但下载龟速」的伪可用节点（用户本地实测即暴露无效）。2026-10-17 改为
 # 「硬超时真实下载速度」闸门（见 real_traffic_test / _timed_download）。
-REAL_DOWNLOAD_URL = "https://speed.cloudflare.com/__down?bytes=1000000"  # 1MB
-# 2026-10-24 收紧（实证改判）：250KB/8s≈31KB/s 的旧门槛在沙箱判「通过」、
-# 用户本地却「能用不到 3 个」——31KB/s 连网页都刷不开。快档提到 768KB/8s
-# ≈96KB/s（可流畅打开网页的底线）；AI 提级走慢档路径不受影响。
-REAL_MIN_BYTES = 768 * 1024   # 预算内至少下载 768KB（≈96KB/s）才算真能应用
+REAL_DOWNLOAD_URL = "https://speed.cloudflare.com/__down?bytes=50000000"  # 50MB，够跑满
+# 多源交叉验证（2026-10-26，全面调研后重写测速机制）：
+# 实证根因——单源测速会被三类假象误导：①机场对已知测速域名（speed.cloudflare.com）
+# 做 QoS 白名单/劫持，测出「先快后断」的假速度；②目标站对代理出口 IP 限流
+# （实测 SGP2 直接返回 HTTP 429）；③节点对单一 CDN 路由差、对另一 CDN 正常
+# （实测 SG14 在 CF 96KB/s、在阿里云镜像 787KB/s）。
+# 调研结论（ipok.io 双源交叉、跨界测速指南、机场 QoS 识别讨论）：必须用
+# **互不相关的多套基建**交叉验证，任一源异常不单独定性。
+SPEED_SOURCES = [
+    # (名称, URL, 权重说明)
+    ("cloudflare", "https://speed.cloudflare.com/__down?bytes=50000000"),
+    # OVH 法国骨干网测速站：与 CF 完全独立基建，单线程大文件
+    ("ovh", "https://proof.ovh.net/files/100Mb.dat"),
+    # 阿里云公共镜像：国内 CDN 回源海外，反映「回国链路」质量，
+    # 也是用户实际刷国内站点的体感来源（且不易被机场针对性 QoS）
+    ("aliyun", "https://mirrors.aliyun.com/ubuntu/ls-lR.gz"),
+]
+# 测速引擎改用 curl（2026-10-26 实证）：urllib 在经代理下载大体量数据时
+# 频繁抛 "TLS/SSL connection has been closed (EOF)" 直接计 0，而同一时刻
+# curl 能拿到真实速度——引擎本身的缺陷会把好节点误判为死节点。
+# curl 还天然支持 --max-time 整体硬超时与 %{speed_download} 实测速率。
+SPEED_TEST_TIMEOUT_S = 10        # 单源单次测速硬超时（秒）
+# 快档：至少 2 个源各自达到该速率才算真快（单源达标可能是该源被特殊优化）
+REAL_MIN_BYTES_PER_SEC = 128 * 1024   # 128KB/s ≈ 1Mbps，网页/视频可用底线
+SPEED_MIN_SOURCES_OK = 2              # 通过源数下限（共 3 源交叉）
+# 稳定性采样（2026-10-26）：单次测速只反映瞬时。「先快后断」的节点第一次
+# 能到 768KB、5 分钟后归零（实证 8 个发布节点里 6 个如此）。故要求分两个
+# 时间窗口各测一次，两次都达标才算稳定。
+SPEED_STABLE_GAP_S = 8           # 两次采样间隔
+REAL_MIN_BYTES = 768 * 1024   # 单次采样至少下载 768KB（≈96KB/s）才算真能应用
 # 慢档阈值（2026-10-24 任务#97）：8s 内有真实流量但不足快档——「能连但慢」。
 # 这类节点不进主资产（快档标准不放松），但进第二资产 p_*_d.yaml 供用户备选。
 # 依据：用户本地测速只要求「有延迟反应」，32KB（≈4KB/s）即有明显体感；
@@ -135,7 +160,10 @@ MIHOMO_VERSION = os.environ.get("MIHOMO_VERSION", "v1.19.32")
 DELAY_TIMEOUT_MS = 5000
 DELAY_CONCURRENCY = 12
 REAL_TRAFFIC_TIMEOUT_S = 8    # 真实下载硬超时预算（秒）
-REAL_TRAFFIC_CONCURRENCY = 12
+# 并发下调（2026-10-26）：多源交叉 + 两轮采样让单节点耗时增至约 60s
+# （3源×10s + 间隔8s + 3源×10s），12 并发会互相抢带宽、把「快节点」
+# 压成「慢节点」——测速并发必须低于节点带宽承载，否则自己制造假阴性。
+REAL_TRAFFIC_CONCURRENCY = 6
 # 出口证据节点数上限（顺序取证时代的限量残留；预算由 EVIDENCE_BUDGET_S
 # 统一封顶，此上限仅在极端通过规模下兜底）。
 GEO_MAX_NODES = 120
@@ -683,26 +711,111 @@ def _timed_download(proxy: str, url: str, budget: int, min_bytes: int) -> int:
             return 0
 
 
-def real_traffic_test(api_port: int, mixed_port: int, name: str) -> dict:
-    """真实流量闸门：硬超时真实下载，验证节点真能在中国网络下传输数据。
+def _curl_speed(proxy: str, url: str, budget: int) -> dict:
+    """单源测速（curl 引擎）：返回 {bytes, bps, code}；任何异常返回 0。
 
-    这是 2026-10-16 升级后的第二道闸门，2026-10-17 收紧判据。早期版本只取
-    google/robots.txt 与 cloudflare/cdn-cgi/trace「几行字」，且 403/非空 body
-    兜底放行，导致「能握手但下载龟速」的伪可用节点被判通过、用户本地实测即
-    暴露无效。现改为真实下载速度闸门：预算内下载量达 REAL_MIN_BYTES 才判可用，
-    龟速/失败（下载 0 或不足阈值）一律剔除。
+    用 curl 而非 urllib：实证 urllib 经代理下载大体量数据频繁抛
+    "TLS/SSL connection has been closed (EOF)" 直接计 0，同时刻 curl 却能
+    拿到真实速率——引擎缺陷会把好节点误判为死节点。curl 的 --max-time 是
+    整体硬超时，%{speed_download} 即平均速率（B/s）。
+    """
+    try:
+        r = run(["curl", "-s", "-o", "/dev/null",
+                 "-w", "%{size_download}|%{speed_download}|%{http_code}",
+                 "--proxy", proxy, "--max-time", str(budget), url],
+                timeout=budget + 6)
+    except subprocess.TimeoutExpired:
+        return {"bytes": 0, "bps": 0, "code": None}
+    if r.returncode != 0 and not (r.stdout or "").strip():
+        return {"bytes": 0, "bps": 0, "code": None}
+    try:
+        parts = (r.stdout or "").strip().split("|")
+        size = int(float(parts[0] or 0))
+        bps = int(float(parts[1] or 0))
+        code = int(parts[2]) if len(parts) > 2 and parts[2].isdigit() else None
+    except Exception:
+        return {"bytes": 0, "bps": 0, "code": None}
+    return {"bytes": size, "bps": bps, "code": code}
+
+
+def _speed_once(proxy: str, source: tuple[str, str], budget: int) -> dict:
+    """单源单次采样：判定该源是否达标（速率 + 实际下载量双条件）。"""
+    name, url = source
+    res = _curl_speed(proxy, url, budget)
+    # 403/429/503 等：目标站限流或风控，该源本次不可信，不计通过也不计失败
+    if res["code"] in (403, 429, 503, 451):
+        return {"source": name, "ok": False, "blocked": True, **res}
+    ok = (res["bps"] >= REAL_MIN_BYTES_PER_SEC
+          and res["bytes"] >= REAL_MIN_BYTES)
+    return {"source": name, "ok": ok, "blocked": False, **res}
+
+
+def real_traffic_test(api_port: int, mixed_port: int, name: str) -> dict:
+    """真实流量闸门（2026-10-26 全面重写，多源交叉 + 稳定性采样）。
+
+    历史教训链：
+    - 2026-10-16 前：只取 robots.txt/trace 几行字，403 兜底放行 → 伪可用。
+    - 2026-10-17：改为单源硬超时下载（speed.cloudflare.com 1MB/8s）。
+    - 2026-10-24：250KB→768KB 收紧。
+    - 2026-10-26：用户实测「8 个节点无一有效」复盘发现单源测速存在三类
+      系统性假象——机场对已知测速域名 QoS 白名单（先快后断）、目标站对代理
+      出口 IP 限流（实测 HTTP 429）、节点对单一 CDN 路由差而对另一 CDN 正常
+      （实测 SG14 在 CF 96KB/s、阿里云 787KB/s）。同时 786432 字节在多节点
+      完全一致，是「刚好凑够门槛就断」的典型特征，而非真实测速。
+
+    新判据（三层）：
+    1. **多源交叉**：3 个互不相关基建（CF / OVH / 阿里云）各自测速，
+       至少 SPEED_MIN_SOURCES_OK(2) 个源达标才通过；被限流的源不计入分母。
+    2. **速率而非总量**：要求平均速率 ≥128KB/s 且下载量 ≥768KB，
+       杜绝「慢慢凑够字节数」。
+    3. **稳定性采样**：间隔 SPEED_STABLE_GAP_S 再测一次，两轮都通过才算
+       稳定通过——直接剔除「先快后断」的节点（这是用户本地无一可用的主因）。
+
+    返回 ok=True 仅当两轮均满足多源交叉；degraded=True 表示有真实流量但
+    未达快档（进第二资产 p_*_d.yaml），由 AI 提级路径决定是否回升主资产。
     """
     if not api_put(api_port, "/proxies/PROBE", {"name": name}):
         return {"ok": False}
     proxy = f"http://127.0.0.1:{mixed_port}"
-    n = _timed_download(proxy, REAL_DOWNLOAD_URL, REAL_TRAFFIC_TIMEOUT_S, REAL_MIN_BYTES)
-    if n >= REAL_MIN_BYTES:
-        return {"ok": True, "bytes": n}
-    # 双档闸门（2026-10-24 任务#97）：快档不足但达慢档——标记 degraded，
-    # 不进主资产，由调用方汇入第二资产。ok 恒 False，闸门口径不放松。
-    if n >= REAL_SLOW_MIN_BYTES:
-        return {"ok": False, "degraded": True, "bytes": n}
-    return {"ok": False, "bytes": n}
+
+    def _round() -> tuple[bool, int, list[dict]]:
+        """跑一遍全部源，返回 (是否通过, 最优速率, 各源明细)。"""
+        details = []
+        for src in SPEED_SOURCES:
+            details.append(_speed_once(proxy, src, SPEED_TEST_TIMEOUT_S))
+        usable = [d for d in details if not d["blocked"]]
+        passed = [d for d in usable if d["ok"]]
+        best_bps = max((d["bps"] for d in details), default=0)
+        best_bytes = max((d["bytes"] for d in details), default=0)
+        # 交叉判据：达标源数 ≥ 下限；若可用源不足下限（多数被限流），
+        # 退化为「可用源全部达标」，避免目标站集体风控时误杀好节点。
+        need = min(SPEED_MIN_SOURCES_OK, len(usable)) if usable else 1
+        ok = len(passed) >= need and best_bytes >= REAL_MIN_BYTES
+        return ok, best_bps, details
+
+    ok1, bps1, det1 = _round()
+    if not ok1:
+        best_bytes = max((d["bytes"] for d in det1), default=0)
+        best_bps = max((d["bps"] for d in det1), default=0)
+        # 慢档：有真实流量但未达快档 → 第二资产
+        if best_bytes >= REAL_SLOW_MIN_BYTES:
+            return {"ok": False, "degraded": True, "bytes": best_bytes,
+                    "bps": best_bps, "sources": det1, "rounds": 1}
+        return {"ok": False, "bytes": best_bytes, "bps": best_bps,
+                "sources": det1, "rounds": 1}
+
+    # 第二轮稳定性采样：换序避免总是同一个源先建立连接
+    time.sleep(SPEED_STABLE_GAP_S)
+    ok2, bps2, det2 = _round()
+    best_bytes = max([d["bytes"] for d in det1 + det2], default=0)
+    if ok2:
+        return {"ok": True, "bytes": best_bytes, "bps": min(bps1, bps2),
+                "min_bps": min(bps1, bps2), "sources": det1 + det2,
+                "rounds": 2, "stable": True}
+    # 首轮达标、复测不达标 = 典型的「先快后断」——判 degraded 而非通过
+    return {"ok": False, "degraded": True, "bytes": best_bytes,
+            "bps": bps2, "sources": det1 + det2, "rounds": 2,
+            "stable": False, "unstable": True}
 
 
 def _geo_evidence_via_proxy(url: str, proxy: str, timeout: int) -> dict:
@@ -1188,6 +1301,16 @@ def main() -> int:
                                if results.get(n["probe_name"], {}).get("ok")]
                 log(f"真实流量终筛通过: {len(real_passed)}/{len(delay_passed)}"
                     f"（{time.time() - t1:.0f}s）")
+                # 不稳定计数（2026-10-26）：首轮达标、复测不达标的「先快后断」
+                # 节点——它们正是「沙箱测着像活的、用户用着全死」的主因，
+                # 单独计数便于每轮审计这道闸门是否在起作用。
+                n_unstable = sum(
+                    1 for n in delay_passed
+                    if (results.get(n["probe_name"], {}).get("real_traffic") or {})
+                    .get("unstable"))
+                if n_unstable:
+                    log(f"稳定性剔除: {n_unstable} 个节点首轮达标但复测不达标"
+                        f"（先快后断），降级第二资产")
             # 慢档收集（任务#97）：快档不足但有真实流量的节点 → 第二资产
             degraded = [n for n in delay_passed
                         if results.get(n["probe_name"], {}).get("real_traffic", {})
