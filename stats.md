@@ -1,23 +1,23 @@
 # proxysub 健康报告
 
-更新时间：2026-10-26 21:32 UTC
+更新时间：2026-10-27 01:42 UTC
 运行模式：**mihomo**
 
 ## 概览
 
-- 最终节点：**158**（合规 112，高风险隔离 46）
-- 真实拨测通过率：**65.9%**（526/798）
-- TCP 存活：949 | 正式源 8 个 | 候选源 6 个
+- 最终节点：**159**（合规 117，高风险隔离 42）
+- 真实拨测通过率：**74.1%**（581/784）
+- TCP 存活：980 | 正式源 8 个 | 候选源 6 个
 
 ## 协议分布
 
 | 协议 | 数量 |
 |---|---|
-| VLESS-Reality | 90 |
-| Hysteria2 | 49 |
-| Trojan | 11 |
-| VLESS-TLS | 6 |
-| Anytls | 2 |
+| VLESS-Reality | 89 |
+| Hysteria2 | 45 |
+| Trojan | 12 |
+| VLESS-TLS | 10 |
+| Anytls | 3 |
 
 ## 区域分布
 
@@ -25,23 +25,23 @@
 |---|---|
 | 🌐 其他 | 60 |
 | 🇺🇸 美国 | 30 |
-| 🇸🇬 新加坡 | 22 |
-| 🇭🇰 香港 | 20 |
+| 🇸🇬 新加坡 | 19 |
+| 🇭🇰 香港 | 18 |
 | 🇯🇵 日本 | 13 |
-| 🇰🇷 韩国 | 6 |
-| 🇹🇼 台湾 | 4 |
-| 🇬🇧 英国 | 3 |
+| 🇰🇷 韩国 | 8 |
+| 🇹🇼 台湾 | 7 |
+| 🇬🇧 英国 | 4 |
 
 ## 源贡献 Top 10（正式源）
 
 | 源 | 真实通过 | 独有存活 | 存活 |
 |---|---|---|---|
-| `tomjiu/proxy-pipeline` | 295 | 354 | 556 |
-| `tomjiu/proxy-pipeline` | 255 | 69 | 267 |
-| `hamzawih0/zorVPN` | 91 | 74 | 92 |
-| `sub/clash` | 56 | 77 | 188 |
-| `peasoft/NoMoreWalls` | 55 | 46 | 154 |
-| `shaoyouvip/free` | 8 | 9 | 10 |
+| `tomjiu/proxy-pipeline` | 326 | 390 | 583 |
+| `tomjiu/proxy-pipeline` | 255 | 78 | 268 |
+| `hamzawih0/zorVPN` | 100 | 96 | 112 |
+| `sub/clash` | 85 | 23 | 187 |
+| `peasoft/NoMoreWalls` | 66 | 0 | 157 |
+| `shaoyouvip/free` | 16 | 13 | 19 |
 | `Russ534/clash` | 0 | 1 | 1 |
 | `awesome-vpn/awesome-vpn` | 0 | 0 | 0 |
 

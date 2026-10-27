@@ -5,12 +5,6 @@
   "cidrs": [],
   "keywords": [],
   "auto": {
-    "172.64.154.211": {
-      "reason": "tls_mitm:certificate verify failed: Hostname mismatch, certificate is not valid for ",
-      "added": "2026-10-12",
-      "expires": "2026-10-26",
-      "source": "https://blog.ermao.net/sub/clash/ermao.net"
-    },
     "cf-socks.caoyuwu.eu.org": {
       "reason": "tls_mitm:certificate verify failed: unable to get local issuer certificate (_ssl.c:1010",
       "added": "2026-10-14",
@@ -46,6 +40,12 @@
       "added": "2026-10-22",
       "expires": "2026-11-05",
       "source": "https://raw.githubusercontent.com/chengaopan/AutoMergePublicNodes/master/list.meta.yml"
+    },
+    "172.67.141.182": {
+      "reason": "tls_mitm:certificate verify failed: Hostname mismatch, certificate is not valid for ",
+      "added": "2026-10-27",
+      "expires": "2026-11-10",
+      "source": "https://raw.githubusercontent.com/tomjiu/proxy-pipeline/main/dist/online/clash.yaml"
     }
   }
 }
