@@ -1,82 +1,11 @@
 {
   "candidates": {
-    "https://raw.githubusercontent.com/anaer/Sub/main/proxies.yaml": {
-      "repo": "anaer/Sub",
-      "stars": 3671,
-      "repo_created": "2021-11-04T11:09:58Z",
-      "reputation": "ok",
-      "reputation_note": "stars=3671,age=1814d",
-      "required_runs": 3,
-      "first_seen": "2026-10-24",
-      "initial_nodes": 36,
-      "runs": 15,
-      "good_streak": 0,
-      "fail_streak": 0,
-      "history": [
-        {
-          "date": "2026-10-25",
-          "count": 36,
-          "usable": 3,
-          "unique_new": 3,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-25",
-          "count": 36,
-          "usable": 3,
-          "unique_new": 3,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-26",
-          "count": 36,
-          "usable": 2,
-          "unique_new": 2,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-26",
-          "count": 36,
-          "usable": 3,
-          "unique_new": 3,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-26",
-          "count": 36,
-          "usable": 3,
-          "unique_new": 2,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-26",
-          "count": 36,
-          "usable": 3,
-          "unique_new": 2,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-27",
-          "count": 36,
-          "usable": 3,
-          "unique_new": 2,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-27",
-          "count": 36,
-          "usable": 3,
-          "unique_new": 2,
-          "tamper": 0
-        }
-      ]
-    },
     "https://clashgithub.com/clashnode-20261025.html": {
       "channel": "web:https://clashgithub.com/",
       "origin": "channel_web",
       "added": "2026-10-24",
       "first_seen": "2026-10-24",
-      "runs": 11,
+      "runs": 12,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -88,13 +17,6 @@
           "tamper": 0
         },
         {
-          "date": "2026-10-25",
-          "count": 25,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
           "date": "2026-10-26",
           "count": 25,
           "usable": 0,
@@ -117,6 +39,13 @@
         },
         {
           "date": "2026-10-26",
+          "count": 25,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-27",
           "count": 25,
           "usable": 0,
           "unique_new": 0,
@@ -148,7 +77,7 @@
       "required_runs": 3,
       "first_seen": "2026-10-25",
       "initial_nodes": 380,
-      "runs": 7,
+      "runs": 8,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -200,6 +129,13 @@
           "usable": 45,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-27",
+          "count": 307,
+          "usable": 49,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -208,7 +144,7 @@
       "origin": "channel_web",
       "added": "2026-10-25",
       "first_seen": "2026-10-25",
-      "runs": 6,
+      "runs": 7,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -235,6 +171,13 @@
         },
         {
           "date": "2026-10-26",
+          "count": 25,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-27",
           "count": 25,
           "usable": 0,
           "unique_new": 0,
@@ -262,10 +205,17 @@
       "origin": "channel_web",
       "added": "2026-10-26",
       "first_seen": "2026-10-26",
-      "runs": 2,
+      "runs": 3,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
+        {
+          "date": "2026-10-27",
+          "count": 25,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
         {
           "date": "2026-10-27",
           "count": 25,
@@ -554,6 +504,11 @@
       "reason": "no_stable_contribution",
       "date": "2026-10-27",
       "repo": null
+    },
+    "https://raw.githubusercontent.com/anaer/Sub/main/proxies.yaml": {
+      "reason": "no_stable_contribution",
+      "date": "2026-10-27",
+      "repo": "anaer/Sub"
     }
   }
 }

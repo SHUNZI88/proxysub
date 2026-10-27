@@ -25,12 +25,6 @@
       "probation_runs": 3
     },
     {
-      "url": "https://blog.ermao.net/sub/clash/ermao.net",
-      "origin": "manual",
-      "added": "2026-10-24",
-      "recall_note": "2026-10-24 召回（任务#105）：原淘汰原因 zero_unique_contribution:16runs；cf_blocked 整源淘汰已废除、低产判据改绝对零通过"
-    },
-    {
       "url": "https://raw.githubusercontent.com/tomjiu/proxy-pipeline/main/dist/online/clash.yaml",
       "origin": "discovered",
       "added": "2026-10-25",
@@ -43,13 +37,6 @@
       "added": "2026-10-25",
       "repo": "tomjiu/proxy-pipeline",
       "probation_runs": 5
-    },
-    {
-      "url": "https://raw.githubusercontent.com/hamzawih0/zorVPN/main/clash.yaml",
-      "origin": "discovered",
-      "added": "2026-10-26",
-      "repo": "hamzawih0/zorVPN",
-      "probation_runs": 11
     },
     {
       "url": "https://raw.githubusercontent.com/Ruk1ng001/freeSub/main/clash.yaml",
@@ -204,6 +191,16 @@
       "url": "https://raw.githubusercontent.com/Au1rxx/free-vpn-subscriptions/main/output/stable/clash-0001.yaml",
       "reason": "cn_low_pass_rate:0/199",
       "date": "2026-10-25"
+    },
+    {
+      "url": "https://blog.ermao.net/sub/clash/ermao.net",
+      "reason": "cn_low_pass_rate:0/126",
+      "date": "2026-10-27"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/hamzawih0/zorVPN/main/clash.yaml",
+      "reason": "cn_low_pass_rate:0/92",
+      "date": "2026-10-27"
     }
   ],
   "deny_repos": []
