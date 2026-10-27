@@ -50,6 +50,18 @@
       "added": "2026-10-26",
       "repo": "hamzawih0/zorVPN",
       "probation_runs": 11
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Ruk1ng001/freeSub/main/clash.yaml",
+      "origin": "manual",
+      "added": "2026-10-27",
+      "recall_note": "cf_blocked 判据已废除（#105），原淘汰依据失效，召回复评"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/peasoft/NoMoreWalls/master/list.txt",
+      "origin": "manual",
+      "added": "2026-10-27",
+      "note": "社区活跃聚合源；池内 tomjiu 占比 68%，扩源降集中度"
     }
   ],
   "removed": [
@@ -60,11 +72,6 @@
     },
     {
       "url": "https://raw.githubusercontent.com/PuddinCat/BestClash/refs/heads/main/proxies.yaml",
-      "reason": "cf_blocked:4/12",
-      "date": "2026-10-11"
-    },
-    {
-      "url": "https://raw.githubusercontent.com/Ruk1ng001/freeSub/main/clash.yaml",
       "reason": "cf_blocked:4/12",
       "date": "2026-10-11"
     },

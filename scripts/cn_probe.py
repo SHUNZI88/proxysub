@@ -158,7 +158,7 @@ EVIDENCE_CONCURRENCY = 8   # 单节点证据总并行度：GEO 3 源 + AI 5 域�
 EVIDENCE_BUDGET_S = 120
 MIHOMO_VERSION = os.environ.get("MIHOMO_VERSION", "v1.19.32")
 DELAY_TIMEOUT_MS = 5000
-DELAY_CONCURRENCY = 12
+DELAY_CONCURRENCY = 16  # 2026-10-27：12→16，提高单轮覆盖（用户痛点「可用节点太少」）
 REAL_TRAFFIC_TIMEOUT_S = 8    # 真实下载硬超时预算（秒）
 # 并发下调（2026-10-26）：多源交叉 + 两轮采样让单节点耗时增至约 60s
 # （3源×10s + 间隔8s + 3源×10s），12 并发会互相抢带宽、把「快节点」
