@@ -13,11 +13,6 @@
       "added": "2026-10-10"
     },
     {
-      "url": "https://raw.githubusercontent.com/peasoft/NoMoreWalls/master/list.meta.yml",
-      "origin": "manual",
-      "added": "2026-10-10"
-    },
-    {
       "url": "https://raw.githubusercontent.com/awesome-vpn/awesome-vpn/master/clash.yaml",
       "origin": "discovered",
       "added": "2026-10-10",
@@ -200,6 +195,11 @@
     {
       "url": "https://raw.githubusercontent.com/hamzawih0/zorVPN/main/clash.yaml",
       "reason": "cn_low_pass_rate:0/92",
+      "date": "2026-10-27"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/peasoft/NoMoreWalls/master/list.meta.yml",
+      "reason": "cn_low_pass_rate:0/181",
       "date": "2026-10-27"
     }
   ],
