@@ -20,13 +20,6 @@
       "probation_runs": 3
     },
     {
-      "url": "https://raw.githubusercontent.com/tomjiu/proxy-pipeline/main/dist/online/clash.yaml",
-      "origin": "discovered",
-      "added": "2026-10-25",
-      "repo": "tomjiu/proxy-pipeline",
-      "probation_runs": 5
-    },
-    {
       "url": "https://raw.githubusercontent.com/tomjiu/proxy-pipeline/main/dist/clean/clash-renamed.yaml",
       "origin": "discovered",
       "added": "2026-10-25",
@@ -201,6 +194,11 @@
       "url": "https://raw.githubusercontent.com/peasoft/NoMoreWalls/master/list.meta.yml",
       "reason": "cn_low_pass_rate:0/181",
       "date": "2026-10-27"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/tomjiu/proxy-pipeline/main/dist/online/clash.yaml",
+      "reason": "cn_low_pass_rate:0/120",
+      "date": "2026-10-28"
     }
   ],
   "deny_repos": []
