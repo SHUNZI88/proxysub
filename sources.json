@@ -20,13 +20,6 @@
       "probation_runs": 3
     },
     {
-      "url": "https://raw.githubusercontent.com/tomjiu/proxy-pipeline/main/dist/clean/clash-renamed.yaml",
-      "origin": "discovered",
-      "added": "2026-10-25",
-      "repo": "tomjiu/proxy-pipeline",
-      "probation_runs": 5
-    },
-    {
       "url": "https://raw.githubusercontent.com/Ruk1ng001/freeSub/main/clash.yaml",
       "origin": "manual",
       "added": "2026-10-27",
@@ -37,6 +30,13 @@
       "origin": "manual",
       "added": "2026-10-27",
       "note": "社区活跃聚合源；池内 tomjiu 占比 68%，扩源降集中度"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/chengaopan/AutoMergePublicNodes/master/snippets/nodes.meta.yml",
+      "origin": "discovered",
+      "added": "2026-10-28",
+      "repo": "chengaopan/AutoMergePublicNodes",
+      "probation_runs": 13
     }
   ],
   "removed": [
@@ -198,6 +198,11 @@
     {
       "url": "https://raw.githubusercontent.com/tomjiu/proxy-pipeline/main/dist/online/clash.yaml",
       "reason": "cn_low_pass_rate:0/120",
+      "date": "2026-10-28"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/tomjiu/proxy-pipeline/main/dist/clean/clash-renamed.yaml",
+      "reason": "cn_low_pass_rate:0/118",
       "date": "2026-10-28"
     }
   ],

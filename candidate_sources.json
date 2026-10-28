@@ -1,93 +1,15 @@
 {
   "candidates": {
-    "https://raw.githubusercontent.com/chengaopan/AutoMergePublicNodes/master/snippets/nodes.meta.yml": {
-      "repo": "chengaopan/AutoMergePublicNodes",
-      "stars": 8272,
-      "repo_created": "2024-01-11T03:59:55Z",
-      "reputation": "ok",
-      "reputation_note": "stars=8272,age=1018d",
-      "required_runs": 3,
-      "first_seen": "2026-10-25",
-      "initial_nodes": 380,
-      "runs": 12,
-      "good_streak": 2,
-      "fail_streak": 0,
-      "history": [
-        {
-          "date": "2026-10-26",
-          "count": 388,
-          "usable": 55,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-27",
-          "count": 382,
-          "usable": 65,
-          "unique_new": 4,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-27",
-          "count": 313,
-          "usable": 45,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-27",
-          "count": 307,
-          "usable": 49,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-27",
-          "count": 307,
-          "usable": 52,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-27",
-          "count": 307,
-          "usable": 16,
-          "unique_new": 3,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-28",
-          "count": 392,
-          "usable": 23,
-          "unique_new": 13,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-28",
-          "count": 353,
-          "usable": 22,
-          "unique_new": 18,
-          "tamper": 0
-        }
-      ]
-    },
     "https://clashgithub.com/clashnode-20261026.html": {
       "channel": "web:https://clashgithub.com/",
       "origin": "channel_web",
       "added": "2026-10-25",
       "first_seen": "2026-10-25",
-      "runs": 11,
+      "runs": 12,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
         {
-          "date": "2026-10-26",
-          "count": 25,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
           "date": "2026-10-27",
           "count": 25,
           "usable": 0,
@@ -117,6 +39,13 @@
         },
         {
           "date": "2026-10-27",
+          "count": 25,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-28",
           "count": 25,
           "usable": 0,
           "unique_new": 0,
@@ -144,7 +73,7 @@
       "origin": "channel_web",
       "added": "2026-10-26",
       "first_seen": "2026-10-26",
-      "runs": 7,
+      "runs": 8,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -178,6 +107,13 @@
         },
         {
           "date": "2026-10-27",
+          "count": 25,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-28",
           "count": 25,
           "usable": 0,
           "unique_new": 0,
@@ -205,7 +141,7 @@
       "origin": "channel_web",
       "added": "2026-10-27",
       "first_seen": "2026-10-27",
-      "runs": 3,
+      "runs": 4,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -229,8 +165,26 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-28",
+          "count": 25,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ],
+      "required_runs": 3
+    },
+    "https://clashgithub.com/clashnode-20261029.html": {
+      "channel": "web:https://clashgithub.com/",
+      "origin": "channel_web",
+      "added": "2026-10-28",
+      "first_seen": "2026-10-28",
+      "runs": 0,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": [],
       "required_runs": 3
     }
   },
