@@ -42,6 +42,7 @@ from __future__ import annotations
 import argparse
 import datetime
 import fcntl
+import glob
 import json
 import os
 import re
@@ -568,6 +569,48 @@ def load_carryover(main_clash: str) -> list[dict]:
             "final": False,
             "us_ok": False,  # 上一轮是美国视角，未知；仅作参考
         })
+    return nodes
+
+
+def load_slow_carryover(workdir: str, exclude_fps: set[str]) -> list[dict]:
+    """第二资产（慢档）-> 回炉复测节点（2026-10-28 修复）。
+
+    旧实现只从主资产加载 carryover：节点一旦降级慢档就永远退出测试集，
+    即使下一轮已恢复也再无机会——「AI 慢档提级」设计因此空转（实证：
+    6 个存活的 carryover 慢档节点滞留第二资产，其中含用户本地实测可用的
+    节点）。此处从本地最新慢档资产加载，按 fingerprint 去重（与主资产
+    carryover / 待测池重叠者跳过），origin 仍标 carryover。
+    """
+    cands: list[str] = []
+    for pat in ("p_*_d.yaml", "verified_degraded_clash.yaml"):
+        cands += glob.glob(os.path.join(workdir, pat))
+    if not cands:
+        return []
+    path = max(cands, key=os.path.getmtime)  # 只取最新一份
+    try:
+        with open(path, encoding="utf-8") as f:
+            cfg = yaml.safe_load(f) or {}
+    except Exception as e:
+        log(f"警告: 解析慢档资产失败: {e}")
+        return []
+    nodes = []
+    for p in cfg.get("proxies", []) or []:
+        if not isinstance(p, dict) or not p.get("server"):
+            continue
+        fp = common.fingerprint(p)
+        if fp in exclude_fps:
+            continue
+        exclude_fps.add(fp)
+        nodes.append({
+            "fp": fp,
+            "name": str(p.get("name") or "node"),
+            "proxy": dict(p),
+            "origin": "carryover",
+            "final": False,
+            "us_ok": False,
+        })
+    if nodes:
+        log(f"慢档回炉: {len(nodes)} 个第二资产节点并入复测集（{os.path.basename(path)}）")
     return nodes
 
 
@@ -1194,6 +1237,10 @@ def main() -> int:
     carry = load_carryover(os.path.join(workdir, "main_clash.yaml")) if (
         main_clash and gh_download(tag, main_clash, os.path.join(workdir, "main_clash.yaml"))
     ) else []
+    # 慢档回炉（2026-10-28）：第二资产节点并入复测集，给「AI 慢档提级」
+    # 供给证据（此前降级即沉没，永远无 AI 数据）。fingerprint 去重防重复测。
+    carry += load_slow_carryover(
+        workdir, exclude_fps={n["fp"] for n in carry})
     # 任务#106：非 fresh 轮也加载交接文档（当前/残留）——闸门只挡「同轮
     # 二次整测」的 fresh 标记，未测尾部照常并入（dedup 保 carryover 优先）。
     # 下载失败的 fresh 轮 pend_path 不存在，加载自然为空，与原行为一致。
@@ -1333,7 +1380,15 @@ def main() -> int:
             # （下限 120s 兜底，上限 300s 防极端），保证全覆盖。
             ev_budget = min(300, max(EVIDENCE_BUDGET_S, len(passed) * 12))
             ev_deadline = time.time() + ev_budget
-            ev_nodes = passed[:GEO_MAX_NODES]
+            # 证据收集范围（2026-10-28 修复）：旧实现仅覆盖快档通过者，
+            # degraded 节点永远没有 AI 证据 → 6.6「AI 慢档提级」空转
+            # （实证：6 个存活的 carryover 慢档节点无一被 AI 探测，AI 可用
+            # 节点滞留第二资产）。现追加慢档节点（carryover 优先），共用时间
+            # 预算；出口证据（geo）仍只统计快档通过者，口径不变。
+            _deg_ev = sorted(
+                degraded,
+                key=lambda n: 0 if n.get("origin") == "carryover" else 1)
+            ev_nodes = passed[:GEO_MAX_NODES] + _deg_ev
             n_geo = 0
             for i, n in enumerate(ev_nodes):
                 if time.time() > ev_deadline:
@@ -1358,6 +1413,13 @@ def main() -> int:
             log(f"证据收集完成: 出口证据 {n_geo}/{len(passed)}，"
                 f"AI 任一可达 {n_ai}/{len(passed)}，API 层可用 {n_api}/{len(passed)}"
                 f"（{ev_budget - max(0, ev_deadline - time.time()):.0f}s）")
+            if _deg_ev:
+                _d_ai = sum(1 for n in _deg_ev
+                            if results[n["probe_name"]].get("ai", {}).get("ai_reachable"))
+                _d_api = sum(1 for n in _deg_ev
+                             if results[n["probe_name"]].get("ai", {}).get("ai_api"))
+                log(f"慢档证据: 探测 {len(_deg_ev)}，AI 可达 {_d_ai}，"
+                    f"API 层可用 {_d_api}（可达者将由 AI 慢档提级升入主资产）")
         except Exception as e:
             log(f"熔断: 拨测过程异常（{type(e).__name__}: {e}），不发布")
             return 3
