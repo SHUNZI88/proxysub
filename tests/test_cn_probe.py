@@ -1007,3 +1007,71 @@ def test_real_min_bytes_threshold_tightened():
     assert cn_probe.REAL_MIN_BYTES >= 768 * 1024
     assert cn_probe.REAL_SLOW_MIN_BYTES == 32 * 1024
     assert cn_probe.CN_MAX_PUBLISH_LATENCY_MS == 2500
+
+
+def test_longevity_tier_prefers_proven_survivors(monkeypatch):
+    """任务#111（2026-10-28）：长寿档——历史实测反哺发布排序。
+    streak≥3 或 cn_pass≥60%（样本≥5）者档 0；carryover 档 1；新面孔档 2。"""
+    learning = {
+        "survival": {"fp-long": {"streak": 16, "seen_days": 16}},
+        "cn_hist": {"fp-rate": {"cn_runs": 62, "cn_pass": 49}},
+    }
+    long_n = {"fp": "fp-long", "origin": "carryover"}
+    rate_n = {"fp": "fp-rate", "origin": "pending"}
+    carry_n = {"fp": "fp-x", "origin": "carryover"}
+    new_n = {"fp": "fp-y", "origin": "pending"}
+    assert cn_probe.longevity_tier(long_n, learning) == 0
+    assert cn_probe.longevity_tier(rate_n, learning) == 0
+    assert cn_probe.longevity_tier(carry_n, learning) == 1
+    assert cn_probe.longevity_tier(new_n, learning) == 2
+    # 小样本高通过率不算铁证（1/1=100% 但 runs<5）
+    small = {"cn_hist": {"fp-s": {"cn_runs": 1, "cn_pass": 1}}, "survival": {}}
+    assert cn_probe.longevity_tier({"fp": "fp-s", "origin": "pending"}, small) == 2
+    # learning 为空 → 降级为 origin 语义
+    assert cn_probe.longevity_tier(carry_n, None) == 1
+    assert cn_probe.longevity_tier(new_n, None) == 2
+
+
+def test_verified_rank_orders_longevity_after_ai():
+    """任务#111：排序键 AI > 长寿 > vantage > 速度。长寿铁证胜过单轮速度明星。"""
+    learning = {"survival": {"fp-l": {"streak": 5}}, "cn_hist": {}}
+    # 长命慢节点 vs 新面孔快节点（同 AI 档）
+    long_slow = {"probe_name": "L", "fp": "fp-l", "origin": "carryover",
+                 "us_ok": False, "final": True}
+    new_fast = {"probe_name": "N", "fp": "fp-n", "origin": "pending",
+                "us_ok": False, "final": True}
+    rl = {"L": {"ok": True, "latency_ms": 1500, "ai": {},
+                "real_traffic": {"ok": True, "bytes": 300 * 1024}}}
+    rn = {"N": {"ok": True, "latency_ms": 1200, "ai": {},
+                "real_traffic": {"ok": True, "bytes": 900 * 1024}}}
+    assert cn_probe.verified_rank(long_slow, rl, learning) < \
+        cn_probe.verified_rank(new_fast, rn, learning)
+    # AI 层仍压过长寿
+    new_api = {"probe_name": "A", "fp": "fp-n", "origin": "pending",
+               "us_ok": False, "final": True}
+    ra = {"A": {"ok": True, "latency_ms": 3000, "ai": {"ai_api": True},
+                "real_traffic": {"ok": True, "bytes": 100 * 1024}}}
+    assert cn_probe.verified_rank(new_api, ra, learning) < \
+        cn_probe.verified_rank(long_slow, rl, learning)
+
+
+def test_ai_slow_promotion_respects_latency_cap(monkeypatch, tmp_path):
+    """任务#112：AI 慢档提级只收 ≤AI_PROMOTE_MAX_LATENCY_MS 的节点；
+    超限者（实证 6.9s 靠 AI 提级混进主资产）留守第二资产。"""
+    import types
+    lo_n = {"probe_name": "OK", "fp": "f1", "origin": "pending",
+            "us_ok": False, "final": False, "name": "OK"}
+    hi_n = {"probe_name": "SLOW", "fp": "f2", "origin": "pending",
+            "us_ok": False, "final": False, "name": "SLOW"}
+    results = {
+        "OK": {"latency_ms": 1200, "ai": {"ai_reachable": True},
+               "real_traffic": {"ok": False, "degraded": True, "bytes": 100 * 1024}},
+        "SLOW": {"latency_ms": 6900, "ai": {"ai_reachable": True},
+                 "real_traffic": {"ok": False, "degraded": True, "bytes": 100 * 1024}},
+    }
+    assert cn_probe.config.AI_PROMOTE_MAX_LATENCY_MS < 6900
+    promote = [n for n in (lo_n, hi_n)
+               if (results[n["probe_name"]].get("ai") or {}).get("ai_reachable")
+               and (results[n["probe_name"]].get("latency_ms") or 99999)
+               <= cn_probe.config.AI_PROMOTE_MAX_LATENCY_MS]
+    assert [n["probe_name"] for n in promote] == ["OK"]

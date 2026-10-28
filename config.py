@@ -93,6 +93,12 @@ PROBE_SOURCE_SAMPLE_CAP = 240 # 单源进入拨测样本的基础上限；仅对
                               # （拨测样本池量级 ~2000 节点，240 ≈ 12%，给低产源仍留翻身机会）
 CN_TILT_LOW = 0.5             # 低产源配额系数（少抓：省下的拨测时间让给高产源与新鲜节点）
 CN_TILT_HIGH = 1.5            # 高产源配额系数（多抓：把算力集中到真正中国可用的源）
+CN_FREEZE_CI = 0.01           # 零产冻结档（2026-10-28 任务#110）：Wilson 95% 下界 < 1% 的源
+                              # 降入 CN_TILT_FROZEN。实证：source_scores 里 10+ 个源
+                              # 各测 50-311 个节点 0 通过，却与高产源同分配额——
+                              # tomjiu 507 测 7 过（1.4%）长期占池 68% 就是这么来的。
+CN_TILT_FROZEN = 0.1          # 冻结档配额系数：不是 0——留 10% 回评配额防「复活误杀」
+                              # （免费节点源可能复苏；全冻结会让学习失去纠错通道）
 CN_LIFECYCLE_ENABLED = True   # cn 源级生命周期总熔断（淘汰/晋升倾斜/拨测配额）：置 False 时
                               # main() 不构造 cn_stats，三个消费点全部退化为改造前行为
                               # （无实证 = 不干预），无需回滚代码即可止血
@@ -399,6 +405,17 @@ UDP_PROTOCOLS = {"hysteria2", "hy2", "tuic", "hysteria", "quic"}
 # （历史稳定性强绑定）。注意：状态一旦陈旧（停更），select_probe_sample 会
 # 整体忽略该优先级，防止已死旧节点凭陈旧 streak 霸占拨测预算。
 SURVIVAL_STREAK_FORCE_PROBE = 3
+# ---- 发布侧长寿学习（2026-10-28 任务#111，实测数据反哺排序）----
+# 池侧（拨测样本）早已用 survival.streak 排序，但发布侧 verified_rank 一直
+# 没接历史数据——16 轮长命的 dokng 节点与 1 轮新面孔在主资产里同权，
+# 「速度明星」（单轮爆发、次日即死）反而靠高 bytes 排前。两条历史证据：
+#   - streak≥3 的节点平均存活远超新面孔（survival.json 实证）
+#   - cn_history.cn_pass 历史通过率 ≥60% 的节点是「反复可用」的铁证
+LONGEVITY_STREAK_MIN = 3        # 跨轮连续存活下限（与 SURVIVAL_STREAK_FORCE_PROBE 同源语义）
+LONGEVITY_CN_PASS_RATE = 0.6    # 历史 CN 通过率下限（cn_history.cn_pass/cn_runs）
+AI_PROMOTE_MAX_LATENCY_MS = 3500  # AI 慢档提级的延迟上限（任务#112）：本轮实证 6.9s 的
+                              # 节点靠 AI 提级混进主资产——AI 可用≠本地能用，3.5s
+                              # 以下的 AI 节点才提级，超限者留第二资产
 # 历史真实通过率加成（过去 N 次运行的 real_ok 比率，见 common.update_survival）
 # 150 < SURVIVAL_WEIGHT(240)：历史通过率只是「稳健性佐证」，权重低于连续存活天数；
 # 且受陈旧守卫约束（survival 停更则归零），避免陈旧记录误导排序。

@@ -113,13 +113,19 @@ class TestCnFetchTilt:
         # 样本不足 CN_MIN_SAMPLE_HIGH=10：不干预（正向判据从宽但不下探到噪声区）
         assert evolution.cn_fetch_tilt("http://a/sub", {"http://a/sub": _cn(2, 2)}) is None
 
-    def test_low_yield_halves(self):
-        # 0/30：Wilson 下界恒 0 < 5%，且 n>=CN_MIN_SAMPLE=20
-        stats = {"http://a/sub": _cn(30, 0)}
-        assert evolution.cn_fetch_tilt("http://a/sub", stats) == config.CN_TILT_LOW
-        # 1/25：裸通过率 4%，下界 ~0.7% < 5%（真实数据 Au1rxx 型低产源）
+    def test_zero_yield_frozen(self):
+        """任务#110（2026-10-28）：零产源降冻结档 0.1——Wilson 下界 < 1%。
+        实证：10+ 个源各测 50-311 个节点 0 通过，旧 0.5 档仍给一半配额。"""
         assert evolution.cn_fetch_tilt("http://a/sub",
-                                       {"http://a/sub": _cn(25, 1)}) == config.CN_TILT_LOW
+                                       {"http://a/sub": _cn(30, 0)}) == config.CN_TILT_FROZEN
+        # 1/25：下界 0.71% < 1% → 仍冻结（tomjiu 7/507 下界 0.67% 同档）
+        assert evolution.cn_fetch_tilt("http://a/sub",
+                                       {"http://a/sub": _cn(25, 1)}) == config.CN_TILT_FROZEN
+
+    def test_low_yield_halves(self):
+        # 2/25：下界 2.22% ∈ [1%, 3%) → 低产档（冻结与中性之间的过渡带）
+        assert evolution.cn_fetch_tilt("http://a/sub",
+                                       {"http://a/sub": _cn(25, 2)}) == config.CN_TILT_LOW
 
     def test_neutral_one_for_middling(self):
         # 10/30：点估计 33% 但 Wilson 下界 ~19% < 30% → 中性（防小样本虚高）
@@ -149,7 +155,7 @@ class TestCnFetchTilt:
         assert evolution.cn_fetch_tilt("http://a/sub", stats,
                                        max_age_s=config.CN_DECISION_MAX_AGE_S) is None
         # max_age_s=None 时调用方自控新鲜度，本函数不做年龄筛选
-        assert evolution.cn_fetch_tilt("http://a/sub", stats) == config.CN_TILT_LOW
+        assert evolution.cn_fetch_tilt("http://a/sub", stats) == config.CN_TILT_FROZEN
 
     def test_missing_cn_last_with_max_age_returns_none(self):
         rec = _cn(30, 0)
@@ -575,11 +581,19 @@ def _official_nodes(prefix: str, n: int, url: str, lat0: float = 100.0):
 
 class TestSelectProbeCnTilt:
     def test_low_yield_source_capped_at_half_base(self):
-        """低产源（0/30）单源上限 = 240*0.5 = 120：300 个节点只放行 120。"""
+        """低产源（3/40，下界 2.6%）单源上限 = 240*0.5 = 120：300 个节点只放行 120。"""
         fps, tcp_lat, unique, prov, survival = _official_nodes("low", 300, "http://low/sub")
-        cn = {"http://low/sub": _cn(30, 0)}
+        cn = {"http://low/sub": _cn(40, 3)}
         sample = _run_sample(tcp_lat, unique, prov, fps, survival=survival, cn_stats=cn)
         assert sum(1 for fp in fps if fp in sample) == 120
+
+    def test_zero_yield_source_frozen_quota(self):
+        """任务#110：零产源（0/30）冻结档上限 = 240*0.1 = 24——留回评配额
+        防「复活误杀」，但把拨测预算让给高产源。"""
+        fps, tcp_lat, unique, prov, survival = _official_nodes("fro", 300, "http://fro/sub")
+        cn = {"http://fro/sub": _cn(30, 0)}
+        sample = _run_sample(tcp_lat, unique, prov, fps, survival=survival, cn_stats=cn)
+        assert sum(1 for fp in fps if fp in sample) == 24
 
     def test_no_evidence_source_not_capped(self):
         """无实证源不受基础上限：300 个节点全进（改造前行为）。"""
@@ -613,7 +627,7 @@ class TestSelectProbeCnTilt:
         assert sum(1 for fp in fps if fp in sample) == 240
 
     def test_candidate_quota_halved_for_low_yield(self):
-        """低产候选源试用配额 20*0.5=10：30 个节点只试 10 个。"""
+        """低产候选源（3/40）试用配额 20*0.5=10：30 个节点只试 10 个。"""
         tcp_lat, unique, prov, survival = {}, {}, {}, {}
         cand = "http://cand-low/sub"
         fps = []
@@ -624,10 +638,27 @@ class TestSelectProbeCnTilt:
             prov[fp] = {cand}
             survival[fp] = _survival_rec()
             fps.append(fp)
-        cn = {cand: _cn(30, 0)}
+        cn = {cand: _cn(40, 3)}
         sample = _run_sample(tcp_lat, unique, prov, [], cand_urls=[cand],
                              survival=survival, cn_stats=cn)
         assert sum(1 for fp in fps if fp in sample) == 10
+
+    def test_candidate_quota_frozen_for_zero_yield(self):
+        """任务#110：零产候选源试用配额 20*0.1=2（保底 1）。"""
+        tcp_lat, unique, prov, survival = {}, {}, {}, {}
+        cand = "http://cand-fro/sub"
+        fps = []
+        for i in range(30):
+            fp = f"cf-{i}"
+            unique[fp] = _proxy("ss", f"cf-{i}", lat=float(200 + i), server=fp)
+            tcp_lat[fp] = float(200 + i)
+            prov[fp] = {cand}
+            survival[fp] = _survival_rec()
+            fps.append(fp)
+        cn = {cand: _cn(30, 0)}
+        sample = _run_sample(tcp_lat, unique, prov, [], cand_urls=[cand],
+                             survival=survival, cn_stats=cn)
+        assert sum(1 for fp in fps if fp in sample) == 2
 
     def test_candidate_quota_scaled_up_for_high_yield(self):
         """高产候选源（7/11）试用配额 20*1.5=30：30 个节点全试。"""

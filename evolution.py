@@ -423,6 +423,12 @@ def cn_fetch_tilt(url: str | None, cn_stats: dict, *,
             return None
     passed = int(cn.get("cn_passed") or 0)
     lo, _ = common.wilson_ci(passed, tested)
+    # 冻结档（2026-10-28 任务#110）：Wilson 下界 < 1% = 「统计上不可能产出
+    # 可用节点」。CN_TILT_LOW(0.5) 档对这类源太宽——实证 10+ 个零产源各测
+    # 50-311 个节点 0 通过仍占一半配额。降入 0.1 档：不是全冻结，留 10%
+    # 回评配额防「复活误杀」（学习系统必须有纠错通道，见 config.CN_FREEZE_CI）。
+    if tested >= config.CN_MIN_SAMPLE and lo < config.CN_FREEZE_CI:
+        return config.CN_TILT_FROZEN
     if tested >= config.CN_MIN_SAMPLE and lo < config.CN_LOW_CI_HIGH:
         return config.CN_TILT_LOW
     if lo >= config.CN_HIGH_YIELD:

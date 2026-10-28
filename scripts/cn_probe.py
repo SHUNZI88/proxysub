@@ -1001,13 +1001,62 @@ def node_evidence(api_port: int, mixed_port: int, name: str) -> dict:
     return {"geo": geo_ev, "ai": classify_ai(ai_codes)}
 
 
-def verified_rank(n: dict, results: dict) -> tuple:
-    """验证集排序键：AI 可用性 > 双 vantage 强者 > 低延迟。
+def load_learning() -> dict:
+    """加载历史实测数据（survival.json + cn_history.json），供发布侧长寿学习。
+
+    2026-10-28 任务#111：池侧（拨测样本选择）早已用 survival.streak 排序，
+    但发布侧一直没接——16 轮长命节点与 1 轮新面孔在主资产同权。本函数补上
+    这条反哺链路；文件缺失/损坏时返回空结构（学习静默降级为无历史模式）。
+    """
+    learning: dict = {"survival": {}, "cn_hist": {}}
+    for key, path in (("survival", config.SURVIVAL_FILE),
+                      ("cn_hist", config.CN_HISTORY_FILE)):
+        try:
+            with open(path, encoding="utf-8") as f:
+                learning[key] = json.load(f) or {}
+        except Exception:
+            learning[key] = {}
+    return learning
+
+
+def longevity_tier(n: dict, learning: dict | None) -> int:
+    """长寿档（2026-10-28 任务#111）：历史实测数据反哺发布排序。
+
+    档位越靠前越好：
+      0 = 铁证长寿：跨轮连续存活 ≥ LONGEVITY_STREAK_MIN，或历史 CN 通过率
+          ≥ LONGEVITY_CN_PASS_RATE（样本 ≥5 次）——多轮实测反复可用的节点；
+      1 = carryover 复测存活（本轮融资实证，但无跨轮历史）；
+      2 = 新面孔（单轮爆发，未经验证——「速度明星」多发于此档）。
+
+    实证依据（survival.json/cn_history.json）：dokng 系 streak=16、cn_pass
+    49/62 的节点是用户本地体感最好的；单轮高 bytes 节点次日大面积死亡。
+    """
+    if not learning:
+        return 1 if n.get("origin") == "carryover" else 2
+    fp = n.get("fp")
+    s = learning.get("survival", {}).get(fp, {}) if fp else {}
+    streak = int(s.get("streak") or 0)
+    if streak >= config.LONGEVITY_STREAK_MIN:
+        return 0
+    c = learning.get("cn_hist", {}).get(fp, {}) if fp else {}
+    runs = int(c.get("cn_runs") or 0)
+    passed = int(c.get("cn_pass") or 0)
+    if runs >= 5 and passed / runs >= config.LONGEVITY_CN_PASS_RATE:
+        return 0
+    return 1 if n.get("origin") == "carryover" else 2
+
+
+def verified_rank(n: dict, results: dict, learning: dict | None = None) -> tuple:
+    """验证集排序键：AI 可用性 > 长寿实证 > 双 vantage 强者 > 速度 > 延迟。
 
     2026-10-20 起 AI 可达性占首位——订阅顺序即用户可见性顺序，用户核心
     诉求是「可用于 AI 连接的纯净节点」；非 AI 节点不设硬闸门、仅沉底。
-    原「双 vantage 强者 + 延迟」序降为次级判据（保持不变）。
+    2026-10-28 任务#111：次级判据升级为长寿档（历史实测反哺）——池侧
+    学习早已生效、发布侧一直缺位；16 轮长命 dokng 节点应永远排在
+    「单轮速度明星」之前。learning 为 None 时自动加载一次。
     """
+    if learning is None:
+        learning = load_learning()
     r = results.get(n["probe_name"], {})
     ai = r.get("ai") or {}
     if ai.get("ai_api"):
@@ -1016,9 +1065,11 @@ def verified_rank(n: dict, results: dict) -> tuple:
         ai_tier = 1        # 至少一个 AI 域有响应
     else:
         ai_tier = 2        # 未探测到或无响应（含探测超预算无数据）
+    lon = longevity_tier(n, learning)
     return (ai_tier,
-            # 次级判据（2026-10-24 任务#96）：双 vantage 强者 >
-            # carryover 复测存活（长寿命实证，用户体感最好）> 仅本轮新通过。
+            lon,
+            # 再次级判据（2026-10-24 任务#96）：双 vantage 强者 >
+            # carryover 复测存活 > 仅本轮新通过。
             # 注意 final 此时已被 main() 在通过后统一置 True，不再区分。
             0 if (n["us_ok"] and n["final"])
             else (1 if n.get("origin") == "carryover" else 2),
@@ -1430,8 +1481,9 @@ def main() -> int:
         except Exception:
             proc.kill()
 
-    # 6) 合并：通过即留、败即汰（自清洁）；AI 可用优先 + 双 vantage 强者排前
-    verified = sorted(passed, key=lambda n: verified_rank(n, results))
+    # 6) 合并：通过即留、败即汰（自清洁）；AI 可用优先 + 长寿实证 + 双 vantage
+    learning = load_learning()   # 任务#111：一次加载，避免逐节点重复读盘
+    verified = sorted(passed, key=lambda n: verified_rank(n, results, learning))
 
     # 6.05) 高延迟降级（2026-10-24）：初筛 RTT 超上限的通过节点降级第二资产。
     # 沙箱「能通」≠ 本地可用——延迟 2.5s+ 的节点用户点开即弃。置于此处：
@@ -1467,13 +1519,23 @@ def main() -> int:
     # （单条消息几 KB），32KB/s（≈4KB/s 起步）远够 chatgpt/claude 网页与
     # API 使用——「下载速度」闸门对 AI 场景过严，导致 AI 可用节点被误汰。
     # 置于 6.5 之后：纯 carryover 轮的整集保留不冲掉提级结果。
+    # 任务#112（2026-10-28）：提级须守延迟上限——本轮实证 6.9s 的节点靠 AI
+    # 提级混进主资产，用户本地「点开即弃」。AI 可用 ≠ 本地能用：延迟超
+    # AI_PROMOTE_MAX_LATENCY_MS 的节点留在第二资产，下轮回炉（慢档回炉机制）。
     ai_slow = [n for n in degraded
                if (results.get(n["probe_name"], {}).get("ai") or {})
-               .get("ai_reachable")]
+               .get("ai_reachable")
+               and (results.get(n["probe_name"], {}).get("latency_ms") or 99999)
+               <= config.AI_PROMOTE_MAX_LATENCY_MS]
+    _ai_slow_rejected = len([n for n in degraded
+                             if (results.get(n["probe_name"], {}).get("ai") or {})
+                             .get("ai_reachable")]) - len(ai_slow)
     if ai_slow:
-        log(f"AI 慢档提级: {len(ai_slow)} 个 AI 可达的慢档节点并入主资产")
+        log(f"AI 慢档提级: {len(ai_slow)} 个 AI 可达的慢档节点并入主资产"
+            + (f"（另有 {_ai_slow_rejected} 个超延迟上限 {config.AI_PROMOTE_MAX_LATENCY_MS}ms 留守第二资产）"
+               if _ai_slow_rejected else ""))
         verified = sorted(verified + ai_slow,
-                          key=lambda n: verified_rank(n, results))
+                          key=lambda n: verified_rank(n, results, learning))
         degraded = [n for n in degraded if n not in ai_slow]
 
     by_origin = {o: sum(1 for n in verified if n["origin"] == o)
