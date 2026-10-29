@@ -25,5 +25,14 @@
   "passed": 30,
   "at": "2026-10-24T08:22:25Z",
   "reason": "pass_rate=100.00% 健康、p90延迟 2407ms < 当前 2468ms -> 收紧提质"
+ },
+ {
+  "param": "CN_LATENCY_CAP_MS",
+  "old": 4500.0,
+  "new": 4192.5,
+  "samples": 334,
+  "passed": 34,
+  "at": "2026-10-29T00:06:44Z",
+  "reason": "pass_rate=10.18% 健康、p90延迟 3885ms < 当前 4500ms -> 收紧提质"
  }
 ]

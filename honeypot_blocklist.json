@@ -5,12 +5,6 @@
   "cidrs": [],
   "keywords": [],
   "auto": {
-    "cf-socks.caoyuwu.eu.org": {
-      "reason": "tls_mitm:certificate verify failed: unable to get local issuer certificate (_ssl.c:1010",
-      "added": "2026-10-14",
-      "expires": "2026-10-28",
-      "source": "https://raw.githubusercontent.com/svinakraft-maker/FlareFeed/main/public/clash.yaml"
-    },
     "8.39.125.213": {
       "reason": "tls_mitm:certificate verify failed: Hostname mismatch, certificate is not valid for ",
       "added": "2026-10-16",
