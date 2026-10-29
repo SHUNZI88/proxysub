@@ -1002,15 +1002,18 @@ def node_evidence(api_port: int, mixed_port: int, name: str) -> dict:
 
 
 def load_learning() -> dict:
-    """加载历史实测数据（survival.json + cn_history.json），供发布侧长寿学习。
+    """加载历史实测数据（survival.json + cn_history.json + user_probe.json）。
 
     2026-10-28 任务#111：池侧（拨测样本选择）早已用 survival.streak 排序，
-    但发布侧一直没接——16 轮长命节点与 1 轮新面孔在主资产同权。本函数补上
-    这条反哺链路；文件缺失/损坏时返回空结构（学习静默降级为无历史模式）。
+    但发布侧一直没接——16 轮长命节点与 1 轮新面孔在主资产同权。
+    2026-10-29 任务#113：接入用户本地实测回灌（user_probe.json）——用户
+    家宽的成败才是最终事实，沙箱只是「上海这一跳」。
+    文件缺失/损坏时返回空结构（学习静默降级为无历史模式）。
     """
-    learning: dict = {"survival": {}, "cn_hist": {}}
+    learning: dict = {"survival": {}, "cn_hist": {}, "user": {}}
     for key, path in (("survival", config.SURVIVAL_FILE),
-                      ("cn_hist", config.CN_HISTORY_FILE)):
+                      ("cn_hist", config.CN_HISTORY_FILE),
+                      ("user", config.USER_PROBE_FILE)):
         try:
             with open(path, encoding="utf-8") as f:
                 learning[key] = json.load(f) or {}
@@ -1019,41 +1022,82 @@ def load_learning() -> dict:
     return learning
 
 
+def user_verdict(n: dict, learning: dict | None) -> str | None:
+    """用户本地实测结论（2026-10-29 任务#113）：'alive' / 'dead' / None。
+
+    回灌文件格式（用户侧客户端测速结果导出）：
+        {"nodes": {"<节点名或指纹>": {"result": "alive|dead",
+                                      "ts": 1780000000, "latency_ms": 220}}}
+    有效期 USER_PROBE_MAX_AGE_S（48h），过期忽略——避免半年前的死节点被永久否决。
+    """
+    if not learning:
+        return None
+    up = learning.get("user") or {}
+    rec = up.get("nodes") if isinstance(up.get("nodes"), dict) else up
+    if not isinstance(rec, dict):
+        return None
+    fp = n.get("fp")
+    name = n.get("name")
+    item = None
+    for key in (fp, name):
+        if key and key in rec:
+            item = rec[key]
+            break
+    if not isinstance(item, dict):
+        return None
+    try:
+        ts = float(item.get("ts") or 0)
+    except Exception:
+        ts = 0
+    if ts and (time.time() - ts) > config.USER_PROBE_MAX_AGE_S:
+        return None
+    r = str(item.get("result") or "").lower()
+    return r if r in ("alive", "dead") else None
+
+
 def longevity_tier(n: dict, learning: dict | None) -> int:
-    """长寿档（2026-10-28 任务#111）：历史实测数据反哺发布排序。
+    """长寿档（#111；2026-10-29 按用户实测数据校准）：历史 CN 通过率主导。
 
-    档位越靠前越好：
-      0 = 铁证长寿：跨轮连续存活 ≥ LONGEVITY_STREAK_MIN，或历史 CN 通过率
-          ≥ LONGEVITY_CN_PASS_RATE（样本 ≥5 次）——多轮实测反复可用的节点；
-      1 = carryover 复测存活（本轮融资实证，但无跨轮历史）；
-      2 = 新面孔（单轮爆发，未经验证——「速度明星」多发于此档）。
+    **校准依据**（用户本地实测 12 节点 vs 沙箱数据）：
+      - 历史 CN 通过率：存活组中位 76%，死亡组中位 0%  ← 唯一强预测信号
+      - survival.streak：存活组中位 2 vs 死亡组 3        ← 无区分度（甚至反相关）
+        原因：streak 只记「在源里出现过几天」，不记「实测可用」——US LA 04
+        streak=5 但历史 0/14 全败，照样被排到前面。
+      - 沙箱实测速度：存活组中位 65KB/s vs 死亡组 545KB/s ← **反向**，
+        「先快后断」节点在临死前会出现速率尖峰。
 
-    实证依据（survival.json/cn_history.json）：dokng 系 streak=16、cn_pass
-    49/62 的节点是用户本地体感最好的；单轮高 bytes 节点次日大面积死亡。
+    档位：
+      0 = 铁证可用：cn_pass/cn_runs ≥ LONGEVITY_CN_PASS_RATE（样本 ≥5）
+      1 = 中等证据：carryover 复测存活，或历史通过率一般但有过通过
+      2 = 新面孔：无历史实证（单轮数据不可信）
     """
     if not learning:
         return 1 if n.get("origin") == "carryover" else 2
     fp = n.get("fp")
-    s = learning.get("survival", {}).get(fp, {}) if fp else {}
-    streak = int(s.get("streak") or 0)
-    if streak >= config.LONGEVITY_STREAK_MIN:
-        return 0
     c = learning.get("cn_hist", {}).get(fp, {}) if fp else {}
     runs = int(c.get("cn_runs") or 0)
     passed = int(c.get("cn_pass") or 0)
     if runs >= 5 and passed / runs >= config.LONGEVITY_CN_PASS_RATE:
         return 0
-    return 1 if n.get("origin") == "carryover" else 2
+    s = learning.get("survival", {}).get(fp, {}) if fp else {}
+    streak = int(s.get("streak") or 0)
+    if streak >= config.LONGEVITY_STREAK_MIN and runs >= 5 and passed > 0:
+        return 0        # streak 仅作辅助，且要求历史至少通过过一次
+    if n.get("origin") == "carryover":
+        return 1
+    if runs >= 5 and passed > 0:
+        return 1        # 有过通过记录但比率一般
+    return 2
 
 
 def verified_rank(n: dict, results: dict, learning: dict | None = None) -> tuple:
-    """验证集排序键：AI 可用性 > 长寿实证 > 双 vantage 强者 > 速度 > 延迟。
+    """验证集排序键：AI 可用性 > 长寿实证 > 用户实测 > vantage > 速度惩罚 > 延迟。
 
     2026-10-20 起 AI 可达性占首位——订阅顺序即用户可见性顺序，用户核心
     诉求是「可用于 AI 连接的纯净节点」；非 AI 节点不设硬闸门、仅沉底。
-    2026-10-28 任务#111：次级判据升级为长寿档（历史实测反哺）——池侧
-    学习早已生效、发布侧一直缺位；16 轮长命 dokng 节点应永远排在
-    「单轮速度明星」之前。learning 为 None 时自动加载一次。
+    2026-10-28 #111：次级判据升级为长寿档（历史实测反哺）。
+    2026-10-29 #113/#114：接入用户本地实测回灌（最高权重），并把「沙箱实测
+    速度」从正向加分改为**超高速惩罚**——实测证据显示沙箱速度与本地存活反向。
     """
     if learning is None:
         learning = load_learning()
@@ -1065,16 +1109,25 @@ def verified_rank(n: dict, results: dict, learning: dict | None = None) -> tuple
         ai_tier = 1        # 至少一个 AI 域有响应
     else:
         ai_tier = 2        # 未探测到或无响应（含探测超预算无数据）
+    uv = user_verdict(n, learning)
+    uv_tier = 0 if uv == "alive" else (1 if uv == "dead" else 2)
     lon = longevity_tier(n, learning)
+    kbps = (r.get("real_traffic", {}).get("bytes") or 0) / 8 / 1024
+    if kbps >= config.SPEED_PENALTY_START_KBPS:
+        span = max(1.0, config.SPEED_PENALTY_MAX_KBPS - config.SPEED_PENALTY_START_KBPS)
+        speed_pen = int(min(1.0, (kbps - config.SPEED_PENALTY_START_KBPS) / span) * 100)
+    else:
+        speed_pen = 0
     return (ai_tier,
             lon,
+            uv_tier,
             # 再次级判据（2026-10-24 任务#96）：双 vantage 强者 >
             # carryover 复测存活 > 仅本轮新通过。
             # 注意 final 此时已被 main() 在通过后统一置 True，不再区分。
             0 if (n["us_ok"] and n["final"])
             else (1 if n.get("origin") == "carryover" else 2),
-            # 实测下载量降序（2026-10-24）：bytes/8s 即实测速度代理指标，
-            # 同档位内快者排前——订阅顺序即用户点击顺序。
+            speed_pen,
+            # 同档位内仍以实测速度降序（用户反馈缺失时的次优代理）：
             -(r.get("real_traffic", {}).get("bytes") or 0),
             r.get("latency_ms") if r.get("latency_ms") is not None else 99999)
 
@@ -1537,6 +1590,18 @@ def main() -> int:
         verified = sorted(verified + ai_slow,
                           key=lambda n: verified_rank(n, results, learning))
         degraded = [n for n in degraded if n not in ai_slow]
+
+    # 6.7) 用户本地实测硬否决（2026-10-29 任务#113）：用户家宽的实测结论是
+    # 最终事实——本地连不上的节点，沙箱再快也不该进主资产。置于 AI 提级之后，
+    # 防止「AI 可达」把用户已判死的节点复活。
+    if config.USER_PROBE_DEAD_BLOCK:
+        _udead = [n for n in verified
+                  if user_verdict(n, learning) == "dead"]
+        if _udead:
+            verified = [n for n in verified if n not in _udead]
+            degraded = degraded + _udead
+            log(f"用户实测否决: {len(_udead)} 个节点在用户本地实测失败，"
+                f"已移出主资产（降级第二资产，下轮复测）")
 
     by_origin = {o: sum(1 for n in verified if n["origin"] == o)
                  for o in ("pending", "rescue", "carryover")}

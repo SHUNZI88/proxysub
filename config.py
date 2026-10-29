@@ -413,6 +413,23 @@ SURVIVAL_STREAK_FORCE_PROBE = 3
 #   - cn_history.cn_pass 历史通过率 ≥60% 的节点是「反复可用」的铁证
 LONGEVITY_STREAK_MIN = 3        # 跨轮连续存活下限（与 SURVIVAL_STREAK_FORCE_PROBE 同源语义）
 LONGEVITY_CN_PASS_RATE = 0.6    # 历史 CN 通过率下限（cn_history.cn_pass/cn_runs）
+
+# ---- 用户本地实测回灌（2026-10-29 任务#113）----
+# 沙箱实测只代表「腾讯云上海这一跳通不通」，用户本地（家宽/移动网络）是最终
+# 事实。上一轮实证：沙箱判「快」的 4 个节点在用户本地全死（沙箱速度中位
+# 545KB/s 死亡组 vs 65KB/s 存活组——速度与本地存活**反向**），而历史 CN
+# 通过率是唯一强预测信号（存活组 76% vs 死亡组 0%）。
+# 因此提供「用户实测结果」回灌通道：客户端测速结果写成 user_probe.json，
+# 由 cn_probe 读取后作为独立学习信号参与排序与准入。
+USER_PROBE_FILE = "user_probe.json"     # 用户本地实测回灌文件
+USER_PROBE_MAX_AGE_S = 48 * 3600        # 回灌数据有效期（48h）；过期不参与
+USER_PROBE_DEAD_PENALTY = 1.0           # 用户实测失败节点的排序降权（档位惩罚）
+# 用户实测失败即「硬否决」：本地连不上的节点，沙箱再快也不该进主资产。
+USER_PROBE_DEAD_BLOCK = True
+# 速度惩罚（任务#114）：沙箱速度与本地存活反向——「先快后断」节点常在
+# 临死前出现速率尖峰。速度不再作正向加分项，改为超高速惩罚项。
+SPEED_PENALTY_START_KBPS = 2000         # 超过该速率开始惩罚（2MB/s）
+SPEED_PENALTY_MAX_KBPS = 8000           # 惩罚饱和点（8MB/s）
 AI_PROMOTE_MAX_LATENCY_MS = 3500  # AI 慢档提级的延迟上限（任务#112）：本轮实证 6.9s 的
                               # 节点靠 AI 提级混进主资产——AI 可用≠本地能用，3.5s
                               # 以下的 AI 节点才提级，超限者留第二资产

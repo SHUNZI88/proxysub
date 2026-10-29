@@ -1010,20 +1010,33 @@ def test_real_min_bytes_threshold_tightened():
 
 
 def test_longevity_tier_prefers_proven_survivors(monkeypatch):
-    """任务#111（2026-10-28）：长寿档——历史实测反哺发布排序。
-    streak≥3 或 cn_pass≥60%（样本≥5）者档 0；carryover 档 1；新面孔档 2。"""
+    """任务#111 + #113 校准（2026-10-29）：历史 CN 通过率主导，streak 仅辅助。
+    用户本地实测校准：US LA 04 streak=5 但历史 0/14 全败仍被排前——streak 只记
+    「在源里出现过」，不记「实测可用」，必须叠加「至少通过过一次」才可作铁证。"""
     learning = {
         "survival": {"fp-long": {"streak": 16, "seen_days": 16}},
-        "cn_hist": {"fp-rate": {"cn_runs": 62, "cn_pass": 49}},
+        "cn_hist": {"fp-rate": {"cn_runs": 62, "cn_pass": 49},
+                    "fp-ghost": {"cn_runs": 14, "cn_pass": 0}},
     }
-    long_n = {"fp": "fp-long", "origin": "carryover"}
     rate_n = {"fp": "fp-rate", "origin": "pending"}
+    # 纯 streak（历史 0 通过）：不再铁证——streak=16 但没通过过一次
+    ghost = {"fp": "fp-ghost", "origin": "carryover"}
     carry_n = {"fp": "fp-x", "origin": "carryover"}
     new_n = {"fp": "fp-y", "origin": "pending"}
-    assert cn_probe.longevity_tier(long_n, learning) == 0
     assert cn_probe.longevity_tier(rate_n, learning) == 0
+    assert cn_probe.longevity_tier(ghost, learning) == 1      # carryover 中等证据
     assert cn_probe.longevity_tier(carry_n, learning) == 1
     assert cn_probe.longevity_tier(new_n, learning) == 2
+    # streak 辅助路径：streak≥3 且 runs≥5 且至少通过过 1 次 → 铁证
+    ok_streak = {"survival": {"fp-ok": {"streak": 5}},
+                 "cn_hist": {"fp-ok": {"cn_runs": 8, "cn_pass": 2}}}
+    assert cn_probe.longevity_tier({"fp": "fp-ok", "origin": "pending"}, ok_streak) == 0
+    # streak≥3 但 runs<5（样本不足）→ 不铁证，回 origin 档
+    thin = {"survival": {"fp-t": {"streak": 4}}, "cn_hist": {"fp-t": {"cn_runs": 2, "cn_pass": 2}}}
+    assert cn_probe.longevity_tier({"fp": "fp-t", "origin": "pending"}, thin) == 2
+    # 有过通过但比率一般 → 档 1
+    mid = {"survival": {}, "cn_hist": {"fp-m": {"cn_runs": 10, "cn_pass": 2}}}
+    assert cn_probe.longevity_tier({"fp": "fp-m", "origin": "pending"}, mid) == 1
     # 小样本高通过率不算铁证（1/1=100% 但 runs<5）
     small = {"cn_hist": {"fp-s": {"cn_runs": 1, "cn_pass": 1}}, "survival": {}}
     assert cn_probe.longevity_tier({"fp": "fp-s", "origin": "pending"}, small) == 2
@@ -1075,3 +1088,59 @@ def test_ai_slow_promotion_respects_latency_cap(monkeypatch, tmp_path):
                and (results[n["probe_name"]].get("latency_ms") or 99999)
                <= cn_probe.config.AI_PROMOTE_MAX_LATENCY_MS]
     assert [n["probe_name"] for n in promote] == ["OK"]
+
+
+def test_user_verdict_by_fp_name_and_expiry(monkeypatch):
+    """任务#113：用户本地实测回灌——按 fp 或 name 匹配，48h 过期失效。"""
+    now = 1780000000
+    monkeypatch.setattr(cn_probe.time, "time", lambda: now)
+    learning = {"user": {"nodes": {
+        "fp-alive": {"result": "alive", "ts": now - 3600},
+        "老死节点": {"result": "dead", "ts": now - 10 * 86400},   # 过期
+        "fp-dead": {"result": "dead", "ts": now - 60},
+        "fp-bad": {"result": "哈哈", "ts": now - 60},            # 非法值
+    }}}
+    assert cn_probe.user_verdict({"fp": "fp-alive", "name": "X"}, learning) == "alive"
+    assert cn_probe.user_verdict({"fp": "fp-dead", "name": "X"}, learning) == "dead"
+    # fp 未命中时回退按 name
+    assert cn_probe.user_verdict({"fp": "fp-none", "name": "老死节点"}, learning) is None  # 过期
+    assert cn_probe.user_verdict({"fp": "fp-bad", "name": "X"}, learning) is None
+    # 无数据
+    assert cn_probe.user_verdict({"fp": "fp-404", "name": "Y"}, learning) is None
+    assert cn_probe.user_verdict({"fp": "fp-404", "name": "Y"}, None) is None
+
+
+def test_verified_rank_user_alive_tops_and_speed_penalty(monkeypatch):
+    """任务#113/#114：同档内用户实测 alive 优先；超高速（≥2MB/s）受惩罚——
+    实证沙箱速度与本地存活反向，「先快后断」临死前出现速率尖峰。"""
+    base = {"survival": {}, "cn_hist": {}, "user": {}}
+    n_user = {"probe_name": "U", "fp": "fp-u", "origin": "pending",
+              "us_ok": False, "final": True}
+    n_plain = {"probe_name": "P", "fp": "fp-p", "origin": "pending",
+               "us_ok": False, "final": True}
+    ru = {"U": {"ok": True, "latency_ms": 900, "ai": {},
+                "real_traffic": {"ok": True, "bytes": 500 * 1024}}}
+    rp = {"P": {"ok": True, "latency_ms": 900, "ai": {},
+                "real_traffic": {"ok": True, "bytes": 500 * 1024}}}
+    learning_alive = {"survival": {}, "cn_hist": {},
+                      "user": {"nodes": {"fp-u": {"result": "alive",
+                                                  "ts": cn_probe.time.time()}}}}
+    assert cn_probe.verified_rank(n_user, ru, learning_alive) < \
+        cn_probe.verified_rank(n_plain, rp, learning_alive)
+    # 速度惩罚：同档内 4MB/s（惩罚中段）排到 500KB/s（无惩罚）之后
+    fast = {"probe_name": "F", "fp": "fp-f", "origin": "pending",
+            "us_ok": False, "final": True}
+    rf = {"F": {"ok": True, "latency_ms": 900, "ai": {},
+                "real_traffic": {"ok": True, "bytes": 4 * 1024 * 1024 * 8}}}
+    assert cn_probe.verified_rank(fast, rf, base) > \
+        cn_probe.verified_rank(n_user, ru, base)
+    # 8MB/s 饱和惩罚更大
+    rf8 = {"F": {"ok": True, "latency_ms": 900, "ai": {},
+                 "real_traffic": {"ok": True, "bytes": 8 * 1024 * 1024 * 8}}}
+    assert cn_probe.verified_rank(fast, rf8, base) > cn_probe.verified_rank(fast, rf, base)
+
+
+def test_user_probe_dead_block_config():
+    """任务#113：硬否决开关默认开启（用户家宽结论是最终事实）。"""
+    assert cn_probe.config.USER_PROBE_DEAD_BLOCK is True
+    assert cn_probe.config.USER_PROBE_MAX_AGE_S == 48 * 3600

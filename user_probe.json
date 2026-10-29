@@ -1,0 +1,4 @@
+{
+  "_说明": "用户本地实测回灌（任务#113）。nodes 键=节点指纹或节点名，value={result: alive|dead, ts: unix秒, latency_ms: 可选}。48h 过期自动失效。由 AI 助手根据用户实测反馈维护。",
+  "nodes": {}
+}
