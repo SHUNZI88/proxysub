@@ -1,48 +1,48 @@
 # proxysub 健康报告
 
-更新时间：2026-10-29 11:04 UTC
+更新时间：2026-10-29 21:18 UTC
 运行模式：**mihomo**
 
 ## 概览
 
-- 最终节点：**98**（合规 69，高风险隔离 29）
-- 真实拨测通过率：**38.1%**（101/265）
-- TCP 存活：391 | 正式源 6 个 | 候选源 5 个
+- 最终节点：**105**（合规 76，高风险隔离 29）
+- 真实拨测通过率：**41.7%**（120/288）
+- TCP 存活：427 | 正式源 6 个 | 候选源 5 个
 
 ## 协议分布
 
 | 协议 | 数量 |
 |---|---|
-| VLESS-TLS | 37 |
-| Hysteria2 | 30 |
-| Trojan | 14 |
-| VLESS-Reality | 11 |
-| Anytls | 5 |
+| VLESS-TLS | 39 |
+| Hysteria2 | 28 |
+| Trojan | 17 |
+| VLESS-Reality | 14 |
+| Anytls | 6 |
 | Hysteria | 1 |
 
 ## 区域分布
 
 | 区域 | 数量 |
 |---|---|
-| 🌐 其他 | 78 |
-| 🇯🇵 日本 | 5 |
-| 🇸🇬 新加坡 | 5 |
-| 🇺🇸 美国 | 5 |
-| 🇭🇰 香港 | 4 |
-| 🇹🇼 台湾 | 1 |
+| 🌐 其他 | 84 |
+| 🇯🇵 日本 | 6 |
+| 🇭🇰 香港 | 5 |
+| 🇸🇬 新加坡 | 4 |
+| 🇺🇸 美国 | 4 |
+| 🇹🇼 台湾 | 2 |
 
 ## 源贡献 Top 10（正式源）
 
 | 源 | 真实通过 | 独有存活 | 存活 |
 |---|---|---|---|
-| `chengaopan/AutoMergePublicNodes` | 66 | 126 | 151 |
-| `Ruk1ng001/freeSub` | 23 | 27 | 27 |
-| `peasoft/NoMoreWalls` | 14 | 204 | 229 |
-| `awesome-vpn/awesome-vpn` | 6 | 7 | 7 |
-| `shaoyouvip/free` | 1 | 1 | 1 |
+| `chengaopan/AutoMergePublicNodes` | 77 | 146 | 171 |
+| `Ruk1ng001/freeSub` | 29 | 48 | 48 |
+| `peasoft/NoMoreWalls` | 12 | 197 | 221 |
+| `awesome-vpn/awesome-vpn` | 6 | 6 | 6 |
+| `shaoyouvip/free` | 5 | 4 | 5 |
 | `Russ534/clash` | 0 | 1 | 1 |
 
 ## 警告
 
 - 本轮无源被淘汰
-- ⚠️ 最终节点数 98 低于下限 150（候选池不足）
+- ⚠️ 最终节点数 105 低于下限 150（候选池不足）
