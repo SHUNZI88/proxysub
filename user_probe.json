@@ -1,4 +1,123 @@
 {
-  "_说明": "用户本地实测回灌（任务#113）。nodes 键=节点指纹或节点名，value={result: alive|dead, ts: unix秒, latency_ms: 可选}。48h 过期自动失效。由 AI 助手根据用户实测反馈维护。",
-  "nodes": {}
+ "_说明": "用户本地实测回灌（任务#113）。nodes 键=节点指纹或节点名，value={result: alive|dead, ts: unix秒, latency_ms: 可选}。48h 过期自动失效。由 AI 助手根据用户实测反馈维护。",
+ "nodes": {
+  "A🟢🇭🇰res[🎬🤖📺🎪]_dokng.com_078c9920": {
+   "result": "alive",
+   "ts": 1793234122,
+   "latency_ms": 27
+  },
+  "A🟢🇹🇼res[🤖📺🎪🔍]_dokng.com_a3392ac4": {
+   "result": "alive",
+   "ts": 1793234122,
+   "latency_ms": 65
+  },
+  "🇺🇸 美国 | USA #1": {
+   "result": "alive",
+   "ts": 1793234122,
+   "latency_ms": 74
+  },
+  "A🟢🇹🇼res[🎬🤖📺🎭]_dokng.com_e59ee48e": {
+   "result": "alive",
+   "ts": 1793234122,
+   "latency_ms": 83
+  },
+  "🇹🇼 🇨🇳 台湾 | TWN": {
+   "result": "alive",
+   "ts": 1793234122,
+   "latency_ms": 98
+  },
+  "C🟠🇺🇸hos[🎬🤖📺🎭]_dokng.com_8a98e9c8": {
+   "result": "alive",
+   "ts": 1793234122,
+   "latency_ms": 198
+  },
+  "D🔴🇫🇷hos[🎬🤖📺🎭]_dokng.com_c08de670": {
+   "result": "alive",
+   "ts": 1793234122,
+   "latency_ms": 216
+  },
+  "🇩🇪DE_2|1.3MB/s": {
+   "result": "alive",
+   "ts": 1793234122,
+   "latency_ms": 218
+  },
+  "🇳🇱NL_9|3.0MB/s": {
+   "result": "alive",
+   "ts": 1793234122,
+   "latency_ms": 219
+  },
+  "🇳🇱NL_4|1.1MB/s": {
+   "result": "alive",
+   "ts": 1793234122,
+   "latency_ms": 222
+  },
+  "❓Other_1|2.6MB/s": {
+   "result": "alive",
+   "ts": 1793234122,
+   "latency_ms": 228
+  },
+  "🇬🇧GB_1|3.2MB/s": {
+   "result": "alive",
+   "ts": 1793234122,
+   "latency_ms": 240
+  },
+  "🇩🇪DE_1|1.2MB/s": {
+   "result": "alive",
+   "ts": 1793234122,
+   "latency_ms": 241
+  },
+  "vless-1933859855-1669": {
+   "result": "alive",
+   "ts": 1793234122,
+   "latency_ms": 249
+  },
+  "C🟠🇺🇸hos[🎬🤖📺🎭]_dokng.com_1794eec3": {
+   "result": "alive",
+   "ts": 1793234122,
+   "latency_ms": 250
+  },
+  "🇮🇳 IN Delhi 01#2": {
+   "result": "alive",
+   "ts": 1793234122,
+   "latency_ms": 275
+  },
+  "🇨🇿CZ_3|2.9MB/s": {
+   "result": "alive",
+   "ts": 1793234122,
+   "latency_ms": 275
+  },
+  "A🟢🇭🇰res[🎬🤖📺🎭]_dokng.com_42aa23bf": {
+   "result": "alive",
+   "ts": 1793234122,
+   "latency_ms": 652
+  },
+  "🇽🇽 XX Unknown 47": {
+   "result": "alive",
+   "ts": 1793234122,
+   "latency_ms": 934
+  },
+  "🇩🇪DE_2|1.1MB/s": {
+   "result": "alive",
+   "ts": 1793234122,
+   "latency_ms": 218
+  },
+  "🇩🇪DE_1|1.0MB/s": {
+   "result": "alive",
+   "ts": 1793234122,
+   "latency_ms": 241
+  },
+  "vless-1932656551-2447": {
+   "result": "alive",
+   "ts": 1793234122,
+   "latency_ms": 249
+  },
+  "A🟢🇩🇪res[🎬🤖🎭🎪]_dokng.com_9b3e2b9e": {
+   "result": "dead",
+   "ts": 1793234122
+  },
+  "🇮🇹[www.v2nodes.com] vless-IT-1... #2": {
+   "result": "dead",
+   "ts": 1793234122
+  }
+ }
 }
