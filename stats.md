@@ -1,43 +1,43 @@
 # proxysub 健康报告
 
-更新时间：2026-10-30 20:58 UTC
+更新时间：2026-10-30 21:26 UTC
 运行模式：**mihomo**
 
 ## 概览
 
-- 最终节点：**94**（合规 74，高风险隔离 20）
-- 真实拨测通过率：**30.7%**（59/192）
-- TCP 存活：421 | 正式源 6 个 | 候选源 5 个
+- 最终节点：**94**（合规 75，高风险隔离 19）
+- 真实拨测通过率：**31.0%**（40/129）
+- TCP 存活：418 | 正式源 6 个 | 候选源 4 个
 
 ## 协议分布
 
 | 协议 | 数量 |
 |---|---|
-| VLESS-Reality | 31 |
+| VLESS-Reality | 29 |
+| VLESS-TLS | 28 |
 | Hysteria2 | 28 |
-| VLESS-TLS | 25 |
-| Trojan | 8 |
+| Trojan | 7 |
 | Anytls | 2 |
 
 ## 区域分布
 
 | 区域 | 数量 |
 |---|---|
-| 🌐 其他 | 79 |
-| 🇸🇬 新加坡 | 5 |
-| 🇺🇸 美国 | 4 |
+| 🌐 其他 | 81 |
+| 🇸🇬 新加坡 | 6 |
 | 🇯🇵 日本 | 3 |
-| 🇭🇰 香港 | 2 |
+| 🇺🇸 美国 | 2 |
+| 🇭🇰 香港 | 1 |
 | 🇹🇼 台湾 | 1 |
 
 ## 源贡献 Top 10（正式源）
 
 | 源 | 真实通过 | 独有存活 | 存活 |
 |---|---|---|---|
-| `Ruk1ng001/freeSub` | 27 | 63 | 63 |
-| `chengaopan/AutoMergePublicNodes` | 22 | 143 | 160 |
-| `shaoyouvip/free` | 7 | 7 | 9 |
-| `peasoft/NoMoreWalls` | 5 | 189 | 204 |
+| `Ruk1ng001/freeSub` | 19 | 62 | 62 |
+| `chengaopan/AutoMergePublicNodes` | 11 | 141 | 157 |
+| `shaoyouvip/free` | 7 | 7 | 8 |
+| `peasoft/NoMoreWalls` | 2 | 190 | 205 |
 | `awesome-vpn/awesome-vpn` | 1 | 1 | 1 |
 | `Russ534/clash` | 0 | 1 | 1 |
 
