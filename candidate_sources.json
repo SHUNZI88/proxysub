@@ -1,90 +1,15 @@
 {
   "candidates": {
-    "https://clashgithub.com/clashnode-20261028.html": {
-      "channel": "web:https://clashgithub.com/",
-      "origin": "channel_web",
-      "added": "2026-10-27",
-      "first_seen": "2026-10-27",
-      "runs": 15,
-      "good_streak": 0,
-      "fail_streak": 0,
-      "history": [
-        {
-          "date": "2026-10-29",
-          "count": 25,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-30",
-          "count": 25,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-30",
-          "count": 25,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-30",
-          "count": 25,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-30",
-          "count": 25,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-31",
-          "count": 25,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-31",
-          "count": 25,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-10-31",
-          "count": 25,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        }
-      ],
-      "required_runs": 3
-    },
     "https://clashgithub.com/clashnode-20261029.html": {
       "channel": "web:https://clashgithub.com/",
       "origin": "channel_web",
       "added": "2026-10-28",
       "first_seen": "2026-10-28",
-      "runs": 11,
+      "runs": 12,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
         {
-          "date": "2026-10-29",
-          "count": 25,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
           "date": "2026-10-30",
           "count": 25,
           "usable": 0,
@@ -107,6 +32,13 @@
         },
         {
           "date": "2026-10-30",
+          "count": 25,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-31",
           "count": 25,
           "usable": 0,
           "unique_new": 0,
@@ -145,17 +77,10 @@
       "required_runs": 3,
       "first_seen": "2026-10-28",
       "initial_nodes": 270,
-      "runs": 10,
+      "runs": 11,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-10-29",
-          "count": 268,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-10-30",
           "count": 269,
@@ -204,6 +129,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-10-31",
+          "count": 269,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -212,7 +144,7 @@
       "origin": "channel_web",
       "added": "2026-10-29",
       "first_seen": "2026-10-29",
-      "runs": 7,
+      "runs": 8,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -239,6 +171,13 @@
         },
         {
           "date": "2026-10-30",
+          "count": 25,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-10-31",
           "count": 25,
           "usable": 0,
           "unique_new": 0,
@@ -569,6 +508,11 @@
       "reason": "honeypot_structure:shared_cred:54/54",
       "date": "2026-10-31",
       "repo": "free-nodes/clashfree"
+    },
+    "https://clashgithub.com/clashnode-20261028.html": {
+      "reason": "no_stable_contribution",
+      "date": "2026-10-31",
+      "repo": null
     }
   }
 }
