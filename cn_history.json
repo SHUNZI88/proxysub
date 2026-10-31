@@ -842,12 +842,12 @@
  "af31c61fec307e4fe13161b6de78b5153ddeedc6": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 19,
-  "cn_runs": 22,
+  "cn_fails": 20,
+  "cn_runs": 23,
   "cn_pass": 3,
   "cn_latency_ms": 922,
   "cn_egress": "中国 上海 上海",
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "150b171c24ef6636fa3f636a7da4f52943b65ebb": {
   "cn_ok": true,
@@ -1450,14 +1450,14 @@
   "cn_last": "2026-10-15T17:04:07Z"
  },
  "b9f52371f515ff89a62e5d3cd68351291fe898ad": {
-  "cn_ok": true,
-  "cn_streak": 3,
-  "cn_fails": 0,
-  "cn_runs": 68,
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 69,
   "cn_pass": 48,
   "cn_latency_ms": 498,
   "cn_egress": "中国 台湾 彰化县  cht.com.tw",
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "f32c1fd166e81ed9bbcac2a6a60b013f30e5fabc": {
   "cn_ok": false,
@@ -1959,12 +1959,12 @@
  },
  "726717c75b16d287cc614c96b615047971e28b7c": {
   "cn_ok": true,
-  "cn_streak": 3,
+  "cn_streak": 4,
   "cn_fails": 0,
-  "cn_runs": 47,
-  "cn_pass": 34,
-  "cn_latency_ms": 1437,
-  "cn_last": "2026-10-31T01:18:01Z",
+  "cn_runs": 48,
+  "cn_pass": 35,
+  "cn_latency_ms": 3777,
+  "cn_last": "2026-10-31T07:18:01Z",
   "cn_egress": "中国 香港"
  },
  "b24c63912f523f144b0ad53df0f62bba4a910526": {
@@ -3002,14 +3002,14 @@
   "cn_last": "2026-10-18T23:07:18Z"
  },
  "42a01ec7cac0e5003be0ab5ba418a91e6e0e2eaf": {
-  "cn_ok": true,
-  "cn_streak": 1,
-  "cn_fails": 0,
-  "cn_runs": 23,
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 24,
   "cn_pass": 8,
   "cn_latency_ms": 3100,
   "cn_egress": "中国 香港   pccw.com",
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "3723affda57939ca903b9177bbc849c2d92b13ca": {
   "cn_ok": false,
@@ -3093,10 +3093,10 @@
  "ca19f63f70e83d7a8c8090ef68934a9b0d401d53": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 25,
-  "cn_runs": 55,
+  "cn_fails": 26,
+  "cn_runs": 56,
   "cn_pass": 5,
-  "cn_last": "2026-10-31T01:18:01Z",
+  "cn_last": "2026-10-31T07:18:01Z",
   "cn_latency_ms": 1132
  },
  "a6e6a93a3b7ab0a6dd50b20cb3554398240902ce": {
@@ -4272,13 +4272,13 @@
   "cn_last": "2026-10-22T07:04:43Z"
  },
  "24bbf8f36bcc02a954e2ffc915ecce3b34faaea2": {
-  "cn_ok": true,
-  "cn_streak": 3,
-  "cn_fails": 0,
-  "cn_runs": 41,
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 42,
   "cn_pass": 32,
   "cn_latency_ms": 1440,
-  "cn_last": "2026-10-31T01:18:01Z",
+  "cn_last": "2026-10-31T07:18:01Z",
   "cn_egress": "中国 台湾 彰化县  cht.com.tw"
  },
  "045970bfdb56a5ab761d77eb66b18a90bbd4c96b": {
@@ -4383,12 +4383,12 @@
  },
  "4e503222cbb6cabf0a25e9a70733ed63abb9041c": {
   "cn_ok": true,
-  "cn_streak": 3,
+  "cn_streak": 4,
   "cn_fails": 0,
-  "cn_runs": 35,
-  "cn_pass": 24,
-  "cn_latency_ms": 2426,
-  "cn_last": "2026-10-31T01:18:01Z",
+  "cn_runs": 36,
+  "cn_pass": 25,
+  "cn_latency_ms": 2714,
+  "cn_last": "2026-10-31T07:18:01Z",
   "cn_egress": "中国 台湾 彰化县  cht.com.tw"
  },
  "4f9cfd9ee8ccc65c90199c45b2aaaf606e5706c7": {
@@ -5006,10 +5006,10 @@
  "c867da58e080a561419da1e17edc3cb2c015a6f5": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 28,
-  "cn_runs": 28,
+  "cn_fails": 29,
+  "cn_runs": 29,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "bd30ff7283590515684d189e349c8d796017f1c5": {
   "cn_ok": false,
@@ -5099,50 +5099,42 @@
  "f486cc93acc58858d7a0715d8340f872a9fcacbb": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 23,
-  "cn_runs": 23,
+  "cn_fails": 24,
+  "cn_runs": 24,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "fbb982c691ea6cb2a4b5046a2e981840e6fd6515": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 23,
-  "cn_runs": 23,
+  "cn_fails": 24,
+  "cn_runs": 24,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
- },
- "080b37a694cb7851421adb7259eb304621b36b6d": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 22,
-  "cn_runs": 22,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "b7c1acfb19f99017613b7b9802466feea115ee74": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 23,
-  "cn_runs": 23,
+  "cn_fails": 24,
+  "cn_runs": 24,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "1b42c4d073f302e8d5b87679dcafa77d17b69992": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 23,
-  "cn_runs": 23,
+  "cn_fails": 24,
+  "cn_runs": 24,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "ce40cfde388f2045ff54ad2495313ed609d5b260": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 23,
-  "cn_runs": 23,
+  "cn_fails": 24,
+  "cn_runs": 24,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "339fa6f6c9e1107e7366615e0a684de7fb22421e": {
   "cn_ok": false,
@@ -5191,14 +5183,6 @@
   "cn_runs": 23,
   "cn_pass": 0,
   "cn_last": "2026-10-31T01:18:01Z"
- },
- "f0caf8d37f789a5e0e6b8495d61b2d0589faba1c": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 22,
-  "cn_runs": 22,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
  },
  "849b0f1fe938a7a60d026e344d782b877d95ddcb": {
   "cn_ok": false,
@@ -5297,10 +5281,10 @@
  "a2db04a69c039c5a70243f32db1129f26eaf2d48": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 25,
-  "cn_runs": 25,
+  "cn_fails": 26,
+  "cn_runs": 26,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "1c668a7da6a07ac5455c07475812e75c44b26ba7": {
   "cn_ok": false,
@@ -6160,14 +6144,6 @@
   "cn_pass": 0,
   "cn_last": "2026-10-30T17:18:01Z"
  },
- "578806f122d87bd1d1e4c9d5df3c80a20dbea7f5": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 12,
-  "cn_runs": 12,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
  "f52a32288c2659d8117db7b61cfd604b153ae16e": {
   "cn_ok": false,
   "cn_streak": 0,
@@ -6179,10 +6155,10 @@
  "76a90e50022c1e78b2ca8ff0aa5040ec4104ffac": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 15,
-  "cn_runs": 15,
+  "cn_fails": 16,
+  "cn_runs": 16,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "cd6bdfca4d47be6d52272fe13c07dbe7bc4aff46": {
   "cn_ok": false,
@@ -6203,10 +6179,10 @@
  "6875bbbc2d1a8362702cc13d918e680a11a9a44e": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 15,
-  "cn_runs": 15,
+  "cn_fails": 16,
+  "cn_runs": 16,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "a1e12e6cdf84ca7854480852a6493f6208f11475": {
   "cn_ok": false,
@@ -6219,10 +6195,10 @@
  "a51cf4791a1f18a82c0ad7871e5794c1c572703a": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 14,
-  "cn_runs": 14,
+  "cn_fails": 15,
+  "cn_runs": 15,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "7e833cb2bd3bde61d56607ab2fbf495ed9caf6b7": {
   "cn_ok": false,
@@ -6579,10 +6555,10 @@
  "63a69c08bf4109fcc8cd409b24026812045f624b": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 12,
-  "cn_runs": 12,
+  "cn_fails": 13,
+  "cn_runs": 13,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "d9cf3a459d97331b2cd2df2192a9a6ce2044ed92": {
   "cn_ok": false,
@@ -6591,14 +6567,6 @@
   "cn_runs": 10,
   "cn_pass": 0,
   "cn_last": "2026-10-30T17:18:01Z"
- },
- "2781c059c108e67236f9778651cd1a476cbefb8d": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 7,
-  "cn_runs": 7,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
  },
  "3045789a4a0f52cbd5887185fcc82ea82c9c52b7": {
   "cn_ok": false,
@@ -6692,14 +6660,6 @@
   "cn_egress": "法国 普罗旺斯－阿尔卑斯－蓝色海岸大区 马赛  pitline.net",
   "cn_last": "2026-10-28T09:10:41Z"
  },
- "4c601b491b19c32168bc2c89d4135ff66949b03b": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 5,
-  "cn_runs": 5,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
  "1cba8b0d04ae7c98f6d76b4f519488cb9440fc80": {
   "cn_ok": false,
   "cn_streak": 0,
@@ -6730,21 +6690,13 @@
   "cn_latency_ms": 2058,
   "cn_egress": "美国"
  },
- "f5426b2248301dbf5ca58b9b72fb7469a9cc2bcd": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 7,
-  "cn_runs": 7,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
  "b98998234af12a02f24cf8f11366f142d306d626": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 10,
-  "cn_runs": 10,
+  "cn_fails": 11,
+  "cn_runs": 11,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "b8447e4fabe652fbce62f3dd341bdec783f21463": {
   "cn_ok": false,
@@ -6770,45 +6722,21 @@
   "cn_pass": 0,
   "cn_last": "2026-10-30T17:18:01Z"
  },
- "0a8ed3314ccc51017a3afe0d3de44c2e3264abb0": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 5,
-  "cn_runs": 5,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
  "2799a70a69f562fdd4064987f81974c872cbfc8e": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
+  "cn_fails": 7,
+  "cn_runs": 7,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "8ae4de1c47ba799441efc7a415c4b2597ddab5b5": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
+  "cn_fails": 7,
+  "cn_runs": 7,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
- },
- "dac0ab248ad6485cddde03deda9fdb35234e2a9f": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 5,
-  "cn_runs": 5,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
- "9d7ed289d12077536aecbb2971d6e3fec6e745b2": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 5,
-  "cn_runs": 5,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "4a4b6d403cf0426b8e68695d48a2af8248fd758b": {
   "cn_ok": false,
@@ -6920,12 +6848,12 @@
  "afe0e288bf59eda8a0ba5c98c35eb9bd9e6e1745": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 4,
+  "cn_fails": 3,
+  "cn_runs": 5,
   "cn_pass": 2,
   "cn_latency_ms": 1702,
   "cn_egress": "美国 哥伦比亚特区 哥伦比亚特区",
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "b1ce73065d85fcaf48741f704a40cc4f5f5555f8": {
   "cn_ok": false,
@@ -6964,14 +6892,6 @@
   "cn_runs": 6,
   "cn_pass": 0,
   "cn_last": "2026-10-31T01:18:01Z"
- },
- "21e7f61b2c1c00e6dee6b5a04696e7d535b0af3d": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 5,
-  "cn_runs": 5,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
  },
  "6a9d85276e5f95c98f7c7b9422328b9eeb983b99": {
   "cn_ok": false,
@@ -7015,14 +6935,6 @@
   "cn_pass": 0,
   "cn_last": "2026-10-31T01:18:01Z"
  },
- "9b5651b33dbb5901555d74a84487e9a1d90bbc93": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 4,
-  "cn_runs": 4,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
  "f259925f3cce5fa2a92f1af74a24d74fddf42302": {
   "cn_ok": false,
   "cn_streak": 0,
@@ -7032,14 +6944,14 @@
   "cn_last": "2026-10-31T01:18:01Z"
  },
  "05d9b4b9edf7b71d4f483284a72d41bae8e2d718": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 8,
-  "cn_pass": 4,
-  "cn_latency_ms": 2214,
-  "cn_egress": "中国 台湾 彰化县",
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_ok": true,
+  "cn_streak": 1,
+  "cn_fails": 0,
+  "cn_runs": 9,
+  "cn_pass": 5,
+  "cn_latency_ms": 5332,
+  "cn_egress": "中国 台湾 彰化县  cht.com.tw",
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "ce14adbfe6171084449b0c6c4bacd830d43bd174": {
   "cn_ok": false,
@@ -7085,23 +6997,23 @@
  },
  "7a78afea36ecdc37444ebcd317c4c8005afd2ed0": {
   "cn_ok": true,
-  "cn_streak": 3,
+  "cn_streak": 4,
   "cn_fails": 0,
-  "cn_runs": 8,
-  "cn_pass": 5,
-  "cn_latency_ms": 985,
+  "cn_runs": 9,
+  "cn_pass": 6,
+  "cn_latency_ms": 1122,
   "cn_egress": "荷兰 北荷兰省 哈勒姆  scaleway.com",
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "f14487b8740f6e7263dc7c1c4b977cf093b630c9": {
   "cn_ok": true,
-  "cn_streak": 3,
+  "cn_streak": 4,
   "cn_fails": 0,
-  "cn_runs": 8,
-  "cn_pass": 7,
-  "cn_latency_ms": 1194,
+  "cn_runs": 9,
+  "cn_pass": 8,
+  "cn_latency_ms": 1790,
   "cn_egress": "荷兰 北荷兰省 哈勒姆  scaleway.com",
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "f2a45164768ad37a30a0043e02805afd678979c4": {
   "cn_ok": false,
@@ -7201,10 +7113,10 @@
  "ea0cbb24ffc8d317ad2f772895b8b3d463c0c5fd": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
+  "cn_fails": 7,
+  "cn_runs": 7,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "aa6e5ac8ad2d52608b36bd443fd472c40fec40d8": {
   "cn_ok": false,
@@ -7217,18 +7129,10 @@
  "93c0f361634cfefd9b1dd8b1d27f680586b15d8f": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
+  "cn_fails": 7,
+  "cn_runs": 7,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
- },
- "d9eec3317186653bb3f7f9f0ceaa1b0a0ffc25d2": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "a85a26fc2d68a921ff3d15042ce4960e6f67b782": {
   "cn_ok": false,
@@ -7238,21 +7142,13 @@
   "cn_pass": 0,
   "cn_last": "2026-10-30T17:18:01Z"
  },
- "20671cb925f8fd09f44e37720cec25870813c945": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
  "ff8e6f402a959ebb8ceaacd74a9816241b107769": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
+  "cn_fails": 7,
+  "cn_runs": 7,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "da16721cb3eda4e49594ebf47942cfc5235fe31d": {
   "cn_ok": false,
@@ -7264,14 +7160,6 @@
   "cn_egress": "美国",
   "cn_last": "2026-10-30T10:18:02Z"
  },
- "b25b1427c821b5acbf658d6cd2d51588f6b320ed": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
  "eb64508ff1365d8f2615b588d07663826840415b": {
   "cn_ok": false,
   "cn_streak": 0,
@@ -7280,38 +7168,6 @@
   "cn_pass": 0,
   "cn_last": "2026-10-30T17:18:01Z"
  },
- "175b4635603ff1143292e21b16c1ebbded3c4646": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
- "848947e8d793bfa48964c8fb9fbec397348ae7fc": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
- "42244a362f8ef72aacadd07ded3f7e4b9287de09": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
- "1c78a63d48537600fe91403e4e0520e4c3953c4d": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
  "4e5037b31fd25d1ae786e1cc5c30db577705f4e5": {
   "cn_ok": false,
   "cn_streak": 0,
@@ -7319,14 +7175,6 @@
   "cn_runs": 6,
   "cn_pass": 0,
   "cn_last": "2026-10-31T01:18:01Z"
- },
- "20b0ea5b12863dd0ce3b1cf2b5dcbc751f6c9180": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
  },
  "774f2705ddcd7801fb08e202a6ce8f5dcfef6073": {
   "cn_ok": false,
@@ -7344,14 +7192,6 @@
   "cn_pass": 1,
   "cn_latency_ms": 2870,
   "cn_egress": "美国 伊利诺伊州 库克",
-  "cn_last": "2026-10-30T10:18:02Z"
- },
- "3b5c5dd014a24c3667da0ec7d89ee83a22917852": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
   "cn_last": "2026-10-30T10:18:02Z"
  },
  "3973cefa1128224d6d7cebb6fd13cabda2a8362a": {
@@ -7373,22 +7213,6 @@
   "cn_latency_ms": 1537,
   "cn_egress": "印度 卡纳塔克邦 班加罗尔  cloudflare.com",
   "cn_last": "2026-10-30T01:18:01Z"
- },
- "5ed415f3c8c9ac9ddff3e8619f952c7bb42a6033": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
- "c3f2b3613a71f5c97c52e8748bdb36c43338b808": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
  },
  "b37484ebf91c11b398c6adae62992dc4ade2b13c": {
   "cn_ok": true,
@@ -7471,14 +7295,6 @@
   "cn_pass": 0,
   "cn_last": "2026-10-31T01:18:01Z"
  },
- "0ae09b93368ce5058440cb260a5841a2a83b035d": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
  "478d2ce8d009545d4194c12563e27edccc594a90": {
   "cn_ok": false,
   "cn_streak": 0,
@@ -7514,10 +7330,10 @@
  "f163fa5ae92e4283d55255edcb817d87b8edfb1f": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 4,
-  "cn_runs": 4,
+  "cn_fails": 5,
+  "cn_runs": 5,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "4e2dbb51101c1490a9dadf927cac9a807cbb6c3e": {
   "cn_ok": false,
@@ -7537,14 +7353,6 @@
   "cn_pass": 0,
   "cn_last": "2026-10-30T17:18:01Z"
  },
- "07f26442c415485b1ddc719f404701cfb5b94aab": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
  "6cc29a7faece5263d219e08bc95b0c3afb3b7de7": {
   "cn_ok": false,
   "cn_streak": 0,
@@ -7560,14 +7368,6 @@
   "cn_runs": 3,
   "cn_pass": 0,
   "cn_last": "2026-10-30T17:18:01Z"
- },
- "4d1401b179b2fdd53c4dc9384c32121af4806928": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
  },
  "9657d20d4c00ca2068bd18542e4c32fae217f143": {
   "cn_ok": false,
@@ -7588,26 +7388,10 @@
  "eee6550d5c1eaa4b3d42a7f89ffaf1c772e6b4c7": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
- },
- "8801930d8365c00d76ddfa7062f23babf207d41f": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
- "c22e4543a4aacdb6ef67ad8f62583e18e5cefad2": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "669b03908f6c5326c3ab8c350e31116d6231b468": {
   "cn_ok": false,
@@ -7636,18 +7420,18 @@
  "cd38821a56975301b4fc1116702ba5c6499e9452": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 5,
-  "cn_runs": 5,
+  "cn_fails": 6,
+  "cn_runs": 6,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "82307e2182c3759803589e8fb4bf07988276ec87": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 5,
-  "cn_runs": 5,
+  "cn_fails": 6,
+  "cn_runs": 6,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "620ae54639481b5088320d3e3668b0f9b2207581": {
   "cn_ok": false,
@@ -7660,10 +7444,10 @@
  "1b1c1785a665ebd8f97d4ee0f4df3871b21b27b1": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 5,
-  "cn_runs": 5,
+  "cn_fails": 6,
+  "cn_runs": 6,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "68df60e4983f322f537ed40e4cad473fc4ecda8b": {
   "cn_ok": true,
@@ -7691,14 +7475,14 @@
   "cn_last": "2026-10-30T17:18:01Z"
  },
  "1425f1a9443367b5cfd8c275d2ffb96e0f6aac28": {
-  "cn_ok": true,
-  "cn_streak": 1,
-  "cn_fails": 0,
-  "cn_runs": 5,
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 6,
   "cn_pass": 3,
   "cn_latency_ms": 1803,
   "cn_egress": "荷兰 北荷兰省 阿姆斯特丹  vdsina.com",
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "a2602d698c823bac6f8a6dd98b33bff39babfab4": {
   "cn_ok": false,
@@ -7747,14 +7531,14 @@
   "cn_last": "2026-10-30T17:18:01Z"
  },
  "cff2e65215f3302ec9ed18b291e5b594ae4f41c3": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 5,
-  "cn_pass": 3,
-  "cn_latency_ms": 1248,
-  "cn_egress": "中国 台湾 彰化县",
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_ok": true,
+  "cn_streak": 1,
+  "cn_fails": 0,
+  "cn_runs": 6,
+  "cn_pass": 4,
+  "cn_latency_ms": 2813,
+  "cn_egress": "中国 台湾 彰化县  cht.com.tw",
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "83e8610d508cbb0a08deb18c7c009b445ab93eaa": {
   "cn_ok": false,
@@ -7772,14 +7556,6 @@
   "cn_runs": 2,
   "cn_pass": 1,
   "cn_latency_ms": 880,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
- "3c21f272f23978bfad4a74626f9deb96f85eb6d0": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
-  "cn_pass": 0,
   "cn_last": "2026-10-30T10:18:02Z"
  },
  "96d88ea95be01bd529c25bd2e29ed364fb1ba292": {
@@ -7801,14 +7577,14 @@
   "cn_last": "2026-10-30T01:18:01Z"
  },
  "c8aec59dc6cbbce04d7d1a317968361fe976d77d": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 5,
-  "cn_pass": 4,
-  "cn_latency_ms": 1494,
+  "cn_ok": true,
+  "cn_streak": 1,
+  "cn_fails": 0,
+  "cn_runs": 6,
+  "cn_pass": 5,
+  "cn_latency_ms": 1915,
   "cn_egress": "荷兰 北荷兰省 哈勒姆  scaleway.com",
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "75137f070312fd7d624b616160706e5a7c2dac1d": {
   "cn_ok": false,
@@ -7819,14 +7595,14 @@
   "cn_last": "2026-10-30T17:18:01Z"
  },
  "65ca0d83304145e486a52635b6b871ab9110eb4b": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 5,
-  "cn_pass": 3,
-  "cn_latency_ms": 1307,
+  "cn_ok": true,
+  "cn_streak": 1,
+  "cn_fails": 0,
+  "cn_runs": 6,
+  "cn_pass": 4,
+  "cn_latency_ms": 1703,
   "cn_egress": "荷兰 北荷兰省 哈勒姆  scaleway.com",
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "1073b948d87fdcfc46d928ba9ef45782c8a47706": {
   "cn_ok": false,
@@ -7961,10 +7737,10 @@
  "930082158676e0499819091cc77f7e0e19763888": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "33bc51196e20083f204fe34e2c143648fde0d4b7": {
   "cn_ok": false,
@@ -7991,14 +7767,14 @@
   "cn_last": "2026-10-31T01:18:01Z"
  },
  "151cf24c251a7fe338bec357545dd9c01457c466": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 4,
-  "cn_pass": 3,
-  "cn_latency_ms": 1342,
+  "cn_ok": true,
+  "cn_streak": 1,
+  "cn_fails": 0,
+  "cn_runs": 5,
+  "cn_pass": 4,
+  "cn_latency_ms": 1024,
   "cn_egress": "荷兰 北荷兰省 哈勒姆  scaleway.com",
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "caab13f3c879bbed66262d18a6516c9cb95412f3": {
   "cn_ok": false,
@@ -8016,22 +7792,6 @@
   "cn_pass": 0,
   "cn_last": "2026-10-30T17:18:01Z"
  },
- "248d5efc4ab62f2bfbc72c00d27e3ce7d91e94b9": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
- "9dfb0680108d8955216c2a478f22b13b3ef96742": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
  "3744e0c37d0d6c1a8579374c27974075e031f59b": {
   "cn_ok": false,
   "cn_streak": 0,
@@ -8048,46 +7808,6 @@
   "cn_pass": 0,
   "cn_last": "2026-10-31T01:18:01Z"
  },
- "a45e0fc5cda641b1c7f845672a8f57686456e8c7": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
- "59b1fb3685e0fc69562e60012fe5e840829ab8c5": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
- "7d2c5429de14e525409bf30aa1679ad38f60fb0b": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
- "f6c79c0cace772695b79ec892df7e9c9e3be9048": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
- "b769c4b5955c6d0e9f4e17cfc96cd1183367ca7d": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
  "1a70d15ad07475aaa6f2f73de95793201e6b054f": {
   "cn_ok": false,
   "cn_streak": 0,
@@ -8095,14 +7815,6 @@
   "cn_runs": 3,
   "cn_pass": 0,
   "cn_last": "2026-10-30T17:18:01Z"
- },
- "ff3784971edeb82ce6578d892be5974887651918": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
  },
  "d0eab73532dbb984206c26ee739f531530d4091a": {
   "cn_ok": false,
@@ -8112,38 +7824,6 @@
   "cn_pass": 0,
   "cn_last": "2026-10-31T01:18:01Z"
  },
- "c020f99a72e3f4ccefe0a57d118761b655d7e828": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
- "f2ae863c6bf7696b374a7c06da80beaed4b39f54": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
- "cf2102f2c611c6f561160a1b993db6da9a1ef688": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
- "18df5f57e09a4d2d804666e6f7085bd41f9beb8b": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
  "9041fadc1b70f20971ed9478bbc3724b8978c2bd": {
   "cn_ok": false,
   "cn_streak": 0,
@@ -8152,103 +7832,15 @@
   "cn_pass": 0,
   "cn_last": "2026-10-31T01:18:01Z"
  },
- "11b70cd7ac1be53b531dc885b0e252a694496096": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
- "352e248c149d536525ef28fa3588a9b7248cd077": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
- "60fc61054f5c297a3bb9013d860e641bab8ffe2e": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
- "4b623704f3b9ecdbe7b31051e07a2e703742f65c": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
- "bcc40140dc07a8e39b7fc81c2a6d6fbd0807b859": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
- "3b32cffe6f345e1ea4f7a613fa0c2409cc785692": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
- "2e613317ecc4a583f3f4bc15caa710fe084bb93c": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
- "716d4e14f61385d1a56796dde1168251b7c70b3f": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
- "3825c33b67578a118cf648520b3a25e01284057f": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
- "50a840a24bf4fd0c4ebf9f51074a0df73f52574a": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
  "ac5313d450357fa4f0ee8e8098ace22e318a2c5d": {
-  "cn_ok": true,
-  "cn_streak": 1,
-  "cn_fails": 0,
-  "cn_runs": 4,
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 5,
   "cn_pass": 1,
-  "cn_last": "2026-10-31T01:18:01Z",
+  "cn_last": "2026-10-31T07:18:01Z",
   "cn_latency_ms": 1694,
   "cn_egress": "荷兰 北荷兰省 阿姆斯特丹  vdsina.com"
- },
- "b4af1a64a8d5d3fb744edaaa7dc6f98960e1a730": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
  },
  "5e0fc142cf9146d2e73ecf944bb6170f8f1a7992": {
   "cn_ok": false,
@@ -8258,54 +7850,6 @@
   "cn_pass": 0,
   "cn_last": "2026-10-31T01:18:01Z"
  },
- "699b55097cf403b46fb1275ad710659f8652a32d": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
- "ad11821d7bd3d6775424ba04364c1554a18f1697": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
- "c6321ec075b49f2442a7d8ab3f1ba31c8c067f3a": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
- "c93e568fc1f955e40bd45b1ec20d3e687a190847": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
- "6389cbfa9bdb45ddf992d60377deff72639111c1": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
- "ca49365058592856c90cef00659a8b1d936b9f2c": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
  "52fd8a13bf19baad176543f684447e7e3a5c196a": {
   "cn_ok": false,
   "cn_streak": 0,
@@ -8313,14 +7857,6 @@
   "cn_runs": 2,
   "cn_pass": 0,
   "cn_last": "2026-10-31T01:18:01Z"
- },
- "a46d19ed5a0c11c028759a11c62e11a40e221cb7": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
  },
  "7e998a64e3dd5eb3261440a8631f46ba03ad4e1b": {
   "cn_ok": false,
@@ -8330,14 +7866,6 @@
   "cn_pass": 0,
   "cn_last": "2026-10-31T01:18:01Z"
  },
- "0cc4ecf7d3ff747954da0a447ff41f39b9e1901f": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
  "76ac8ea51bcfa2e98a268bb6e3a9b30badcc4a0c": {
   "cn_ok": false,
   "cn_streak": 0,
@@ -8346,47 +7874,23 @@
   "cn_pass": 0,
   "cn_last": "2026-10-31T01:18:01Z"
  },
- "ea612e213064fdb2312a224363c707b433cdf5aa": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
- "34212de1087eed82566fe46ae90aaadbd2fa611f": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
- "7d3ba7165f4060c07523252c726538dc5d0641ce": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
-  "cn_pass": 0,
-  "cn_last": "2026-10-30T10:18:02Z"
- },
  "c2527e86fb4181722dbb91ebf39a644d876c9248": {
-  "cn_ok": true,
-  "cn_streak": 1,
-  "cn_fails": 0,
-  "cn_runs": 3,
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 4,
   "cn_pass": 1,
-  "cn_last": "2026-10-31T01:18:01Z",
+  "cn_last": "2026-10-31T07:18:01Z",
   "cn_latency_ms": 1306,
   "cn_egress": "美国"
  },
  "a8ba9263469eccbf6bf036583ee98859fa91ffc2": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "47d74b5ec606c38940126fca3ed5d8a15ff90bc9": {
   "cn_ok": false,
@@ -8431,10 +7935,10 @@
  "f09ba2e54e057f7b15f34f2f769031a58c92004d": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "56729a2cf5bac95ab6b70eed19c4e3dae9a9d4f7": {
   "cn_ok": false,
@@ -8599,10 +8103,10 @@
  "db3a55342bef21b43dac496e8e35033dc8990f59": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "98ef987251c99da71193c92f88c18a4a23478df0": {
   "cn_ok": false,
@@ -9079,55 +8583,55 @@
  "d134b493bec8c53b94fbfc3df281aaa968268874": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "46c9a05a8f4baf88839f5ee6af87a1e25291d9cf": {
-  "cn_ok": true,
-  "cn_streak": 1,
-  "cn_fails": 0,
-  "cn_runs": 1,
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 2,
   "cn_pass": 1,
   "cn_latency_ms": 2408,
   "cn_egress": "美国",
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "ff3172c2a74fce44eae8daebc4b16dc3f44242f3": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "5e2bdcc7aee9530f7b689e49319956e4490da18a": {
-  "cn_ok": true,
-  "cn_streak": 1,
-  "cn_fails": 0,
-  "cn_runs": 1,
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 2,
   "cn_pass": 1,
   "cn_latency_ms": 1752,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "8b5500450081deeb57cf0dba096d9c8006bf0582": {
-  "cn_ok": true,
-  "cn_streak": 1,
-  "cn_fails": 0,
-  "cn_runs": 1,
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 2,
   "cn_pass": 1,
   "cn_latency_ms": 1227,
   "cn_egress": "欧洲",
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "fb0ee6be6c8a38f9c9c86acdf79d32d207978cec": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "080c1f7d2c11352d3cd1837401b0b59e53182b64": {
   "cn_ok": true,
@@ -9140,287 +8644,293 @@
   "cn_last": "2026-10-31T01:18:01Z"
  },
  "9b0653c97cbbbf62581f09b6824d47664aafc010": {
-  "cn_ok": true,
-  "cn_streak": 1,
-  "cn_fails": 0,
-  "cn_runs": 1,
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 2,
   "cn_pass": 1,
   "cn_latency_ms": 4805,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "33d74173cee3744a8d23ae7295af56f8c6bb183e": {
   "cn_ok": true,
-  "cn_streak": 1,
+  "cn_streak": 2,
   "cn_fails": 0,
-  "cn_runs": 1,
-  "cn_pass": 1,
-  "cn_latency_ms": 1511,
+  "cn_runs": 2,
+  "cn_pass": 2,
+  "cn_latency_ms": 2201,
   "cn_egress": "荷兰 北荷兰省 哈勒姆  scaleway.com",
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "54f231ec5fda7e64727f0b4f014afa1dbc8d543e": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
-  "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_ok": true,
+  "cn_streak": 1,
+  "cn_fails": 0,
+  "cn_runs": 2,
+  "cn_pass": 1,
+  "cn_last": "2026-10-31T07:18:01Z",
+  "cn_latency_ms": 1529,
+  "cn_egress": "荷兰 北荷兰省 哈勒姆  scaleway.com"
  },
  "b1447ca9a257f2b04200f0934c14e276512db3af": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
-  "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_ok": true,
+  "cn_streak": 1,
+  "cn_fails": 0,
+  "cn_runs": 2,
+  "cn_pass": 1,
+  "cn_last": "2026-10-31T07:18:01Z",
+  "cn_latency_ms": 2696,
+  "cn_egress": "法国 法兰西岛大区 巴黎  scaleway.com"
  },
  "147e297e4a1805b10ca441b63e9b7c956ee2172a": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
-  "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_ok": true,
+  "cn_streak": 1,
+  "cn_fails": 0,
+  "cn_runs": 2,
+  "cn_pass": 1,
+  "cn_last": "2026-10-31T07:18:01Z",
+  "cn_latency_ms": 1716,
+  "cn_egress": "荷兰 北荷兰省 阿姆斯特丹  fdcservers.net"
  },
  "8e5e67e48c6204f3011ad2e0cd4309154a431189": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "8a0415564dc08eca58d7d9823206c245ba83d079": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "54cb99cb74b3f0cfb24169d419ffd9b9dcfcce78": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "21357abe42544ff1b4c89b48fb40337af902a044": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "ac6615962a194c2b52014f0618ba6e8b92d6619a": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "8b064d1ca357714658197360ad692e3b2626593b": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "355eefe98f642cfa094f4b069b764f4e6fd4b5b5": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "fb052190905e582b6c35282816941df0abdeddc6": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "c375e246e26fc145d26e1e6065ee03c86c8d81b0": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "dbb2a331b07455c848a419a89bc4f0e673018705": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "c76b4295314aa4531a06b9e9e8091edc17919da5": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "88770ee79583bfc4be0d1a6730a50ced1f400a2a": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "8f89a5b78ee42a6c1d9f0d90efc8a23baeed6076": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "c00b897d5193a23146096b8ffcd801e8117f36b3": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "ada05d864314334549408e6af2dc9c4d16cf6779": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "0319bbdd96541ad03069188a3b250206ea2a7b86": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "5aae48e06fc53480efdca7fb97aa622c5514fb52": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "6074db42f99503c8330ff75656997dbf556b4d6a": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "dedbe385efdf3b919cc869461e5cca7fbc31209e": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "e4f9ebbf461af44bbe8a2cbc3976810b8e37b3db": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "f0f04bb63df7154f01fa21557f82eee2611dc4f9": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "fea232bb08be6ac59b29b4dd134a515429958111": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "b935cb32c0e9977f06db359878b057522058d128": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "1c086e50c2c8511abf8b3b2976f55f5662c7531c": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "56e435491d9bef53146069c8e614042c7a76af2e": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "503d3f915b1b534464d55a7d34a70a5fd64fee93": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "668607ee324620669b6793428abf402b97a7365e": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "29507549cedc375d3cf061a75dd0e4663bc806ed": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "e49158f3c1984fd1304cf79b850682a7351f8d6e": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "48cdc5341e0c4a478381d42e0b0127e9d6634445": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "4e7422dc4040402fbd16187090ba7e59a58be594": {
   "cn_ok": false,
@@ -9449,26 +8959,26 @@
  "3820bdf4626be2fee40ed7fee7f6a3c5ccac5042": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "687a7ac9e9720b936698de2d30bd54f610c108ea": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "30851695b46d1ec66701d1ec13794ad5e074b673": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "495b9833be683e34f681dc95b7e9409544686831": {
   "cn_ok": false,
@@ -9481,50 +8991,50 @@
  "4b689f25fa230f610656dc711232c5b41fcba8ef": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "524f1b288981e4bd9017033d0f32ebcdece8ebff": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "1cafb2f5c44bb56bfbf906be895282f9021c5a88": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "55e5fe0f2783ef612328f59a0bc96a740dda6424": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "1584790f5ccaa6de8ea4b457bbe3a1479e9d09ae": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "8c126438e963f7ec5b14bf7b9202a0b9ce3171c4": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "473d0668cf8413630091941f86547205b3eb72d1": {
   "cn_ok": false,
@@ -9729,10 +9239,10 @@
  "a81ac4b55e16b0a834e427d5745761c65cef0f6c": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "3637f9d34f6e827ec2f0fa0ccfe94af4a1a44bc9": {
   "cn_ok": false,
@@ -9881,10 +9391,10 @@
  "c431b19fa60e9d985c758cfe430cdd941691e814": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-10-31T01:18:01Z"
+  "cn_last": "2026-10-31T07:18:01Z"
  },
  "ce5f4e573993353b3ebf2d4a928b748a85794bd1": {
   "cn_ok": false,
@@ -10014,5 +9524,499 @@
   "cn_runs": 1,
   "cn_pass": 0,
   "cn_last": "2026-10-31T01:18:01Z"
+ },
+ "5d3e1e936e9d47e664ae000ca33f656e1b69cc78": {
+  "cn_ok": true,
+  "cn_streak": 1,
+  "cn_fails": 0,
+  "cn_runs": 1,
+  "cn_pass": 1,
+  "cn_latency_ms": 2757,
+  "cn_egress": "斯洛伐克 布拉迪斯拉发州 布拉迪斯拉发  rcstech.ae",
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "3a00ea465faa00c40f29fe6eb4f83b2fa3258ba2": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "5ee4e2269f43ba593dfe503c703dd0b7180e422f": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "bbf38e95743c4c54e3cc52885b2342a026ee46d1": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "2a86750d006bddc655a678bf290b8a31ef1a0c41": {
+  "cn_ok": true,
+  "cn_streak": 1,
+  "cn_fails": 0,
+  "cn_runs": 1,
+  "cn_pass": 1,
+  "cn_latency_ms": 1125,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "5554e639364c57b47d568347a02f5c06f4c78689": {
+  "cn_ok": true,
+  "cn_streak": 1,
+  "cn_fails": 0,
+  "cn_runs": 1,
+  "cn_pass": 1,
+  "cn_latency_ms": 1353,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "c4366186061a4322ad497514d44186347fdeb0ec": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "1c51e7b96d71b47fd7f883e5d96a60673049c43c": {
+  "cn_ok": true,
+  "cn_streak": 1,
+  "cn_fails": 0,
+  "cn_runs": 1,
+  "cn_pass": 1,
+  "cn_latency_ms": 1514,
+  "cn_egress": "荷兰 北荷兰省 阿姆斯特丹  novotelecom.ru",
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "0e11e6a248b4941201c732dc14852d925c79ecaf": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "c3ada1ccc7f588648076545bce6cd57d8d84a2f0": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "49b20571960103f57db5e340235ca9be84468e54": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "1c52fc34ad524060fa2ac6055bf7992c5c78e2ac": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "e2b2a9404ad326d64b046cdcbd71c18e3fe3ee48": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "594d8e5a5cb9a63a6f4d764f950121887643806f": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "81e8cab69b7b9388bbe2d88545d2308c635e4c13": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "f19b2dd0a3e42a46728e862883703cbb6a667176": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "bcabdc749449c31e22b65a25a5441f9d79bc883b": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "90af900321e2806b24874bd97c3b34c050bd2082": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "8d1653930762154665964f4ef91d89293d50f30b": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "a15d4e556a2b45a481897148d96613597c10dc9e": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "092d7049b0f31c12c5bdc3bb289e9263a804dd86": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "ba7bf0c0a1a69138ae4a05126692dd351745bc03": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "347e116aa951c9cfb30d680601027dc7d30e4369": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "8d9f66695e1a44358c354e0ce1916dc269ffb38e": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "6e5db07258a118b4e225ebe07ece570d9070f4d7": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "91b8219599b8e5dcb599fcf49e8afb7ee6e9fd29": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "694c4ed5fd028f18ff6ffb0e25abbe8584894355": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "056cf90d5a809a7817ae5a42a9e30f7a3bbbdce0": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "7653113ede903f44890bdebef71c028d45d69534": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "8d0d2106fee62cb2dfed6ada1a416d4d230064d4": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "11368935a5119ff9608ec02cc346046e95a21b37": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "3cb8422694a2f767aa4c194bf9365cbb5590b8ae": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "6001f97d15228c1e2a619fd8df19503c21d8f0a1": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "922c3e94818ef7c0ffd7d4720906f102dd33a800": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "1d403959a067ec8400380498be92778782662c12": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "cc315d2aeef249a45cdf4e03251d98aacb7ebd52": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "b3204a4c0574656b66516afac2555509b6c4a772": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "f9ff77505b1ff292089adcebe6bc1bd4ef8a3c14": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "7f39b7796afd7c14336931934bce8d3e5e13b2a1": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "8023a545d7b27fffa1573d95e14149136b256d52": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "9ed7072b4589ba05796a53cbb91f8a830e185bb4": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "02372cf9cb0e323246fda510992f7af17e740e18": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "f4d8125c16a07bc0c14936aa3ac37f9b1f42d800": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "af8f73e20b4b954562a1138fdf861bfd7562ae6c": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "62feb67344b3031cbc6dc33c82401f2a0d3f9c60": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "3a08f03581edcb86ef7f6e67df2f90aa52210421": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "dd527f8fe0855438702a68f2ee044706a09e4f92": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "d87a665f2dc92d76e6f55c7b25580152ff43cca6": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "11edd895169e7edd452fa08e35c77e376660d232": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "e30237f135caa5348788fc2f8493d070f241d880": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "3fea4d4f5488d961077935a5b15354d37baea7a0": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "6d32f795e4ba4f829bcc4c0fd9bbb0adc80872b1": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "801cc3e0c32ebcc69fc58c89af130a2ed03f5603": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "5b2a91bad44e50b9b9ad1605bfcfeb43afd53456": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "3013022bed08789d9a2fb7eda2639892564070ef": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "fee245a75aef543ffd7e3610808117782289ea02": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "db115e3c2db6b17f7f51cbfa99ec0dcc284da5ed": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "9cd9d3d1ba5f2ecd607c1e7e87b2853aa953ab7a": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "834a56f8bc5051a91768754da5483beaf899d168": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "d1bae5d0c389a64698f412898ec67e208a3d7598": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
+ },
+ "b73cac5fd87938d632e35fec376cd9c1fdef90a9": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-10-31T07:18:01Z"
  }
 }
