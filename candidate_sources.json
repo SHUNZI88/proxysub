@@ -5,7 +5,7 @@
       "origin": "channel_web",
       "added": "2026-10-28",
       "first_seen": "2026-10-28",
-      "runs": 13,
+      "runs": 14,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -24,13 +24,6 @@
           "tamper": 0
         },
         {
-          "date": "2026-10-30",
-          "count": 25,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
           "date": "2026-10-31",
           "count": 25,
           "usable": 0,
@@ -53,6 +46,13 @@
         },
         {
           "date": "2026-10-31",
+          "count": 25,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-01",
           "count": 25,
           "usable": 0,
           "unique_new": 0,
@@ -77,17 +77,10 @@
       "required_runs": 3,
       "first_seen": "2026-10-28",
       "initial_nodes": 270,
-      "runs": 12,
+      "runs": 13,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-10-30",
-          "count": 271,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-10-30",
           "count": 270,
@@ -136,6 +129,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-01",
+          "count": 268,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -144,7 +144,7 @@
       "origin": "channel_web",
       "added": "2026-10-29",
       "first_seen": "2026-10-29",
-      "runs": 9,
+      "runs": 10,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -163,13 +163,6 @@
           "tamper": 0
         },
         {
-          "date": "2026-10-30",
-          "count": 25,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
           "date": "2026-10-31",
           "count": 25,
           "usable": 0,
@@ -192,6 +185,13 @@
         },
         {
           "date": "2026-10-31",
+          "count": 25,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-01",
           "count": 25,
           "usable": 0,
           "unique_new": 0,
@@ -206,6 +206,20 @@
         }
       ],
       "required_runs": 3
+    },
+    "https://raw.githubusercontent.com/tglaoshiji/nodeshare/main/2025/8/clash.yaml": {
+      "repo": "tglaoshiji/nodeshare",
+      "stars": 198,
+      "repo_created": "2024-02-18T06:56:14Z",
+      "reputation": "ok",
+      "reputation_note": "stars=198,age=987d",
+      "required_runs": 3,
+      "first_seen": "2026-11-01",
+      "initial_nodes": 169,
+      "runs": 0,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": []
     }
   },
   "rejected": {
