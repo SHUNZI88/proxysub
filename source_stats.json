@@ -1,5 +1,5 @@
 {
-  "date": "2026-11-02",
+  "date": "2026-11-03",
   "sources": {
     "https://raw.githubusercontent.com/Russ534/clash/cdf534db8f8c9306d61c630b840d0a1936d09dd2/bp.yaml": {
       "ok": true,
@@ -31,63 +31,63 @@
     },
     "https://raw.githubusercontent.com/awesome-vpn/awesome-vpn/master/clash.yaml": {
       "ok": true,
-      "count": 50,
+      "count": 49,
       "error": null,
       "role": "official",
-      "alive": 5,
-      "real_ok": 5,
-      "probed": 5,
+      "alive": 2,
+      "real_ok": 2,
+      "probed": 2,
       "tamper": 0,
       "cf_blocked": 0,
-      "preferred_ok": 4,
+      "preferred_ok": 2,
       "flags": [],
-      "unique_alive": 5
+      "unique_alive": 2
     },
     "https://raw.githubusercontent.com/Ruk1ng001/freeSub/main/clash.yaml": {
       "ok": true,
       "count": 500,
       "error": null,
       "role": "official",
-      "alive": 44,
-      "real_ok": 15,
+      "alive": 41,
+      "real_ok": 10,
       "probed": 26,
       "tamper": 0,
       "cf_blocked": 0,
-      "preferred_ok": 13,
+      "preferred_ok": 8,
       "flags": [],
-      "unique_alive": 44
+      "unique_alive": 41
     },
     "https://raw.githubusercontent.com/peasoft/NoMoreWalls/master/list.txt": {
       "ok": true,
-      "count": 377,
+      "count": 428,
       "error": null,
       "role": "official",
-      "alive": 225,
-      "real_ok": 4,
-      "probed": 60,
+      "alive": 247,
+      "real_ok": 1,
+      "probed": 70,
       "tamper": 0,
-      "cf_blocked": 1,
+      "cf_blocked": 0,
       "preferred_ok": 0,
       "flags": [],
-      "unique_alive": 206
+      "unique_alive": 225
     },
     "https://raw.githubusercontent.com/chengaopan/AutoMergePublicNodes/master/snippets/nodes.meta.yml": {
       "ok": true,
-      "count": 335,
+      "count": 391,
       "error": null,
       "role": "official",
-      "alive": 194,
-      "real_ok": 26,
-      "probed": 73,
+      "alive": 254,
+      "real_ok": 67,
+      "probed": 156,
       "tamper": 0,
-      "cf_blocked": 3,
-      "preferred_ok": 18,
+      "cf_blocked": 10,
+      "preferred_ok": 12,
       "flags": [],
-      "unique_alive": 175
+      "unique_alive": 232
     },
-    "https://clashgithub.com/clashnode-20261030.html": {
+    "https://clashgithub.com/clashnode-20261103.html": {
       "ok": true,
-      "count": 25,
+      "count": 32,
       "error": null,
       "role": "candidate",
       "alive": 0,
@@ -100,11 +100,12 @@
       "usable": 0,
       "unique_new": 0
     },
-    "https://clashgithub.com/clashnode-20261103.html": {
+    "__channel_nodes__": {
       "ok": true,
-      "count": 32,
+      "count": 1,
       "error": null,
-      "role": "candidate",
+      "ingested": true,
+      "role": "channel",
       "alive": 0,
       "real_ok": 0,
       "probed": 0,
@@ -139,30 +140,30 @@
       "cn_low_streak": 0
     },
     "https://raw.githubusercontent.com/Ruk1ng001/freeSub/main/clash.yaml": {
-      "runs": 39,
-      "ok_runs": 39,
+      "runs": 40,
+      "ok_runs": 40,
       "fail_streak": 0,
       "zero_unique_streak": 0,
       "ok_rate_ema": 1.0,
-      "unique_ema": 46.55,
+      "unique_ema": 44.88,
       "last": {
-        "date": "2026-11-02",
+        "date": "2026-11-03",
         "count": 500,
-        "alive": 44,
-        "unique_alive": 44,
-        "real_ok": 15,
+        "alive": 41,
+        "unique_alive": 41,
+        "real_ok": 10,
         "probed": 26,
         "tamper": 0,
         "error": null
       },
       "zero_real_streak": 0,
-      "real_ema": 19.14,
-      "cn_low_streak": 2,
+      "real_ema": 16.4,
+      "cn_low_streak": 3,
       "cn_low_last": {
-        "date": "2026-11-02",
-        "tested": 42,
-        "passed": 1,
-        "ci_low": 0.0042
+        "date": "2026-11-03",
+        "tested": 24,
+        "passed": 0,
+        "ci_low": 0.0
       }
     },
     "https://raw.githubusercontent.com/PuddinCat/BestClash/refs/heads/main/proxies.yaml": {
@@ -268,14 +269,14 @@
       "cn_low_streak": 0
     },
     "https://raw.githubusercontent.com/Russ534/clash/cdf534db8f8c9306d61c630b840d0a1936d09dd2/bp.yaml": {
-      "runs": 115,
-      "ok_runs": 115,
+      "runs": 116,
+      "ok_runs": 116,
       "fail_streak": 0,
       "zero_unique_streak": 0,
       "ok_rate_ema": 1.0,
       "unique_ema": 1.01,
       "last": {
-        "date": "2026-11-02",
+        "date": "2026-11-03",
         "count": 91,
         "alive": 1,
         "unique_alive": 1,
@@ -288,14 +289,14 @@
       "cn_low_streak": 0
     },
     "https://raw.githubusercontent.com/shaoyouvip/free/main/mihomo.yaml": {
-      "runs": 115,
-      "ok_runs": 115,
+      "runs": 116,
+      "ok_runs": 116,
       "fail_streak": 0,
-      "zero_unique_streak": 2,
+      "zero_unique_streak": 3,
       "ok_rate_ema": 1.0,
-      "unique_ema": 4.28,
+      "unique_ema": 3.0,
       "last": {
-        "date": "2026-11-02",
+        "date": "2026-11-03",
         "count": 1,
         "alive": 0,
         "unique_alive": 0,
@@ -304,7 +305,7 @@
         "tamper": 0,
         "error": null
       },
-      "real_ema": 4.16,
+      "real_ema": 2.91,
       "zero_real_streak": 0,
       "cn_low_streak": 0
     },
@@ -432,21 +433,21 @@
       }
     },
     "https://raw.githubusercontent.com/awesome-vpn/awesome-vpn/master/clash.yaml": {
-      "runs": 112,
-      "ok_runs": 111,
+      "runs": 113,
+      "ok_runs": 112,
       "fail_streak": 0,
       "zero_unique_streak": 0,
       "zero_real_streak": 0,
       "ok_rate_ema": 0.9998,
-      "unique_ema": 4.83,
-      "real_ema": 4.83,
+      "unique_ema": 3.98,
+      "real_ema": 3.98,
       "last": {
-        "date": "2026-11-02",
-        "count": 50,
-        "alive": 5,
-        "unique_alive": 5,
-        "real_ok": 5,
-        "probed": 5,
+        "date": "2026-11-03",
+        "count": 49,
+        "alive": 2,
+        "unique_alive": 2,
+        "real_ok": 2,
+        "probed": 2,
         "tamper": 0,
         "error": null
       },
@@ -886,55 +887,55 @@
       "cn_low_streak": 0
     },
     "https://raw.githubusercontent.com/peasoft/NoMoreWalls/master/list.txt": {
-      "runs": 27,
-      "ok_runs": 27,
+      "runs": 28,
+      "ok_runs": 28,
       "fail_streak": 0,
       "zero_unique_streak": 0,
       "zero_real_streak": 0,
       "ok_rate_ema": 1.0,
-      "unique_ema": 209.95,
-      "real_ema": 5.13,
+      "unique_ema": 214.46,
+      "real_ema": 3.89,
       "last": {
-        "date": "2026-11-02",
-        "count": 377,
-        "alive": 225,
-        "unique_alive": 206,
-        "real_ok": 4,
-        "probed": 60,
+        "date": "2026-11-03",
+        "count": 428,
+        "alive": 247,
+        "unique_alive": 225,
+        "real_ok": 1,
+        "probed": 70,
         "tamper": 0,
         "error": null
       },
-      "cn_low_streak": 24,
+      "cn_low_streak": 25,
       "cn_low_last": {
-        "date": "2026-11-02",
-        "tested": 30,
+        "date": "2026-11-03",
+        "tested": 59,
         "passed": 0,
         "ci_low": 0.0
       }
     },
     "https://raw.githubusercontent.com/chengaopan/AutoMergePublicNodes/master/snippets/nodes.meta.yml": {
-      "runs": 21,
-      "ok_runs": 20,
+      "runs": 22,
+      "ok_runs": 21,
       "fail_streak": 0,
       "zero_unique_streak": 0,
       "zero_real_streak": 0,
-      "ok_rate_ema": 0.9977,
-      "unique_ema": 171.4,
-      "real_ema": 39.47,
+      "ok_rate_ema": 0.9982,
+      "unique_ema": 189.58,
+      "real_ema": 47.73,
       "last": {
-        "date": "2026-11-02",
-        "count": 335,
-        "alive": 194,
-        "unique_alive": 175,
-        "real_ok": 26,
-        "probed": 73,
+        "date": "2026-11-03",
+        "count": 391,
+        "alive": 254,
+        "unique_alive": 232,
+        "real_ok": 67,
+        "probed": 156,
         "tamper": 0,
         "error": null
       },
-      "cn_low_streak": 3,
+      "cn_low_streak": 4,
       "cn_low_last": {
-        "date": "2026-11-02",
-        "tested": 36,
+        "date": "2026-11-03",
+        "tested": 70,
         "passed": 0,
         "ci_low": 0.0
       }

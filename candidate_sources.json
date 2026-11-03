@@ -5,12 +5,19 @@
       "origin": "channel_web",
       "added": "2026-11-02",
       "first_seen": "2026-11-02",
-      "runs": 1,
+      "runs": 2,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
         {
           "date": "2026-11-02",
+          "count": 32,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-03",
           "count": 32,
           "usable": 0,
           "unique_new": 0,
