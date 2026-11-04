@@ -1006,7 +1006,9 @@ def test_real_min_bytes_threshold_tightened():
     在沙箱判通过、用户本地不可用。慢档（AI 提级路径）保持 32KB 不变。"""
     assert cn_probe.REAL_MIN_BYTES >= 768 * 1024
     assert cn_probe.REAL_SLOW_MIN_BYTES == 32 * 1024
-    assert cn_probe.CN_MAX_PUBLISH_LATENCY_MS == 2500
+    # 任务#116：用户 15 节点截图复核（213/248/259ms 可用、2646ms+ 全超时），
+    # 2500ms 仍过宽，收紧到 1500ms
+    assert cn_probe.CN_MAX_PUBLISH_LATENCY_MS == 1500
 
 
 def test_longevity_tier_prefers_proven_survivors(monkeypatch):
@@ -1069,41 +1071,74 @@ def test_verified_rank_orders_longevity_after_ai():
 
 
 def test_ai_slow_promotion_respects_latency_cap(monkeypatch, tmp_path):
-    """任务#112：AI 慢档提级只收 ≤AI_PROMOTE_MAX_LATENCY_MS 的节点；
-    超限者（实证 6.9s 靠 AI 提级混进主资产）留守第二资产。"""
-    import types
+    """任务#112 + #116：AI 慢档提级只收 ≤ 延迟线（且取两道闸门的严者）；
+    超限者（实证 6.9s、2.6~3.0s 靠 AI 提级混进主资产）留守第二资产。"""
     lo_n = {"probe_name": "OK", "fp": "f1", "origin": "pending",
             "us_ok": False, "final": False, "name": "OK"}
     hi_n = {"probe_name": "SLOW", "fp": "f2", "origin": "pending",
             "us_ok": False, "final": False, "name": "SLOW"}
     results = {
-        "OK": {"latency_ms": 1200, "ai": {"ai_reachable": True},
+        "OK": {"latency_ms": 1200, "ai": {"ai_reachable": True, "ai_api": True},
                "real_traffic": {"ok": False, "degraded": True, "bytes": 100 * 1024}},
-        "SLOW": {"latency_ms": 6900, "ai": {"ai_reachable": True},
+        "SLOW": {"latency_ms": 6900, "ai": {"ai_reachable": True, "ai_api": True},
                  "real_traffic": {"ok": False, "degraded": True, "bytes": 100 * 1024}},
     }
     assert cn_probe.config.AI_PROMOTE_MAX_LATENCY_MS < 6900
-    promote = [n for n in (lo_n, hi_n)
-               if (results[n["probe_name"]].get("ai") or {}).get("ai_reachable")
-               and (results[n["probe_name"]].get("latency_ms") or 99999)
-               <= cn_probe.config.AI_PROMOTE_MAX_LATENCY_MS]
-    assert [n["probe_name"] for n in promote] == ["OK"]
+    promoted, rejected = cn_probe.select_ai_promotions([lo_n, hi_n], results)
+    assert [n["probe_name"] for n in promoted] == ["OK"]
+    assert rejected == 1
+
+
+def test_promotion_cap_never_exceeds_publish_gate():
+    """任务#116 回归：提级上限不得突破主资产延迟线。
+    旧实现 6.05 用 2500ms 降级、6.6 用 3500ms 提回，同轮自相矛盾——
+    实测 4 个 2646~3030ms 节点因此发布并全部在用户端超时。"""
+    assert cn_probe.config.AI_PROMOTE_MAX_LATENCY_MS <= cn_probe.CN_MAX_PUBLISH_LATENCY_MS
+    # cap 缺省值必须等于两者取严
+    results = {"X": {"latency_ms": 2000, "ai": {"ai_reachable": True, "ai_api": True}}}
+    node = {"probe_name": "X", "fp": "fx", "origin": "pending", "final": False, "name": "X"}
+    promoted, rejected = cn_probe.select_ai_promotions([node], results)
+    assert promoted == [] and rejected == 1, "2000ms 超 1500ms 闸门，不得提级"
+
+
+def test_promotion_requires_ai_api_strong_signal(monkeypatch):
+    """任务#116：ai_reachable 含 403（Cloudflare 网页拦截）→ 不能单独作为提级依据。
+    实证：14 个发布节点 chatgpt/claude 全 403，openai_api 401 才是 IP 干净的真信号。"""
+    results = {
+        # 403-only：网页被拦、API 也未放行（openai_api 403）
+        "DIRTY": {"latency_ms": 500,
+                  "ai": {"ai_reachable": True, "ai_api": False,
+                         "codes": {"chatgpt": 403, "openai_api": 403}}},
+        # Cloudflare 放行到 API 层（401）→ 干净
+        "CLEAN": {"latency_ms": 600,
+                  "ai": {"ai_reachable": True, "ai_api": True,
+                         "codes": {"chatgpt": 403, "openai_api": 401}}},
+    }
+    nodes = [{"probe_name": k, "fp": k, "origin": "pending", "final": False, "name": k}
+             for k in ("DIRTY", "CLEAN")]
+    promoted, _ = cn_probe.select_ai_promotions(nodes, results)
+    assert [n["probe_name"] for n in promoted] == ["CLEAN"]
 
 
 def test_user_verdict_by_fp_name_and_expiry(monkeypatch):
-    """任务#113：用户本地实测回灌——按 fp 或 name 匹配，48h 过期失效。"""
+    """任务#113 + #116：按 fp 或 name 匹配；alive 7 天 / dead 14 天分设有效期。
+    alive 要记得久（保活依据，稳定数量），dead 也要记得久（封禁极少自动恢复）。"""
     now = 1780000000
     monkeypatch.setattr(cn_probe.time, "time", lambda: now)
     learning = {"user": {"nodes": {
         "fp-alive": {"result": "alive", "ts": now - 3600},
-        "老死节点": {"result": "dead", "ts": now - 10 * 86400},   # 过期
+        "老活节点": {"result": "alive", "ts": now - 8 * 86400},    # alive 超 7 天 → 过期
+        "老死节点": {"result": "dead", "ts": now - 10 * 86400},     # dead 10 天 < 14 天 → 仍有效
+        "远古死节点": {"result": "dead", "ts": now - 20 * 86400},   # 超 14 天 → 过期
         "fp-dead": {"result": "dead", "ts": now - 60},
         "fp-bad": {"result": "哈哈", "ts": now - 60},            # 非法值
     }}}
     assert cn_probe.user_verdict({"fp": "fp-alive", "name": "X"}, learning) == "alive"
     assert cn_probe.user_verdict({"fp": "fp-dead", "name": "X"}, learning) == "dead"
     # fp 未命中时回退按 name
-    assert cn_probe.user_verdict({"fp": "fp-none", "name": "老死节点"}, learning) is None  # 过期
+    assert cn_probe.user_verdict({"fp": "fp-none", "name": "老活节点"}, learning) is None  # 过期
+    assert cn_probe.user_verdict({"fp": "fp-none", "name": "老死节点"}, learning) == "dead"
+    assert cn_probe.user_verdict({"fp": "fp-none", "name": "远古死节点"}, learning) is None
     assert cn_probe.user_verdict({"fp": "fp-bad", "name": "X"}, learning) is None
     # 无数据
     assert cn_probe.user_verdict({"fp": "fp-404", "name": "Y"}, learning) is None
@@ -1144,3 +1179,35 @@ def test_user_probe_dead_block_config():
     """任务#113：硬否决开关默认开启（用户家宽结论是最终事实）。"""
     assert cn_probe.config.USER_PROBE_DEAD_BLOCK is True
     assert cn_probe.config.USER_PROBE_MAX_AGE_S == 48 * 3600
+
+
+def test_alive_keep_requires_latency_evidence(monkeypatch):
+    """任务#116：用户实测 alive 的节点可长效保活，但只收「延迟仍达标」者。
+    延迟测不出（真死）不保活——否则一周前的 alive 记录会永久托着死节点。"""
+    monkeypatch.setattr(cn_probe.config, "USER_PROBE_ALIVE_KEEP", True)
+    learning = {"user": {"nodes": {
+        "k-alive": {"result": "alive", "ts": cn_probe.time.time() - 6 * 86400},
+        "k-dead": {"result": "dead", "ts": cn_probe.time.time() - 60},
+    }}}
+    n_alive = {"probe_name": "A", "fp": "k-alive", "origin": "carryover", "name": "A"}
+    n_dead = {"probe_name": "D", "fp": "k-dead", "origin": "carryover", "name": "D"}
+    n_lost = {"probe_name": "L", "fp": "k-alive", "origin": "carryover", "name": "L"}
+    results = {
+        "A": {"latency_ms": 900},        # 延迟达标 → 保活
+        "D": {"latency_ms": 300},        # 用户判 dead → 不保活
+        "L": {"latency_ms": None},       # 测不出 → 不保活
+    }
+    keep = cn_probe.select_alive_keeps([n_alive, n_dead, n_lost], results, learning)
+    assert [n["probe_name"] for n in keep] == ["A"]
+
+
+def test_alive_keep_respects_switch_and_cap(monkeypatch):
+    """保活开关关闭即失效；延迟超主闸门不保活（与发布闸门一致）。"""
+    learning = {"user": {"nodes": {"k": {"result": "alive",
+                                        "ts": cn_probe.time.time()}}}}
+    node = {"probe_name": "N", "fp": "k", "origin": "carryover", "name": "N"}
+    monkeypatch.setattr(cn_probe.config, "USER_PROBE_ALIVE_KEEP", False)
+    assert cn_probe.select_alive_keeps([node], {"N": {"latency_ms": 300}}, learning) == []
+    monkeypatch.setattr(cn_probe.config, "USER_PROBE_ALIVE_KEEP", True)
+    assert cn_probe.select_alive_keeps(
+        [node], {"N": {"latency_ms": cn_probe.CN_MAX_PUBLISH_LATENCY_MS + 1}}, learning) == []

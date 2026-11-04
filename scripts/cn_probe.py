@@ -115,10 +115,12 @@ REAL_MIN_BYTES = 768 * 1024   # 单次采样至少下载 768KB（≈96KB/s）才
 # 依据：用户本地测速只要求「有延迟反应」，32KB（≈4KB/s）即有明显体感；
 # 旧口径一刀切淘汰了大批「能连但慢」节点，是 326 节点源 0 通过的成因之一。
 REAL_SLOW_MIN_BYTES = 32 * 1024
-# 主资产延迟上限（2026-10-24）：初筛 RTT 超限者降级第二资产，不进主资产。
+# 主资产延迟上限（2026-10-24 设立 2500ms，2026-11-04 收紧至 1500ms）。
 # 实证：已发布 25 个通过节点中 12 个 RTT>1.5s（最高 3.2s），沙箱「能通」
-# 但用户本地体感即「不能用」。AI 可达者仍可经慢档提级路径回主资产。
-CN_MAX_PUBLISH_LATENCY_MS = 2500
+# 但用户本地体感即「不能用」。2026-11-04 用户 15 节点截图复核：213/248/259ms
+# 可用、980ms 勉强可用、2646ms 起全部「超时/失败」——2500ms 仍过宽，
+# 收到 1500ms（给 980ms 留 1.5 倍余量，同时挡住 2.6s+ 的废节点）。
+CN_MAX_PUBLISH_LATENCY_MS = 1500
 REAL_PROBE_URLS = [           # 仅作出口可达性辅助参考，不再单独作为闸门
     "https://www.google.com/robots.txt",
     "https://www.cloudflare.com/cdn-cgi/trace",
@@ -1028,7 +1030,8 @@ def user_verdict(n: dict, learning: dict | None) -> str | None:
     回灌文件格式（用户侧客户端测速结果导出）：
         {"nodes": {"<节点名或指纹>": {"result": "alive|dead",
                                       "ts": 1780000000, "latency_ms": 220}}}
-    有效期 USER_PROBE_MAX_AGE_S（48h），过期忽略——避免半年前的死节点被永久否决。
+    有效期分设（任务#116）：alive 7 天、dead 14 天——alive 证据是「保活」依据，
+    取久一点可稳定订阅数量；dead 是硬否决，也要记得久（封禁极少自动恢复）。
     """
     if not learning:
         return None
@@ -1045,14 +1048,18 @@ def user_verdict(n: dict, learning: dict | None) -> str | None:
             break
     if not isinstance(item, dict):
         return None
+    r = str(item.get("result") or "").lower()
+    if r not in ("alive", "dead"):
+        return None
     try:
         ts = float(item.get("ts") or 0)
     except Exception:
         ts = 0
-    if ts and (time.time() - ts) > config.USER_PROBE_MAX_AGE_S:
+    ttl = (config.USER_PROBE_ALIVE_MAX_AGE_S if r == "alive"
+           else config.USER_PROBE_DEAD_MAX_AGE_S)
+    if ts and (time.time() - ts) > ttl:
         return None
-    r = str(item.get("result") or "").lower()
-    return r if r in ("alive", "dead") else None
+    return r
 
 
 def longevity_tier(n: dict, learning: dict | None) -> int:
@@ -1088,6 +1095,59 @@ def longevity_tier(n: dict, learning: dict | None) -> int:
     if runs >= 5 and passed > 0:
         return 1        # 有过通过记录但比率一般
     return 2
+
+
+def select_alive_keeps(degraded: list[dict], results: dict,
+                       learning: dict | None, cap: int | None = None) -> list[dict]:
+    """用户实测 alive 的长效保活筛选（纯函数，任务#116）。
+
+    只收「延迟仍达标」的节点：延迟测不出说明链路已死，不能因一周前的
+    alive 记录误保。速度落慢档不算否决——用户实测是地面真相，沙箱测速
+    只代表「腾讯云上海这一跳」，速度抖动不足以判定「不能用」。
+    """
+    if not config.USER_PROBE_ALIVE_KEEP:
+        return []
+    if cap is None:
+        cap = CN_MAX_PUBLISH_LATENCY_MS
+    out: list[dict] = []
+    for n in degraded:
+        if user_verdict(n, learning) != "alive":
+            continue
+        lat = results.get(n["probe_name"], {}).get("latency_ms") or 99999
+        if lat <= cap:
+            out.append(n)
+    return out
+
+
+def select_ai_promotions(degraded: list[dict], results: dict,
+                         cap: int | None = None) -> tuple[list[dict], int]:
+    """从降级集中挑出可提级的「AI 干净」节点（纯函数，任务#116）。
+
+    两个必要条件，缺一不可：
+      1. **强信号** ai_reachable 且 ai_api。ai_reachable 只要有任何 HTTP 响应
+         （含 403 / Cloudflare 拦截）即为真——2026-11-04 实证 14 个发布节点
+         chatgpt/claude 全 403 却都判「AI 可用」；ai_api（openai_api != 403，
+         即 401/200）才说明 Cloudflare 放行到 API 层、IP 干净。
+      2. **延迟线取严** ≤ min(AI_PROMOTE_MAX_LATENCY_MS, CN_MAX_PUBLISH_LATENCY_MS)。
+         旧实现提级用 3500ms、主闸门用 2500ms，导致 6.05 降级的节点被 6.6
+         提回，同轮自相矛盾；取严后提级无法突破主资产延迟线。
+
+    返回 (可提级节点, 因延迟超限被拒数)。
+    """
+    if cap is None:
+        cap = min(config.AI_PROMOTE_MAX_LATENCY_MS, CN_MAX_PUBLISH_LATENCY_MS)
+    promoted: list[dict] = []
+    rejected = 0
+    for n in degraded:
+        ai = results.get(n["probe_name"], {}).get("ai") or {}
+        if not (ai.get("ai_reachable") and ai.get("ai_api")):
+            continue
+        lat = results.get(n["probe_name"], {}).get("latency_ms") or 99999
+        if lat <= cap:
+            promoted.append(n)
+        else:
+            rejected += 1
+    return promoted, rejected
 
 
 def verified_rank(n: dict, results: dict, learning: dict | None = None) -> tuple:
@@ -1575,17 +1635,18 @@ def main() -> int:
     # 任务#112（2026-10-28）：提级须守延迟上限——本轮实证 6.9s 的节点靠 AI
     # 提级混进主资产，用户本地「点开即弃」。AI 可用 ≠ 本地能用：延迟超
     # AI_PROMOTE_MAX_LATENCY_MS 的节点留在第二资产，下轮回炉（慢档回炉机制）。
-    ai_slow = [n for n in degraded
-               if (results.get(n["probe_name"], {}).get("ai") or {})
-               .get("ai_reachable")
-               and (results.get(n["probe_name"], {}).get("latency_ms") or 99999)
-               <= config.AI_PROMOTE_MAX_LATENCY_MS]
-    _ai_slow_rejected = len([n for n in degraded
-                             if (results.get(n["probe_name"], {}).get("ai") or {})
-                             .get("ai_reachable")]) - len(ai_slow)
+    # 任务#116（2026-11-04）两处收紧，皆有实证：
+    # (a) 延迟线取严：提级上限必须 ≤ 主资产闸门，否则 6.05 降级→6.6 提回，
+    #     同轮内自相矛盾（实测 4 个 2646~3030ms 节点因此发布，用户端全超时）。
+    # (b) 信号取强：ai_reachable 只要有任何 HTTP 响应（含 403/Cloudflare 拦截）
+    #     即为真，14 个发布节点 chatgpt/claude 全 403 却都被判「AI 可用」；
+    #     改用 ai_api（openai_api != 403，即 401/200）——Cloudflare 放行到 API 层，
+    #     才是「IP 干净、真能调 AI」的可靠判据。
+    _promote_cap = min(config.AI_PROMOTE_MAX_LATENCY_MS, CN_MAX_PUBLISH_LATENCY_MS)
+    ai_slow, _ai_slow_rejected = select_ai_promotions(degraded, results, _promote_cap)
     if ai_slow:
-        log(f"AI 慢档提级: {len(ai_slow)} 个 AI 可达的慢档节点并入主资产"
-            + (f"（另有 {_ai_slow_rejected} 个超延迟上限 {config.AI_PROMOTE_MAX_LATENCY_MS}ms 留守第二资产）"
+        log(f"AI 慢档提级: {len(ai_slow)} 个 AI 干净（openai_api 放行）的慢档节点并入主资产"
+            + (f"（另有 {_ai_slow_rejected} 个超延迟上限 {_promote_cap}ms 留守第二资产）"
                if _ai_slow_rejected else ""))
         verified = sorted(verified + ai_slow,
                           key=lambda n: verified_rank(n, results, learning))
@@ -1602,6 +1663,21 @@ def main() -> int:
             degraded = degraded + _udead
             log(f"用户实测否决: {len(_udead)} 个节点在用户本地实测失败，"
                 f"已移出主资产（降级第二资产，下轮复测）")
+
+    # 6.8) 用户实测 alive 长效保活（任务#116，2026-11-04）：用户验证过能用的节点，
+    # 本轮测速落入慢档（速度抖动）但延迟仍达标时保留主资产。理由：
+    #   - 用户本地实测是地面真相，沙箱测速只反映「腾讯云上海这一跳」；
+    #   - 延迟达标 = 链路还活着，速度波动不足以判定「不能用」；
+    #   - 48h 一刀切过期会让一周前验证的节点全部失忆，订阅数量忽多忽少。
+    # 防误保：延迟测不出（真死）不保活，仍走第二资产/下轮复测淘汰路径。
+    if config.USER_PROBE_ALIVE_KEEP:
+        _ukeep = select_alive_keeps(degraded, results, learning)
+        if _ukeep:
+            verified = sorted(verified + _ukeep,
+                              key=lambda n: verified_rank(n, results, learning))
+            degraded = [n for n in degraded if n not in _ukeep]
+            log(f"用户实测保活: {len(_ukeep)} 个用户验证可用的节点测速落慢档"
+                f"但延迟达标（≤{CN_MAX_PUBLISH_LATENCY_MS}ms），保留主资产")
 
     by_origin = {o: sum(1 for n in verified if n["origin"] == o)
                  for o in ("pending", "rescue", "carryover")}
@@ -1697,8 +1773,11 @@ def main() -> int:
     with open(report_path, "w", encoding="utf-8") as f:
         json.dump(report, f, ensure_ascii=False, indent=1)
 
-    # 7) 熔断：通过数不足 → 不碰主资产（保留上轮验证集/CI 兜底）
-    if len(verified) < config.VERIFICATION_MIN_PASSED:
+    # 7) 熔断：空集才不碰主资产（保留上轮验证集/CI 兜底）。
+    # 任务#116：原用 VERIFICATION_MIN_PASSED(8) 作闸门，逼着系统靠 AI 提级
+    # 凑数（实证 4 个 2646~3030ms 废节点因此进主资产）；改为 ≥1 即发布——
+    # 宁发 1 个真能用，不发 12 个凑数，也不保留上一轮的坏节点。
+    if len(verified) < config.PUBLISH_MIN_PASSED:
         # 关键修复（2026-10-17）：本轮通过数不足 ≠ "沙箱从未有效产出"。
         # 若 release 上最近有效发布（main_asset_passed≥15）仍新鲜，则保留
         # published=True 信号，CI 据此不兜底，实测集不被候选集覆盖。

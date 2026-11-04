@@ -281,6 +281,13 @@ VERIFICATION_MAX_AGE_S = 24 * 3600
 # 严格通过——宁发 10 个真可用，不发 15 个凑数。降为 8（AI 保障轮实证
 # 8-10 为新常态），避免「达标但不发布→用户只能用 2 天前死节点」的倒挂。
 VERIFICATION_MIN_PASSED = 8
+# 任务#116（2026-11-04）：真正的最低发布线。原熔断用 VERIFICATION_MIN_PASSED(8)，
+# 导致「严格档不足 8 个」时系统靠 AI 慢档提级凑数——实证本轮 12 个发布节点里
+# 4 个延迟 2646~3030ms，用户端全部超时；而不发布时保留的是上一轮 12 个坏节点，
+# 比「少发几个好的」更糟。改为：只要 ≥1 个通过就发布（空集才熔断，防沙箱
+# 异常覆盖好资产）。VERIFICATION_MIN_PASSED 保留其原语义——衡量「是否为有效
+# 轮次」的统计口径，不再作发布闸门。
+PUBLISH_MIN_PASSED = 1
 PROBE_BATCH = 100
 PROBE_CONCURRENCY = 32
 # Reserve real-probe slots: Asia heavy, US light.
@@ -422,17 +429,31 @@ LONGEVITY_CN_PASS_RATE = 0.6    # 历史 CN 通过率下限（cn_history.cn_pass
 # 因此提供「用户实测结果」回灌通道：客户端测速结果写成 user_probe.json，
 # 由 cn_probe 读取后作为独立学习信号参与排序与准入。
 USER_PROBE_FILE = "user_probe.json"     # 用户本地实测回灌文件
-USER_PROBE_MAX_AGE_S = 48 * 3600        # 回灌数据有效期（48h）；过期不参与
+USER_PROBE_MAX_AGE_S = 48 * 3600        # 兼容旧字段（排序用，48h）；过期不参与
 USER_PROBE_DEAD_PENALTY = 1.0           # 用户实测失败节点的排序降权（档位惩罚）
 # 用户实测失败即「硬否决」：本地连不上的节点，沙箱再快也不该进主资产。
 USER_PROBE_DEAD_BLOCK = True
+# 任务#116（2026-11-04）：alive / dead 分设有效期，并按 alive 做长效保活。
+# 依据：用户实测是地面真相，而节点「能连」通常能维持数周；48h 一刀切会让
+# 一周前验证可用的节点全部失忆，订阅内容随之忽多忽少（用户抱怨「数量不稳定」）。
+# dead 反而要记得久一些——IP 被风控/封禁后极少自动恢复，14 天内不必重测复活。
+USER_PROBE_ALIVE_MAX_AGE_S = 7 * 86400   # alive 证据有效期 7 天
+USER_PROBE_DEAD_MAX_AGE_S = 14 * 86400   # dead 硬否决有效期 14 天
+# 长效保活：用户判 alive 的节点，本轮测速落入慢档（速度抖动）但延迟仍达标时，
+# 保留在主资产——延迟达标说明链路还活着，速度波动不足以判定「不能用」。
+# 防误保：延迟测不出（真死）不保活，由下一轮 carryover 复测自然淘汰。
+USER_PROBE_ALIVE_KEEP = True
 # 速度惩罚（任务#114）：沙箱速度与本地存活反向——「先快后断」节点常在
 # 临死前出现速率尖峰。速度不再作正向加分项，改为超高速惩罚项。
 SPEED_PENALTY_START_KBPS = 2000         # 超过该速率开始惩罚（2MB/s）
 SPEED_PENALTY_MAX_KBPS = 8000           # 惩罚饱和点（8MB/s）
-AI_PROMOTE_MAX_LATENCY_MS = 3500  # AI 慢档提级的延迟上限（任务#112）：本轮实证 6.9s 的
-                              # 节点靠 AI 提级混进主资产——AI 可用≠本地能用，3.5s
-                              # 以下的 AI 节点才提级，超限者留第二资产
+AI_PROMOTE_MAX_LATENCY_MS = 1500  # AI 慢档提级的延迟上限（任务#112 设立，任务#116 收紧）：
+                              # 原 3500ms 有实证漏洞——6.05 步用 2500ms 把高延迟节点降级，
+                              # 6.6 步又用 3500ms 把它们提回主资产，闸门被同轮架空
+                              # （2026-11-04 实测 4 个 2646~3030ms 节点因此发布，用户端全超时）。
+                              # 用户家宽实测：213/248/259/980ms 可用，2.6s+ 一律超时。
+                              # 现与 CN_MAX_PUBLISH_LATENCY_MS 取严（代码里 min() 兜底），
+                              # 杜绝两条路径再次分叉。
 # 历史真实通过率加成（过去 N 次运行的 real_ok 比率，见 common.update_survival）
 # 150 < SURVIVAL_WEIGHT(240)：历史通过率只是「稳健性佐证」，权重低于连续存活天数；
 # 且受陈旧守卫约束（survival 停更则归零），避免陈旧记录误导排序。
