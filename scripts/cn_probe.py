@@ -1783,7 +1783,7 @@ def main() -> int:
         # published=True 信号，CI 据此不兜底，实测集不被候选集覆盖。
         report["published"] = bool(
             prev_report and prev_report.get("published")
-            and mp_at and mp_passed >= config.VERIFICATION_MIN_PASSED
+            and mp_at and mp_passed >= config.PUBLISH_MIN_PASSED
             and _within_window(mp_at, config.VERIFICATION_MAX_AGE_S))
         log(f"熔断: 通过数 {len(verified)} < 下限 {config.VERIFICATION_MIN_PASSED}，"
             f"不发布主资产（保留上一轮验证集）；继承主资产信号 published="

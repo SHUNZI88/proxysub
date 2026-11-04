@@ -5,7 +5,12 @@
 退出码 0 = 新鲜（主资产 p_* 归沙箱实测集所有，CI 不覆盖）；
        1 = 陈旧/缺失/不可解析（CI 兜底：候选集发布到主资产，订阅不枯竭）。
 
-新鲜 = generated_at 在 VERIFICATION_MAX_AGE_S 内 且 通过数 ≥ VERIFICATION_MIN_PASSED。
+新鲜 = generated_at 在 VERIFICATION_MAX_AGE_S 内 且 本轮已发布（passed ≥ PUBLISH_MIN_PASSED）。
+
+任务#116（2026-11-04）：原判据用 VERIFICATION_MIN_PASSED(8)，与发布熔断同源，
+形成闭环陷阱——严格筛选只通过 2 个 → 被判「不新鲜」→ 24h 后 CI 用 95 个未实测
+候选覆盖实测集，质量优先策略完全失效。用户「连通率不高」的直接元凶之一。
+改为：只要本轮真的发布了（≥1 个）就算新鲜，数量交给发布环节把关。
 判定逻辑集中在此（而非散在 YAML 里）以便单测与两侧阈值一致。
 """
 
@@ -45,7 +50,7 @@ def is_fresh(report: dict, now: datetime.datetime | None = None) -> bool:
     # 校准后 12≥8 会越过旧的隐式拦截）——此类报告不得作为新鲜发布信号，
     # 须走第二层 main_asset 背书。字段缺失（旧报告）保守视为可发布。
     explicit_unpublished = report.get("published") is False
-    current_ok = (not explicit_unpublished) and 0 <= age < config.VERIFICATION_MAX_AGE_S and passed >= config.VERIFICATION_MIN_PASSED
+    current_ok = (not explicit_unpublished) and 0 <= age < config.VERIFICATION_MAX_AGE_S and passed >= config.PUBLISH_MIN_PASSED
     if current_ok:
         return True
     # 第二层：最近有效发布是否仍新鲜（须 published 背书，防伪造/历史报告）
@@ -58,7 +63,7 @@ def is_fresh(report: dict, now: datetime.datetime | None = None) -> bool:
             if mp_gen.tzinfo is None:
                 mp_gen = mp_gen.replace(tzinfo=datetime.timezone.utc)
             mp_age = (now - mp_gen).total_seconds()
-            if 0 <= mp_age < config.VERIFICATION_MAX_AGE_S and mp_passed >= config.VERIFICATION_MIN_PASSED:
+            if 0 <= mp_age < config.VERIFICATION_MAX_AGE_S and mp_passed >= config.PUBLISH_MIN_PASSED:
                 return True
         except Exception:
             pass

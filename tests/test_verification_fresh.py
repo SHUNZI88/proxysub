@@ -26,7 +26,14 @@ def test_stale_report_rejected():
 
 
 def test_low_passed_rejected():
-    assert vf.is_fresh(_report(1, 5), now=NOW) is False
+    """任务#116 改判：判据从「通过数≥8」改为「本轮真的发布了」(≥1)。
+    原判据与发布熔断同源，形成闭环陷阱：严格筛选只过 2 个 → 被判不新鲜 →
+    24h 后 CI 用 95 个未实测候选覆盖实测集，质量优先策略完全失效。
+    数量已由发布环节把关，这里只区分「有产出」与「空跑」。"""
+    assert vf.is_fresh(_report(1, 5), now=NOW) is True
+    assert vf.is_fresh(_report(1, 2), now=NOW) is True
+    assert vf.is_fresh(_report(1, 1), now=NOW) is True
+    assert vf.is_fresh(_report(1, 0), now=NOW) is False
 
 
 def test_missing_generated_at():
@@ -103,8 +110,17 @@ def test_main_asset_stale_does_not_save():
 
 
 def test_low_passed_and_no_main_asset_rejected():
-    """本轮 passed<15 且无 main_asset 字段 → 不新鲜（不应兜底，订阅可暂空）。"""
-    assert vf.is_fresh(_report(1, 5), now=NOW) is False
+    """任务#116：空跑（passed=0）且无 main_asset 背书 → 不新鲜。
+    passed≥1 的新语义见 test_low_passed_rejected。"""
+    assert vf.is_fresh(_report(1, 0), now=NOW) is False
+
+
+def test_two_node_publish_keeps_ownership():
+    """任务#116 回归：宁发 2 个真能用的，也不让 CI 兜底覆盖。"""
+    r = _report(1, 2)
+    r.update({"published": True, "main_asset_published_at": r["generated_at"],
+              "main_asset_passed": 2})
+    assert vf.is_fresh(r, now=NOW) is True
 
 
 def test_main_asset_published_false_not_saved():
