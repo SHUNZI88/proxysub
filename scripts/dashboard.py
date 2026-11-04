@@ -43,6 +43,9 @@ _ORIGINS = [("pending", "新测通过", "#2563eb"),
 _VB_W, _VB_H = 720, 220
 _PAD_L, _PAD_R, _PAD_T, _PAD_B = 46, 14, 14, 30
 
+# 小样本门槛（任务#118）：低于此样本量的轮次不参与趋势判断
+MIN_TREND_SAMPLE = getattr(config, "PROBE_HISTORY_MIN_SAMPLE", 30)
+
 
 # ---------------------------------------------------------------- 数据加载
 def _norm_round(obj: object) -> dict | None:
@@ -78,6 +81,11 @@ def _norm_round(obj: object) -> dict | None:
                 except (TypeError, ValueError):
                     continue
     rate = passed / tested if tested else 0.0
+    # 小样本轮次（2026-11-04 任务#118）：实测集常只有 14~30 个节点，单轮
+    # 通过率不具统计效力。写入端打 small_sample 标记；老行按 tested 推断。
+    small = obj.get("small_sample")
+    if small is None:
+        small = tested < MIN_TREND_SAMPLE
     return {
         "ts": str(obj.get("ts") or ""),
         "round": str(obj.get("round") or ""),
@@ -86,15 +94,23 @@ def _norm_round(obj: object) -> dict | None:
         "pass_rate": rate,
         "by_origin": origins,
         "top_sources": top,
+        "small_sample": bool(small),
     }
 
 
 def load_rounds(path: str | Path) -> list[dict]:
-    """读取 jsonl；坏行/空值跳过。文件不存在返回空列表。"""
+    """读取 jsonl；坏行/空值跳过。文件不存在返回空列表。
+
+    同轮次去重（2026-11-04 任务#118）：写入端已改为「同轮覆盖写」，但历史
+    文件里已积累重复（实测 94 行只有 48 个唯一轮次，一轮最多重复 7 次）。
+    重复会让折线出现假峰——同一轮被画 7 次，「最新轮通过率」的环比也会
+    拿同一轮跟自己比，恒为 0%。此处按 round 保留最后一次。
+    """
     p = Path(path)
     if not p.is_file():
         return []
     rounds = []
+    seen: dict[str, int] = {}
     for lineno, line in enumerate(p.read_text(encoding="utf-8").splitlines(), 1):
         line = line.strip()
         if not line:
@@ -109,7 +125,15 @@ def load_rounds(path: str | Path) -> list[dict]:
             print(f"警告: {p.name}:{lineno} 字段结构不符，已跳过", file=sys.stderr)
             continue
         rounds.append(norm)
-    return rounds
+    # 同轮去重：保留最后一次出现的该轮次（写入端语义是「覆盖写」）
+    by_round: dict[str, dict] = {}
+    order: list[str] = []
+    for r in rounds:
+        k = r["round"]
+        if k not in by_round:
+            order.append(k)
+        by_round[k] = r
+    return [by_round[k] for k in order]
 
 
 # ---------------------------------------------------------------- SVG 趋势图
@@ -153,7 +177,10 @@ def trend_svg(rounds: list[dict]) -> str:
         cx, cy = x(i), y(r["pass_rate"])
         title = (f"{r['ts'] or r['round']}｜通过率 {_fmt_pct(r['pass_rate'])}"
                  f"（{r['passed']}/{r['tested']}）")
-        parts.append(f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="3.5" class="dot">'
+        # 小样本轮次用空心点区分（任务#118）：不参与趋势判断，避免
+        # 「0/5」与「40/50」在折线上被同等对待。
+        cls = "dot small" if r.get("small_sample") else "dot"
+        parts.append(f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="3.5" class="{cls}">'
                      f"<title>{html.escape(title)}</title></circle>")
     # 横轴首末时间标注（中文习惯展示 UTC）
     first, last = rounds[0], rounds[-1]
@@ -290,6 +317,7 @@ section h2 { font-size: 15px; margin: 0 0 12px; }
 .trend .grid { stroke: #e5e7eb; stroke-width: 1; stroke-dasharray: 3 3; }
 .trend .line { fill: none; stroke: #2563eb; stroke-width: 2; }
 .trend .dot { fill: #2563eb; }
+.trend .dot.small { fill: #fff; stroke: #2563eb; stroke-width: 1.6; }
 .trend .axis { fill: #9ca3af; font-size: 10px; }
 .bar-row { display: flex; align-items: center; gap: 8px; margin: 5px 0; font-size: 12px; }
 .bar-label { width: 96px; color: #6b7280; font-variant-numeric: tabular-nums;

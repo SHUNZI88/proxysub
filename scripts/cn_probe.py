@@ -1300,6 +1300,25 @@ def select_alive_keeps(degraded: list[dict], results: dict,
     return out
 
 
+def mark_final_flags(nodes: list[dict], passed: list[dict]) -> int:
+    """把报告里 nodes[].final 严格对齐「本轮实测通过」（任务#118）。
+
+    旧实现只置 True 不置 False，从 CI pending_probe.json 继承来的 final=True
+    原样带进报告。实证本轮 311 条记录里 88 个「未测节点」被标 final=True，
+    而真正通过的 4 个是 final=False——字段语义整个反了，任何按 final 做的
+    统计都会把死节点算成可用节点。
+
+    返回被置为 final=True 的节点数。
+    """
+    for n in nodes:
+        n["final"] = False
+    cnt = 0
+    for n in passed:
+        n["final"] = True
+        cnt += 1
+    return cnt
+
+
 def select_ai_promotions(degraded: list[dict], results: dict,
                          cap: int | None = None) -> tuple[list[dict], int]:
     """从降级集中挑出可提级的「AI 干净」节点（纯函数，任务#116）。
@@ -1728,8 +1747,14 @@ def main() -> int:
             # final 置位（2026-10-24 任务#96）：实测通过才算 final=True。
             # 继承自 CI 文档/上一轮发布集的 final 标记在进入本轮后一律作废，
             # 报告 nodes[].final 从此严格等于「本轮实测通过」。
-            for _n in passed:
-                _n["final"] = True
+            #
+            # 修复（2026-11-04 任务#118）：上方注释是承诺，实现却没兑现——
+            # 只置 True 不置 False，从 CI pending_probe.json 继承来的 final=True
+            # 原样带进报告。实证本轮 311 条记录里 88 个「未测节点」
+            # （cn={"ok":false,"latency_ms":null}）被标 final=True，而真正通过
+            # 的 4 个是 final=False——报告字段语义整个反了，任何按 final 做的
+            # 统计（含 dashboard、历史复盘）都会把死节点算成可用节点。
+            mark_final_flags(nodes, passed)
             # 动态证据预算（2026-10-24 任务#98）：旧固定 120s 在通过节点较多时
             # 只能覆盖一半（本轮 30 个只探到 17 个），无 AI 证据的节点在排序中
             # 被「未知」沉底——有效节点被埋。单节点 ≈8s，按通过数给足预算

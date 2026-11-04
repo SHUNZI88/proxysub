@@ -472,3 +472,88 @@ def test_update_protocol_history_skips_pure_carryover_round(tmp_path):
     hist = evolution.update_protocol_history(fresh, path)
     assert hist["hysteria2"]["rounds"] == 1
     assert hist["hysteria2"]["passed"] == 4
+
+
+def test_append_probe_history_is_idempotent_same_round(tmp_path):
+    """任务#118：同轮次重复写入必须覆盖而非追加。
+
+    实证：probe_history.jsonl 有 94 行但只有 48 个唯一轮次，最多一轮重复
+    7 次（沙箱跑一次 + CI 回写一次 + rebase 重放）。重复把「30/30 全过」
+    的轮次放大成假 100% 峰值，污染全部趋势统计。
+    """
+    out = str(tmp_path / "probe_history.jsonl")
+    report = _mk_report(tested=200, passed=40)
+    evolution.append_probe_history(report, out)
+    evolution.append_probe_history(report, out)
+    evolution.append_probe_history(report, out)
+    rows = evolution.read_probe_history(out)
+    assert len(rows) == 1
+    assert rows[0]["passed"] == 40
+
+
+def test_append_probe_history_keeps_other_rounds(tmp_path):
+    """覆盖写不能误删别的轮次。"""
+    out = str(tmp_path / "probe_history.jsonl")
+    r1 = _mk_report(tested=200, passed=40)
+    evolution.append_probe_history(r1, out)
+    r2 = _mk_report(tested=200, passed=60)
+    r2["tested_round"] = "20261015T0640Z"
+    r2["round_id"] = "20261015T0702Z"
+    evolution.append_probe_history(r2, out)
+    r1b = _mk_report(tested=200, passed=45)
+    evolution.append_probe_history(r1b, out)
+    rows = evolution.read_probe_history(out)
+    assert len(rows) == 2
+    by = {r["round"]: r["passed"] for r in rows}
+    assert by["20261014T0640Z"] == 45
+    assert by["20261015T0640Z"] == 60
+
+
+def test_append_probe_history_marks_small_sample(tmp_path):
+    """样本量低于门槛的轮次必须打 small_sample 标记（任务#118）。
+
+    实测集常只有 14~30 个节点，0/5 与 40/50 同为低通过率但性质相反，
+    dashboard 折线需区分对待。
+    """
+    out = str(tmp_path / "probe_history.jsonl")
+    small = _mk_report(tested=5, passed=0)
+    evolution.append_probe_history(small, out)
+    big = _mk_report(tested=200, passed=40)
+    big["tested_round"] = "20261015T0640Z"
+    big["round_id"] = "20261015T0702Z"
+    evolution.append_probe_history(big, out)
+    rows = evolution.read_probe_history(out)
+    by = {r["round"]: r for r in rows}
+    assert by["20261014T0640Z"]["small_sample"] is True
+    assert by["20261014T0640Z"]["tested"] == 5
+    assert by["20261015T0640Z"]["small_sample"] is False
+
+
+def test_normalize_probe_history_removes_duplicates(tmp_path):
+    """历史文件清理：同轮次只留最后一条。"""
+    out = str(tmp_path / "probe_history.jsonl")
+    lines = [
+        {"round": "R1", "tested": 10, "passed": 1, "ts": "a"},
+        {"round": "R1", "tested": 10, "passed": 9, "ts": "b"},
+        {"round": "R2", "tested": 10, "passed": 3, "ts": "c"},
+    ]
+    with open(out, "w", encoding="utf-8") as f:
+        for x in lines:
+            f.write(json.dumps(x) + "\n")
+    stat = evolution.normalize_probe_history(out)
+    assert stat["before"] == 3 and stat["after"] == 2 and stat["dropped"] == 1
+    rows = evolution.read_probe_history(out)
+    assert len(rows) == 2
+    assert next(r for r in rows if r["round"] == "R1")["passed"] == 9
+
+
+def test_read_probe_history_skips_broken_lines(tmp_path):
+    """坏行不能让整份历史读取失败。"""
+    out = str(tmp_path / "probe_history.jsonl")
+    with open(out, "w", encoding="utf-8") as f:
+        f.write('{"round": "R1", "tested": 1, "passed": 0}\n')
+        f.write("not json\n")
+        f.write("\n")
+        f.write('{"round": "R2", "tested": 2, "passed": 1}\n')
+    rows = evolution.read_probe_history(out)
+    assert [r["round"] for r in rows] == ["R1", "R2"]

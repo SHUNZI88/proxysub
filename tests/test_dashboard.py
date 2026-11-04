@@ -196,3 +196,47 @@ def test_real_repo_history_renders():
     page = dashboard.render_html(rounds)
     assert "<svg" in page and "</html>" in page
     assert page.count("<circle") == len(rounds)
+
+
+def test_load_rounds_dedupes_same_round(tmp_path):
+    """任务#118：同一轮次多次写入只保留最后一次——否则折线出现假峰，
+    「最新轮环比」会拿同一轮跟自己比恒为 0%。"""
+    p = tmp_path / "h.jsonl"
+    lines = [
+        {"ts": "2026-11-01T00:00:00Z", "round": "R1", "tested": 10, "passed": 1},
+        {"ts": "2026-11-01T00:00:00Z", "round": "R1", "tested": 10, "passed": 5},
+        {"ts": "2026-11-02T00:00:00Z", "round": "R2", "tested": 100, "passed": 50},
+    ]
+    p.write_text("\n".join(json.dumps(x) for x in lines), encoding="utf-8")
+    rounds = dashboard.load_rounds(p)
+    assert [r["round"] for r in rounds] == ["R1", "R2"]
+    assert rounds[0]["passed"] == 5      # 保留最后一次
+    assert len(rounds) == 2
+
+
+def test_small_sample_rounds_marked_and_styled(tmp_path):
+    """任务#118：低样本轮次标 small_sample，折线用空心点区分。"""
+    p = tmp_path / "h.jsonl"
+    lines = [
+        {"ts": "t1", "round": "R1", "tested": 5, "passed": 0},
+        {"ts": "t2", "round": "R2", "tested": 100, "passed": 50,
+         "small_sample": False},
+    ]
+    p.write_text("\n".join(json.dumps(x) for x in lines), encoding="utf-8")
+    rounds = dashboard.load_rounds(p)
+    assert rounds[0]["small_sample"] is True
+    assert rounds[1]["small_sample"] is False
+    svg = dashboard.trend_svg(rounds)
+    assert "dot small" in svg
+    # 大样本轮次仍是实心点
+    assert svg.count('class="dot"') == 1
+
+
+def test_explicit_small_sample_flag_overrides_tested(tmp_path):
+    """写入端显式标记优先于 tested 推断。"""
+    p = tmp_path / "h.jsonl"
+    p.write_text(json.dumps({"ts": "t", "round": "R", "tested": 100,
+                             "passed": 90, "small_sample": True}),
+                 encoding="utf-8")
+    rounds = dashboard.load_rounds(p)
+    assert rounds[0]["small_sample"] is True

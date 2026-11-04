@@ -502,6 +502,12 @@ def append_probe_history(report: dict, path: str = config.PROBE_HISTORY_FILE) ->
     """每轮写一行 jsonl（待测/通过/分源通过率），返回本行；CI 提交进 git。
 
     守卫：报告陈旧则跳过（不记过期轮次）。小、单行、可 grep。
+
+    幂等（2026-11-04 任务#118）：旧实现是无条件 append，同一轮被写到多次
+    （沙箱每轮跑完写一次 + CI 拉报告回写一次 + rebase 重放），实测 94 行里
+    只有 48 个唯一轮次、最多一轮重复 7 次——趋势图、累计贡献、通过率均值
+    全部被重复计数污染（10-24T08:22 那轮 30 测 30 过，重复后进一步放大成
+    「假 100%」）。改为按 round 覆盖写：同轮次已存在则替换，否则追加。
     """
     if _report_age_s(report) > config.VERIFICATION_MAX_AGE_S:
         return {}
@@ -518,10 +524,61 @@ def append_probe_history(report: dict, path: str = config.PROBE_HISTORY_FILE) ->
         "pass_rate": round(passed / tested, 4) if tested else 0.0,
         "by_origin": counts.get("passed_by_origin", {}),
         "top_sources": [{"src": s, "passed": p, "tested": t} for s, p, t in top],
+        "small_sample": tested < config.PROBE_HISTORY_MIN_SAMPLE,
     }
-    with open(path, "a", encoding="utf-8") as f:
-        f.write(json.dumps(line, ensure_ascii=False) + "\n")
+    rows = read_probe_history(path)
+    key = line.get("round")
+    if key:
+        rows = [r for r in rows if r.get("round") != key]
+    rows.append(line)
+    tmp = path + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        for r in rows:
+            f.write(json.dumps(r, ensure_ascii=False) + "\n")
+    os.replace(tmp, path)
     return line
+
+
+def read_probe_history(path: str = config.PROBE_HISTORY_FILE) -> list[dict]:
+    """读审计行为可消费列表；解析失败的行直接跳过（不因一行坏数据废掉全量）。"""
+    if not os.path.exists(path):
+        return []
+    out = []
+    with open(path, encoding="utf-8") as f:
+        for raw in f:
+            raw = raw.strip()
+            if not raw:
+                continue
+            try:
+                obj = json.loads(raw)
+            except Exception:
+                continue
+            if isinstance(obj, dict):
+                out.append(obj)
+    return out
+
+
+def normalize_probe_history(path: str = config.PROBE_HISTORY_FILE) -> dict:
+    """一次性清理历史重复：同轮次只留最后一条（数据最全的那次写入）。
+
+    返回 {"before": N, "after": M, "dropped": N-M}。
+    """
+    rows = read_probe_history(path)
+    before = len(rows)
+    seen = {}
+    order = []
+    for r in rows:
+        k = r.get("round")
+        if k not in seen:
+            order.append(k)
+        seen[k] = r            # 后来的覆盖先前的
+    kept = [seen[k] for k in order]
+    tmp = path + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        for r in kept:
+            f.write(json.dumps(r, ensure_ascii=False) + "\n")
+    os.replace(tmp, path)
+    return {"before": before, "after": len(kept), "dropped": before - len(kept)}
 
 
 # ------------------------------------------------------------------ 编排

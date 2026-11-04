@@ -184,6 +184,10 @@ BAD_SOURCES_FILE = "bad_sources.json"
 # Phase 2 进化引擎数据落盘
 CN_HISTORY_FILE = "cn_history.json"          # 节点级中国通过史（fp -> 通过/失败/延迟/出口）
 PROBE_HISTORY_FILE = "probe_history.jsonl"  # 每轮审计行（可 grep、随 CI 进 git）
+# 小样本门槛（2026-11-04 任务#118）：实测集常只有 14~30 个节点，单轮通过率
+# 统计意义极弱（0/5 与 40/50 同样是 0% 和 80%，但性质完全相反）。低于此
+# 样本量的轮次在 dashboard 折线中不参与「趋势」判断，只作明细留痕。
+PROBE_HISTORY_MIN_SAMPLE = 30
 LEARNED_THRESHOLDS_FILE = "learned_thresholds.json"  # 静态门槛自学习结果
 THRESHOLD_HISTORY_FILE = "threshold_history.json"    # 门槛变更审计（旧值/新值/样本/理由）
 # 协议分层证据积累（P2-b，2026-10-15）：跨轮累积分协议 tested/passed，

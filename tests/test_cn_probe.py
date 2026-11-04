@@ -1343,3 +1343,28 @@ def test_node_library_respects_limit(tmp_path):
     cn_probe.save_node_library([_lib_node(f"f{i}") for i in range(5)],
                                work, "2026-11-04T12:00:00Z")
     assert len(cn_probe.load_node_library(work, exclude_fps=set(), limit=2)) == 2
+
+
+def test_mark_final_flags_clears_inherited_true():
+    """任务#118：继承自 CI 文档的 final=True 必须被清掉。
+
+    实证本轮 311 条记录里 88 个未测节点（cn.ok=false）被标 final=True，
+    而真正通过的 4 个是 final=False——报告字段语义整个反了。
+    """
+    nodes = [
+        {"probe_name": "A", "final": True, "cn": {"ok": False}},   # 继承来的假 True
+        {"probe_name": "B", "final": True, "cn": {"ok": True}},    # 真通过
+        {"probe_name": "C", "final": False, "cn": {"ok": False}},
+    ]
+    passed = [n for n in nodes if n["cn"]["ok"]]
+    cnt = cn_probe.mark_final_flags(nodes, passed)
+    assert cnt == 1
+    assert {n["probe_name"]: n["final"] for n in nodes} == {
+        "A": False, "B": True, "C": False}
+
+
+def test_mark_final_flags_all_false_when_none_passed():
+    """无一通过时全部 final=False，不得留任何 True。"""
+    nodes = [{"probe_name": "A", "final": True}, {"probe_name": "B", "final": True}]
+    assert cn_probe.mark_final_flags(nodes, []) == 0
+    assert all(n["final"] is False for n in nodes)
