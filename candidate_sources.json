@@ -5,7 +5,7 @@
       "origin": "channel_web",
       "added": "2026-11-02",
       "first_seen": "2026-11-02",
-      "runs": 5,
+      "runs": 6,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -43,6 +43,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-04",
+          "count": 32,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ],
       "required_runs": 3
@@ -52,7 +59,7 @@
       "origin": "channel_web",
       "added": "2026-11-03",
       "first_seen": "2026-11-03",
-      "runs": 2,
+      "runs": 3,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -69,9 +76,30 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-04",
+          "count": 34,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ],
       "required_runs": 3
+    },
+    "https://raw.githubusercontent.com/ermaozi01/free_clash_vpn/main/subscribe/clash.yml": {
+      "repo": "ermaozi01/free_clash_vpn",
+      "stars": 826,
+      "repo_created": "2023-02-26T13:09:59Z",
+      "reputation": "ok",
+      "reputation_note": "stars=826,age=1346d",
+      "required_runs": 3,
+      "first_seen": "2026-11-04",
+      "initial_nodes": 30,
+      "runs": 0,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": []
     }
   },
   "rejected": {
