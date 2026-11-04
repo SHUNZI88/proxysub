@@ -240,3 +240,30 @@ def test_explicit_small_sample_flag_overrides_tested(tmp_path):
                  encoding="utf-8")
     rounds = dashboard.load_rounds(p)
     assert rounds[0]["small_sample"] is True
+
+
+def test_user_pool_kept_is_separate_from_pass_rate(tmp_path):
+    """任务#119：保活节点单独计数，不混入沙箱通过率。"""
+    p = tmp_path / "h.jsonl"
+    p.write_text(json.dumps({"ts": "t", "round": "R", "tested": 309,
+                             "passed": 6, "user_pool_kept": 6,
+                             "by_origin": {}, "top_sources": []}),
+                 encoding="utf-8")
+    rounds = dashboard.load_rounds(p)
+    r = rounds[0]
+    assert r["passed"] == 6 and r["user_pool_kept"] == 6
+    assert abs(r["pass_rate"] - 6 / 309) < 1e-4
+    svg = dashboard.trend_svg(rounds)
+    assert "另有本地实测保活 6 个" in svg
+    bars = dashboard.origin_bars(rounds)
+    assert "+6保活" in bars
+
+
+def test_user_pool_kept_defaults_to_zero_for_old_rows(tmp_path):
+    """老数据没有该字段时兼容为 0，不炸渲染。"""
+    p = tmp_path / "h.jsonl"
+    p.write_text(json.dumps({"ts": "t", "round": "R", "tested": 100,
+                             "passed": 20}), encoding="utf-8")
+    r = dashboard.load_rounds(p)[0]
+    assert r["user_pool_kept"] == 0
+    assert dashboard.origin_bars([r])

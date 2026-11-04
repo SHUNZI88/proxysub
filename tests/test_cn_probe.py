@@ -3,6 +3,7 @@
 import json
 import os
 import subprocess
+import sys
 import unittest.mock as mock
 
 import yaml
@@ -1368,3 +1369,131 @@ def test_mark_final_flags_all_false_when_none_passed():
     nodes = [{"probe_name": "A", "final": True}, {"probe_name": "B", "final": True}]
     assert cn_probe.mark_final_flags(nodes, []) == 0
     assert all(n["final"] is False for n in nodes)
+
+
+# ---------------------------------------------------------------- 任务#119
+def _write_pool(tmp_path, monkeypatch, recs, unrecoverable=None):
+    """把池文件写到临时目录，并把 config 指过去（绝对路径 join 生效）。"""
+    import time
+    now = time.time()
+    for key, rec in recs.items():
+        rec.setdefault("ts", now - 3600)
+        rec.setdefault("verdict", "alive")
+    path = tmp_path / "user_verified_pool.json"
+    path.write_text(json.dumps({"nodes": recs,
+                                "unrecoverable": unrecoverable or []},
+                               ensure_ascii=False), encoding="utf-8")
+    monkeypatch.setattr(config, "USER_POOL_FILE", str(path))
+    return path
+
+
+def _pool_rec(name, **extra):
+    r = {"name": name, "proxy": _proxy(name=name)}
+    r.update(extra)
+    return r
+
+
+def test_load_user_pool_keeps_alive_with_full_config(tmp_path, monkeypatch):
+    """alive 且配置完整才进池；dead / 超期记录不进。"""
+    import time
+    _write_pool(tmp_path, monkeypatch, {
+        "fp1": _pool_rec("用户实测A"),
+        "fp2": _pool_rec("用户判死", verdict="dead"),
+        "fp3": _pool_rec("已过期", ts=time.time() - 31 * 86400),
+        "fp4": {"name": "没配置", "verdict": "alive", "ts": time.time()},
+    })
+    monkeypatch.setattr(cn_probe, "gh_download", lambda *a, **k: False)
+    out = cn_probe.load_user_pool(str(tmp_path), "sub", {"user": {}})
+    assert [n["name"] for n in out] == ["用户实测A"]
+    n = out[0]
+    assert n["origin"] == "user_pool" and n["_user_verified"] is True
+    assert n["final"] is False and n["us_ok"] is False
+    assert n["probe_name"] and n["proxy"]["server"]
+    assert n["_user_stale"] is False
+
+
+def test_load_user_pool_marks_stale_evidence(tmp_path, monkeypatch):
+    """超 7 天只标 stale 待复验，不搞「一周集体失忆」式一刀切。"""
+    import time
+    _write_pool(tmp_path, monkeypatch, {
+        "fp1": _pool_rec("老证据", ts=time.time() - 10 * 86400),
+    })
+    monkeypatch.setattr(cn_probe, "gh_download", lambda *a, **k: False)
+    out = cn_probe.load_user_pool(str(tmp_path), "sub", {"user": {}})
+    assert len(out) == 1 and out[0]["_user_stale"] is True
+
+
+def test_load_user_pool_respects_user_dead_verdict(tmp_path, monkeypatch):
+    """dead 硬否决优先级高于池内 alive 记录（防旧记录复活死节点）。"""
+    _write_pool(tmp_path, monkeypatch, {"fp1": _pool_rec("后来被判死")})
+    learning = {"user": {"nodes": {"后来被判死": {
+        "result": "dead", "ts": __import__("time").time()}}}}
+    monkeypatch.setattr(cn_probe, "gh_download", lambda *a, **k: False)
+    assert cn_probe.load_user_pool(str(tmp_path), "sub", learning) == []
+
+
+def test_load_user_pool_missing_file_is_safe(tmp_path, monkeypatch):
+    monkeypatch.setattr(config, "USER_POOL_FILE",
+                        str(tmp_path / "not_exists.json"))
+    monkeypatch.setattr(cn_probe, "gh_download", lambda *a, **k: False)
+    assert cn_probe.load_user_pool(str(tmp_path), "sub", {"user": {}}) == []
+
+
+def test_pool_unrecoverable_is_reported(tmp_path, monkeypatch):
+    _write_pool(tmp_path, monkeypatch, {},
+                unrecoverable=["找不回配置的节点A", "节点B"])
+    assert cn_probe._pool_unrecoverable(str(tmp_path)) == [
+        "找不回配置的节点A", "节点B"]
+
+
+def test_user_pool_nodes_are_rankable(tmp_path, monkeypatch):
+    """池节点没有沙箱 results，排序函数不得因缺 probe_name/us_ok 崩掉。"""
+    _write_pool(tmp_path, monkeypatch, {"fp1": _pool_rec("用户实测A")})
+    monkeypatch.setattr(cn_probe, "gh_download", lambda *a, **k: False)
+    n = cn_probe.load_user_pool(str(tmp_path), "sub", {"user": {}})[0]
+    key = cn_probe.verified_rank(n, {}, {"survival": {}, "cn_hist": {},
+                                         "user": {}})
+    assert isinstance(key, tuple) and len(key) == 7
+
+
+def test_build_verified_config_user_pool_group_is_on_top():
+    """用户实测节点单独成组并置顶，客户端可一键切换到地面真相节点。"""
+    nodes = [
+        {"name": "沙箱节点", "probe_name": "x",
+         "proxy": _proxy(name="沙箱节点")},
+        {"name": "本地实测", "probe_name": "y", "_user_verified": True,
+         "proxy": _proxy(name="本地实测")},
+    ]
+    cfg = cn_probe.build_verified_config(nodes, {})
+    groups = cfg["proxy-groups"]
+    assert "✅ 本地实测" in [g["name"] for g in groups]
+    uv = next(g for g in groups if g["name"] == "✅ 本地实测")
+    assert uv["proxies"] == ["本地实测"]
+    assert groups[0]["proxies"][0] == "✅ 本地实测"
+    assert len(cfg["proxies"]) == 2
+
+
+def test_build_user_pool_excludes_dead_and_is_idempotent(tmp_path, monkeypatch):
+    """构建工具：dead 不入库、已有记录不重复写、缺失如实留痕。"""
+    from scripts import build_user_pool as bup
+    import time
+    probe = tmp_path / "user_probe.json"
+    probe.write_text(json.dumps({"nodes": {
+        "好节点": {"result": "alive", "ts": time.time()},
+        "坏节点": {"result": "dead", "ts": time.time()},
+        "无配置": {"result": "alive", "ts": time.time()},
+    }}, ensure_ascii=False), encoding="utf-8")
+    out = tmp_path / "pool.json"
+    monkeypatch.setattr(config, "USER_PROBE_FILE", str(probe))
+    monkeypatch.setattr(bup, "collect_sources", lambda *a, **k: {
+        "好节点": (_proxy(name="好节点"), "test"),
+        "坏节点": (_proxy(name="坏节点"), "test"),
+    })
+    monkeypatch.setattr(sys, "argv", ["build_user_pool.py", "--out", str(out),
+                                      "--workdir", str(tmp_path)])
+    assert bup.main() == 0
+    first = json.loads(out.read_text(encoding="utf-8"))
+    assert len(first["nodes"]) == 1
+    assert first["unrecoverable"] == ["无配置"]
+    assert bup.main() == 0
+    assert json.loads(out.read_text(encoding="utf-8"))["nodes"] == first["nodes"]

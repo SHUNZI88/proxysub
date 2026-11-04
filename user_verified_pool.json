@@ -1,0 +1,194 @@
+{
+ "nodes": {
+  "b52d11339f8101c955cffb1d1304ad40951dbfb1": {
+   "name": "🇺🇸 美国 | USA #1",
+   "proxy": {
+    "name": "🇺🇸 美国 | USA #1",
+    "password": "8deb189a-3aed-4865-843b-b72dae954c46",
+    "port": 443,
+    "server": "179.253.255.7",
+    "skip-cert-verify": true,
+    "sni": "api.85s.me",
+    "type": "trojan"
+   },
+   "verdict": "alive",
+   "ts": 1793234122,
+   "recovered_from": "probe_config.yaml"
+  },
+  "4e503222cbb6cabf0a25e9a70733ed63abb9041c": {
+   "name": "A🟢🇹🇼res[🎬🤖📺🎭]_dokng.com_e59ee48e",
+   "proxy": {
+    "alpn": [
+     "http/1.1"
+    ],
+    "client-fingerprint": "chrome",
+    "name": "A🟢🇹🇼res[🎬🤖📺🎭]_dokng.com_e59ee48e",
+    "password": "0324fbc29561",
+    "port": 443,
+    "server": "684616s4.df6h451rh.xin",
+    "skip-cert-verify": true,
+    "sni": "px.ads.linkedin.com",
+    "type": "anytls"
+   },
+   "verdict": "alive",
+   "ts": 1793234122,
+   "recovered_from": "pending_probe.json"
+  },
+  "b9f52371f515ff89a62e5d3cd68351291fe898ad": {
+   "name": "🇹🇼 🇨🇳 台湾 | TWN",
+   "proxy": {
+    "name": "🇹🇼 🇨🇳 台湾 | TWN",
+    "password": "0324fbc29561",
+    "port": 443,
+    "server": "er8u54dh.df6h451rh.xin",
+    "skip-cert-verify": true,
+    "sni": "px.ads.linkedin.com",
+    "type": "anytls",
+    "udp": true
+   },
+   "verdict": "alive",
+   "ts": 1793234122,
+   "recovered_from": "main_clash.yaml"
+  },
+  "897a39a6c08946631b3f88dd9fb2695e526cf48f": {
+   "name": "D🔴🇫🇷hos[🎬🤖📺🎭]_dokng.com_c08de670",
+   "proxy": {
+    "alpn": [
+     "h3"
+    ],
+    "auth-str": "dongtaiwang.com",
+    "down": "55 Mbps",
+    "name": "D🔴🇫🇷hos[🎬🤖📺🎭]_dokng.com_c08de670",
+    "port": 24667,
+    "protocol": "udp",
+    "server": "62.210.70.191",
+    "skip-cert-verify": true,
+    "sni": "bing.com",
+    "type": "hysteria",
+    "up": "11 Mbps"
+   },
+   "verdict": "alive",
+   "ts": 1793234122,
+   "recovered_from": "remote_now.yaml"
+  },
+  "1cba8b0d04ae7c98f6d76b4f519488cb9440fc80": {
+   "name": "🇩🇪DE_2|1.3MB/s",
+   "proxy": {
+    "alpn": [
+     "http/1.1"
+    ],
+    "client-fingerprint": "chrome",
+    "encryption": "none",
+    "name": "🇩🇪DE_2|1.3MB/s",
+    "network": "ws",
+    "port": 443,
+    "server": "lvi.su",
+    "tls": true,
+    "type": "vless",
+    "udp": true,
+    "uuid": "7b91b2c3-8af3-449b-a555-00c9460989f4",
+    "ws-opts": {
+     "headers": {
+      "Host": "lvi.su",
+      "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.63 Safari/537.36"
+     },
+     "path": "/vpn-relay?token=27fede42482b3c29d4c1c9640876c250&pool=whitelist2"
+    },
+    "xudp": true,
+    "packet-encoding": "xudp",
+    "servername": "lvi.su"
+   },
+   "verdict": "alive",
+   "ts": 1793234122,
+   "recovered_from": "remote_now.yaml"
+  },
+  "071ce1aedb722eb43cf92c3a7aa0c2a422300a10": {
+   "name": "🇨🇿CZ_3|2.9MB/s",
+   "proxy": {
+    "alpn": [
+     "h2",
+     "http/1.1"
+    ],
+    "client-fingerprint": "firefox",
+    "flow": "xtls-rprx-vision",
+    "name": "🇨🇿CZ_3|2.9MB/s",
+    "network": "tcp",
+    "port": 2063,
+    "reality-opts": {
+     "public-key": "MMpt_jWc4J3oySBdf5sPDVRkiWlZmOObth6A1scM9BM",
+     "short-id": ""
+    },
+    "server": "cz-prg.dontblockmepls.com",
+    "tls": true,
+    "type": "vless",
+    "udp": true,
+    "uuid": "b18d5990-96eb-4587-a386-7f8ef7591e6a",
+    "xudp": true,
+    "packet-encoding": "xudp",
+    "servername": "rusbid.de"
+   },
+   "verdict": "alive",
+   "ts": 1793234122,
+   "recovered_from": "remote_now.yaml"
+  },
+  "42a01ec7cac0e5003be0ab5ba418a91e6e0e2eaf": {
+   "name": "A🟢🇭🇰res[🎬🤖📺🎭]_dokng.com_42aa23bf",
+   "proxy": {
+    "alpn": [
+     "http/1.1"
+    ],
+    "client-fingerprint": "chrome",
+    "name": "A🟢🇭🇰res[🎬🤖📺🎭]_dokng.com_42aa23bf",
+    "password": "0324fbc29561",
+    "port": 443,
+    "server": "56481.df6h451rh.xin",
+    "skip-cert-verify": true,
+    "sni": "images.ctfassets.net",
+    "type": "anytls"
+   },
+   "verdict": "alive",
+   "ts": 1793234122,
+   "recovered_from": "main_clash.yaml"
+  },
+  "40b6d4b6711c6326015b2965a1b5ddd9edafe165": {
+   "name": "vless-1932656551-2447",
+   "proxy": {
+    "name": "vless-1932656551-2447",
+    "type": "vless",
+    "server": "cz-prg.dontblockmepls.com",
+    "port": 2063,
+    "uuid": "b18d5990-96eb-4587-a386-7f8ef7591e6a",
+    "udp": true,
+    "tls": true,
+    "client-fingerprint": "firefox",
+    "flow": "xtls-rprx-vision",
+    "reality-opts": {
+     "public-key": "MMpt_jWc4J3oySBdf5sPDVRkiWlZmOObth6A1scM9BM",
+     "short-id": ""
+    },
+    "servername": "rusbid.de"
+   },
+   "verdict": "alive",
+   "ts": 1793234122,
+   "recovered_from": "remote_now.yaml"
+  }
+ },
+ "_说明": "用户本地实测判定 alive 且已找回完整配置的节点常驻池。由 scripts/build_user_pool.py 生成/更新；cn_probe 每轮无条件并入主资产，沙箱复测结果不否决（视角不等价）。",
+ "updated_at": "2026-11-04T16:03:07Z",
+ "unrecoverable": [
+  "A🟢🇭🇰res[🎬🤖📺🎪]_dokng.com_078c9920",
+  "A🟢🇹🇼res[🤖📺🎪🔍]_dokng.com_a3392ac4",
+  "C🟠🇺🇸hos[🎬🤖📺🎭]_dokng.com_1794eec3",
+  "C🟠🇺🇸hos[🎬🤖📺🎭]_dokng.com_8a98e9c8",
+  "vless-1933859855-1669",
+  "❓Other_1|2.6MB/s",
+  "🇩🇪DE_1|1.0MB/s",
+  "🇩🇪DE_1|1.2MB/s",
+  "🇩🇪DE_2|1.1MB/s",
+  "🇬🇧GB_1|3.2MB/s",
+  "🇮🇳 IN Delhi 01#2",
+  "🇳🇱NL_4|1.1MB/s",
+  "🇳🇱NL_9|3.0MB/s",
+  "🇽🇽 XX Unknown 47"
+ ]
+}

@@ -452,7 +452,10 @@ def learn_thresholds(report: dict, out_path: str = config.LEARNED_THRESHOLDS_FIL
 
     counts = report.get("counts", {})
     tested = counts.get("tested", 0)
-    passed = counts.get("passed", 0)
+    # 任务#119：counts.passed 是「发布集总数」，含用户实测保活节点；而
+    # tested 只统计沙箱拨测候选。二者相除会把分子放大、通过率虚高，进而
+    # 误触发 tighten_if_high_pass 收紧闸门。门槛自学习必须只看沙箱实测。
+    passed = counts.get("sandbox_passed", counts.get("passed", 0))
     pass_rate = (passed / tested) if tested else 0.0
     # 用 passed 节点的延迟分布定位 China 真实延迟水位
     lats = [n["cn"].get("latency_ms") for n in report.get("nodes", [])
@@ -513,7 +516,9 @@ def append_probe_history(report: dict, path: str = config.PROBE_HISTORY_FILE) ->
         return {}
     counts = report.get("counts", {})
     tested = counts.get("tested", 0)
-    passed = counts.get("passed", 0)
+    # 任务#119：趋势图的通过率只反映沙箱实测，不混入用户实测保活节点
+    # （后者不参与沙箱拨测，分子分母口径必须一致，否则又是假峰）。
+    passed = counts.get("sandbox_passed", counts.get("passed", 0))
     by_source = counts.get("by_source", {})
     top = sorted(((s, c["passed"], c["tested"]) for s, c in by_source.items()),
                  key=lambda x: (-x[1], -x[2]))[:5]
@@ -522,6 +527,7 @@ def append_probe_history(report: dict, path: str = config.PROBE_HISTORY_FILE) ->
         "round": report.get("tested_round") or report.get("round_id"),
         "tested": tested, "passed": passed,
         "pass_rate": round(passed / tested, 4) if tested else 0.0,
+        "user_pool_kept": int(counts.get("user_pool_kept", 0) or 0),
         "by_origin": counts.get("passed_by_origin", {}),
         "top_sources": [{"src": s, "passed": p, "tested": t} for s, p, t in top],
         "small_sample": tested < config.PROBE_HISTORY_MIN_SAMPLE,

@@ -768,6 +768,76 @@ def load_node_library(workdir: str, exclude_fps: set[str], *,
     return out
 
 
+def load_user_pool(workdir: str, tag: str, learning: dict | None) -> list[dict]:
+    """用户实测验证常驻池（任务#119）。
+
+    返回「用户本地判定 alive 且完整配置可恢复」的节点，每轮无条件并入主资产。
+    设计依据（实证，勿删）：
+      * 用户家宽与沙箱（腾讯云上海）是两条不同路径，8 个用户实测 alive 的
+        节点在沙箱 0 通过，其中 6 个握手失败、2 个仅 38~40KB/s；用沙箱结果
+        否决用户地面真相是系统性误杀。
+      * 本轮 310 个候选中 294 个在 delay 初筛即被淘汰，根本不在 degraded 里，
+        旧的 select_alive_keeps 对它们完全无感——这是「越测越少」的断点。
+    因此池内节点不参与沙箱准入判定，沙箱结果只用于排序/标注。dead 仍硬否决，
+    超时按 config.USER_POOL_MAX_AGE_S 退役（不搞「一周集体失忆」式一刀切）。
+    """
+    path = os.path.join(REPO_ROOT, config.USER_POOL_FILE)
+    if not os.path.exists(path):
+        alt = os.path.join(workdir, config.USER_POOL_FILE)
+        if not os.path.exists(alt):
+            gh_download(tag, config.USER_POOL_FILE, alt)
+        if os.path.exists(alt):
+            path = alt
+    if not os.path.exists(path):
+        return []
+    try:
+        with open(path, encoding="utf-8") as f:
+            recs = (json.load(f) or {}).get("nodes") or {}
+    except Exception as e:
+        log(f"警告: 用户验证池读取失败: {type(e).__name__}: {e}")
+        return []
+    now = time.time()
+    out: list[dict] = []
+    for i, (fp, rec) in enumerate(recs.items()):
+        if str(rec.get("verdict") or "").lower() != "alive":
+            continue
+        p = rec.get("proxy")
+        if not isinstance(p, dict) or not p.get("server"):
+            continue
+        ts = float(rec.get("ts") or 0)
+        if ts and (now - ts) > config.USER_POOL_MAX_AGE_S:
+            continue
+        name = str(rec.get("name") or p.get("name") or "node")
+        if user_verdict({"fp": fp, "name": name}, learning) == "dead":
+            continue
+        out.append({
+            "fp": fp,
+            "name": name,
+            "proxy": dict(p),
+            "origin": "user_pool",
+            "final": False,
+            "us_ok": False,
+            "probe_name": f"userpool_{i}",
+            "_user_verified": True,
+            "_user_ts": ts,
+            "_user_stale": bool(ts and (now - ts) > config.USER_POOL_STALE_S),
+        })
+    return out
+
+
+def _pool_unrecoverable(workdir: str) -> list[str]:
+    """池里没找回配置的用户 alive 节点名（如实留痕，供用户补录，绝不编造）。"""
+    for path in (os.path.join(REPO_ROOT, config.USER_POOL_FILE),
+                 os.path.join(workdir, config.USER_POOL_FILE)):
+        if os.path.exists(path):
+            try:
+                with open(path, encoding="utf-8") as f:
+                    return list((json.load(f) or {}).get("unrecoverable") or [])
+            except Exception:
+                return []
+    return []
+
+
 def dedup_nodes(groups: list[tuple[str, list[dict]]]) -> list[dict]:
     """按 (origin 优先级, 出现顺序) 去重；探测名保证全局唯一（mihomo 硬性要求）。
 
@@ -1460,6 +1530,14 @@ def build_verified_config(nodes: list[dict], results: dict | None = None) -> dic
                        "proxies": ai_names, "url": config.PROBE_URL,
                        "interval": 300, "tolerance": 50})
         groups[0]["proxies"].insert(0, "🤖 AI 可用")
+    # 任务#119：用户家宽实测验证过的节点单独成组并置顶。它们与沙箱实测节点
+    # 证据来源不同（沙箱 0 通过 ≠ 本地不可用），混在自动组里用户无从分辨。
+    uv_names = [nm for n, nm in zip(nodes, names) if n.get("_user_verified")]
+    if uv_names:
+        groups.append({"name": "✅ 本地实测", "type": "url-test",
+                       "proxies": uv_names, "url": config.PROBE_URL,
+                       "interval": 300, "tolerance": 50})
+        groups[0]["proxies"].insert(0, "✅ 本地实测")
     if classify_proxy is not None:
         regions: dict[str, list[str]] = {}
         for p in compliant:
@@ -1614,6 +1692,13 @@ def main() -> int:
         workdir, exclude_fps={n["fp"] for n in carry})
     # 节点库复测（任务#117）：把「历史通过过、但已滑出最近两轮资产」的节点
     # 捞回复测集。这是打破「通过少 → carryover 少 → 下轮更少」恶性循环的关键。
+    # 任务#119：节点库持久化。原实现只写 /tmp/cn_probe，沙箱重启或目录清理
+    # 即全部失忆，#117 建的跨轮节点库等于没有持久化。本地缺失时先从
+    # release 恢复，发布后再回传（见 8.6）。
+    if (config.NODE_LIBRARY_PERSIST
+            and not os.path.exists(_lib_path(workdir))
+            and gh_download(tag, config.NODE_LIBRARY_FILE, _lib_path(workdir))):
+        log("节点库: 从 release 恢复（本地缺失）")
     carry += load_node_library(
         workdir, exclude_fps={n["fp"] for n in carry})
     # 任务#106：非 fresh 轮也加载交接文档（当前/残留）——闸门只挡「同轮
@@ -1896,8 +1981,34 @@ def main() -> int:
             log(f"用户实测保活: {len(_ukeep)} 个用户验证可用的节点测速落慢档"
                 f"但延迟达标（≤{CN_MAX_PUBLISH_LATENCY_MS}ms），保留主资产")
 
+    # 6.9) 用户验证常驻池（任务#119，2026-11-04）：把「用户本地实测 alive 且
+    # 完整配置已存档」的节点无条件并入主资产。与 6.8 的区别：6.8 只救得回
+    # 本轮 delay 初筛通过、后续落慢档的节点；而实证本轮 310 个候选里 294 个
+    # 在 delay 初筛就被淘汰（沙箱路径与家宽不等价），6.8 对它们完全无感。
+    # 池内节点不参与沙箱准入判定，也不冒充「本轮实测通过」——报告里单独标注
+    # via=user_verified，用户可自行区分两类证据。dead 硬否决与 30 天退役仍在。
+    pool_nodes = load_user_pool(workdir, tag, learning)
+    pool_add: list[dict] = []
+    if pool_nodes:
+        have = {n["fp"] for n in verified} | {n["fp"] for n in degraded}
+        pool_add = [n for n in pool_nodes if n["fp"] not in have]
+        if pool_add:
+            verified = sorted(verified + pool_add,
+                              key=lambda n: verified_rank(n, results, learning))
+            stale = sum(1 for n in pool_add if n["_user_stale"])
+            dup = len(pool_nodes) - len(pool_add)
+            log(f"用户验证常驻池: {len(pool_add)} 个本地实测 alive 节点并入主资产"
+                f"（不依赖沙箱复测）"
+                + (f"，其中 {stale} 个证据已超 "
+                   f"{config.USER_POOL_STALE_S // 86400} 天建议复验" if stale else "")
+                + (f"；另有 {dup} 个已在本轮发布/降级集内，去重未重复计入" if dup else ""))
+        else:
+            log(f"用户验证常驻池: {len(pool_nodes)} 个节点均已在本轮发布集内")
+    else:
+        log("用户验证常驻池: 无可用记录")
+
     by_origin = {o: sum(1 for n in verified if n["origin"] == o)
-                 for o in ("pending", "rescue", "carryover")}
+                 for o in ("pending", "rescue", "carryover", "user_pool")}
     # 分源/分协议聚合（Phase 2.2）：tested/passed 双口径，供 CI 源级评分与门槛自学习
     # 分源仅统计带 src 的节点（carryover 等无源节点不归任何源，避免产生 "?" 伪源
     # 污染源级评分）；分协议仍覆盖全部节点。
@@ -1924,7 +2035,8 @@ def main() -> int:
         for label in AI_TARGETS
     }
     log(f"验证集: {len(verified)} 个（pending {by_origin['pending']} / "
-        f"rescue {by_origin['rescue']} / carryover {by_origin['carryover']}）")
+        f"rescue {by_origin['rescue']} / carryover {by_origin['carryover']} / "
+        f"用户实测保活 {by_origin['user_pool']}）")
     if ai_probed:
         log(f"AI 可达性: 探测 {len(ai_probed)} 个，任一可达 {len(ai_reach)}，"
             f"API 层可用 {len(ai_api_ok)}（分域名: "
@@ -1949,11 +2061,20 @@ def main() -> int:
             "cn_ok": "中国实测可用性（本沙箱，延迟测试）",
             "ai": "AI 服务可达性（本沙箱经节点探测 chatgpt/claude/gemini/"
                   "copilot/openai_api；证据+排序信号，不构成闸门）",
-            "note": "两维度探测目标/判定标准不同，不可互相替代或合并统计",
+            "user_pool": "用户本地实测 alive 且配置已存档的节点；沙箱与家宽"
+                         "路径不等价，故不参与沙箱准入判定，单独标注不改 final 语义",
+            "note": "两维度探测目标/判定标准不同，不可互相替代或合并统计；"
+                    "counts.passed 为发布集总数（含用户实测保活），"
+                    "counts.sandbox_passed 才是本轮沙箱实测通过数",
         },
         "counts": {
             "tested": len(nodes),
             "passed": len(verified),
+            # 任务#119：发布集含两类证据，分开计数，避免把「用户实测保活」
+            # 误读成「本轮沙箱新测通过」（nodes[].final 只标后者）。
+            "sandbox_passed": len(passed),
+            "published_sandbox": len(verified) - len(pool_add),
+            "user_pool_kept": len(pool_add),
             # 慢档统计（任务#97）：快档不足但有真实流量的节点数，仅留痕
             "degraded": len(degraded) + len(ai_slow),
             # AI 慢档提级数（6.6）：已并入主资产
@@ -1976,6 +2097,22 @@ def main() -> int:
             "cn": results.get(n["probe_name"], {}),
             "ai": results.get(n["probe_name"], {}).get("ai"),
         } for n in nodes],
+        # 任务#119：发布集逐节点列出证据来源，用户可直接核对「哪些是本地
+        # 实测验证过的、哪些是沙箱本轮新测的」，不再混在一个数字里。
+        "published_nodes": [{
+            "name": n["name"],
+            "fp": n["fp"],
+            "type": n["proxy"].get("type"),
+            "via": "user_verified" if n.get("_user_verified") else "sandbox_pass",
+            "evidence_age_d": (round((time.time() - n["_user_ts"]) / 86400, 1)
+                               if n.get("_user_ts") else None),
+        } for n in verified],
+        "user_pool": {
+            "total": len(pool_nodes),
+            "kept": len(pool_add),
+            "stale": sum(1 for n in pool_add if n["_user_stale"]),
+            "unrecoverable": _pool_unrecoverable(workdir),
+        },
         "published": False,
     }
     # 继承主资产归属信号（2026-10-17 修复）：从 release 现有 report 读取最近
@@ -2082,6 +2219,20 @@ def main() -> int:
                                    stamp.strftime("%Y-%m-%dT%H:%M:%SZ"))
         log(f"节点库存档: 本轮 {_lib_n} 个节点（通过 {len(verified)} + "
             f"慢档 {len(degraded)}）")
+        # 任务#119：回传 release，避免沙箱重启后失忆；同时把用户验证池一并
+        # 持久化，保证换沙箱也能读回地面真相。
+        if config.NODE_LIBRARY_PERSIST and not args.dry_run:
+            _pushed = []
+            for _f in (_lib_path(workdir),
+                       os.path.join(REPO_ROOT, config.USER_POOL_FILE)):
+                if os.path.exists(_f):
+                    ok, err = upload_asset_with_retry(tag, _f)
+                    if ok:
+                        _pushed.append(os.path.basename(_f))
+                    else:
+                        log(f"警告: 持久化 {os.path.basename(_f)} 失败: {err}")
+            if _pushed:
+                log(f"持久化到 release: {', '.join(_pushed)}")
     except Exception as e:
         log(f"警告: 节点库存档失败（不影响发布）: {e}")
     with open(report_path, "w", encoding="utf-8") as f:
@@ -2107,8 +2258,16 @@ def main() -> int:
     except Exception as e:  # 学习回写失败绝不能影响已完成的发布
         log(f"警告: 学习回写失败（不影响本轮发布）: {type(e).__name__}: {e}")
 
-    log(f"发布完成: 主资产 {len(uploaded)} 个 + {config.VERIFICATION_REPORT_FILE}"
-        f"（round {round_id}）")
+    # 任务#119：旧日志「主资产 4 个」实际是 4 个格式文件，被反复误读成
+    # 「只有 4 个节点」，直接触发「怎么越来越少」的误判。口径写全。
+    # 注意用「发布集内沙箱来源数」而非 len(passed)：后者是本轮拨测通过数，
+    # 其中若干已因高延迟/稳定性降级到第二资产，与保活数相加会超过发布集
+    # 总数（本轮实证 6+6≠11），又是一个假数字。
+    _pub_sandbox = len(verified) - len(pool_add)
+    log(f"发布完成: {len(verified)} 个节点（发布集内沙箱来源 {_pub_sandbox} + "
+        f"用户实测保活 {len(pool_add)}；本轮沙箱拨测通过 {len(passed)}），"
+        f"已刷新 {len(uploaded)}/{len(paths)} 个格式资产 + "
+        f"{config.VERIFICATION_REPORT_FILE}（round {round_id}）")
     return 0
 
 

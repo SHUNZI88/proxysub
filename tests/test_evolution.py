@@ -557,3 +557,26 @@ def test_read_probe_history_skips_broken_lines(tmp_path):
         f.write('{"round": "R2", "tested": 2, "passed": 1}\n')
     rows = evolution.read_probe_history(out)
     assert [r["round"] for r in rows] == ["R1", "R2"]
+
+
+def test_append_probe_history_excludes_user_pool_from_pass_rate(tmp_path):
+    """任务#119：发布集含保活节点时，趋势通过率只看沙箱实测，防假峰。
+
+    counts.passed 是发布集总数（含用户实测保活），而 tested 只统计沙箱
+    拨测候选；若拿前者当分子，通过率会虚高并误触发门槛收紧。
+    """
+    report = _mk_report(tested=200, passed=40)
+    report["counts"]["sandbox_passed"] = 40
+    report["counts"]["user_pool_kept"] = 8
+    report["counts"]["passed"] = 48          # 40 沙箱 + 8 保活
+    line = evolution.append_probe_history(report, str(tmp_path / "h.jsonl"))
+    assert line["passed"] == 40
+    assert abs(line["pass_rate"] - 0.2) < 1e-3
+    assert line["user_pool_kept"] == 8
+
+
+def test_append_probe_history_falls_back_for_old_reports(tmp_path):
+    """旧报告没有 sandbox_passed 字段时兼容回退，不把通过数清零。"""
+    report = _mk_report(tested=200, passed=40)
+    line = evolution.append_probe_history(report, str(tmp_path / "h.jsonl"))
+    assert line["passed"] == 40 and line["user_pool_kept"] == 0

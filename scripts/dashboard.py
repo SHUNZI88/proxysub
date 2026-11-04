@@ -81,6 +81,12 @@ def _norm_round(obj: object) -> dict | None:
                 except (TypeError, ValueError):
                     continue
     rate = passed / tested if tested else 0.0
+    # 任务#119：写入端把「用户实测保活」节点单独计数，不计入沙箱通过率；
+    # 面板如实展示该数字，避免把发布集数量误读成沙箱实测通过数。
+    try:
+        user_pool_kept = int(obj.get("user_pool_kept") or 0)
+    except (TypeError, ValueError):
+        user_pool_kept = 0
     # 小样本轮次（2026-11-04 任务#118）：实测集常只有 14~30 个节点，单轮
     # 通过率不具统计效力。写入端打 small_sample 标记；老行按 tested 推断。
     small = obj.get("small_sample")
@@ -92,6 +98,7 @@ def _norm_round(obj: object) -> dict | None:
         "tested": tested,
         "passed": passed,
         "pass_rate": rate,
+        "user_pool_kept": user_pool_kept,
         "by_origin": origins,
         "top_sources": top,
         "small_sample": bool(small),
@@ -175,8 +182,11 @@ def trend_svg(rounds: list[dict]) -> str:
     parts.append(f'<polyline points="{pts}" class="line"/>')
     for i, r in enumerate(rounds):
         cx, cy = x(i), y(r["pass_rate"])
-        title = (f"{r['ts'] or r['round']}｜通过率 {_fmt_pct(r['pass_rate'])}"
+        title = (f"{r['ts'] or r['round']}｜沙箱通过率 {_fmt_pct(r['pass_rate'])}"
                  f"（{r['passed']}/{r['tested']}）")
+        if r.get("user_pool_kept"):
+            title += (f"｜另有本地实测保活 {r['user_pool_kept']} 个"
+                      f"（不参与沙箱拨测，不计入通过率）")
         # 小样本轮次用空心点区分（任务#118）：不参与趋势判断，避免
         # 「0/5」与「40/50」在折线上被同等对待。
         cls = "dot small" if r.get("small_sample") else "dot"
@@ -213,8 +223,10 @@ def origin_bars(rounds: list[dict]) -> str:
             f'<span class="bar-label" title="{html.escape(r["ts"] or r["round"])}">'
             f"{html.escape((r['ts'] or r['round'])[5:16])}</span>"
             f'<span class="bar">{"".join(segs)}</span>'
-            f'<span class="bar-num">{r["passed"]}/{r["tested"]}</span>'
-            f"</div>")
+            f'<span class="bar-num">{r["passed"]}/{r["tested"]}'
+            + (f'+{r["user_pool_kept"]}保活' if r.get("user_pool_kept") else "")
+            + '</span>'
+            + f"</div>")
     return "".join(rows)
 
 
