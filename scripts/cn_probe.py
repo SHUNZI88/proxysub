@@ -105,6 +105,15 @@ SPEED_TEST_TIMEOUT_S = 10        # 单源单次测速硬超时（秒）
 # 快档：至少 2 个源各自达到该速率才算真快（单源达标可能是该源被特殊优化）
 REAL_MIN_BYTES_PER_SEC = 128 * 1024   # 128KB/s ≈ 1Mbps，网页/视频可用底线
 SPEED_MIN_SOURCES_OK = 2              # 通过源数下限（共 3 源交叉）
+# 源能力差异（2026-11-04 实证，任务#117）：三个测速源的固有上限天差地别——
+# 沙箱直连 CF 6356KB/s、OVH 3126KB/s、阿里云 15716KB/s，但经免费节点代理后
+# 阿里云中位 72KB/s、OVH 中位 61KB/s、CF 中位 0KB/s。用统一的 128KB/s 去卡
+# 每个源，等于要求 OVH 这条慢链路达标——本轮 4 个「阿里云 306~1054KB/s」的
+# 好节点就因「只有 1 源达标 < 2」被整批判死，是「节点越来越少」的直接成因。
+# 改为双档判据：1 源强达标（≥128KB/s）即可，或 2 源弱达标（≥48KB/s）。
+WEAK_MIN_BPS = 48 * 1024              # 弱达标速率下限（≈384Kbps，能开网页）
+WEAK_MIN_BYTES = 256 * 1024           # 弱达标下载量下限（防「慢慢凑数」）
+FLOW_MIN_BYTES = 256 * 1024           # 「该源确有真实流量」的计数门槛
 # 稳定性采样（2026-10-26）：单次测速只反映瞬时。「先快后断」的节点第一次
 # 能到 768KB、5 分钟后归零（实证 8 个发布节点里 6 个如此）。故要求分两个
 # 时间窗口各测一次，两次都达标才算稳定。
@@ -115,12 +124,14 @@ REAL_MIN_BYTES = 768 * 1024   # 单次采样至少下载 768KB（≈96KB/s）才
 # 依据：用户本地测速只要求「有延迟反应」，32KB（≈4KB/s）即有明显体感；
 # 旧口径一刀切淘汰了大批「能连但慢」节点，是 326 节点源 0 通过的成因之一。
 REAL_SLOW_MIN_BYTES = 32 * 1024
-# 主资产延迟上限（2026-10-24 设立 2500ms，2026-11-04 收紧至 1500ms）。
-# 实证：已发布 25 个通过节点中 12 个 RTT>1.5s（最高 3.2s），沙箱「能通」
-# 但用户本地体感即「不能用」。2026-11-04 用户 15 节点截图复核：213/248/259ms
-# 可用、980ms 勉强可用、2646ms 起全部「超时/失败」——2500ms 仍过宽，
-# 收到 1500ms（给 980ms 留 1.5 倍余量，同时挡住 2.6s+ 的废节点）。
-CN_MAX_PUBLISH_LATENCY_MS = 1500
+# 主资产延迟上限（2026-10-24 设立 2500ms → 11-04 收紧 1500ms → 11-04 回调 3000ms）。
+# 回调理由（任务#117 自我纠错）：1500ms 的依据是「用户客户端实测 2646ms 起全超时」，
+# 但**客户端 RTT ≠ 沙箱 RTT**——两者路由、TLS 栈、并发度都不同，不能直接换算。
+# 本轮实证反例：RTT 1839ms / 3297ms 的节点真实下载 12.9MB / 11.4MB、398 / 659KB/s，
+# 是全批仅有的两个真快节点，却被 1500ms 闸门踢出主资产；而提级进来的 1064/1414ms
+# 节点速度只有 114/96KB/s。**延迟高但吞吐好 = 握手慢链路通，不该当废节点**。
+# 结论：速度是硬判据，延迟降为排序因子 + 5000ms 极端兜底（挡真死节点）。
+CN_MAX_PUBLISH_LATENCY_MS = 3000
 REAL_PROBE_URLS = [           # 仅作出口可达性辅助参考，不再单独作为闸门
     "https://www.google.com/robots.txt",
     "https://www.cloudflare.com/cdn-cgi/trace",
@@ -359,6 +370,26 @@ def auth_selfcheck() -> bool:
         )
         return False
     return True
+
+
+def _official_url_map() -> dict:
+    """构造 src_key(url) -> url 映射（任务#117）。
+
+    报告里 by_source 的键是 `owner/repo`，而 source_scores.json 的主键是完整
+    URL。不传映射时 evolution 会写「影子短键」，主 URL 永远拿不到 cn 维度——
+    实证 79 源仅 26 个有 cn 实证，头部零产源（311 测 0 通过）恰好是盲区。
+    """
+    try:
+        with open(os.path.join(REPO_ROOT, "sources.json"), encoding="utf-8") as f:
+            src = json.load(f)
+    except Exception:
+        return {}
+    out: dict = {}
+    for u in (src.get("official") or []):
+        url = u.get("url") if isinstance(u, dict) else u
+        if url:
+            out.setdefault(common.src_key(url), url)
+    return out
 
 
 def release_assets(tag: str) -> list[dict]:
@@ -815,6 +846,38 @@ def _speed_once(proxy: str, source: tuple[str, str], budget: int) -> dict:
     return {"source": name, "ok": ok, "blocked": False, **res}
 
 
+def judge_speed_round(details: list[dict]) -> bool:
+    """单轮测速判据（任务#117 双档判据，纯函数便于回归）。
+
+    背景：三个测速源经免费节点代理后的固有带宽差异极大（本轮实测中位：
+    阿里云 72KB/s、OVH 61KB/s、CF 0KB/s），而沙箱直连时三者分别有
+    15716/3126/6356KB/s。用统一的 128KB/s 并列卡每个源，等于要求最慢的
+    源也达标——本轮 4 个「阿里云 306~1054KB/s、OVH 仅 64~109KB/s」的
+    好节点全被判死，是「节点越来越少」的直接成因。
+
+    新判据（二者其一 + 流量源计数）：
+      - strong：单源 ≥128KB/s 且下载 ≥768KB —— 1 个即证明链路真有带宽；
+      - weak  ：单源 ≥48KB/s 且下载 ≥256KB —— 2 个互证（免费节点常态）。
+    另要求「有真实流量的源（≥256KB）」≥2 个，挡掉单源偶发放行；
+    可用源 ≤1 时（目标站集体 429），退化为单源强达标判决。
+    """
+    usable = [d for d in details if not d["blocked"]]
+    strong = [d for d in usable
+              if d["bps"] >= REAL_MIN_BYTES_PER_SEC and d["bytes"] >= REAL_MIN_BYTES]
+    weak = [d for d in usable
+            if d["bps"] >= WEAK_MIN_BPS and d["bytes"] >= WEAK_MIN_BYTES]
+    flowing = [d for d in usable if d["bytes"] >= FLOW_MIN_BYTES]
+    if len(usable) <= 1:
+        # 目标站集体风控/限流：可用源不足以交叉，退化单源强达标判决
+        return len(strong) >= 1
+    # 弱档路径不能再用「单源 ≥768KB」卡——两源各 400KB 合起来已近 1MB，
+    # 却没有任何单源达到 768KB。改用「总真实流量 ≥768KB」保证不是凑数。
+    total_flow = sum(d["bytes"] for d in flowing)
+    return (len(flowing) >= SPEED_MIN_SOURCES_OK
+            and (len(strong) >= 1
+                 or (len(weak) >= 2 and total_flow >= REAL_MIN_BYTES)))
+
+
 def real_traffic_test(api_port: int, mixed_port: int, name: str) -> dict:
     """真实流量闸门（2026-10-26 全面重写，多源交叉 + 稳定性采样）。
 
@@ -849,13 +912,10 @@ def real_traffic_test(api_port: int, mixed_port: int, name: str) -> dict:
         for src in SPEED_SOURCES:
             details.append(_speed_once(proxy, src, SPEED_TEST_TIMEOUT_S))
         usable = [d for d in details if not d["blocked"]]
-        passed = [d for d in usable if d["ok"]]
         best_bps = max((d["bps"] for d in details), default=0)
-        best_bytes = max((d["bytes"] for d in details), default=0)
-        # 交叉判据：达标源数 ≥ 下限；若可用源不足下限（多数被限流），
-        # 退化为「可用源全部达标」，避免目标站集体风控时误杀好节点。
-        need = min(SPEED_MIN_SOURCES_OK, len(usable)) if usable else 1
-        ok = len(passed) >= need and best_bytes >= REAL_MIN_BYTES
+        # 判据抽为纯函数 judge_speed_round（任务#117）：各源经代理后的固有
+        # 带宽差异极大，统一门槛会系统性误杀阿里云快、OVH 慢的好节点。
+        ok = judge_speed_round(details)
         return ok, best_bps, details
 
     ok1, bps1, det1 = _round()
@@ -1163,10 +1223,17 @@ def select_ai_promotions(degraded: list[dict], results: dict,
         if not (ai.get("ai_reachable") and ai.get("ai_api")):
             continue
         lat = results.get(n["probe_name"], {}).get("latency_ms") or 99999
-        if lat <= cap:
-            promoted.append(n)
-        else:
+        if lat > cap:
             rejected += 1
+            continue
+        # 速度底线（任务#117）：实证本轮 5 个提级节点里 3 个只有 37~50KB/s
+        # （AI 干净、延迟达标，但打开网页都费劲）。AI 干净≠能用，提级必须
+        # 至少达到弱档速率（48KB/s），否则宁可留在第二资产。
+        rt = results.get(n["probe_name"], {}).get("real_traffic") or {}
+        if (rt.get("bps") or 0) < WEAK_MIN_BPS:
+            rejected += 1
+            continue
+        promoted.append(n)
     return promoted, rejected
 
 
@@ -1886,6 +1953,20 @@ def main() -> int:
         shutil.copyfile(pend_path, prev_path)
         run(["gh", "release", "upload", tag, "--clobber",
              f"{prev_path}#pending_probe.prev.json"])
+    # 学习回写（任务#117）：沙箱每轮实测结果**立即**折回进化数据，不再只依赖
+    # CI 的 daily-update。实证：source_scores.json 里 26 个源的 cn_last 中有
+    # 16 个停在 10-19~10-28（超 CN_DECISION_MAX_AGE_S=48h），cn_fetch_tilt 全部
+    # 返回 None → 配额倾斜失效 → 零产源（311 测 0 通过）继续占据 76% 测试预算。
+    # 沙箱一天跑 6 轮、CI 一天只跑 1~2 次，学习速率被 CI 频率卡死。
+    try:
+        import evolution
+        _ev = evolution.run_evolution(report, REPO_ROOT, _official_url_map())
+        log(f"学习回写: cn_history={_ev['cn_history_nodes']} 节点 / "
+            f"源评分带cn={_ev['source_scores_with_cn']} / "
+            f"带ai={_ev['source_scores_with_ai']} 源")
+    except Exception as e:  # 学习回写失败绝不能影响已完成的发布
+        log(f"警告: 学习回写失败（不影响本轮发布）: {type(e).__name__}: {e}")
+
     log(f"发布完成: 主资产 {len(uploaded)} 个 + {config.VERIFICATION_REPORT_FILE}"
         f"（round {round_id}）")
     return 0

@@ -1006,9 +1006,10 @@ def test_real_min_bytes_threshold_tightened():
     在沙箱判通过、用户本地不可用。慢档（AI 提级路径）保持 32KB 不变。"""
     assert cn_probe.REAL_MIN_BYTES >= 768 * 1024
     assert cn_probe.REAL_SLOW_MIN_BYTES == 32 * 1024
-    # 任务#116：用户 15 节点截图复核（213/248/259ms 可用、2646ms+ 全超时），
-    # 2500ms 仍过宽，收紧到 1500ms
-    assert cn_probe.CN_MAX_PUBLISH_LATENCY_MS == 1500
+    # 任务#116 曾收紧到 1500ms，任务#117 回调 3000ms：1500 的依据是「用户客户端
+    # 实测 2646ms 超时」，但客户端 RTT≠沙箱 RTT。实证 RTT 1713/2582ms 的节点
+    # 两轮稳定通过、198/248KB/s，却被 1500 闸门踢出主资产（资产只剩 1 个）。
+    assert cn_probe.CN_MAX_PUBLISH_LATENCY_MS == 3000
 
 
 def test_longevity_tier_prefers_proven_survivors(monkeypatch):
@@ -1079,9 +1080,11 @@ def test_ai_slow_promotion_respects_latency_cap(monkeypatch, tmp_path):
             "us_ok": False, "final": False, "name": "SLOW"}
     results = {
         "OK": {"latency_ms": 1200, "ai": {"ai_reachable": True, "ai_api": True},
-               "real_traffic": {"ok": False, "degraded": True, "bytes": 100 * 1024}},
+               "real_traffic": {"ok": False, "degraded": True, "bytes": 100 * 1024,
+                                "bps": 200 * 1024}},
         "SLOW": {"latency_ms": 6900, "ai": {"ai_reachable": True, "ai_api": True},
-                 "real_traffic": {"ok": False, "degraded": True, "bytes": 100 * 1024}},
+                 "real_traffic": {"ok": False, "degraded": True, "bytes": 100 * 1024,
+                                  "bps": 200 * 1024}},
     }
     assert cn_probe.config.AI_PROMOTE_MAX_LATENCY_MS < 6900
     promoted, rejected = cn_probe.select_ai_promotions([lo_n, hi_n], results)
@@ -1095,10 +1098,10 @@ def test_promotion_cap_never_exceeds_publish_gate():
     实测 4 个 2646~3030ms 节点因此发布并全部在用户端超时。"""
     assert cn_probe.config.AI_PROMOTE_MAX_LATENCY_MS <= cn_probe.CN_MAX_PUBLISH_LATENCY_MS
     # cap 缺省值必须等于两者取严
-    results = {"X": {"latency_ms": 2000, "ai": {"ai_reachable": True, "ai_api": True}}}
+    results = {"X": {"latency_ms": 3500, "ai": {"ai_reachable": True, "ai_api": True}}}
     node = {"probe_name": "X", "fp": "fx", "origin": "pending", "final": False, "name": "X"}
     promoted, rejected = cn_probe.select_ai_promotions([node], results)
-    assert promoted == [] and rejected == 1, "2000ms 超 1500ms 闸门，不得提级"
+    assert promoted == [] and rejected == 1, "3500ms 超 3000ms 闸门，不得提级"
 
 
 def test_promotion_requires_ai_api_strong_signal(monkeypatch):
@@ -1108,11 +1111,13 @@ def test_promotion_requires_ai_api_strong_signal(monkeypatch):
         # 403-only：网页被拦、API 也未放行（openai_api 403）
         "DIRTY": {"latency_ms": 500,
                   "ai": {"ai_reachable": True, "ai_api": False,
-                         "codes": {"chatgpt": 403, "openai_api": 403}}},
+                         "codes": {"chatgpt": 403, "openai_api": 403}},
+                  "real_traffic": {"degraded": True, "bps": 200 * 1024}},
         # Cloudflare 放行到 API 层（401）→ 干净
         "CLEAN": {"latency_ms": 600,
                   "ai": {"ai_reachable": True, "ai_api": True,
-                         "codes": {"chatgpt": 403, "openai_api": 401}}},
+                         "codes": {"chatgpt": 403, "openai_api": 401}},
+                  "real_traffic": {"degraded": True, "bps": 200 * 1024}},
     }
     nodes = [{"probe_name": k, "fp": k, "origin": "pending", "final": False, "name": k}
              for k in ("DIRTY", "CLEAN")]
@@ -1240,3 +1245,60 @@ def test_upload_retry_exhausted(monkeypatch, tmp_path):
     monkeypatch.setattr(cn_probe.time, "sleep", lambda s: None)
     ok, err = cn_probe.upload_asset_with_retry("tag", "x.yaml", attempts=2)
     assert ok is False and "502" in err
+
+
+def _d(src, kbps, kb, blocked=False):
+    return {"source": src, "blocked": blocked, "code": 0 if blocked else 200,
+            "bytes": int(kb * 1024), "bps": int(kbps * 1024)}
+
+
+def test_judge_speed_round_single_strong_source_passes():
+    """任务#117：1 个源强达标（≥128KB/s）即通过，不再要求 2 源并列达标。
+    实证：阿里云 306KB/s + OVH 64KB/s + CF 94KB/s 的节点被判死，而它实际
+    10 秒下载了 3MB——这是「节点越来越少」的直接成因。"""
+    assert cn_probe.judge_speed_round([
+        _d("cloudflare", 94, 944), _d("ovh", 64, 640), _d("aliyun", 306, 3064)])
+
+
+def test_judge_speed_round_two_weak_sources_pass():
+    """2 源弱达标（≥48KB/s、≥256KB）可通过——免费节点常态。"""
+    assert cn_probe.judge_speed_round([
+        _d("cloudflare", 60, 500), _d("ovh", 55, 400), _d("aliyun", 10, 80)])
+
+
+def test_judge_speed_round_requires_two_flowing_sources():
+    """只有 1 个源有真实流量（其余 0 字节）不算通过——防单源偶发放行。"""
+    assert not cn_probe.judge_speed_round([
+        _d("cloudflare", 400, 4000), _d("ovh", 0, 0), _d("aliyun", 0, 0)])
+
+
+def test_judge_speed_round_rejects_all_slow():
+    """全源低速（30KB/s）且无强达标、弱档不足 2 → 不通过（真慢节点仍挡）。"""
+    assert not cn_probe.judge_speed_round([
+        _d("cloudflare", 30, 300), _d("ovh", 25, 250), _d("aliyun", 20, 200)])
+
+
+def test_judge_speed_round_degenerates_when_most_sources_blocked():
+    """目标站集体 429：可用源仅 1 个时退化为单源强达标判决，不误杀。"""
+    assert cn_probe.judge_speed_round([
+        _d("cloudflare", 400, 4000), _d("ovh", 0, 0, True), _d("aliyun", 0, 0, True)])
+    # 但单源只有弱速（60KB/s）仍不放行——单源无法互证
+    assert not cn_probe.judge_speed_round([
+        _d("cloudflare", 60, 600), _d("ovh", 0, 0, True), _d("aliyun", 0, 0, True)])
+
+
+def test_promotion_requires_min_speed():
+    """任务#117：AI 干净但速度低于弱档线（48KB/s）不提级。
+    实证本轮 5 个提级节点里 3 个只有 37~50KB/s——AI 干净≠能用，
+    用户打开网页都费劲，宁留第二资产。"""
+    results = {
+        "FAST": {"latency_ms": 800, "ai": {"ai_reachable": True, "ai_api": True},
+                 "real_traffic": {"degraded": True, "bps": 200 * 1024}},
+        "CRAWL": {"latency_ms": 800, "ai": {"ai_reachable": True, "ai_api": True},
+                  "real_traffic": {"degraded": True, "bps": 37 * 1024}},
+    }
+    nodes = [{"probe_name": k, "fp": k, "origin": "carryover", "final": False, "name": k}
+             for k in ("FAST", "CRAWL")]
+    promoted, rejected = cn_probe.select_ai_promotions(nodes, results)
+    assert [n["probe_name"] for n in promoted] == ["FAST"]
+    assert rejected == 1
