@@ -428,6 +428,14 @@ LONGEVITY_CN_PASS_RATE = 0.6    # 历史 CN 通过率下限（cn_history.cn_pass
 # 通过率是唯一强预测信号（存活组 76% vs 死亡组 0%）。
 # 因此提供「用户实测结果」回灌通道：客户端测速结果写成 user_probe.json，
 # 由 cn_probe 读取后作为独立学习信号参与排序与准入。
+# 节点库（任务#117）：本轮通过/降级节点的完整配置存档，供后续轮次跨源复测。
+# 动机：carryover 只从「上一轮主资产 + 上一轮第二资产」滚动，节点连续两轮没
+# 通过（晚高峰波动很常见）配置即彻底丢失——实测 cn_history 里 781 个节点历史
+# 通过过、338 个通过 ≥3 次，本地一个都找不回。没有节点库，订阅数量只能随源
+# 波动，这是「时多时少」的机制根源。
+NODE_LIBRARY_FILE = "node_library.json"
+NODE_LIBRARY_MAX_AGE_D = 30      # 库内记录保留期（天）
+NODE_LIBRARY_LOAD_LIMIT = 60     # 单轮从库复测的节点上限（控测试预算）
 USER_PROBE_FILE = "user_probe.json"     # 用户本地实测回灌文件
 USER_PROBE_MAX_AGE_S = 48 * 3600        # 兼容旧字段（排序用，48h）；过期不参与
 USER_PROBE_DEAD_PENALTY = 1.0           # 用户实测失败节点的排序降权（档位惩罚）

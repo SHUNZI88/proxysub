@@ -667,6 +667,107 @@ def load_slow_carryover(workdir: str, exclude_fps: set[str]) -> list[dict]:
     return nodes
 
 
+def _lib_path(workdir: str) -> str:
+    return os.path.join(workdir, config.NODE_LIBRARY_FILE)
+
+
+def _epoch_of(stamp) -> float:
+    """ISO 时间串 -> epoch 秒；不可解析返回 0（视为最旧）。"""
+    try:
+        dt = datetime.datetime.fromisoformat(str(stamp).replace("Z", "+00:00"))
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=datetime.timezone.utc)
+        return dt.timestamp()
+    except Exception:
+        return 0.0
+
+
+def save_node_library(nodes: list[dict], workdir: str, stamp: str) -> int:
+    """把本轮通过/降级节点的**完整配置**存档（任务#117），供后续轮次跨源复测。
+
+    动机：carryover 只从「上一轮主资产 + 上一轮第二资产」滚动。节点连续两轮
+    没通过（晚高峰拥堵很常见）配置即彻底丢失——实测 cn_history 存着 781 个
+    「历史通过过」的指纹、338 个「通过 ≥3 次」，本地却一个配置都找不回
+    （clean_clash 仅 60 个）。没有节点库，订阅数量只能随源供给波动，
+    这是「时多时少」的机制根源。
+
+    只存通过/降级（有真实流量）的节点，不存从没通过的——避免库里沉淀垃圾。
+    """
+    path = _lib_path(workdir)
+    lib: dict = {}
+    if os.path.exists(path):
+        try:
+            with open(path, encoding="utf-8") as f:
+                lib = (json.load(f) or {}).get("nodes") or {}
+        except Exception:
+            lib = {}
+    now = time.time()
+    added = 0
+    for n in nodes:
+        p = n.get("proxy")
+        if not isinstance(p, dict) or not p.get("server"):
+            continue
+        rec = lib.get(n["fp"]) or {"passes": 0}
+        rec["proxy"] = dict(p)
+        rec["last_pass"] = stamp
+        rec["last_probe_ts"] = int(now)
+        rec["passes"] = int(rec.get("passes") or 0) + 1
+        lib[n["fp"]] = rec
+        added += 1
+    cutoff = now - config.NODE_LIBRARY_MAX_AGE_D * 86400
+    lib = {k: v for k, v in lib.items() if _epoch_of(v.get("last_pass")) >= cutoff}
+    try:
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump({"nodes": lib}, f, ensure_ascii=False)
+    except Exception as e:
+        log(f"警告: 节点库写入失败: {e}")
+        return 0
+    return added
+
+
+def load_node_library(workdir: str, exclude_fps: set[str], *,
+                      limit: int | None = None) -> list[dict]:
+    """从节点库挑「历史通过过、本轮尚未入池」的节点复测（任务#117）。
+
+    按 passes 降序取前 N 个——通过次数是「这条链路长期可用」的最强证据
+    （实证：历史 CN 通过率存活组 76% vs 死亡组 0%）。origin 标 carryover，
+    使其在 cap_test_set 中不被裁剪。
+    """
+    path = _lib_path(workdir)
+    if not os.path.exists(path):
+        return []
+    try:
+        with open(path, encoding="utf-8") as f:
+            lib = (json.load(f) or {}).get("nodes") or {}
+    except Exception:
+        return []
+    limit = config.NODE_LIBRARY_LOAD_LIMIT if limit is None else limit
+    cands = []
+    for fp, rec in lib.items():
+        if fp in exclude_fps:
+            continue
+        p = rec.get("proxy")
+        if not isinstance(p, dict) or not p.get("server"):
+            continue
+        cands.append((int(rec.get("passes") or 0), fp, p))
+    cands.sort(key=lambda x: -x[0])
+    out: list[dict] = []
+    for passes, fp, p in cands[:limit]:
+        exclude_fps.add(fp)
+        out.append({
+            "fp": fp,
+            "name": str(p.get("name") or "node"),
+            "proxy": dict(p),
+            "origin": "carryover",
+            "final": False,
+            "us_ok": False,
+        })
+    if out:
+        log(f"节点库: {len(out)} 个历史通过节点并入复测集"
+            f"（库内共 {len(lib)} 个，取通过次数前 {limit}）")
+    return out
+
+
 def dedup_nodes(groups: list[tuple[str, list[dict]]]) -> list[dict]:
     """按 (origin 优先级, 出现顺序) 去重；探测名保证全局唯一（mihomo 硬性要求）。
 
@@ -1492,6 +1593,10 @@ def main() -> int:
     # 供给证据（此前降级即沉没，永远无 AI 数据）。fingerprint 去重防重复测。
     carry += load_slow_carryover(
         workdir, exclude_fps={n["fp"] for n in carry})
+    # 节点库复测（任务#117）：把「历史通过过、但已滑出最近两轮资产」的节点
+    # 捞回复测集。这是打破「通过少 → carryover 少 → 下轮更少」恶性循环的关键。
+    carry += load_node_library(
+        workdir, exclude_fps={n["fp"] for n in carry})
     # 任务#106：非 fresh 轮也加载交接文档（当前/残留）——闸门只挡「同轮
     # 二次整测」的 fresh 标记，未测尾部照常并入（dedup 保 carryover 优先）。
     # 下载失败的 fresh 轮 pend_path 不存在，加载自然为空，与原行为一致。
@@ -1944,6 +2049,16 @@ def main() -> int:
     report["main_assets_missing"] = [a for a in _want if a not in uploaded]
     report["main_asset_published_at"] = stamp.strftime("%Y-%m-%dT%H:%M:%SZ")
     report["main_asset_passed"] = len(verified)
+    # 节点库存档（任务#117）：把本轮通过 + 慢档的完整配置写进库，供后续轮次
+    # 跨源复测。没有这层，节点滑出最近两轮资产后配置即永久丢失（实测 781 个
+    # 历史通过节点全部失联），订阅数量只能随源波动。
+    try:
+        _lib_n = save_node_library(verified + degraded, workdir,
+                                   stamp.strftime("%Y-%m-%dT%H:%M:%SZ"))
+        log(f"节点库存档: 本轮 {_lib_n} 个节点（通过 {len(verified)} + "
+            f"慢档 {len(degraded)}）")
+    except Exception as e:
+        log(f"警告: 节点库存档失败（不影响发布）: {e}")
     with open(report_path, "w", encoding="utf-8") as f:
         json.dump(report, f, ensure_ascii=False, indent=1)
     run(["gh", "release", "upload", tag, "--clobber", report_path])

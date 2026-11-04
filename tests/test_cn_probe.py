@@ -1302,3 +1302,44 @@ def test_promotion_requires_min_speed():
     promoted, rejected = cn_probe.select_ai_promotions(nodes, results)
     assert [n["probe_name"] for n in promoted] == ["FAST"]
     assert rejected == 1
+
+
+def _lib_node(fp, name="N", passes_hint=1):
+    return {"fp": fp, "name": name, "origin": "carryover", "final": True,
+            "proxy": {"name": name, "type": "trojan", "server": "1.1.1.1",
+                      "port": 443, "password": "x"}}
+
+
+def test_node_library_save_and_reload(tmp_path):
+    """任务#117：通过/降档节点配置存档后，下轮可作为 carryover 复测。
+    这打破「通过少 → carryover 少 → 更少」的恶性循环。"""
+    work = str(tmp_path)
+    n1, n2 = _lib_node("fp1", "A"), _lib_node("fp2", "B")
+    assert cn_probe.save_node_library([n1, n2], work, "2026-11-04T12:00:00Z") == 2
+    got = cn_probe.load_node_library(work, exclude_fps=set())
+    assert {x["fp"] for x in got} == {"fp1", "fp2"}
+    assert all(x["origin"] == "carryover" for x in got)
+    assert got[0]["proxy"]["server"] == "1.1.1.1"
+
+
+def test_node_library_dedup_against_existing(tmp_path):
+    """已在测试集里的 fp 不得重复计入，避免浪费拨测预算。"""
+    work = str(tmp_path)
+    cn_probe.save_node_library([_lib_node("fp1")], work, "2026-11-04T12:00:00Z")
+    assert cn_probe.load_node_library(work, exclude_fps={"fp1"}) == []
+
+
+def test_node_library_prunes_stale(tmp_path):
+    """超过 NODE_LIBRARY_MAX_AGE_D 的记录被清理，库不会无限膨胀。"""
+    work = str(tmp_path)
+    cn_probe.save_node_library([_lib_node("old")], work, "2020-01-01T00:00:00Z")
+    cn_probe.save_node_library([_lib_node("new")], work, "2026-11-04T12:00:00Z")
+    got = cn_probe.load_node_library(work, exclude_fps=set())
+    assert [x["fp"] for x in got] == ["new"]
+
+
+def test_node_library_respects_limit(tmp_path):
+    work = str(tmp_path)
+    cn_probe.save_node_library([_lib_node(f"f{i}") for i in range(5)],
+                               work, "2026-11-04T12:00:00Z")
+    assert len(cn_probe.load_node_library(work, exclude_fps=set(), limit=2)) == 2
