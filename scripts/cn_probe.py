@@ -243,6 +243,26 @@ def run(cmd: list[str], timeout: int = 120, **kw) -> subprocess.CompletedProcess
     return subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, **kw)
 
 
+def upload_asset_with_retry(tag: str, staged: str,
+                            attempts: int = 3) -> tuple[bool, str]:
+    """上传 Release 资产并重试（任务#116，纯 I/O 封装）。
+
+    实证：2026-11-04 09:36 上传 clash 资产返回 HTTP 502，旧实现只记一条警告
+    就继续——结果 clash 停在上一轮的 12 个旧节点、其余格式已是新的 2 个，
+    用户订阅各格式内容不一致（clash 用户仍在用废节点）。GitHub Release
+    上传偶发 5xx 属常态，必须退避重试。
+    """
+    last = ""
+    for i in range(max(1, attempts)):
+        r = run(["gh", "release", "upload", tag, "--clobber", staged])
+        if r.returncode == 0:
+            return True, ""
+        last = (r.stderr or "").strip()[:200]
+        if i < attempts - 1:
+            time.sleep(2 * (i + 1))
+    return False, last
+
+
 def gh_download(tag: str, pattern: str, dest: str, retries: int = 1) -> bool:
     """下载 Release 资产：优先 gh，失败/超时自动回退 curl（Bearer token）。
 
@@ -1816,11 +1836,11 @@ def main() -> int:
         # 改名），故先复制成目标资产名再传，保证永久订阅地址内容被原地刷新。
         staged = os.path.join(workdir, target)
         shutil.copyfile(path, staged)
-        r = run(["gh", "release", "upload", tag, "--clobber", staged])
-        if r.returncode == 0:
+        ok, err = upload_asset_with_retry(tag, staged)
+        if ok:
             uploaded.append(target)
         else:
-            log(f"警告: 上传 {target} 失败: {r.stderr.strip()[:200]}")
+            log(f"警告: 上传 {target} 失败（已重试）: {err}")
     # 8.5) 第二资产（2026-10-24 任务#97）：慢档节点（能连但慢）单独发布，
     # 不稀释主资产——主资产口径不变（全部快档通过），慢档按延迟排序上限
     # 50 个，供用户「主资产连不上时备选」。资产名沿用主资产随机前缀 _d.yaml。
@@ -1841,16 +1861,20 @@ def main() -> int:
         deg_name = (mm.group(1) + "_d.yaml") if mm else "verified_degraded_clash.yaml"
         staged = os.path.join(workdir, deg_name)
         shutil.copyfile(deg_path, staged)
-        r = run(["gh", "release", "upload", tag, "--clobber", staged])
-        if r.returncode == 0:
+        ok, err = upload_asset_with_retry(tag, staged)
+        if ok:
             log(f"第二资产已发布: {deg_name}（慢档 {len(deg_sorted)} 个）")
             report["degraded_asset"] = deg_name
             report["degraded_count"] = len(deg_sorted)
         else:
-            log(f"警告: 第二资产上传失败: {r.stderr.strip()[:200]}")
+            log(f"警告: 第二资产上传失败（已重试）: {err}")
     run(["gh", "release", "upload", tag, "--clobber", report_path])
     report["published"] = bool(uploaded)
     report["main_assets"] = uploaded
+    # 任务#116：记录上传失败的格式，便于排查「各格式内容不一致」
+    # （实证 clash 502 后停留在上一轮 12 个旧节点，其余格式已是新的 2 个）。
+    _want = [asset_by_fmt[f] for f in paths if asset_by_fmt.get(f)]
+    report["main_assets_missing"] = [a for a in _want if a not in uploaded]
     report["main_asset_published_at"] = stamp.strftime("%Y-%m-%dT%H:%M:%SZ")
     report["main_asset_passed"] = len(verified)
     with open(report_path, "w", encoding="utf-8") as f:

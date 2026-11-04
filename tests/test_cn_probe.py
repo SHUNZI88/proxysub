@@ -1211,3 +1211,32 @@ def test_alive_keep_respects_switch_and_cap(monkeypatch):
     monkeypatch.setattr(cn_probe.config, "USER_PROBE_ALIVE_KEEP", True)
     assert cn_probe.select_alive_keeps(
         [node], {"N": {"latency_ms": cn_probe.CN_MAX_PUBLISH_LATENCY_MS + 1}}, learning) == []
+
+
+def test_upload_retries_on_5xx(monkeypatch, tmp_path):
+    """任务#116：Release 上传遇 GitHub 5xx 必须退避重试。
+    实证 2026-11-04 upload clash 返回 502 未重试，clash 资产停在上一轮的
+    12 个旧节点、其余格式已是新的 2 个——用户订阅各格式内容不一致。"""
+    import types
+    calls = {"n": 0}
+
+    def fake_run(cmd, timeout=120, **kw):
+        calls["n"] += 1
+        ok = calls["n"] >= 3          # 前两次 502，第三次成功
+        return types.SimpleNamespace(
+            returncode=0 if ok else 1,
+            stderr="" if ok else "HTTP 502: Server Error")
+
+    monkeypatch.setattr(cn_probe, "run", fake_run)
+    monkeypatch.setattr(cn_probe.time, "sleep", lambda s: None)
+    ok, err = cn_probe.upload_asset_with_retry("tag", str(tmp_path / "a.yaml"))
+    assert ok is True and err == "" and calls["n"] == 3
+
+
+def test_upload_retry_exhausted(monkeypatch, tmp_path):
+    import types
+    monkeypatch.setattr(cn_probe, "run", lambda *a, **k: types.SimpleNamespace(
+        returncode=1, stderr="HTTP 502: Server Error"))
+    monkeypatch.setattr(cn_probe.time, "sleep", lambda s: None)
+    ok, err = cn_probe.upload_asset_with_retry("tag", "x.yaml", attempts=2)
+    assert ok is False and "502" in err
