@@ -117,6 +117,11 @@ SPEED_SOURCES = [
 # curl 能拿到真实速度——引擎本身的缺陷会把好节点误判为死节点。
 # curl 还天然支持 --max-time 整体硬超时与 %{speed_download} 实测速率。
 SPEED_TEST_TIMEOUT_S = 10        # 单源单次测速硬超时（秒）
+# 单源单次测速的下载量上限（任务#125）：实测单节点单源能拉 18MB，
+# 3 源 × 2 轮就是 100MB+/节点，几个节点并发即打满家宽。封到 4MB 足够
+# 判「速率 + 量」两个条件（阈值 768KB/128KB/s 只需不到 2MB 就能定论），
+# 又不至于把链路压垮。
+SPEED_MAX_BYTES = 4 * 1024 * 1024
 # 快档：至少 2 个源各自达到该速率才算真快（单源达标可能是该源被特殊优化）
 REAL_MIN_BYTES_PER_SEC = 128 * 1024   # 128KB/s ≈ 1Mbps，网页/视频可用底线
 SPEED_MIN_SOURCES_OK = 2              # 通过源数下限（共 3 源交叉）
@@ -198,7 +203,13 @@ REAL_TRAFFIC_TIMEOUT_S = 8    # 真实下载硬超时预算（秒）
 # 并发下调（2026-10-26）：多源交叉 + 两轮采样让单节点耗时增至约 60s
 # （3源×10s + 间隔8s + 3源×10s），12 并发会互相抢带宽、把「快节点」
 # 压成「慢节点」——测速并发必须低于节点带宽承载，否则自己制造假阴性。
-REAL_TRAFFIC_CONCURRENCY = 6
+# 真实流量并发（任务#125，2026-11-05 实测下调 6 → 2）。
+# 实证：同一批 13 个已发布节点，**并发 6** 时终筛只 0~1 个通过（判「先快后断」），
+# **串行**重测 11/12 通过（带速 1.8MB/s、单节点最高拉 18MB）。
+# 根因不是节点烂，是测量自伤：每节点每源最多拉十几 MB × 3 源 × 2 轮 × 6 并发，
+# 家宽瞬间被打满，第二轮自然掉速。并发降低 + 单源限流（见 SPEED_MAX_BYTES）
+# 后，速度闸门测的才是节点，不是自家的带宽上限。
+REAL_TRAFFIC_CONCURRENCY = 2
 # 出口证据节点数上限（顺序取证时代的限量残留；预算由 EVIDENCE_BUDGET_S
 # 统一封顶，此上限仅在极端通过规模下兜底）。
 GEO_MAX_NODES = 120
@@ -1260,6 +1271,7 @@ def _curl_speed(proxy: str, url: str, budget: int) -> dict:
         # 而它们在家宽上其实是通的。这类"平台差异伪装成节点死亡"的坑，
         # 只有在用户真实网络上跑一遍才会暴露。
         r = run(["curl", "-s", "-o", os.devnull,
+                 "-r", f"0-{SPEED_MAX_BYTES - 1}",
                  "-w", "%{size_download}|%{speed_download}|%{http_code}",
                  "--proxy", proxy, "--max-time", str(budget), url],
                 timeout=budget + 6)
