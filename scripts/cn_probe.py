@@ -2233,12 +2233,6 @@ def main() -> int:
             # 的 4 个是 final=False——报告字段语义整个反了，任何按 final 做的
             # 统计（含 dashboard、历史复盘）都会把死节点算成可用节点。
             mark_final_flags(nodes, passed)
-            # 动态证据预算（2026-10-24 任务#98）：旧固定 120s 在通过节点较多时
-            # 只能覆盖一半（本轮 30 个只探到 17 个），无 AI 证据的节点在排序中
-            # 被「未知」沉底——有效节点被埋。单节点 ≈8s，按通过数给足预算
-            # （下限 120s 兜底，上限 300s 防极端），保证全覆盖。
-            ev_budget = min(300, max(EVIDENCE_BUDGET_S, len(passed) * 12))
-            ev_deadline = time.time() + ev_budget
             # 证据收集范围（2026-10-28 修复）：旧实现仅覆盖快档通过者，
             # degraded 节点永远没有 AI 证据 → 6.6「AI 慢档提级」空转
             # （实证：6 个存活的 carryover 慢档节点无一被 AI 探测，AI 可用
@@ -2248,6 +2242,14 @@ def main() -> int:
                 degraded,
                 key=lambda n: 0 if n.get("origin") == "carryover" else 1)
             ev_nodes = passed[:GEO_MAX_NODES] + _deg_ev
+            # 动态证据预算（2026-10-24 任务#98；2026-11-05 任务#123 修正分母）：
+            # 旧实现按 len(passed) 算，而真正要探的是 ev_nodes（passed + 慢档）。
+            # 可用档提级上线后慢档也进主资产，分母算漏导致实测「27 个待探只探
+            # 了 17 个、跳过 10 个」——没有 AI 证据的节点按「未知」沉底，
+            # AI 纯净节点被埋。单节点 ≈8s，取 12s 留余量；上限抬到 480s
+            # （本轮总时长仍 <900s，远低于 1800s 预算）。
+            ev_budget = min(480, max(EVIDENCE_BUDGET_S, len(ev_nodes) * 12))
+            ev_deadline = time.time() + ev_budget
             n_geo = 0
             for i, n in enumerate(ev_nodes):
                 if time.time() > ev_deadline:
