@@ -39,7 +39,10 @@ def _vless_reality(**overrides):
 
 # ---------- 协议白名单 ----------
 
-@pytest.mark.parametrize("ptype", ["ss", "ssr", "vmess", "http", "socks5", "socks", "wireguard", "", "unknown-x"])
+# 任务#124（2026-11-05）：ss 已从"永久拒绝"名单移出（家宽实测初筛 8.3%、
+# 终筛 100%，优于 vless 的 3.3%）。它现在走 AEAD 加密门槛，见
+# test_parse.py::test_ss_aead_passes_static_gate；此处仍拒绝其余 legacy 协议。
+@pytest.mark.parametrize("ptype", ["ssr", "vmess", "http", "socks5", "socks", "wireguard", "", "unknown-x"])
 def test_legacy_or_unknown_protocols_rejected(ptype):
     node = {"name": "x", "type": ptype, "server": "a.example.com", "port": 443, "password": "p"}
     assert fc.protocol_gate_reason(node) is not None
@@ -184,7 +187,11 @@ def test_tuic_invalid_uuid_rejected():
 # ---------- 端到端：静态门槛接入主过滤链 ----------
 
 def test_gate_rejects_mixed_feed():
-    """模拟一个混合源：ss/vmess 被整体拒绝，合规 hy2/reality 保留。"""
+    """混合源：vmess 整体拒绝，合规 ss(AEAD)/hy2/reality 保留。
+
+    任务#124：ss 由「整体拒绝」改为「按加密档拒绝」——上例 ss 用 aes-128-gcm
+    属 AEAD，现已放行；弱加密（rc4/cfb）仍拒，见 test_parse.py。
+    """
     feed = [
         {"name": "ss-01", "type": "ss", "server": "a.example.com", "port": 443,
          "cipher": "aes-128-gcm", "password": "x"},
@@ -194,4 +201,4 @@ def test_gate_rejects_mixed_feed():
         _vless_reality(),
     ]
     kept = [p for p in feed if fc.protocol_gate_reason(p) is None]
-    assert {p["name"] for p in kept} == {"HK-Hy2-01", "HK-Reality-01"}
+    assert {p["name"] for p in kept} == {"ss-01", "HK-Hy2-01", "HK-Reality-01"}
