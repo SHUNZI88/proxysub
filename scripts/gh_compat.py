@@ -122,15 +122,43 @@ def token() -> str:
                 return value
         except OSError:
             continue
-    return ""
+    # 最后一条：gh 已完成授权时直接取它保管的 token。
+    # 好处是用户只需在浏览器点一次授权，不必手抄任何字符串；
+    # `gh auth logout` 即刻失效，撤销路径也是一条命令。
+    return _gh_token()
+
+
+def _gh_token() -> str:
+    """从 `gh auth token` 取 token（未授权返回空串）。绝不打印其内容。"""
+    exe = gh_bin()
+    if not exe:
+        return ""
+    try:
+        r = subprocess.run([exe, "auth", "token"], capture_output=True,
+                           text=True, timeout=20)
+    except (subprocess.SubprocessError, OSError):
+        return ""
+    return (r.stdout or "").strip() if r.returncode == 0 else ""
 
 
 def repo() -> str:
     return os.environ.get("PROXYSUB_REPO", DEFAULT_REPO)
 
 
+def gh_bin() -> str | None:
+    """gh 可执行文件路径。
+
+    优先 PATH；其次 `PROXYSUB_GH_BIN`——本机用便携版 gh（不装系统、不要管理员），
+    路径由用户级环境变量给出，仓库里不写死任何设备路径。
+    """
+    explicit = os.environ.get("PROXYSUB_GH_BIN")
+    if explicit and os.path.exists(explicit):
+        return explicit
+    return shutil.which("gh")
+
+
 def has_gh() -> bool:
-    return shutil.which("gh") is not None
+    return gh_bin() is not None
 
 
 def _req(url: str, *, method: str = "GET", data: bytes | None = None,
@@ -164,7 +192,7 @@ def auth_ok() -> tuple[bool, str]:
     if not token():
         return False, "无 token（环境变量与持久化文件均缺失）"
     if has_gh():
-        r = subprocess.run(["gh", "auth", "status"], capture_output=True, text=True,
+        r = subprocess.run([gh_bin(), "auth", "status"], capture_output=True, text=True,
                            timeout=60)
         if r.returncode == 0:
             return True, "gh auth status OK"
@@ -186,7 +214,7 @@ def release_assets(tag: str) -> list[dict]:
     """列出某 tag 的资产（`[{"name":..., "size":..., "id":...}]`）。"""
     if has_gh():
         try:
-            r = subprocess.run(["gh", "release", "view", tag, "--json", "assets"],
+            r = subprocess.run([gh_bin(), "release", "view", tag, "--json", "assets"],
                                capture_output=True, text=True, timeout=60)
             if r.returncode == 0:
                 return json.loads(r.stdout).get("assets", []) or []
@@ -208,7 +236,8 @@ def download_asset(tag: str, name: str, dest: str, *, timeout: int = 60) -> bool
     if has_gh():
         try:
             r = subprocess.run(
-                ["gh", "release", "download", tag, "-p", name, "-O", dest, "--clobber"],
+                [gh_bin(), "release", "download", tag, "-p", name, "-O", dest,
+                 "--clobber"],
                 capture_output=True, text=True, timeout=timeout)
             if r.returncode == 0 and os.path.exists(dest) and os.path.getsize(dest) > 0:
                 return True
@@ -236,7 +265,7 @@ def upload_asset(tag: str, path: str, *, name: str | None = None,
         # gh 用 `文件名#资产名` 语法指定上传后的资产名
         arg = path if asset_name == os.path.basename(path) else f"{path}#{asset_name}"
         try:
-            r = subprocess.run(["gh", "release", "upload", tag, "--clobber", arg],
+            r = subprocess.run([gh_bin(), "release", "upload", tag, "--clobber", arg],
                                capture_output=True, text=True, timeout=timeout)
             if r.returncode == 0:
                 return True, ""

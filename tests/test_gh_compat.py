@@ -31,6 +31,7 @@ def test_token_falls_back_to_persisted_file(tmp_path, monkeypatch):
 def test_token_empty_when_nothing(tmp_path, monkeypatch):
     monkeypatch.delenv("GH_TOKEN", raising=False)
     monkeypatch.delenv("GITHUB_TOKEN", raising=False)
+    monkeypatch.setattr(gc, "_gh_token", lambda: "")   # 与本机 gh 授权状态隔离
     monkeypatch.setattr(gc, "PERSISTED_PAT_PATH", str(tmp_path / "missing"))
     monkeypatch.setattr(gc, "HOME_PAT_PATH", str(tmp_path / "missing_home"))
     assert gc.token() == ""
@@ -39,6 +40,7 @@ def test_token_empty_when_nothing(tmp_path, monkeypatch):
 def test_auth_fails_without_token(tmp_path, monkeypatch):
     monkeypatch.delenv("GH_TOKEN", raising=False)
     monkeypatch.delenv("GITHUB_TOKEN", raising=False)
+    monkeypatch.setattr(gc, "_gh_token", lambda: "")
     monkeypatch.setattr(gc, "PERSISTED_PAT_PATH", str(tmp_path / "missing"))
     monkeypatch.setattr(gc, "HOME_PAT_PATH", str(tmp_path / "missing_home"))
     ok, why = gc.auth_ok()
@@ -194,3 +196,47 @@ def test_release_assets_empty_on_error(monkeypatch):
     monkeypatch.setattr(gc, "has_gh", lambda: False)
     monkeypatch.setattr(gc, "_json", lambda url, timeout=60: None)
     assert gc.release_assets("sub") == []
+
+
+def test_token_falls_back_to_gh_auth_token(monkeypatch, tmp_path):
+    """gh 授权后无需再写 PAT 文件——直接取 `gh auth token`。
+
+    这是本机的首选路径：用户在浏览器点一次授权即可，且 `gh auth logout`
+    就是撤销方式，不必维护明文 token 文件。
+    """
+    monkeypatch.delenv("GH_TOKEN", raising=False)
+    monkeypatch.delenv("GITHUB_TOKEN", raising=False)
+    monkeypatch.setattr(gc, "PERSISTED_PAT_PATH", str(tmp_path / "no1"))
+    monkeypatch.setattr(gc, "HOME_PAT_PATH", str(tmp_path / "no2"))
+    monkeypatch.setattr(gc, "gh_bin", lambda: "gh.exe")
+
+    class R:
+        returncode = 0
+        stdout = "gho_fromOAuth\n"
+
+    monkeypatch.setattr(gc.subprocess, "run", lambda *a, **k: R())
+    assert gc.token() == "gho_fromOAuth"
+
+
+def test_gh_token_empty_when_not_logged_in(monkeypatch):
+    monkeypatch.setattr(gc, "gh_bin", lambda: "gh.exe")
+
+    class R:
+        returncode = 1
+        stdout = ""
+
+    monkeypatch.setattr(gc.subprocess, "run", lambda *a, **k: R())
+    assert gc._gh_token() == ""
+
+
+def test_gh_bin_prefers_explicit_env(tmp_path, monkeypatch):
+    fake = tmp_path / "gh.exe"
+    fake.write_text("x", encoding="utf-8")
+    monkeypatch.setenv("PROXYSUB_GH_BIN", str(fake))
+    assert gc.gh_bin() == str(fake)
+
+
+def test_gh_bin_none_when_nothing(monkeypatch):
+    monkeypatch.delenv("PROXYSUB_GH_BIN", raising=False)
+    monkeypatch.setattr(gc.shutil, "which", lambda _n: None)
+    assert gc.gh_bin() is None
