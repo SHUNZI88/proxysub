@@ -5,17 +5,10 @@
       "origin": "channel_web",
       "added": "2026-11-02",
       "first_seen": "2026-11-02",
-      "runs": 11,
+      "runs": 12,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-11-03",
-          "count": 32,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-11-04",
           "count": 32,
@@ -62,6 +55,13 @@
           "date": "2026-11-05",
           "count": 32,
           "usable": 8,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-05",
+          "count": 32,
+          "usable": 9,
           "unique_new": 0,
           "tamper": 0
         }
@@ -73,17 +73,10 @@
       "origin": "channel_web",
       "added": "2026-11-03",
       "first_seen": "2026-11-03",
-      "runs": 8,
+      "runs": 9,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-11-03",
-          "count": 34,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-11-04",
           "count": 34,
@@ -132,8 +125,26 @@
           "usable": 8,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-05",
+          "count": 34,
+          "usable": 9,
+          "unique_new": 0,
+          "tamper": 0
         }
       ],
+      "required_runs": 3
+    },
+    "https://clashgithub.com/clashnode-20261106.html": {
+      "channel": "web:https://clashgithub.com/",
+      "origin": "channel_web",
+      "added": "2026-11-05",
+      "first_seen": "2026-11-05",
+      "runs": 0,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": [],
       "required_runs": 3
     }
   },

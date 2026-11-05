@@ -262,8 +262,8 @@
  "897a39a6c08946631b3f88dd9fb2695e526cf48f": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 12,
-  "cn_runs": 81,
+  "cn_fails": 13,
+  "cn_runs": 82,
   "cn_pass": 52,
   "cn_latency_ms": 1964,
   "cn_egress": "法国 法兰西岛大区 巴黎  scaleway.com",
@@ -271,10 +271,10 @@
  },
  "b92386522139fa66bfbb7216a37ce13587abc9a2": {
   "cn_ok": true,
-  "cn_streak": 1,
+  "cn_streak": 2,
   "cn_fails": 0,
-  "cn_runs": 26,
-  "cn_pass": 10,
+  "cn_runs": 27,
+  "cn_pass": 11,
   "cn_latency_ms": 2106,
   "cn_egress": "荷兰 林堡省 艾赫尔斯霍芬  ghostnet.de",
   "cn_last": "2026-11-05T14:50:56Z"
@@ -842,8 +842,8 @@
  "af31c61fec307e4fe13161b6de78b5153ddeedc6": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 50,
-  "cn_runs": 53,
+  "cn_fails": 51,
+  "cn_runs": 54,
   "cn_pass": 3,
   "cn_latency_ms": 922,
   "cn_egress": "中国 上海 上海",
@@ -1452,8 +1452,8 @@
  "b9f52371f515ff89a62e5d3cd68351291fe898ad": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 99,
+  "cn_fails": 4,
+  "cn_runs": 100,
   "cn_pass": 63,
   "cn_latency_ms": 3824,
   "cn_egress": "中国 台湾 彰化县",
@@ -3004,8 +3004,8 @@
  "42a01ec7cac0e5003be0ab5ba418a91e6e0e2eaf": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 43,
+  "cn_fails": 4,
+  "cn_runs": 44,
   "cn_pass": 16,
   "cn_latency_ms": 2593,
   "cn_egress": "中国 香港   pccw.com",
@@ -4384,8 +4384,8 @@
  "4e503222cbb6cabf0a25e9a70733ed63abb9041c": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 17,
-  "cn_runs": 67,
+  "cn_fails": 18,
+  "cn_runs": 68,
   "cn_pass": 31,
   "cn_latency_ms": 2947,
   "cn_last": "2026-11-05T14:50:56Z",
@@ -4998,8 +4998,8 @@
  "c867da58e080a561419da1e17edc3cb2c015a6f5": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 60,
-  "cn_runs": 60,
+  "cn_fails": 61,
+  "cn_runs": 61,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -5141,14 +5141,6 @@
   "cn_last": "2026-10-27T03:25:15Z",
   "cn_latency_ms": 709,
   "cn_egress": "中国 香港"
- },
- "a2db04a69c039c5a70243f32db1129f26eaf2d48": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 46,
-  "cn_runs": 46,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
  },
  "5b8d3ddadb0ffb99f51c3d3f157d6078a922048c": {
   "cn_ok": true,
@@ -5851,16 +5843,16 @@
  "bd55c4acede7902c7c7c1ddf191135159190a3ac": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 30,
-  "cn_runs": 30,
+  "cn_fails": 31,
+  "cn_runs": 31,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "7e833cb2bd3bde61d56607ab2fbf495ed9caf6b7": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 32,
-  "cn_runs": 32,
+  "cn_fails": 33,
+  "cn_runs": 33,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -5977,8 +5969,8 @@
  "071ce1aedb722eb43cf92c3a7aa0c2a422300a10": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 19,
+  "cn_fails": 3,
+  "cn_runs": 20,
   "cn_pass": 9,
   "cn_last": "2026-11-05T14:50:56Z",
   "cn_latency_ms": 3999,
@@ -6115,8 +6107,8 @@
  "63a69c08bf4109fcc8cd409b24026812045f624b": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 42,
-  "cn_runs": 42,
+  "cn_fails": 43,
+  "cn_runs": 43,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -6191,8 +6183,8 @@
  "1cba8b0d04ae7c98f6d76b4f519488cb9440fc80": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 16,
-  "cn_runs": 17,
+  "cn_fails": 17,
+  "cn_runs": 18,
   "cn_pass": 1,
   "cn_latency_ms": 2270,
   "cn_egress": "德国 黑森州 美茵河畔奥芬巴赫  dataforest.net",
@@ -6338,8 +6330,8 @@
  "05d9b4b9edf7b71d4f483284a72d41bae8e2d718": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 27,
+  "cn_fails": 12,
+  "cn_runs": 28,
   "cn_pass": 9,
   "cn_latency_ms": 5474,
   "cn_egress": "中国 台湾 彰化县",
@@ -6516,16 +6508,16 @@
  "a5c58a7db8921875402c3ed3653489366987738c": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 24,
-  "cn_runs": 24,
+  "cn_fails": 25,
+  "cn_runs": 25,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "cd38821a56975301b4fc1116702ba5c6499e9452": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 36,
-  "cn_runs": 36,
+  "cn_fails": 37,
+  "cn_runs": 37,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -6541,8 +6533,8 @@
  "1425f1a9443367b5cfd8c275d2ffb96e0f6aac28": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 29,
-  "cn_runs": 37,
+  "cn_fails": 30,
+  "cn_runs": 38,
   "cn_pass": 5,
   "cn_latency_ms": 7084,
   "cn_egress": "荷兰 北荷兰省 阿姆斯特丹  vdsina.com",
@@ -6580,10 +6572,10 @@
  },
  "cff2e65215f3302ec9ed18b291e5b594ae4f41c3": {
   "cn_ok": true,
-  "cn_streak": 3,
+  "cn_streak": 4,
   "cn_fails": 0,
-  "cn_runs": 17,
-  "cn_pass": 10,
+  "cn_runs": 18,
+  "cn_pass": 11,
   "cn_latency_ms": 1933,
   "cn_egress": "中国 台湾 彰化县",
   "cn_last": "2026-11-05T14:50:56Z"
@@ -6679,8 +6671,8 @@
  "187a1199f5c2cd25aedcacc6514d131babcacb20": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 30,
-  "cn_runs": 30,
+  "cn_fails": 31,
+  "cn_runs": 31,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -6754,10 +6746,10 @@
  },
  "b1447ca9a257f2b04200f0934c14e276512db3af": {
   "cn_ok": true,
-  "cn_streak": 6,
+  "cn_streak": 7,
   "cn_fails": 0,
-  "cn_runs": 33,
-  "cn_pass": 18,
+  "cn_runs": 34,
+  "cn_pass": 19,
   "cn_last": "2026-11-05T14:50:56Z",
   "cn_latency_ms": 1827,
   "cn_egress": "法国"
@@ -6775,8 +6767,8 @@
  "ac6615962a194c2b52014f0618ba6e8b92d6619a": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 16,
-  "cn_runs": 21,
+  "cn_fails": 17,
+  "cn_runs": 22,
   "cn_pass": 1,
   "cn_last": "2026-11-05T14:50:56Z",
   "cn_latency_ms": 6592,
@@ -7002,8 +6994,8 @@
  "b147ebfcc84c85bb1d9b6da37747ab399d138e00": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 25,
-  "cn_runs": 25,
+  "cn_fails": 26,
+  "cn_runs": 26,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -7135,16 +7127,16 @@
  "4e0d5e47ba2406640dd3bdc832a8ee5a4f908d1b": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 25,
-  "cn_runs": 25,
+  "cn_fails": 26,
+  "cn_runs": 26,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "a85a26fc2d68a921ff3d15042ce4960e6f67b782": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 23,
-  "cn_runs": 23,
+  "cn_fails": 24,
+  "cn_runs": 24,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -7177,14 +7169,6 @@
   "cn_latency_ms": 228,
   "cn_last": "2026-11-02T10:18:01Z"
  },
- "e3976870be061b55825b0c8a0f1b6a5d7b7c9a82": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 14,
-  "cn_runs": 14,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
  "86355a916430b7550ad2dedc7fbdb85d363ddda0": {
   "cn_ok": false,
   "cn_streak": 0,
@@ -7198,8 +7182,8 @@
  "a51cf4791a1f18a82c0ad7871e5794c1c572703a": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 23,
-  "cn_runs": 23,
+  "cn_fails": 24,
+  "cn_runs": 24,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -7339,14 +7323,6 @@
   "cn_latency_ms": 2748,
   "cn_egress": "德国"
  },
- "66dfd627f3a2b97d05d5aac9e6215e39594cdf3d": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 13,
-  "cn_runs": 13,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
  "6166541d941ce22909d836b9d569d27e0e0cb928": {
   "cn_ok": false,
   "cn_streak": 0,
@@ -7354,22 +7330,6 @@
   "cn_runs": 18,
   "cn_pass": 0,
   "cn_last": "2026-11-05T09:09:24Z"
- },
- "8aa35c2633cef500df684871e95176613b7d2df1": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 13,
-  "cn_runs": 13,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "f0c8b5cf964597917fbb86da60755c814663074a": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 13,
-  "cn_runs": 13,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
  },
  "88be68aaddc9e05b610cf5d5def40ded7896af5c": {
   "cn_ok": false,
@@ -7412,98 +7372,10 @@
  "678bf0abb84eef386ee9bf56b79b641aaae6b887": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 22,
-  "cn_runs": 22,
+  "cn_fails": 23,
+  "cn_runs": 23,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
- },
- "143d80c92f9090e4ffe7fd5fe7743aeb100a62cc": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 12,
-  "cn_runs": 12,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "788c747722df84646fdc5567c46cb35d0098936e": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 12,
-  "cn_runs": 12,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "df32dac74b97a60fafe0a1931474308af7028ed7": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 12,
-  "cn_runs": 12,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "d6f6024479cf6d621f454726b9d706185d22ebc2": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 12,
-  "cn_runs": 12,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "db1c506d5071cd50e9d70a438310f3a96686de52": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 12,
-  "cn_runs": 12,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "4a2989707e86dfc011cb104262432dd7174bf435": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 12,
-  "cn_runs": 12,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "12e77beb72365f9dd2851d49ec51c4de15d7340b": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 12,
-  "cn_runs": 12,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "23fde3cbe69ba8b068303b8525be4f68456b3b9d": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 10,
-  "cn_runs": 10,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "633efbf08040b68bc6576baeabdb7fcaffec1dfd": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 10,
-  "cn_runs": 10,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "dace5ba35c1af86ec30cced1a9191dc660d89c55": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 12,
-  "cn_runs": 12,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "1535b8e852695b7aed82e731b9b92f3866d64bfc": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 9,
-  "cn_runs": 9,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
  },
  "d7ae459ef6db2fdde123e327956781533324b3aa": {
   "cn_ok": false,
@@ -7523,43 +7395,11 @@
   "cn_egress": "中国 香港   sakura.as",
   "cn_last": "2026-11-02T19:21:18Z"
  },
- "ff0681e22bcf93cb13395cd560f0e59ee11728a4": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 10,
-  "cn_runs": 10,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "b724f986396a9ca2d0b072fa4f79603fda7708a8": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 9,
-  "cn_runs": 9,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "8cbc1eabf49569f344fc6208ba3955cc8215893e": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 8,
-  "cn_runs": 8,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "cd6bdfca4d47be6d52272fe13c07dbe7bc4aff46": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 9,
-  "cn_runs": 9,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
  "2c65bf74795f0887b7f72ed5867a1697658e06ad": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 18,
-  "cn_runs": 18,
+  "cn_fails": 19,
+  "cn_runs": 19,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -7571,19 +7411,11 @@
   "cn_pass": 0,
   "cn_last": "2026-11-05T11:25:51Z"
  },
- "ed74be5aee1e16a348d5b5ca9e4765f6f4ef2022": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 7,
-  "cn_runs": 7,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
  "73efc53575aea16d8b208938b600de27872d127d": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 18,
-  "cn_runs": 18,
+  "cn_fails": 19,
+  "cn_runs": 19,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -7699,14 +7531,6 @@
   "cn_pass": 0,
   "cn_last": "2026-11-05T09:09:24Z"
  },
- "9c367d5c607e221b8bee7ba802a3bcb96c430b22": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 8,
-  "cn_runs": 8,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
  "f553b864be0833b3af83f9e9aa1ceea536de2329": {
   "cn_ok": false,
   "cn_streak": 0,
@@ -7787,14 +7611,6 @@
   "cn_pass": 0,
   "cn_last": "2026-11-05T09:09:24Z"
  },
- "6f2420196aed4033dd8b51f6449a6ece35f40684": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 10,
-  "cn_runs": 10,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
  "ecfb168e161dfbe6db03719ee72b8adcf73474dc": {
   "cn_ok": false,
   "cn_streak": 0,
@@ -7803,53 +7619,21 @@
   "cn_pass": 0,
   "cn_last": "2026-11-05T09:09:24Z"
  },
- "e6a1f3db91abf8bf8d39180acb645b7e64406222": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 10,
-  "cn_runs": 10,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "cfe7fea67bb407d06f540e3cec99ab3970152a29": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 8,
-  "cn_runs": 8,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "3f3dc30be3521592c3bb3d55abd3b8b26783d79a": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 7,
-  "cn_runs": 7,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
  "133923d1032ecb4aa84b70e2e99afbd24f095772": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 19,
-  "cn_runs": 19,
+  "cn_fails": 20,
+  "cn_runs": 20,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "b5819839f80f75d387d7e2a230f63d2a329d08e2": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 19,
-  "cn_runs": 19,
+  "cn_fails": 20,
+  "cn_runs": 20,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
- },
- "68e273b942744ad4bcef1cfe1005251d9e877dca": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 8,
-  "cn_runs": 8,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
  },
  "e0887ec105419e039e12c71a9f923d4869c10054": {
   "cn_ok": true,
@@ -8070,14 +7854,6 @@
   "cn_egress": "美国",
   "cn_last": "2026-11-03T17:18:01Z"
  },
- "56483eee0dce9a7bddfffcf4036c18d789e0de15": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 8,
-  "cn_runs": 8,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
  "3846d413fc2e34f1e81e1d352e22babed1202964": {
   "cn_ok": true,
   "cn_streak": 2,
@@ -8111,18 +7887,10 @@
  "ea0cbb24ffc8d317ad2f772895b8b3d463c0c5fd": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 20,
-  "cn_runs": 20,
+  "cn_fails": 21,
+  "cn_runs": 21,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
- },
- "be83273e1da691c9180407323d9030529fbefe49": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 9,
-  "cn_runs": 9,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
  },
  "c14cd6b6601c4276d5d76b6ab495441ec0f73364": {
   "cn_ok": false,
@@ -8143,8 +7911,8 @@
  "8df163ee644c066d81a9835aa3f263cba53f9625": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 20,
-  "cn_runs": 20,
+  "cn_fails": 21,
+  "cn_runs": 21,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -8164,14 +7932,6 @@
   "cn_pass": 0,
   "cn_last": "2026-11-05T09:09:24Z"
  },
- "8d42d96569f5ba6b52e71cabfeea6bfa38146e9f": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 8,
-  "cn_runs": 8,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
  "ed1a10b4026b2f0a44bf97bf2de299e4b4149fb7": {
   "cn_ok": false,
   "cn_streak": 0,
@@ -8180,19 +7940,11 @@
   "cn_pass": 0,
   "cn_last": "2026-11-05T09:09:24Z"
  },
- "dacd660ab531d43bf1571dd5a33517a28cd7bcbc": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 8,
-  "cn_runs": 8,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
  "2776091eb450c08885bffe6cdecb5a67460f0c3a": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 19,
-  "cn_runs": 19,
+  "cn_fails": 20,
+  "cn_runs": 20,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -8204,77 +7956,29 @@
   "cn_pass": 0,
   "cn_last": "2026-11-05T09:09:24Z"
  },
- "463ad123b1fc02d2d1a515558358ad30b28c72db": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 8,
-  "cn_runs": 8,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "da3655e4642de0e8016e52ff35a1e9d0ad0f7732": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 8,
-  "cn_runs": 8,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
  "cbc98534b75f1d85a273889f506abc65ff947fbf": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 19,
-  "cn_runs": 19,
+  "cn_fails": 20,
+  "cn_runs": 20,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
- },
- "6f2fd827797a52f76d3965b1ed8d6d1e5da32132": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 8,
-  "cn_runs": 8,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "ff74db4bb1ccac2d727396f21a5478c6698b079c": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 8,
-  "cn_runs": 8,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "6a3c5c241d4d1a4e399a1ebd46e231dde5b0ea75": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 7,
-  "cn_runs": 7,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
  },
  "1eaeeba224ff7531e0cdfcb095b3c64947e64ed7": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 15,
-  "cn_runs": 18,
+  "cn_fails": 16,
+  "cn_runs": 19,
   "cn_pass": 2,
   "cn_latency_ms": 3346,
   "cn_egress": "波兰 马佐夫舍省 华沙  acedatacenters.com",
   "cn_last": "2026-11-05T14:50:56Z"
  },
- "7ceb7f371fa4bb87164b888ee6f129e002668a82": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 7,
-  "cn_runs": 7,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
  "f994b3125c46c3d7b88604c06e735496e380d138": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 18,
+  "cn_fails": 12,
+  "cn_runs": 19,
   "cn_pass": 5,
   "cn_latency_ms": 2500,
   "cn_egress": "意大利 拉齐奥大区 维泰博",
@@ -8283,141 +7987,53 @@
  "6fbff0b48a4e2adfe3a4aad154a2298d7e49d6da": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 15,
-  "cn_runs": 18,
+  "cn_fails": 16,
+  "cn_runs": 19,
   "cn_pass": 1,
   "cn_last": "2026-11-05T14:50:56Z",
   "cn_latency_ms": 1387,
   "cn_egress": "罗马尼亚"
  },
- "731ce9b0505ee1af9d683630f5677f48cc118612": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 7,
-  "cn_runs": 7,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "12ec9ec8fee690637f78e9beaf49adc0c84c55ee": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 7,
-  "cn_runs": 7,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "f57ea123252734f4bf693571492c69156b4c3053": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 7,
-  "cn_runs": 7,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "869ed2a2fbc055c2d195574fc55d245534dfcaca": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 7,
-  "cn_runs": 7,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
  "dd1cb3808f97b3df29432799f8e0e06fa3f696f9": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 18,
-  "cn_runs": 18,
+  "cn_fails": 19,
+  "cn_runs": 19,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "35a52510fb6b7032a16071a58b451fa1d346b7c4": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 18,
-  "cn_runs": 18,
+  "cn_fails": 19,
+  "cn_runs": 19,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "b9f40a6aa3706e9434605b9fb3221cdb3eb23649": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 18,
+  "cn_fails": 4,
+  "cn_runs": 19,
   "cn_pass": 2,
   "cn_last": "2026-11-05T14:50:56Z",
   "cn_latency_ms": 2930
  },
- "85fb8a2cdccb35343cdbf6aeb36c6c2b2c98860c": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 7,
-  "cn_runs": 7,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "e2156a897df364b64cf7fdc2ef81782919249aab": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 7,
-  "cn_runs": 7,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "d19dadedbd2ab8c351b50e4e0ff67aac1de5bb02": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 7,
-  "cn_runs": 7,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
  "75961b49829ddc0c50d677424093996970a3c176": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 18,
-  "cn_runs": 18,
+  "cn_fails": 19,
+  "cn_runs": 19,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "f6f5fb3897ace1848ec2a7939e672511a304d13b": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 18,
-  "cn_runs": 18,
+  "cn_fails": 19,
+  "cn_runs": 19,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
- },
- "8494ca6c934324c08b28034fd8a0840f71d84d11": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 7,
-  "cn_runs": 7,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "84f43d8b41bb8b3c3e8db2cd0e8a0a1ecc2cd43e": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 7,
-  "cn_runs": 7,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "dd56d181be92188724cef0be7c9a73f22896d670": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 7,
-  "cn_runs": 7,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "16da189b2cc9a11a1dc97506ba0743c7cd16c2a2": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 7,
-  "cn_runs": 7,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
  },
  "1ffeb12f4cc1256488ae10e1fb1bbcef4524fab3": {
   "cn_ok": false,
@@ -8470,74 +8086,58 @@
  "c1a0d49fa165e6dc29f4df7a8d6684037b807aee": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 13,
-  "cn_runs": 13,
+  "cn_fails": 14,
+  "cn_runs": 14,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "4bfff3786c2966660580f57cad2512fa59c15c6e": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 18,
-  "cn_runs": 18,
+  "cn_fails": 19,
+  "cn_runs": 19,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "f550036bf216a6cc68b4162f21e9d5f560d3e297": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 18,
-  "cn_runs": 18,
+  "cn_fails": 19,
+  "cn_runs": 19,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "371fbe806d38b33f25c91877175f9768d6371adb": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 18,
-  "cn_runs": 18,
+  "cn_fails": 19,
+  "cn_runs": 19,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "bab54ef02db0b0e56a37948ea32f87afbe22e8d0": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 13,
-  "cn_runs": 13,
+  "cn_fails": 14,
+  "cn_runs": 14,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "5efc0d8369fea6969a1c97165793e7243f57e69f": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 13,
-  "cn_runs": 13,
+  "cn_fails": 14,
+  "cn_runs": 14,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "d79bdfcab7358948eaf1b07af4853ff90f17543c": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 13,
-  "cn_runs": 13,
+  "cn_fails": 14,
+  "cn_runs": 14,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
- },
- "c114974d849caa7e79e944b10a9df90c772d23ee": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 7,
-  "cn_runs": 7,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "2e1579155f4086b7f1f3353bbc44999e944c176b": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 7,
-  "cn_runs": 7,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
  },
  "0c950834af7adc62ce6659f14073398f1beabc8f": {
   "cn_ok": false,
@@ -8550,16 +8150,16 @@
  "ed687b368f5c9d1e4e50fb74c58b7f4c98836483": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 13,
-  "cn_runs": 13,
+  "cn_fails": 14,
+  "cn_runs": 14,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "26ba06554c18e14b4830b404b2cc31f79215434c": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 13,
-  "cn_runs": 13,
+  "cn_fails": 14,
+  "cn_runs": 14,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -8574,34 +8174,18 @@
  "809762357b378d2e7368180dfe92dd62df09ae78": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 13,
-  "cn_runs": 13,
+  "cn_fails": 14,
+  "cn_runs": 14,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "8cac5aaed4731c3a24226ca20002db6ec2b5dd32": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 13,
-  "cn_runs": 13,
+  "cn_fails": 14,
+  "cn_runs": 14,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
- },
- "5472d7cdc1c4d6d22e0dec48205a6aaaee347c7e": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 7,
-  "cn_runs": 7,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "3ecf89204a460bcfd225522955133f7ad8ad8f18": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 7,
-  "cn_runs": 7,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
  },
  "9f2e88a66276827d0fd3729d530e816028eed5b9": {
   "cn_ok": false,
@@ -8614,64 +8198,48 @@
  "bf5ffc4607a8021efbb710a5220270e07e20c4d2": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 18,
-  "cn_runs": 18,
+  "cn_fails": 19,
+  "cn_runs": 19,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "1e6a990d95cce9c948b3aaa6281887370a655d58": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 18,
-  "cn_runs": 18,
+  "cn_fails": 19,
+  "cn_runs": 19,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "12b66742820b6ade1ac29ce89af19a9322e4405f": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 18,
-  "cn_runs": 18,
+  "cn_fails": 19,
+  "cn_runs": 19,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
- },
- "e24ff93e8a3bde67a2f23efea81a285256636ef0": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 7,
-  "cn_runs": 7,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "02d57527c37a61cf4527d0f06e222dc9738a03e1": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 7,
-  "cn_runs": 7,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
  },
  "e3c789ea657c81a9619b0a6b9f5f646cef70df24": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 13,
-  "cn_runs": 13,
+  "cn_fails": 14,
+  "cn_runs": 14,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "baea9441a565f18ff378fad82f9c47150f5e13e7": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 18,
-  "cn_runs": 18,
+  "cn_fails": 19,
+  "cn_runs": 19,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "58877c9b66d3303934bd93e6304607e4381b9dce": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 15,
-  "cn_runs": 17,
+  "cn_fails": 16,
+  "cn_runs": 18,
   "cn_pass": 1,
   "cn_last": "2026-11-05T14:50:56Z",
   "cn_latency_ms": 3418
@@ -8679,16 +8247,16 @@
  "02bf46529bc270047dd7e344151ce7aa9680571e": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 17,
-  "cn_runs": 17,
+  "cn_fails": 18,
+  "cn_runs": 18,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "55f7d0fb6b09dfad8a0c10c0be91eef0eb7e5dff": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 17,
+  "cn_fails": 12,
+  "cn_runs": 18,
   "cn_pass": 5,
   "cn_last": "2026-11-05T14:50:56Z",
   "cn_latency_ms": 2845,
@@ -8697,48 +8265,24 @@
  "41e55b7a5c2c1bf9bd2c36f1d21871ff74d978c2": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 17,
-  "cn_runs": 17,
+  "cn_fails": 18,
+  "cn_runs": 18,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "efe102b97e05a3a129cdaa91aff393d41a55dd0d": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 17,
-  "cn_runs": 17,
+  "cn_fails": 18,
+  "cn_runs": 18,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
- },
- "83087bd999d789cb6637454789da34928c0155f3": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "5f1cedef06eb3ef6ce081149b03cb2efb5350b09": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "49e372f7767e0730d73a5bc61c2f1959e35603b1": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
  },
  "8a2e4a1faed70c41105b323123b3d58e2984aee2": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 17,
-  "cn_runs": 17,
+  "cn_fails": 18,
+  "cn_runs": 18,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -8757,38 +8301,6 @@
   "cn_runs": 14,
   "cn_pass": 0,
   "cn_last": "2026-11-05T11:25:51Z"
- },
- "4df13b1c8551c36bac0f242973551a3039d8140f": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "1a70d15ad07475aaa6f2f73de95793201e6b054f": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "818405aee07cbec7702d6f899ac9fe804d2d5191": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "f6d7930fbb1299ee08bbce6d0550c8887caf6afa": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
  },
  "578257b81c0e5725a1085a4e6403c07f2bcc833b": {
   "cn_ok": false,
@@ -8822,22 +8334,6 @@
   "cn_pass": 0,
   "cn_last": "2026-11-05T09:09:24Z"
  },
- "196193f8523d8a96ead6fa3d230ea295b4244439": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "dff15fa8a7d2fd12c4f674d62acdd5ff76e2d7e7": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
  "fc0f83b81f70e9d4695859a2e09bb4ab2cd75448": {
   "cn_ok": false,
   "cn_streak": 0,
@@ -8845,46 +8341,6 @@
   "cn_runs": 11,
   "cn_pass": 0,
   "cn_last": "2026-11-05T09:09:24Z"
- },
- "77803bdc1fdd322d17e427d1d5442f592394f387": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "b7201c48e3568f566cac195f97ec2d80dea3aeef": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "707f915e13703c1182be8308d40eac7e55dde3ae": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "c373b81ed2c4f660dae091f71cd6abf7fdc1a7c9": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "83316e39c563ba6aa92ade31108dd41a1b371437": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
  },
  "ab9dcbc92ffe74cdcd698b6e9e68eb1c0e6b7685": {
   "cn_ok": false,
@@ -8894,14 +8350,6 @@
   "cn_pass": 0,
   "cn_last": "2026-11-05T09:09:24Z"
  },
- "3f814499fbc85a63d87d723761ce8eac36db5895": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
  "4cac5765fda8db7ff14c5cd4ab8af43e7d70031b": {
   "cn_ok": false,
   "cn_streak": 0,
@@ -8910,163 +8358,11 @@
   "cn_pass": 0,
   "cn_last": "2026-11-05T09:09:24Z"
  },
- "3af87a9cae5509654e334b7c9438f70257e11958": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "1ad397893d82cf652bdd6f9e4b44a22c97c86c87": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "4843bd5feda728bc1b42c53139a416ed70584b11": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "825a409be9d149e6a7ab9f3404d13436688ad327": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "3d35cc8da257837af17e7561b94f9cf02f198fcc": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "5674179b92bb41d54db45a6d313401e416c971b0": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "2fc2864693a6fb934eb463626b22d0712ce4b816": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "df9ec2ab3e70ca8966a5f482292bbe44489b66f4": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "2bc3de2155a13f2dc2ba0dcb9e748ab6362d548e": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "e5dd540800a6bd006f776eb3aba3985e0376fbfd": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "aacb512f327c4a38f328aacd2862a01824af8723": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "94ae749c3f4bcac9936f0c3112ad34c0ad6b32d7": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "fecf98e1325dc939f04bfbb35d90dcf5a59d120b": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "9e9389d8badf13078fbecde1b37fad9c0179f9f3": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "6aaf3523f9cccb9a8d60f73437b8a981a51e29b5": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "8d876abc1279d9c78db9c96c2ba7a427009c1b68": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "21d37593faae6c0ffe8a4918ac6b5caf721a5f31": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "179a52f78ad7f3a9432445d422c155c937e053ca": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "12ecb6b7f9a20bfba1411fa1f1ef228488c139aa": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
  "a4c887e205f3754bdaaddc948e8a5d6db338d5b2": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 17,
-  "cn_runs": 17,
+  "cn_fails": 18,
+  "cn_runs": 18,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -9077,134 +8373,6 @@
   "cn_runs": 11,
   "cn_pass": 0,
   "cn_last": "2026-11-05T09:09:24Z"
- },
- "e0692667b8bbaeb9f168533eff460ca796a60700": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "8f45673df9a0fe0e4e644fede07ec9e626132f84": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "13634c37a64310552f5a08dd2fa27086fb353f27": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "15cfcc99493c9f447aa58587a070760f4d66e4ae": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "5dfb82cdb8e372fbb9e26a14b5e4cda68daa9a77": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "75d8a5f8fb2211822f2a3c308ea9e6bc55cc55e1": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "d1d53ab20a630c342c67c1b925fdf0c4aac0da1d": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "8f384f6e14e0aafa54d21501c5acc455d240f1b2": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "db40ee8f601e5ba7aa37116142ea41238908dd3a": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "6fdc563885693f5c2d948a5fa9ef1207fe0183bc": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "5a1d75dd820d6b0cd91043fee76e3b6311fb47e6": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "b6e0d71f4a54840ef9d4c15d9bbd30582c614d59": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "42ccae214935a4391ac5f8c2d2318d4e2c0b262a": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "6c5aed2e50f4be99374cd6fd7490ec70c5b16383": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "0845f5c02d49c0dd75c7218f367faa65b72a33a3": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "a9317f1b69bfe01532f3aac46d33d1320d9f371d": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
  },
  "edb425b19bbec2810c9c356626c10a0a4767a438": {
   "cn_ok": false,
@@ -9233,240 +8401,160 @@
  "27aeef1875a99597f4ae2d3804e2398a0e12a10f": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 12,
-  "cn_runs": 12,
+  "cn_fails": 13,
+  "cn_runs": 13,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "6efa48665a4b892d177ebe893f0e91582ce56801": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 12,
-  "cn_runs": 12,
+  "cn_fails": 13,
+  "cn_runs": 13,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
- },
- "bcaf5af17cc796bce777d95098a678fd870f741b": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
  },
  "9eb26e9fe525eeacd6664d7ca1a40c272fa7bdd8": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 9,
-  "cn_runs": 9,
+  "cn_fails": 10,
+  "cn_runs": 10,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
- },
- "fe69a718af015441abd730900123501cb9149123": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "408dbc1c89d468bc88b7686dd926dfb5514c6157": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "f04495943a60bfd2a09991bf9f759ae7d06b2685": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "011bd18e95787f0845de0d040cd1f5f520ce44c3": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
  },
  "365a36bcd008f2f5c7fd736b02032e67ae8b214f": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 17,
-  "cn_runs": 17,
+  "cn_fails": 18,
+  "cn_runs": 18,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "871b7a49c111b6d2a758eb96b2af6184fde7c004": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 17,
-  "cn_runs": 17,
+  "cn_fails": 18,
+  "cn_runs": 18,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "47c1e9f3cbe61e947d48b2e4e00fd0097f702f1d": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 17,
-  "cn_runs": 17,
+  "cn_fails": 18,
+  "cn_runs": 18,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "a2cfab8cf109c8bbdc527d7df68b25a500c451da": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 17,
-  "cn_runs": 17,
+  "cn_fails": 18,
+  "cn_runs": 18,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "68985c025b8675bf2ea1acfeaa44b0f83983d51e": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 17,
-  "cn_runs": 17,
+  "cn_fails": 18,
+  "cn_runs": 18,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "8b6cdd611239f7ebbb2813eba55a2ebc772970ec": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 17,
-  "cn_runs": 17,
+  "cn_fails": 18,
+  "cn_runs": 18,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "9a742e196f092ffac8645731212c37cd9bf2bc95": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 17,
-  "cn_runs": 17,
+  "cn_fails": 18,
+  "cn_runs": 18,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "28ec00363acff9b0b4c533ba6d0c24a11e23aeef": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 17,
-  "cn_runs": 17,
+  "cn_fails": 18,
+  "cn_runs": 18,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "246abd325f7edd803cff963a668874a3cced645c": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 17,
-  "cn_runs": 17,
+  "cn_fails": 18,
+  "cn_runs": 18,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "46c7d077a549ba25410ad86db610777ecee29a25": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 17,
-  "cn_runs": 17,
+  "cn_fails": 18,
+  "cn_runs": 18,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "ab938fd08e13507c485f1ff40614ce83f0052835": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 17,
-  "cn_runs": 17,
+  "cn_fails": 18,
+  "cn_runs": 18,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "ea6734a94552f72f0b8012facbad085823896e66": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 17,
-  "cn_runs": 17,
+  "cn_fails": 18,
+  "cn_runs": 18,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "6e64ad8c803ba4a0265a5f626b8eea43458b01ef": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 17,
-  "cn_runs": 17,
+  "cn_fails": 18,
+  "cn_runs": 18,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "636ee43e87313559ea2231026ab79201cc5e920b": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 17,
-  "cn_runs": 17,
+  "cn_fails": 18,
+  "cn_runs": 18,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "9eaf713838eee4ea634d833ed1804076d1237864": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 17,
-  "cn_runs": 17,
+  "cn_fails": 18,
+  "cn_runs": 18,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
- },
- "acfbbdde2b6a2046db075eeece624e2ab5146ddf": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "7e9d26c80224e314010619795fb5c9497407c935": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "40bee8dfbf8f4a463df87b3843fc89167e6e000a": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "21e7f61b2c1c00e6dee6b5a04696e7d535b0af3d": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "098870ef8c7e2be1845a7134c9c166fd835c243b": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
  },
  "c375cede0c65884d907b5b5163364f16c37e0fa1": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 17,
-  "cn_runs": 17,
+  "cn_fails": 18,
+  "cn_runs": 18,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "5a143590fe296b43f9b86212f93da0883e4d1d95": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 17,
-  "cn_runs": 17,
+  "cn_fails": 18,
+  "cn_runs": 18,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -9478,35 +8566,19 @@
   "cn_pass": 0,
   "cn_last": "2026-11-05T09:09:24Z"
  },
- "63620507bdf41f5f3a76b681e935a6f6db4ec927": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
  "d62a309a8c880def7c2768a6cd9624494e51b907": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 17,
-  "cn_runs": 17,
+  "cn_fails": 18,
+  "cn_runs": 18,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
- },
- "af48cb3a4db4ac8a7d8f60842f0ff23e90d5642a": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
  },
  "c73b62c5c82d565a09d3b578ec7181412b52a035": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 17,
-  "cn_runs": 17,
+  "cn_fails": 18,
+  "cn_runs": 18,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -9518,19 +8590,11 @@
   "cn_pass": 0,
   "cn_last": "2026-11-05T09:09:24Z"
  },
- "bd25ce31c92d07ce705b15d6a246646dc997d63d": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
  "5a38880a4b53ee98eb98503bc3c00f5d0219acd8": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 17,
-  "cn_runs": 17,
+  "cn_fails": 18,
+  "cn_runs": 18,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -9545,8 +8609,8 @@
  "525d81a0ac106b8985f43ddf01a0033482a477e0": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 17,
-  "cn_runs": 17,
+  "cn_fails": 18,
+  "cn_runs": 18,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -9561,16 +8625,16 @@
  "056cf90d5a809a7817ae5a42a9e30f7a3bbbdce0": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 17,
-  "cn_runs": 17,
+  "cn_fails": 18,
+  "cn_runs": 18,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "840f3bcb885cae53bb2df17024d100332bf7430a": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 17,
-  "cn_runs": 17,
+  "cn_fails": 18,
+  "cn_runs": 18,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -9598,30 +8662,6 @@
   "cn_pass": 0,
   "cn_last": "2026-11-05T09:09:24Z"
  },
- "ff3784971edeb82ce6578d892be5974887651918": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "8e000e0c98bf12fd0ec1a7d9ebe04c71877fa4c1": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "22f0ef940713dfa9e118a03028b123d6f8af1765": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
  "55f0f2784e148eb8fdac9d9af4eefc669c1500e9": {
   "cn_ok": false,
   "cn_streak": 0,
@@ -9638,14 +8678,6 @@
   "cn_pass": 0,
   "cn_last": "2026-11-05T09:09:24Z"
  },
- "01bdfa0c939b43c21e303ff0aa1d3a9c83df22d8": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
  "6bde4d964d63f75f9ed47b272234f7be58a98787": {
   "cn_ok": false,
   "cn_streak": 0,
@@ -9654,91 +8686,59 @@
   "cn_pass": 0,
   "cn_last": "2026-11-05T09:09:24Z"
  },
- "699726551eeea74b5bb0cff582ee04767202f581": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
  "4e873192621911052a60950e95952ee5fcd40396": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 17,
-  "cn_runs": 17,
+  "cn_fails": 18,
+  "cn_runs": 18,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
- },
- "e38bf55f7a89334030d7f66842be55bbe085f119": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
  },
  "c69b6af036955a7432b4cb6f0f579c6fae507e2e": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 17,
-  "cn_runs": 17,
+  "cn_fails": 18,
+  "cn_runs": 18,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
- },
- "0dd57e04178165361cfb64a6673d47a131edf71b": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "bd30ff7283590515684d189e349c8d796017f1c5": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
  },
  "45c219d60fcff57d79acba21c83e5f771221b600": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 17,
-  "cn_runs": 17,
+  "cn_fails": 18,
+  "cn_runs": 18,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "6e81e16ab65173d5e4152d9432803bcfae450d92": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 17,
-  "cn_runs": 17,
+  "cn_fails": 18,
+  "cn_runs": 18,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "00e5e88d92bd7f378df3bd41f6e0f1da4acd7339": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 17,
-  "cn_runs": 17,
+  "cn_fails": 18,
+  "cn_runs": 18,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "533d5093f3a21beaef01566a63d81c7d4f83a587": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 17,
-  "cn_runs": 17,
+  "cn_fails": 18,
+  "cn_runs": 18,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "b52d11339f8101c955cffb1d1304ad40951dbfb1": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 17,
-  "cn_runs": 17,
+  "cn_fails": 18,
+  "cn_runs": 18,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -9750,43 +8750,19 @@
   "cn_pass": 0,
   "cn_last": "2026-11-05T09:09:24Z"
  },
- "0933898185e33c130fda66dec956418fe55085cf": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
- "1cf5282d9975a449e37bbf8414f9675e0c72db20": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
  "0fbba4a46f6e95cead39c589b938f2e3f5761889": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 17,
-  "cn_runs": 17,
+  "cn_fails": 18,
+  "cn_runs": 18,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
- },
- "fc88357bb157161bcb7a5d90270a4f83544aec84": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
  },
  "84fe623d1be94047bc968d6115a21b6fb1895982": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 17,
-  "cn_runs": 17,
+  "cn_fails": 18,
+  "cn_runs": 18,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -9801,16 +8777,16 @@
  "44b6773f5fbc3b3e72969f2f46f1f2f58e9c39d6": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 17,
-  "cn_runs": 17,
+  "cn_fails": 18,
+  "cn_runs": 18,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "d344f658a2d061755e13a0b676ad2c6a1726ac5c": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 17,
-  "cn_runs": 17,
+  "cn_fails": 18,
+  "cn_runs": 18,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -9822,45 +8798,21 @@
   "cn_pass": 0,
   "cn_last": "2026-11-05T11:25:51Z"
  },
- "478d2ce8d009545d4194c12563e27edccc594a90": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
  "e6491348aeb09011dfcfcf8aebe2a455d84974c7": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 17,
-  "cn_runs": 17,
+  "cn_fails": 18,
+  "cn_runs": 18,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
- },
- "f373bdbcc8c5ce49eed104228f32693db27d8cdf": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
  },
  "9127a08753084070a440291f963fe1866c3325ca": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 17,
-  "cn_runs": 17,
+  "cn_fails": 18,
+  "cn_runs": 18,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
- },
- "fc88c0a2397f53e4cd2925492a807fe5c32e821b": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
  },
  "3167f4c75d6ff3abedac8edcbb37ac7605e5cdac": {
   "cn_ok": false,
@@ -9870,27 +8822,19 @@
   "cn_pass": 0,
   "cn_last": "2026-11-05T09:09:24Z"
  },
- "638d670239feb570fac4efed9945d774bc92d9d9": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-04T16:17:40Z"
- },
  "d8a6ac71a18931b9917033d4c0e49e6aafde1796": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 17,
-  "cn_runs": 17,
+  "cn_fails": 18,
+  "cn_runs": 18,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "028827cfc50a652401cb9aecd4d073a5b60a924f": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 12,
-  "cn_runs": 12,
+  "cn_fails": 13,
+  "cn_runs": 13,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -9905,8 +8849,8 @@
  "40b6d4b6711c6326015b2965a1b5ddd9edafe165": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 5,
-  "cn_runs": 11,
+  "cn_fails": 6,
+  "cn_runs": 12,
   "cn_pass": 3,
   "cn_last": "2026-11-05T14:50:56Z",
   "cn_latency_ms": 2424,
@@ -9915,8 +8859,8 @@
  "07349104f5bf52f4af6cc2021dff68be953d1b04": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -9971,16 +8915,16 @@
  "e69333f46feccef755bedf26c40eacbb58f62550": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "6aa05f21af95a63a205f97d8d60c26b9be915b6b": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -10011,8 +8955,8 @@
  "f8deb77e4fa9be14969cc536bfae5ecc1952300a": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -10115,8 +9059,8 @@
  "771c5c86b6ebc8deaf34e8c0edf1a9fe0cdf1ced": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -10139,8 +9083,8 @@
  "d7d8356fb48e761cbabe265c11bea0bdf2b37126": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -10163,24 +9107,24 @@
  "9dd9562bd1d92fb9555f2c5333efb950169f4c0b": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "a557245f597fd05f0410408aad1459cd2f8a7236": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "987a574501c8e63997dd496aa074c944a459b9c0": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 9,
-  "cn_runs": 11,
+  "cn_fails": 10,
+  "cn_runs": 12,
   "cn_pass": 1,
   "cn_last": "2026-11-05T14:50:56Z",
   "cn_latency_ms": 4823
@@ -10188,56 +9132,56 @@
  "c7e5da9083fa690d01546c1be78680cf0c408c36": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "755efbe0caaefe2ae8eadb868967fe4b8443e562": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "8f6986a99467d6e99effd8af3e8ba57a3e54dce8": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "baa4746dc82081a4563e39756ef807f979f04467": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "c40fc3e5a71ce982e93cef41961eeb22c082ed61": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "3f8d0174aba2c200b563cd502b887517e306e20e": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "c10ee68f7cd50e95d307dd22da0e5edde7acc5ee": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 10,
-  "cn_runs": 11,
+  "cn_fails": 11,
+  "cn_runs": 12,
   "cn_pass": 1,
   "cn_latency_ms": 2506,
   "cn_egress": "印度 马哈拉施特拉邦 孟买  oracle.com",
@@ -10246,56 +9190,56 @@
  "85b8714532f036bd1e45d665b1749ac957294b4f": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "09da6bb7c1187aeb0726568595fd8316a746797d": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "cfdc351acb4653887e44db13be6f9ba0ae602254": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "2f7b42b873ce47f51f8eb59ff14a57ec13eb906e": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "7182d0b1678a13dcfcac2012b1d202d041143751": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "7cb0f060eb002cc51a8abf4d6dc851d3f9f9abdd": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "348f9e9dfb04a33437a076c6cd55bbaa113e6897": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -10382,8 +9326,8 @@
  "636b367b0c57481c7807cdca7ea3c00e2b583914": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -10414,16 +9358,16 @@
  "70b34d2c65dc6c8d17cf119abf2949735144f80b": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "a96612a067cd17d92d986d35357d8a53574ccfbe": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 11,
+  "cn_fails": 3,
+  "cn_runs": 12,
   "cn_pass": 1,
   "cn_last": "2026-11-05T14:50:56Z",
   "cn_latency_ms": 2986
@@ -10431,8 +9375,8 @@
  "ff9e11ec88c253efcddaf1022b5d75a6a957df43": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 8,
-  "cn_runs": 11,
+  "cn_fails": 9,
+  "cn_runs": 12,
   "cn_pass": 1,
   "cn_last": "2026-11-05T14:50:56Z",
   "cn_latency_ms": 2721,
@@ -10449,8 +9393,8 @@
  "788f34c3506412f89e3a77ee9bc2add6c57a0657": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -10513,8 +9457,8 @@
  "d6c32cf610b640151909cec0c29d1bd99c8f5c4d": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -10536,10 +9480,10 @@
  },
  "bb6c3f9982c59e3a96e603b8c408393f0c7b1d1d": {
   "cn_ok": true,
-  "cn_streak": 1,
+  "cn_streak": 2,
   "cn_fails": 0,
-  "cn_runs": 11,
-  "cn_pass": 6,
+  "cn_runs": 12,
+  "cn_pass": 7,
   "cn_last": "2026-11-05T14:50:56Z",
   "cn_latency_ms": 2397,
   "cn_egress": "法国 法兰西岛大区 巴黎  scaleway.com"
@@ -10570,10 +9514,10 @@
  },
  "2266ef61422f133d4506fb48cc4235039407027c": {
   "cn_ok": true,
-  "cn_streak": 6,
+  "cn_streak": 7,
   "cn_fails": 0,
-  "cn_runs": 11,
-  "cn_pass": 7,
+  "cn_runs": 12,
+  "cn_pass": 8,
   "cn_last": "2026-11-05T14:50:56Z",
   "cn_latency_ms": 1545,
   "cn_egress": "美国 加利福尼亚州 圣何塞  petaexpress.com"
@@ -10589,40 +9533,40 @@
  "b265bdf94e118e1d45be986f64ee5bb49def33ea": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "33b9b73817e43c305908e83b5c4974c6ea4cb138": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "aac292b1d76f6206bb0e9b6d42d223c526704124": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "b785ef4208faf842de8969b3e12aa32fd9ffb3a1": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "83bc800e16a063d01d801cfc8604bae99020ee08": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 11,
+  "cn_fails": 7,
+  "cn_runs": 12,
   "cn_pass": 4,
   "cn_latency_ms": 2334,
   "cn_egress": "美国 亚利桑那州 凤凰城  oracle.com",
@@ -10631,16 +9575,16 @@
  "989c5621aad131a7af72568ce72690e4d1e6cbc3": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "17a680dc91c1cf97233b436a4d50d38eab8a9b62": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 11,
+  "cn_fails": 3,
+  "cn_runs": 12,
   "cn_pass": 3,
   "cn_latency_ms": 7330,
   "cn_last": "2026-11-05T14:50:56Z",
@@ -10649,16 +9593,16 @@
  "46f1f1778d093a8a2e5935ef50f1421268996904": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "aeec8b92987c3a4fa7e7669a1b3ce008d675c9f9": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 10,
-  "cn_runs": 11,
+  "cn_fails": 11,
+  "cn_runs": 12,
   "cn_pass": 1,
   "cn_latency_ms": 1961,
   "cn_egress": "中国 香港   pccw.com",
@@ -10667,27 +9611,27 @@
  "d4609f6227911436d5c3d3f9a6e5cff67391d35a": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "7c0626286ff2f21271b0e46ce8bb0293b75308d5": {
   "cn_ok": true,
-  "cn_streak": 6,
+  "cn_streak": 7,
   "cn_fails": 0,
-  "cn_runs": 11,
-  "cn_pass": 8,
+  "cn_runs": 12,
+  "cn_pass": 9,
   "cn_latency_ms": 1897,
   "cn_egress": "法国",
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "c7b0efc4cf57f49d36aa9993ce34988732dee13c": {
   "cn_ok": true,
-  "cn_streak": 1,
+  "cn_streak": 2,
   "cn_fails": 0,
-  "cn_runs": 11,
-  "cn_pass": 5,
+  "cn_runs": 12,
+  "cn_pass": 6,
   "cn_latency_ms": 2078,
   "cn_egress": "德国",
   "cn_last": "2026-11-05T14:50:56Z"
@@ -10695,8 +9639,8 @@
  "bf2c35ce36a7830fed931d653b9586c0795d3e35": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 11,
+  "cn_fails": 2,
+  "cn_runs": 12,
   "cn_pass": 2,
   "cn_latency_ms": 2248,
   "cn_egress": "美国 加利福尼亚州 圣何塞  petaexpress.com",
@@ -10704,20 +9648,20 @@
  },
  "8bc437b3fa394ac0c6dcb2e81a825eea0a77aa0d": {
   "cn_ok": true,
-  "cn_streak": 6,
+  "cn_streak": 7,
   "cn_fails": 0,
-  "cn_runs": 11,
-  "cn_pass": 8,
+  "cn_runs": 12,
+  "cn_pass": 9,
   "cn_latency_ms": 1448,
   "cn_last": "2026-11-05T14:50:56Z",
   "cn_egress": "美国 加利福尼亚州 圣何塞  petaexpress.com"
  },
  "9afbd88d69f7393103d42ce784c1b99adac93c08": {
   "cn_ok": true,
-  "cn_streak": 6,
+  "cn_streak": 7,
   "cn_fails": 0,
-  "cn_runs": 11,
-  "cn_pass": 7,
+  "cn_runs": 12,
+  "cn_pass": 8,
   "cn_latency_ms": 1558,
   "cn_egress": "法国 法兰西岛大区 巴黎  scaleway.com",
   "cn_last": "2026-11-05T14:50:56Z"
@@ -10733,48 +9677,48 @@
  "920446319bb3a5649ba888e2092dad070757ba62": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "fff1dbc46d9ba5163c5a354fb52f29135323e204": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "3327a80264ff11722991dc9031fbb79233747fdf": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "1c6318ed0a7efa8a8ef9bea98f15d44f1666f9fa": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "7cb784bf255c3a54a23ae5431d461bd5760bb947": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "588092b4bfc9ca8217f9201a937dc8209fd8b07a": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -10789,8 +9733,8 @@
  "40db2e43350a877f8772a2bf25c6bfc5bfe9b7e9": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -10829,8 +9773,8 @@
  "aabade2845fd3c5b9f95e8918f61cc7a1feb41ab": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 11,
+  "cn_fails": 3,
+  "cn_runs": 12,
   "cn_pass": 1,
   "cn_last": "2026-11-05T14:50:56Z",
   "cn_latency_ms": 283
@@ -10862,16 +9806,16 @@
  "7addce5f433024189bc67da81753a336d806c325": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "1fb117755c8836e3614f1bbff97abf84eb751f72": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -10886,8 +9830,8 @@
  "d7a14d7ae8bdddd810ea8a6437a96e20dda4a764": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -10910,8 +9854,8 @@
  "0ae09b93368ce5058440cb260a5841a2a83b035d": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -10942,8 +9886,8 @@
  "b14341664db867ed04a79a29d627b4bb18a7ad2d": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -10966,8 +9910,8 @@
  "5948275abc0eb1792a54ffcee78a369f8045ef10": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -10990,8 +9934,8 @@
  "0ef5bb745d26a3f9805aeaad9f7b1f64f1089159": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -11006,32 +9950,32 @@
  "2f5a6c34162ec58d5341c69fb9c86ebc6f0ba125": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "2267a06ece6509761fd9d1adc3eacb2563daef78": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "b646d802f68664304aa751e3d64a55f7dff23f43": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "986a6950fb015d4a7bc140c1d18766d86ea1bbfb": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -11078,8 +10022,8 @@
  "e75485da5505233482edca93977e52f8445d1569": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -11110,24 +10054,24 @@
  "0f4ce8d576b8618c8deba5c91aa6f4542ff33299": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "0fb50ff709db037c2c91f5e8306dd2b500d251e0": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
+  "cn_fails": 12,
+  "cn_runs": 12,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "9945fa383ac2397effe151a663c0097235f2dd52": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 6,
+  "cn_fails": 3,
+  "cn_runs": 7,
   "cn_pass": 2,
   "cn_latency_ms": 809,
   "cn_egress": "意大利 伦巴第大区 米兰  redipo.es",
@@ -11135,10 +10079,10 @@
  },
  "2a5c3a3b57223903f1ec0a18d14516f546107925": {
   "cn_ok": true,
-  "cn_streak": 1,
+  "cn_streak": 2,
   "cn_fails": 0,
-  "cn_runs": 6,
-  "cn_pass": 1,
+  "cn_runs": 7,
+  "cn_pass": 2,
   "cn_last": "2026-11-05T14:50:56Z",
   "cn_latency_ms": 539,
   "cn_egress": "意大利 伦巴第大区 米兰  redipo.es"
@@ -11146,8 +10090,8 @@
  "92ed8932ebe6e49acacfe1805e3a6c7a537b2b9c": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 6,
+  "cn_fails": 3,
+  "cn_runs": 7,
   "cn_pass": 1,
   "cn_last": "2026-11-05T14:50:56Z",
   "cn_latency_ms": 3338,
@@ -11155,30 +10099,30 @@
  },
  "dd5528facf071062bf5079596179fdb02faf3427": {
   "cn_ok": true,
-  "cn_streak": 2,
+  "cn_streak": 3,
   "cn_fails": 0,
-  "cn_runs": 6,
-  "cn_pass": 4,
+  "cn_runs": 7,
+  "cn_pass": 5,
   "cn_last": "2026-11-05T14:50:56Z",
   "cn_latency_ms": 523,
   "cn_egress": "意大利 伦巴第大区 米兰  redipo.es"
  },
  "ceaec3d2dcd9f3ecb1bdf12563c046632e49e35b": {
   "cn_ok": true,
-  "cn_streak": 3,
+  "cn_streak": 4,
   "cn_fails": 0,
-  "cn_runs": 6,
-  "cn_pass": 4,
+  "cn_runs": 7,
+  "cn_pass": 5,
   "cn_latency_ms": 1298,
   "cn_egress": "意大利 伦巴第大区 米兰  redipo.es",
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "5aaed8b65c01401b05ee33e125ae307a66b6cfb6": {
   "cn_ok": true,
-  "cn_streak": 1,
+  "cn_streak": 2,
   "cn_fails": 0,
-  "cn_runs": 6,
-  "cn_pass": 5,
+  "cn_runs": 7,
+  "cn_pass": 6,
   "cn_latency_ms": 1517,
   "cn_egress": "意大利 伦巴第大区 米兰  redipo.es",
   "cn_last": "2026-11-05T14:50:56Z"
@@ -11186,8 +10130,8 @@
  "fd6bb8754027a588114eef5a93ad21030ecf29f1": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 6,
+  "cn_fails": 2,
+  "cn_runs": 7,
   "cn_pass": 3,
   "cn_latency_ms": 568,
   "cn_egress": "意大利 伦巴第大区 米兰  redipo.es",
@@ -11195,10 +10139,10 @@
  },
  "54a74bb172d90dc3e3d77a7736cab8fb5d2164b2": {
   "cn_ok": true,
-  "cn_streak": 2,
+  "cn_streak": 3,
   "cn_fails": 0,
-  "cn_runs": 6,
-  "cn_pass": 3,
+  "cn_runs": 7,
+  "cn_pass": 4,
   "cn_latency_ms": 1339,
   "cn_egress": "意大利 伦巴第大区 米兰  redipo.es",
   "cn_last": "2026-11-05T14:50:56Z"
@@ -11206,8 +10150,8 @@
  "5e49d4162716e97ae5793342fbe7267fbb3e04a2": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 6,
+  "cn_fails": 2,
+  "cn_runs": 7,
   "cn_pass": 4,
   "cn_latency_ms": 571,
   "cn_egress": "意大利 伦巴第大区 米兰  redipo.es",
@@ -11215,30 +10159,30 @@
  },
  "3bf4235b51c50b725470e9b5dea5b6e332c6f2f1": {
   "cn_ok": true,
-  "cn_streak": 2,
+  "cn_streak": 3,
   "cn_fails": 0,
-  "cn_runs": 6,
-  "cn_pass": 3,
+  "cn_runs": 7,
+  "cn_pass": 4,
   "cn_latency_ms": 566,
   "cn_egress": "意大利 伦巴第大区 米兰  redipo.es",
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "99ca7d93620ff1b60e2ed1747bbf64ad7f8272a5": {
   "cn_ok": true,
-  "cn_streak": 2,
+  "cn_streak": 3,
   "cn_fails": 0,
-  "cn_runs": 6,
-  "cn_pass": 5,
+  "cn_runs": 7,
+  "cn_pass": 6,
   "cn_latency_ms": 569,
   "cn_egress": "意大利 伦巴第大区 米兰  redipo.es",
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "1274322009a256d1a4906bb10210f56550a6a60a": {
   "cn_ok": true,
-  "cn_streak": 5,
+  "cn_streak": 6,
   "cn_fails": 0,
-  "cn_runs": 6,
-  "cn_pass": 5,
+  "cn_runs": 7,
+  "cn_pass": 6,
   "cn_last": "2026-11-05T14:50:56Z",
   "cn_latency_ms": 531,
   "cn_egress": "意大利 伦巴第大区 米兰  redipo.es"
@@ -11246,8 +10190,8 @@
  "0a68a8d726e886cf089d190f80c1bd2b3e4e19f5": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 6,
+  "cn_fails": 2,
+  "cn_runs": 7,
   "cn_pass": 2,
   "cn_latency_ms": 519,
   "cn_egress": "意大利 伦巴第大区 米兰  redipo.es",
@@ -11255,20 +10199,20 @@
  },
  "31ec596514850c2f644dd5ef778ba9358082b2f8": {
   "cn_ok": true,
-  "cn_streak": 3,
+  "cn_streak": 4,
   "cn_fails": 0,
-  "cn_runs": 6,
-  "cn_pass": 3,
+  "cn_runs": 7,
+  "cn_pass": 4,
   "cn_last": "2026-11-05T14:50:56Z",
   "cn_latency_ms": 592,
   "cn_egress": "意大利 伦巴第大区 米兰  redipo.es"
  },
  "9cc11361dc3731f7cbf7e2b9a04b6931169bbf2d": {
   "cn_ok": true,
-  "cn_streak": 2,
+  "cn_streak": 3,
   "cn_fails": 0,
-  "cn_runs": 6,
-  "cn_pass": 3,
+  "cn_runs": 7,
+  "cn_pass": 4,
   "cn_latency_ms": 542,
   "cn_egress": "意大利 伦巴第大区 米兰  redipo.es",
   "cn_last": "2026-11-05T14:50:56Z"
@@ -11276,33 +10220,33 @@
  "f52a32288c2659d8117db7b61cfd604b153ae16e": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
+  "cn_fails": 7,
+  "cn_runs": 7,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "81c4f725f006b0ab63f60f3241b38c0235c2cb4a": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
+  "cn_fails": 7,
+  "cn_runs": 7,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "b30d88a26df79660ac3d9192320496554f2dabf1": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
+  "cn_fails": 7,
+  "cn_runs": 7,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "f0dad4aaaa85b739423ed420059955084fa4bde1": {
   "cn_ok": true,
-  "cn_streak": 6,
+  "cn_streak": 7,
   "cn_fails": 0,
-  "cn_runs": 6,
-  "cn_pass": 6,
+  "cn_runs": 7,
+  "cn_pass": 7,
   "cn_latency_ms": 548,
   "cn_egress": "意大利 伦巴第大区 米兰  redipo.es",
   "cn_last": "2026-11-05T14:50:56Z"
@@ -11310,8 +10254,8 @@
  "9294a0c31600793ad85849d2f6655e7ece1b27ce": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 6,
+  "cn_fails": 3,
+  "cn_runs": 7,
   "cn_pass": 2,
   "cn_latency_ms": 1934,
   "cn_egress": "意大利 伦巴第大区 米兰  redipo.es",
@@ -11320,8 +10264,8 @@
  "0ceb1713e71be3cf900d7ba339e801e08800e1b0": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 6,
+  "cn_fails": 2,
+  "cn_runs": 7,
   "cn_pass": 2,
   "cn_last": "2026-11-05T14:50:56Z",
   "cn_latency_ms": 568,
@@ -11329,10 +10273,10 @@
  },
  "9898fd976c5ace9266da812ac053574ee8186724": {
   "cn_ok": true,
-  "cn_streak": 2,
+  "cn_streak": 3,
   "cn_fails": 0,
-  "cn_runs": 6,
-  "cn_pass": 2,
+  "cn_runs": 7,
+  "cn_pass": 3,
   "cn_last": "2026-11-05T14:50:56Z",
   "cn_latency_ms": 1349,
   "cn_egress": "意大利 伦巴第大区 米兰  redipo.es"
@@ -11340,8 +10284,8 @@
  "caf4735bd90fc87a692c5ba282a7bf13909d880e": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 6,
+  "cn_fails": 3,
+  "cn_runs": 7,
   "cn_pass": 1,
   "cn_last": "2026-11-05T14:50:56Z",
   "cn_latency_ms": 2487,
@@ -11350,16 +10294,16 @@
  "ede351d0bc499019847fb28bf3604db0589b9099": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
+  "cn_fails": 7,
+  "cn_runs": 7,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "c2308e309ea620f82de710459b5c4e96dd0940fc": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
+  "cn_fails": 7,
+  "cn_runs": 7,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -11382,8 +10326,8 @@
  "a7af6e48f13ff6447b4beaba004dd58c75dff1bd": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
+  "cn_fails": 7,
+  "cn_runs": 7,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -11422,72 +10366,72 @@
  "5ca9d04665abad01106b0e68ce24aa51415d1463": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
+  "cn_fails": 7,
+  "cn_runs": 7,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "b5a47bb5c87b6ea7ab1dd4220822914e58820acb": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
+  "cn_fails": 7,
+  "cn_runs": 7,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "0b54e201578ce8c6ac8cd514c19a1d171d154d3b": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
+  "cn_fails": 7,
+  "cn_runs": 7,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "d0e1337cc74593b707c99f1f1bdb1bbcdff06bea": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
+  "cn_fails": 7,
+  "cn_runs": 7,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "467b506d55388743ba90515afd9ae66167d9d7ca": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
+  "cn_fails": 7,
+  "cn_runs": 7,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "6c7db7c4c37e3cfb461cb4acba787977bfaa0ad2": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
+  "cn_fails": 7,
+  "cn_runs": 7,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "f07de6fc185be408b76316d14b5b7d1d4ea26a4e": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
+  "cn_fails": 7,
+  "cn_runs": 7,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "34825d777c888932df2ce9463403c571a7ff4550": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
+  "cn_fails": 7,
+  "cn_runs": 7,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "1c0da54805d8e1cbf39f36aaaac8c8315709f6d7": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
+  "cn_fails": 7,
+  "cn_runs": 7,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -11622,8 +10566,8 @@
  "b83930b841c02bd543334b5d137ca1bd970f3792": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
+  "cn_fails": 7,
+  "cn_runs": 7,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -11638,8 +10582,8 @@
  "15b0ad54cb9f4d13db9c892774ad033bc6d92ab7": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
+  "cn_fails": 7,
+  "cn_runs": 7,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -11661,10 +10605,10 @@
  },
  "a6c63a5e216fbdec52f373e0940fb4530cdac823": {
   "cn_ok": true,
-  "cn_streak": 1,
+  "cn_streak": 2,
   "cn_fails": 0,
-  "cn_runs": 6,
-  "cn_pass": 1,
+  "cn_runs": 7,
+  "cn_pass": 2,
   "cn_last": "2026-11-05T14:50:56Z",
   "cn_latency_ms": 1222
  },
@@ -11743,8 +10687,8 @@
  "3a08f03581edcb86ef7f6e67df2f90aa52210421": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
+  "cn_fails": 7,
+  "cn_runs": 7,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -11767,24 +10711,24 @@
  "7b5298056791e7f20ebd0a698e5859b0aafb2e25": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
+  "cn_fails": 7,
+  "cn_runs": 7,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "7d69b6e4ba8becdb755d4d87e4213ff26176ff38": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
+  "cn_fails": 7,
+  "cn_runs": 7,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "41b8e4b773bd20508de1ab3acecfe4fba76aabd5": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
+  "cn_fails": 7,
+  "cn_runs": 7,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
@@ -11815,89 +10759,89 @@
  "98dd04efedae9a99f4c93e91aa4ef30b74831143": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
+  "cn_fails": 7,
+  "cn_runs": 7,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "8b0ba54131678a467b7e3fe54002a0e8a101d48d": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
+  "cn_fails": 7,
+  "cn_runs": 7,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "679b4824d8cf2044822d3efd6621999132364b5e": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
+  "cn_fails": 7,
+  "cn_runs": 7,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "892972b5588283b0355d4e12cc03c3b02bb2d3b9": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
+  "cn_fails": 7,
+  "cn_runs": 7,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "b8447e4fabe652fbce62f3dd341bdec783f21463": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "76a90e50022c1e78b2ca8ff0aa5040ec4104ffac": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "ce69ec0f2b18e3d2661b570be068706cbf1cb06d": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "33bf53e9d3e406a6067560c6f4eb0592448c6a09": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "e314f1f1a64614793df22f44b7ef7fa605538c23": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "77bcb26e3d655662d281da5877d3e7afd83028b8": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "06b90db1808c316e74b5f31a6365538235ace6e4": {
   "cn_ok": true,
-  "cn_streak": 1,
+  "cn_streak": 2,
   "cn_fails": 0,
-  "cn_runs": 3,
-  "cn_pass": 2,
+  "cn_runs": 4,
+  "cn_pass": 3,
   "cn_latency_ms": 1507,
   "cn_egress": "法国 法兰西岛大区 巴黎  scaleway.com",
   "cn_last": "2026-11-05T14:50:56Z"
@@ -11905,384 +10849,384 @@
  "3156edf922ebba5cf20d3cb19dc57e195970a438": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "9697ba93000802fd8f5542e564374f05d9340bd9": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "a55d060e525da770ccd5490a931bfb9ae2c8a42a": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "f9c8156f74d1a38f9d5e512332627e9f537637af": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "568506f58eb30c5b10c2c4234b8d4e511921d5b6": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "85143da0aa020c76ce5fef1e7db41c86c92fa03a": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "35e1e1147ef41c8ef3208a3faea76ecd3d76b6bf": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "12696848d90a822b979819d64d5d67d624d536ba": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "c53159e492b1a245bfc88a561bfd8d5e08348d11": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "1def387aca52afdd5c26bcf8ddd5385f1224857d": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "e2d05345f0341dfece7321ee64f2ad53d3f7212d": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "38aeb3b6db1e4aaedc80738eecb1aec8c60dac3a": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "dbb7a842c7240ee75701d7c38ffd19493b3a6967": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "74fd2b79ccfd368b5d8e15a6db62af9e33c23175": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "0ffe5082619f7867027b35586b19e9876bae0a67": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "f81dba48fba20d691eaa95184848ef0961b64afb": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "012b7c070d64430079c173bc7243592d435fa78a": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "94c65a009888bfb382bc68b5545d462a8483f84d": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "c60286d8860de06730efdc8d6d4b38809485701e": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "d1ff7ed7c611c367f703f6b2cf084f0f7631d631": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "e7b03032e60cd53ccfee12e942500cbc74705a3f": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "a8154d677491c13ae6df333e6bb892730e0b65ec": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "083a9c63c533d23d0b5ecf2b20e0f6e34176175d": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "cd95e344d4b68e542756020204b971f6c29303e7": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "0c40d6f3569c14baa0e6b3e09b7484fb8b6c94c8": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "f1770dcebb68c4b0d592bd1045ce744d213f0eab": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "ce3e68a3f3a46ea9d4a88b424ea7b8195c98b003": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "5a66eae02762541c222560d4259220e618d13ca2": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "9453397b7c8ce7f59554c592d68589297c0cabb0": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "2323ae2874e11d19734638c1f887b080e421bbfa": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "9dac2ead26ae2756282f8b019c05f576a5002753": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "88a93c2abafc8b363a2d0e4a8bd8bedfe7f5bd27": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "1aceb12d556e96bd9a48ba564c4afc0f78c991b9": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "e9a4fba62465899cfbbb965543d0307377c835a4": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "a53a134bb7a677f63a62bd81453adfd1cd79711d": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "4d8375d5206f2644b54d0745bd039df4ac13a58d": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "045e19525003b437fddfcb37b9a73879c0c98cee": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "27e066057d55ef611736a034d524a4c65c4300bf": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "6ea9c3c1711beac4bae727f994d6fc0b30354021": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "1f59d378a9dd3ca3537706ed7ed918d2db6a6925": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "5a46826b0ac264d720716ee4c800410ee57f7f89": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "dc3dec24f68c960130742e3e42e22ffcdb13f6d2": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "d90e63d83eb7b5b47ae7bf86edd043c568f0bd0f": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "f04c891949eeee666a46bc66f495b2a6da1ed1de": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "47e22e221dfe44b967b6948cd6a85ce0a8b6554e": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "d4d31fbfac0b3cca67de43293568f7ae0ee0e1bd": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "19b4e239b9354c35bcb9410d25cfcff780de5943": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  },
  "44c707cafd2768e4e5cb41a9ec0eecbd4f446dc9": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
+  "cn_fails": 4,
+  "cn_runs": 4,
   "cn_pass": 0,
   "cn_last": "2026-11-05T14:50:56Z"
  }
