@@ -1724,6 +1724,33 @@ def best_source_flow(rt: dict) -> tuple[int, int]:
             max(int(d.get("bps") or 0) for d in srcs))
 
 
+def serial_latency_recheck(api_port: int, nodes: list[dict], results: dict,
+                          delay_fn=None) -> int:
+    """对初筛通过的节点串行复测延迟，用真实值覆盖并发测量值（任务#127）。
+
+    为什么必须做：初筛 16 路并行，本地链路要同时承载 16 条到不同代理的
+    TLS 握手，RTT 被自家突发抬高——实证同一批节点并发报 4486ms、串行 2780ms。
+    而下游全部判据（高延迟降级 3000ms、填充剔除 1500ms、报告延迟）吃的都是
+    这个数。测量方式污染了判据，阈值调得再细也没有意义。
+
+    返回被修正的节点数。串行反而失败的节点保留初筛结论（那不是「更快」的
+    证据，只是一次抖动，不能拿它做好消息）。
+    """
+    fn = delay_fn or (lambda port, name: delay_test(port, name))
+    fixed = 0
+    for n in nodes:
+        key = n["probe_name"]
+        cur = (results.get(key) or {}).get("latency_ms")
+        one = fn(api_port, key)
+        if not one.get("ok") or not one.get("latency_ms"):
+            continue
+        new = int(one["latency_ms"])
+        if cur is None or new != cur:
+            results.setdefault(key, {})["latency_ms"] = new
+            fixed += 1
+    return fixed
+
+
 def is_filler_node(node: dict, results: dict, *,
                    max_latency_ms: int | None = None,
                    max_bytes: int | None = None) -> bool:
@@ -2219,6 +2246,15 @@ def main() -> int:
             ckpt.flush(force=True)
             delay_passed = [n for n in nodes if results.get(n["probe_name"], {}).get("ok")]
             log(f"delay 初筛通过: {len(delay_passed)}/{len(nodes)}（{time.time() - t0:.0f}s）")
+
+            # 4.15) 延迟串行复测（任务#127）：初筛并发 16 会虚高 RTT，而后续
+            # 所有延迟判据（3000ms 降级 / 1500ms 填充剔除 / 报告）都吃这个数。
+            # 初筛只负责「通不通」，真实延迟由串行复测给出。
+            if delay_passed and getattr(config, "SERIAL_LATENCY_RECHECK", True):
+                _t = time.time()
+                _fixed = serial_latency_recheck(api_port, delay_passed, results)
+                log(f"延迟串行复测: {len(delay_passed)} 个节点，{_fixed} 个 RTT 被修正"
+                    f"（并发初筛虚高，闸门改用串行值；耗时 {time.time() - _t:.0f}s）")
 
             # 4.2) 终筛：真实流量测试（经 mixed-port 访问海外被封锁目标）
             if delay_passed:
