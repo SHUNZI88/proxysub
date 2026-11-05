@@ -31,6 +31,7 @@ import argparse
 import os
 import subprocess
 import sys
+import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import round_guard  # noqa: E402
@@ -51,7 +52,25 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--force", action="store_true",
                     help="无视决策强制跑一轮（排障用；仍受单实例锁保护）")
     ap.add_argument("--verbose", action="store_true", help="打印决策原因")
+    ap.add_argument("--log", default=None,
+                    help="追加日志文件（默认 <workdir>/local_round.log）；"
+                         "任务计划程序不保存 stdout，本机排障全靠它")
     return ap
+
+
+def _make_logger(path: str | None):
+    """返回 log(msg)：同时打到 stdout 与日志文件（失败只打 stdout）。"""
+    def log(msg: str) -> None:
+        line = f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] {msg}"
+        print(line, flush=True)
+        if not path:
+            return
+        try:
+            with open(path, "a", encoding="utf-8") as f:
+                f.write(line + "\n")
+        except OSError:
+            pass
+    return log
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -62,14 +81,14 @@ def main(argv: list[str] | None = None) -> int:
 
     workdir = args.workdir or cn_probe.default_workdir()
     os.makedirs(workdir, exist_ok=True)
+    log = _make_logger(args.log or os.path.join(workdir, "local_round.log"))
 
     if not args.force:
         ok, why = round_guard.decide(workdir, stale_h=args.stale_h)
         if not ok:
-            print(f"[local-round] 不跑：{why}")
+            log(f"不跑：{why}")
             return 0
-        if args.verbose:
-            print(f"[local-round] 决策：补跑（{why}）")
+        log(f"决策：补跑（{why}）")
 
     round_guard.note_attempt(workdir)
     env = dict(os.environ)
@@ -81,16 +100,16 @@ def main(argv: list[str] | None = None) -> int:
            "--max-wait", str(args.max_wait)]
     if args.dry_run:
         cmd.append("--dry-run")
-    print(f"[local-round] 启动：{' '.join(cmd)}")
+    log("启动：" + " ".join(cmd))
     try:
         rc = subprocess.run(cmd, env=env).returncode
     except KeyboardInterrupt:
         rc = 130
     state = round_guard.note_result(workdir, rc)
-    print(f"[local-round] 结束：cn_probe 退出码 {rc}；"
-          f"资产已刷新={state.get('last_result_refreshed')}，"
-          f"连续失败={state.get('fail_streak')}，"
-          f"下次最早 {round_guard.backoff_min(int(state.get('fail_streak') or 0))} 分钟后")
+    log(f"结束：cn_probe 退出码 {rc}；"
+        f"资产已刷新={state.get('last_result_refreshed')}，"
+        f"连续失败={state.get('fail_streak')}，"
+        f"下次最早 {round_guard.backoff_min(int(state.get('fail_streak') or 0))} 分钟后")
     return 0
 
 
