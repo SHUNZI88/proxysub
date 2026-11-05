@@ -501,30 +501,29 @@ def auth_selfcheck(required: bool = True) -> bool:
     否则 AI 协作者容易把「环境变量为空」误判为「没有 token」——项目里有持久化
     PAT，路径见下方提示与仓库根目录 AGENTS.md。
     """
-    # 自动兜底：环境变量缺失时，从已知持久化路径补充（避免误判"没有 token"）
+    # 自动兜底：环境变量缺失时，从已知持久化路径补充（避免误判"没有 token"）。
+    # 候选路径由 gh_compat 统一维护：沙箱 /root/.github_pat、家宽 ~/.proxysub_pat。
     token = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")
-    if not token and os.path.exists(PERSISTED_PAT_PATH):
-        try:
-            with open(PERSISTED_PAT_PATH, encoding="utf-8") as f:
-                token = f.read().strip()
-            if token:
-                os.environ["GH_TOKEN"] = token
-                log(f"提示: 环境变量无 token，已自动从 {PERSISTED_PAT_PATH} 载入持久化 PAT")
-        except OSError:
-            token = None
+    if not token:
+        token = gh_compat.token()
+        if token:
+            os.environ["GH_TOKEN"] = token
+            log("提示: 环境变量无 token，已载入持久化 PAT（候选路径: "
+                + " / ".join(gh_compat.pat_paths()) + "）")
     if not token:
         if not required:
             log("提示: dry-run 且无 token——仅匿名读取公开 Release，本轮不发布")
             return True
+        _paths = " / ".join(gh_compat.pat_paths())
         log(
             "熔断: 环境变量 GH_TOKEN/GITHUB_TOKEN 均未设置，且持久化路径"
-            f" {PERSISTED_PAT_PATH} 不存在——无法读写 Release，中止。\n"
+            f"（{_paths}）均不存在——无法读写 Release，中止。\n"
             "  【给 AI 协作者】本仓库凭据存在多处，环境变量通常为空，"
             "绝不等于\"没有 token\"。断言前请依次检查：\n"
-            f"    ① 持久化 PAT 文件: {PERSISTED_PAT_PATH}（chmod 600）\n"
+            f"    ① 持久化 PAT 文件: {_paths}（本机放 ~/.proxysub_pat）\n"
             "    ② 项目文档: docs/cn_probe.md、scripts/cn_probe.py、monitor_1617_run.py\n"
             "    ③ 环境变量: GH_TOKEN / GITHUB_TOKEN\n"
-            "  正确用法: export GH_TOKEN=\"$(cat /root/.github_pat)\"\n"
+            "  正确用法: export GH_TOKEN=\"$(cat /root/.github_pat)\"（沙箱）\n"
             "  完整规则见仓库根目录 AGENTS.md。"
         )
         return False
@@ -535,7 +534,8 @@ def auth_selfcheck(required: bool = True) -> bool:
     if not ok:
         log(
             f"熔断: 鉴权失败（{detail}）——中止。\n"
-            f"  【给 AI 协作者】token 可能已失效/轮换，请核对 {PERSISTED_PAT_PATH} 是否为最新，"
+            f"  【给 AI 协作者】token 可能已失效/轮换，请核对 "
+            f"{' / '.join(gh_compat.pat_paths())} 是否为最新，"
             "并参考 AGENTS.md 的凭据规则。"
         )
         return False

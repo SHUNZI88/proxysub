@@ -598,7 +598,9 @@ def test_auth_selfcheck_falls_back_to_persisted_pat(monkeypatch, tmp_path):
     monkeypatch.delenv("GITHUB_TOKEN", raising=False)
     pat = tmp_path / "github_pat"
     pat.write_text("ghp_from_file\n", encoding="utf-8")
-    monkeypatch.setattr(cn_probe, "PERSISTED_PAT_PATH", str(pat))
+    # 候选路径由 gh_compat 统一维护（沙箱 /root/.github_pat、家宽 ~/.proxysub_pat）
+    monkeypatch.setattr(cn_probe.gh_compat, "PERSISTED_PAT_PATH", str(pat))
+    monkeypatch.setattr(cn_probe.gh_compat, "HOME_PAT_PATH", str(tmp_path / "nope"))
     # 实现已下沉到 gh_compat（gh 优先、无 gh 走 REST，任务#121），
     # 这里只需守住「env 缺失时能从持久化 PAT 兜底并写回环境变量」。
     with mock.patch.object(cn_probe.gh_compat, "auth_ok",
@@ -612,8 +614,10 @@ def test_auth_selfcheck_no_token_anywhere(monkeypatch, tmp_path):
     """回归：env 与持久化文件均无 token 时，才判失败（且不误判为"没有 token"）。"""
     monkeypatch.delenv("GH_TOKEN", raising=False)
     monkeypatch.delenv("GITHUB_TOKEN", raising=False)
-    monkeypatch.setattr(
-        cn_probe, "PERSISTED_PAT_PATH", str(tmp_path / "not_exist"))
+    monkeypatch.setattr(cn_probe.gh_compat, "PERSISTED_PAT_PATH",
+                        str(tmp_path / "not_exist"))
+    monkeypatch.setattr(cn_probe.gh_compat, "HOME_PAT_PATH",
+                        str(tmp_path / "not_exist_home"))
     assert cn_probe.auth_selfcheck() is False
 
 

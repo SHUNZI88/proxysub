@@ -24,6 +24,7 @@ def test_token_falls_back_to_persisted_file(tmp_path, monkeypatch):
     p = tmp_path / "pat"
     p.write_text("  filedtoken\n", encoding="utf-8")
     monkeypatch.setattr(gc, "PERSISTED_PAT_PATH", str(p))
+    monkeypatch.setattr(gc, "HOME_PAT_PATH", str(tmp_path / "nope"))
     assert gc.token() == "filedtoken"
 
 
@@ -31,6 +32,7 @@ def test_token_empty_when_nothing(tmp_path, monkeypatch):
     monkeypatch.delenv("GH_TOKEN", raising=False)
     monkeypatch.delenv("GITHUB_TOKEN", raising=False)
     monkeypatch.setattr(gc, "PERSISTED_PAT_PATH", str(tmp_path / "missing"))
+    monkeypatch.setattr(gc, "HOME_PAT_PATH", str(tmp_path / "missing_home"))
     assert gc.token() == ""
 
 
@@ -38,6 +40,7 @@ def test_auth_fails_without_token(tmp_path, monkeypatch):
     monkeypatch.delenv("GH_TOKEN", raising=False)
     monkeypatch.delenv("GITHUB_TOKEN", raising=False)
     monkeypatch.setattr(gc, "PERSISTED_PAT_PATH", str(tmp_path / "missing"))
+    monkeypatch.setattr(gc, "HOME_PAT_PATH", str(tmp_path / "missing_home"))
     ok, why = gc.auth_ok()
     assert ok is False and "无 token" in why
 

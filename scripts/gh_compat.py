@@ -34,7 +34,12 @@ import urllib.request
 API = "https://api.github.com"
 UPLOAD = "https://uploads.github.com"
 DEFAULT_REPO = "SHUNZI88/proxysub"
+# 持久化 PAT 位置（任务#121 扩展为多候选）：
+#   * PERSISTED_PAT_PATH（环境变量可覆盖，沙箱为 /root/.github_pat）；
+#   * 家目录 ~/.proxysub_pat —— 本机（Windows 家宽）的标准位置。
+# 多候选而不是改写单一常量：沙箱与家宽各自的凭据互不影响，换机器只需放文件。
 PERSISTED_PAT_PATH = os.environ.get("PERSISTED_PAT_PATH", "/root/.github_pat")
+HOME_PAT_PATH = os.path.join(os.path.expanduser("~"), ".proxysub_pat")
 
 # Release 资产下载的镜像回退（任务#121）。
 # 实况（2026-11-05 本机实测）：`github.com/.../releases/download/...` 直连在国内
@@ -96,16 +101,28 @@ def download_url(url: str, dest: str, *, max_time: int = 300) -> bool:
     return False
 
 
+def pat_paths() -> list[str]:
+    """持久化 PAT 的候选路径（按优先级）。"""
+    out = [PERSISTED_PAT_PATH]
+    if HOME_PAT_PATH not in out:
+        out.append(HOME_PAT_PATH)
+    return out
+
+
 def token() -> str:
     """当前可用 token（空串 = 匿名，只够读取公开仓库）。"""
     t = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN") or ""
     if t:
         return t.strip()
-    try:
-        with open(PERSISTED_PAT_PATH, encoding="utf-8") as f:
-            return f.read().strip()
-    except OSError:
-        return ""
+    for path in pat_paths():
+        try:
+            with open(path, encoding="utf-8") as f:
+                value = f.read().strip()
+            if value:
+                return value
+        except OSError:
+            continue
+    return ""
 
 
 def repo() -> str:
