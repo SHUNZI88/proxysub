@@ -1484,3 +1484,74 @@ def test_build_user_pool_excludes_dead_and_is_idempotent(tmp_path, monkeypatch):
     assert first["unrecoverable"] == ["无配置"]
     assert bup.main() == 0
     assert json.loads(out.read_text(encoding="utf-8"))["nodes"] == first["nodes"]
+
+
+# ---------------------------------------------------------------- 可用档提级（任务#123）
+def _degnode(name, latency, srcs):
+    return {"fp": name, "name": name, "origin": "carryover", "probe_name": f"p_{name}",
+            "proxy": {"name": name, "type": "vless"}, "final": False, "us_ok": False,
+            "_latency": latency, "_srcs": srcs}
+
+
+def _usable_fixture():
+    results = {}
+    nodes = []
+    # 1) 有流量且够快（>128KB, >16KB/s）→ 应提级
+    n = _degnode("good", 900, [{"bytes": 300 * 1024, "bps": 40 * 1024}])
+    nodes.append(n)
+    results[n["probe_name"]] = {"ok": False, "latency_ms": 900,
+                                "real_traffic": {"ok": False, "degraded": True,
+                                                 "sources": n["_srcs"]}}
+    # 2) 流量太小 → 不提级
+    n = _degnode("tiny", 800, [{"bytes": 30 * 1024, "bps": 30 * 1024}])
+    nodes.append(n)
+    results[n["probe_name"]] = {"ok": False, "latency_ms": 800,
+                                "real_traffic": {"ok": False,
+                                                 "sources": n["_srcs"]}}
+    # 3) 流量够但太慢 → 不提级
+    n = _degnode("slow", 700, [{"bytes": 400 * 1024, "bps": 8 * 1024}])
+    nodes.append(n)
+    results[n["probe_name"]] = {"ok": False, "latency_ms": 700,
+                                "real_traffic": {"ok": False,
+                                                 "sources": n["_srcs"]}}
+    # 4) 够快但延迟超主资产线 → 不提级
+    n = _degnode("laggy", 5000, [{"bytes": 400 * 1024, "bps": 60 * 1024}])
+    nodes.append(n)
+    results[n["probe_name"]] = {"ok": False, "latency_ms": 5000,
+                                "real_traffic": {"ok": False,
+                                                 "sources": n["_srcs"]}}
+    return nodes, results
+
+
+def test_best_source_flow_takes_max_not_average():
+    """多源交叉的意义是「某源被限流不代表节点不行」，取最大值才对。"""
+    rt = {"sources": [{"bytes": 0, "bps": 0}, {"bytes": 900 * 1024, "bps": 90 * 1024},
+                      {"bytes": 10 * 1024, "bps": 10 * 1024}]}
+    assert cn_probe.best_source_flow(rt) == (900 * 1024, 90 * 1024)
+
+
+def test_best_source_flow_empty():
+    assert cn_probe.best_source_flow({}) == (0, 0)
+
+
+def test_select_usable_promotions_filters_correctly():
+    nodes, results = _usable_fixture()
+    got = [n["name"] for n in cn_probe.select_usable_promotions(
+        nodes, results, cap=3000)]
+    assert got == ["good"]
+
+
+def test_select_usable_promotions_disabled(monkeypatch):
+    nodes, results = _usable_fixture()
+    monkeypatch.setattr(cn_probe.config, "USABLE_TIER_ENABLED", False)
+    assert cn_probe.select_usable_promotions(nodes, results, cap=3000) == []
+
+
+def test_select_usable_promotions_thresholds_are_config_driven(monkeypatch):
+    """阈值必须可调：用户诉求变化时只改 config，不改逻辑。"""
+    nodes, results = _usable_fixture()
+    monkeypatch.setattr(cn_probe.config, "USABLE_MIN_BYTES", 20 * 1024)
+    monkeypatch.setattr(cn_probe.config, "USABLE_MIN_BPS", 5 * 1024)
+    got = [n["name"] for n in cn_probe.select_usable_promotions(
+        nodes, results, cap=3000)]
+    assert set(got) == {"good", "tiny", "slow"}

@@ -292,6 +292,19 @@ VERIFICATION_MIN_PASSED = 8
 # 异常覆盖好资产）。VERIFICATION_MIN_PASSED 保留其原语义——衡量「是否为有效
 # 轮次」的统计口径，不再作发布闸门。
 PUBLISH_MIN_PASSED = 1
+
+# ---- 可用档提级（任务#123，2026-11-05）------------------------------------
+# 用户诉求原话：「节点太少了，要想尽一切办法增加有效节点，同时兼顾 AI 纯净」。
+# 实证（2026-11-05 16:21 家宽轮）：29 个初筛通过里 **24 个有 100~643KB 真实
+# 流量**，但未达快档（768KB/128KB/s）全被判死丢进第二资产；而用户在 FlClash
+# 里抱怨的是「超时」，不是「慢」。这些「能连但慢」的节点是可用的增量，
+# 不该只躺在第二资产里等人手动去翻。
+# 门槛取「能开网页」而不是「能跑测速」：128KB 累计流量证明真在转发，
+# 16KB/s（≈128Kbps）够网页与 AI 对话，不够看视频——故发布名加 ·慢 后缀，
+# 由客户端 url-test 与实际体验自行取舍。
+USABLE_TIER_ENABLED = True
+USABLE_MIN_BYTES = 128 * 1024
+USABLE_MIN_BPS = 16 * 1024
 PROBE_BATCH = 100
 PROBE_CONCURRENCY = 32
 # Reserve real-probe slots: Asia heavy, US light.

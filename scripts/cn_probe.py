@@ -252,6 +252,9 @@ PER_NODE_S = 1.2
 # 正常自清洁（发布重测通过的子集）。新 CI 轮次（含 pending/rescue）不受此约束。
 CARRYOVER_FLUCTUATION_BAND = 8
 
+# 可用档发布名后缀（任务#123）：让用户一眼分辨「快档」与「能连但慢」。
+USABLE_NAME_SUFFIX = "·慢"
+
 # ---- 断点续跑（任务#120，2026-11-05）---------------------------------------
 # 背景：沙箱按「无活动即休眠」回收，实测轮被杀的位置高度集中在 delay 初筛
 # 之后（2026-11-05 的 07:21、13:13 两轮均如此）。此前拨测结果只存在内存
@@ -1696,6 +1699,46 @@ def select_ai_promotions(degraded: list[dict], results: dict,
     return promoted, rejected
 
 
+def best_source_flow(rt: dict) -> tuple[int, int]:
+    """单节点真实流量测试里「最好的那一源」的 (bytes, bps)。
+
+    多源交叉的目的就是「某个源被限流不代表节点不行」，所以取最大值而不是
+    平均——平均会被 0 字节的源稀释，把好节点算成慢节点。
+    """
+    srcs = [d for d in (rt.get("sources") or []) if isinstance(d, dict)]
+    if not srcs:
+        return 0, 0
+    return (max(int(d.get("bytes") or 0) for d in srcs),
+            max(int(d.get("bps") or 0) for d in srcs))
+
+
+def select_usable_promotions(degraded: list[dict], results: dict,
+                             cap: int | None = None) -> list[dict]:
+    """可用档提级：有真实流量、且不慢到不可用 → 并入主资产（纯函数，任务#123）。
+
+    与 6.6「AI 慢档提级」的区别：那是**AI 干净但速度弱**才放行；本函数只管
+    **速度够但未达快档**（768KB/128KB/s）的节点——它们此前一律进第二资产，
+    用户得手动去翻才能用上。两个条件：
+      1. 延迟 ≤ 主资产延迟线（与快档同一把尺，不搞双标）；
+      2. 最好那一源 bytes ≥ USABLE_MIN_BYTES 且 bps ≥ USABLE_MIN_BPS。
+    被提级的节点会带 `_usable_tier` 标记并在发布名后加 `·慢`。
+    """
+    if not config.USABLE_TIER_ENABLED:
+        return []
+    if cap is None:
+        cap = CN_MAX_PUBLISH_LATENCY_MS
+    out: list[dict] = []
+    for n in degraded:
+        res = results.get(n["probe_name"], {})
+        if (res.get("latency_ms") or 99999) > cap:
+            continue
+        rt = res.get("real_traffic") or {}
+        nb, nbps = best_source_flow(rt)
+        if nb >= config.USABLE_MIN_BYTES and nbps >= config.USABLE_MIN_BPS:
+            out.append(n)
+    return out
+
+
 def verified_rank(n: dict, results: dict, learning: dict | None = None) -> tuple:
     """验证集排序键：AI 可用性 > 长寿实证 > 用户实测 > vantage > 速度惩罚 > 延迟。
 
@@ -2304,6 +2347,26 @@ def main() -> int:
                           key=lambda n: verified_rank(n, results, learning))
         degraded = [n for n in degraded if n not in ai_slow]
 
+    # 6.65) 可用档提级（任务#123，2026-11-05）：用户诉求「数量优先」的主力阀门。
+    # 与 6.6 的分工：6.6 救「AI 干净但速度弱」；这里救「速度够但未达快档」——
+    # 实证一轮 29 个初筛通过里 24 个属于后者，此前全部沉在第二资产。
+    # 名称加 `·慢` 后缀：用户一眼能分辨，客户端 url-test 也会把快的排前面，
+    # 不必牺牲透明度换数量。
+    _usable = select_usable_promotions(degraded, results, CN_MAX_PUBLISH_LATENCY_MS)
+    if _usable:
+        for _n in _usable:
+            _n["_usable_tier"] = True
+            if not _n["name"].endswith(USABLE_NAME_SUFFIX):
+                _n["name"] = _n["name"] + USABLE_NAME_SUFFIX
+        verified = sorted(verified + _usable,
+                          key=lambda n: verified_rank(n, results, learning))
+        _kept = {id(n) for n in _usable}
+        degraded = [n for n in degraded if id(n) not in _kept]
+        log(f"可用档提级: {len(_usable)} 个「有真实流量但未达快档」的节点并入主资产"
+            f"（名字带 {USABLE_NAME_SUFFIX} 后缀；门槛 "
+            f"≥{config.USABLE_MIN_BYTES // 1024}KB 且 ≥{config.USABLE_MIN_BPS // 1024}KB/s，"
+            f"延迟 ≤{CN_MAX_PUBLISH_LATENCY_MS}ms）")
+
     # 6.7) 用户本地实测硬否决（2026-10-29 任务#113）：用户家宽的实测结论是
     # 最终事实——本地连不上的节点，沙箱再快也不该进主资产。置于 AI 提级之后，
     # 防止「AI 可达」把用户已判死的节点复活。
@@ -2468,7 +2531,8 @@ def main() -> int:
             # 任务#122：池节点分两种证据强度——「本轮刚复测通过」与「7 天前
             # 的用户旧证据免测直发」。旧实现两者都写 user_verified + 旧年龄，
             # 用户核对时无法区分「验过的」和「靠特权留下的」。
-            "via": ("user_pool_retested"
+            "via": ("usable_slow" if n.get("_usable_tier")
+                    else "user_pool_retested"
                     if (n.get("_user_verified") and n.get("final"))
                     else "user_verified" if n.get("_user_verified")
                     else "sandbox_pass"),
