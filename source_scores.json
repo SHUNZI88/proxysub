@@ -37,7 +37,7 @@
   },
   "https://raw.githubusercontent.com/Russ534/clash/cdf534db8f8c9306d61c630b840d0a1936d09dd2/bp.yaml": {
     "score": 100.0,
-    "runs": 111,
+    "runs": 112,
     "role": "official",
     "last": "2026-11-05",
     "cn_tested": 17,
@@ -47,7 +47,7 @@
   },
   "https://raw.githubusercontent.com/shaoyouvip/free/main/mihomo.yaml": {
     "score": 100.0,
-    "runs": 111,
+    "runs": 112,
     "role": "official",
     "last": "2026-11-05",
     "cn_tested": 1,
@@ -105,7 +105,7 @@
   },
   "https://raw.githubusercontent.com/awesome-vpn/awesome-vpn/master/clash.yaml": {
     "score": 100.0,
-    "runs": 111,
+    "runs": 112,
     "role": "official",
     "last": "2026-11-05",
     "cn_tested": 1,
@@ -595,7 +595,7 @@
   },
   "https://raw.githubusercontent.com/Ruk1ng001/freeSub/main/clash.yaml": {
     "score": 100.0,
-    "runs": 37,
+    "runs": 38,
     "role": "official",
     "last": "2026-11-05",
     "cn_tested": 22,
@@ -605,7 +605,7 @@
   },
   "https://raw.githubusercontent.com/peasoft/NoMoreWalls/master/list.txt": {
     "score": 100.0,
-    "runs": 37,
+    "runs": 38,
     "role": "official",
     "last": "2026-11-05",
     "cn_tested": 157,
@@ -657,30 +657,36 @@
   },
   "https://clashgithub.com/clashnode-20261103.html": {
     "score": 100.0,
-    "runs": 11,
+    "runs": 12,
     "role": "candidate",
     "last": "2026-11-05"
   },
   "__channel_nodes__": {
-    "score": 90.16,
-    "runs": 10,
+    "score": 91.64,
+    "runs": 11,
     "role": "channel",
     "last": "2026-11-05"
   },
   "https://clashgithub.com/clashnode-20261104.html": {
     "score": 100.0,
-    "runs": 8,
+    "runs": 9,
     "role": "candidate",
     "last": "2026-11-05"
   },
   "https://raw.githubusercontent.com/ermaozi01/free_clash_vpn/main/subscribe/clash.yml": {
     "score": 100.0,
-    "runs": 6,
+    "runs": 7,
     "role": "official",
     "last": "2026-11-05",
     "cn_tested": 6,
     "cn_passed": 0,
     "cn_pass_rate": 0.0,
     "cn_last": "2026-11-05T14:50:56Z"
+  },
+  "https://clashgithub.com/clashnode-20261106.html": {
+    "score": 87.5,
+    "runs": 1,
+    "role": "candidate",
+    "last": "2026-11-05"
   }
 }
