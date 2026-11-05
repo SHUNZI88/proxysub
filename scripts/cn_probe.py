@@ -1726,7 +1726,7 @@ def select_usable_promotions(degraded: list[dict], results: dict,
     if not config.USABLE_TIER_ENABLED:
         return []
     if cap is None:
-        cap = CN_MAX_PUBLISH_LATENCY_MS
+        cap = getattr(config, "USABLE_MAX_LATENCY_MS", CN_MAX_PUBLISH_LATENCY_MS)
     out: list[dict] = []
     for n in degraded:
         res = results.get(n["probe_name"], {})
@@ -2354,7 +2354,7 @@ def main() -> int:
     # 实证一轮 29 个初筛通过里 24 个属于后者，此前全部沉在第二资产。
     # 名称加 `·慢` 后缀：用户一眼能分辨，客户端 url-test 也会把快的排前面，
     # 不必牺牲透明度换数量。
-    _usable = select_usable_promotions(degraded, results, CN_MAX_PUBLISH_LATENCY_MS)
+    _usable = select_usable_promotions(degraded, results)
     if _usable:
         for _n in _usable:
             _n["_usable_tier"] = True
@@ -2367,7 +2367,7 @@ def main() -> int:
         log(f"可用档提级: {len(_usable)} 个「有真实流量但未达快档」的节点并入主资产"
             f"（名字带 {USABLE_NAME_SUFFIX} 后缀；门槛 "
             f"≥{config.USABLE_MIN_BYTES // 1024}KB 且 ≥{config.USABLE_MIN_BPS // 1024}KB/s，"
-            f"延迟 ≤{CN_MAX_PUBLISH_LATENCY_MS}ms）")
+            f"延迟 ≤{getattr(config, 'USABLE_MAX_LATENCY_MS', CN_MAX_PUBLISH_LATENCY_MS)}ms）")
 
     # 6.7) 用户本地实测硬否决（2026-10-29 任务#113）：用户家宽的实测结论是
     # 最终事实——本地连不上的节点，沙箱再快也不该进主资产。置于 AI 提级之后，

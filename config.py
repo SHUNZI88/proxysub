@@ -305,6 +305,18 @@ PUBLISH_MIN_PASSED = 1
 USABLE_TIER_ENABLED = True
 USABLE_MIN_BYTES = 128 * 1024
 USABLE_MIN_BPS = 16 * 1024
+# 慢档延迟线单独放宽（任务#123 实测）：2026-11-05 17:09 轮 29 个终筛节点里
+# 17 个有 ≥128KB 真实流量，但只有 7 个延迟 ≤3000ms，其余 10 个卡在延迟线外。
+# 慢档本来就是「能用但慢」，用快档的 3000ms 卡它等于自相矛盾——延迟 5s 的
+# 节点在客户端表现为「连接慢」，不是「超时」。故单独给 5000ms，靠 ·慢 后缀
+# 与 url-test 排序让用户自行取舍；超过 5000ms 的仍留在第二资产。
+USABLE_MAX_LATENCY_MS = 5000
+# 慢档延迟线单独放宽（任务#123 实测）：2026-11-05 17:09 轮 29 个终筛节点里
+# 17 个有 ≥128KB 真实流量，但只有 7 个延迟 ≤3000ms，其余 10 个卡在延迟线外。
+# 慢档本来就是「能用但慢」，用快档的 3000ms 卡它等于自相矛盾——延迟 5s 的
+# 节点在客户端表现为「连接慢」，不是「超时」。故单独给 5000ms，靠 ·慢 后缀
+# 与 url-test 排序让用户自行取舍；超过 5000ms 的仍留在第二资产。
+USABLE_MAX_LATENCY_MS = 5000
 PROBE_BATCH = 100
 PROBE_CONCURRENCY = 32
 # Reserve real-probe slots: Asia heavy, US light.
