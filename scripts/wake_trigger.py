@@ -16,65 +16,62 @@ import json
 import os
 import subprocess
 import sys
+import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse, parse_qs
 
 REPO = "/root/.codebuddy/artifact/proxysub"
 WD = "/tmp/cn_probe"
-REPORT = os.path.join(WD, "verification_report.json")
-MARK = os.path.join(WD, ".last_round_start")
 TOKEN = os.environ.get("PROXYSUB_TRIGGER_TOKEN", "")
-STALE_H = int(os.environ.get("PROXYSUB_STALE_H", "3"))
-COOLDOWN_H = int(os.environ.get("PROXYSUB_COOLDOWN_H", "2"))
 PORT = int(os.environ.get("PROXYSUB_TRIGGER_PORT", "8080"))
+STALE_H = int(os.environ.get("PROXYSUB_STALE_H", "3"))
+
+# 决策逻辑统一由 round_guard 提供（任务#120，2026-11-05）：
+# 此前本模块自己实现了一遍「pgrep 判存活 + .last_round_start 判冷却」，
+# 与 cron_supervisor.sh 各写一套，且两套都错在同一个地方——把「开跑」
+# 当成了「完成」。策略只留一份，三个入口（supervisor / watchdog / 本端点）
+# 才不会再次分叉。
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import round_guard  # noqa: E402
 
 
 def asset_age_h() -> int:
-    try:
-        with open(REPORT, encoding="utf-8") as f:
-            r = json.load(f)
-        ts = r.get("main_asset_published_at") or r.get("generated_at")
-        if not ts:
-            return 999
-        t = datetime.datetime.strptime(ts, "%Y-%m-%dT%H:%M:%SZ").replace(
-            tzinfo=datetime.timezone.utc)
-        return int((datetime.datetime.now(datetime.timezone.utc) - t).total_seconds() // 3600)
-    except Exception:
-        return 999
+    return int(round_guard.asset_age_h(WD))
 
 
 def running() -> bool:
-    r = subprocess.run(["pgrep", "-f", "scripts/cn_probe.py"],
-                       capture_output=True, text=True)
-    return r.returncode == 0
-
-
-def since_last_min() -> int:
-    try:
-        return int((datetime.datetime.now().timestamp() - os.stat(MARK).st_mtime) // 60)
-    except Exception:
-        return 99999
+    """是否已有实例持锁。判锁不判进程名：pgrep -f 会自匹配，且把冻结进程
+    算作在跑（沙箱休眠是冻结而非 kill），两种误判都会让补跑永远不触发。"""
+    return round_guard.probe_lock_state(WD)["state"] == "running"
 
 
 def trigger() -> tuple[bool, str]:
+    ok, why = round_guard.decide(WD, stale_h=STALE_H)
     age = asset_age_h()
-    if running():
-        return False, f"already running (asset_age={age}h)"
-    if age < STALE_H:
-        return False, f"fresh (asset_age={age}h < {STALE_H}h)"
-    gap = since_last_min()
-    if gap < COOLDOWN_H * 60:
-        return False, f"cooldown ({gap}min < {COOLDOWN_H}h)"
-    open(MARK, "w").close()
+    if not ok:
+        return False, f"{why} (asset_age={age}h)"
+    round_guard.note_attempt(WD)
     env = dict(os.environ)
     env["GITHUB_TOKEN"] = open("/root/.github_pat").read().strip()
     env["GH_TOKEN"] = env["GITHUB_TOKEN"]
     log = open(os.path.join(WD, "wakeup_run.log"), "a")
-    subprocess.Popen(
+    proc = subprocess.Popen(
         ["/root/.pyenv/shims/python3.11", "-u", f"{REPO}/scripts/cn_probe.py"],
         cwd=REPO, env=env, stdout=log, stderr=subprocess.STDOUT,
         start_new_session=True)
-    return True, f"triggered (asset_age={age}h)"
+    # 后台进程无人等待退出码，用守护线程回收结果：成败按「资产是否刷新」
+    # 判定（note_result 内部比对发布戳），而不是看 rc——cn_probe 在
+    # 「另一实例持锁」等路径上同样以 0 退出。
+    def _reap() -> None:
+        rc = proc.wait()
+        try:
+            round_guard.note_result(WD, rc)
+        except Exception:  # noqa: BLE001 - 状态记录失败不影响端点存活
+            pass
+
+    threading.Thread(target=_reap, daemon=True).start()
+    return True, f"triggered (asset_age={age}h; {why})"
+
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -99,9 +96,21 @@ class Handler(BaseHTTPRequestHandler):
                               {"ok": ok, "msg": msg, "asset_age_h": asset_age_h(),
                                "running": running()})
         if u.path in ("/", "/status"):
-            return self._json(200, {"ok": True, "asset_age_h": asset_age_h(),
-                                    "running": running(),
-                                    "since_last_min": since_last_min()})
+            # `since_last_min` 已废弃（任务#120）：它度量的是「距上次开跑」，
+            # 正是把失败尝试当成冷却依据的那个错误口径。改报退避状态。
+            decide_ok, decide_why = round_guard.decide(WD, stale_h=STALE_H)
+            state = round_guard.load_state(WD)
+            return self._json(200, {
+                "ok": True,
+                "asset_age_h": asset_age_h(),
+                "running": running(),
+                "would_trigger": decide_ok,
+                "reason": decide_why,
+                "fail_streak": state.get("fail_streak") or 0,
+                "backoff_min": round_guard.backoff_min(
+                    int(state.get("fail_streak") or 0)),
+                "last_result_refreshed": state.get("last_result_refreshed"),
+            })
         self._json(404, {"ok": False, "error": "not found"})
 
     def log_message(self, fmt: str, *a) -> None:

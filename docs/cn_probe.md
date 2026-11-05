@@ -252,3 +252,49 @@ Runner，或把 L3 落实为可观测、可验证的真实任务。
   与拨测复合倾斜（cn×AI 相乘封顶 2.0，任务#94，2026-10-21 完成）；
 - `nodes[].ai`：`{codes, reach, ai_reachable, ai_api}` 逐节点证据；
 - `dimensions.ai`：语义说明（与 us_ok/cn_ok 并列的第三测量维度）。
+
+## 10. 断点续跑与守护决策统一（任务#120，2026-11-05）
+
+> 触发事故：线上主资产停在 `2026-11-05T00:24Z`，**13 小时未刷新**，用户本地
+> 只剩 2 个可用节点。定位结论：不是「新一轮筛出 2 个」，而是**根本没有新一轮
+> 发布成功**——旧资产自然衰竭。
+
+### 10.1 断点续跑（`probe_checkpoint.json`）
+
+- **原先**：拨测结果只在内存 dict 里。进程被沙箱休眠杀掉即**整轮白跑**，
+  下一轮 2 小时后从头再来，实测产能被反复清零；
+- **现在**：逐节点增量落盘（初筛/终筛分阶段，节流 15s，原子写
+  `tmp + os.replace`）。重启时按**测试集签名**（节点名集合的 SHA1 前缀）
+  复用，只补测剩余节点；
+- **边界**：签名不符 / 超过 `PROXYSUB_CHECKPOINT_TTL_S`（默认 45 分钟）/
+  文件损坏 → 一律当作没有检查点；成功走完发布流程后 `clear()` 删除，
+  **绝不让下一轮复用上一轮结论**（活性必须由实时拨测决定）；
+- **代价**：多一次小文件 I/O；写失败静默降级为「重跑」，行为与修复前一致。
+
+### 10.2 守护决策统一到 `scripts/round_guard.py`
+
+三个入口（`cron_supervisor.sh`、`cron_watchdog.py`、`wake_trigger.py`）此前
+各写一套冷却/存活判定，其中两处**错在同一处**：把「开跑」当成「完成」。
+
+| 判据 | 旧（v3） | 新（v4） |
+|---|---|---|
+| 新鲜度 | `.last_round_start` 的 mtime（开跑前就 touch） | `main_asset_published_at`（上次**成功发布**） |
+| 冷却 | 固定 2 小时，失败也照罚 | 连续失败指数退避 10→20→40→80→120 分钟，**资产刷新即清零** |
+| 存活 | `pgrep -f "scripts/cn_probe.py"` | 探测 `cn_probe.lock` 的 flock，并读持锁者 `pid=/round=` |
+
+`pgrep` 的两个坑都真实发生过：① **自匹配**——调用方命令行自身含该字符串，
+把 shell 自己判成「已在跑」，于是根本没起新轮；② **冻结误判**——沙箱休眠是
+SIGSTOP/冻结而非 kill，冻结进程仍在进程表里，`pgrep` 照样返回 0，守护永远
+认为「已有实例在跑」，永不补跑。
+
+命令行（供 shell 与 HTTP 端点共用，策略只有一份）：
+
+```bash
+python3 scripts/round_guard.py status         # 人读状态：龄期/锁/退避/决策
+python3 scripts/round_guard.py decide         # 退出码 0=该跑 1=不跑，原因打 stdout
+python3 scripts/round_guard.py note-attempt   # 记录尝试起点（快照当时发布戳）
+python3 scripts/round_guard.py note-result --rc 0   # 成败按「资产是否刷新」判，不看 rc
+```
+
+**回归防线**：`tests/test_round_guard.py::test_guardians_do_not_reintroduce_pgrep_or_start_mark`
+直接扫守护源码的可执行部分，禁止 `pgrep -f` 与 `.last_round_start` 复辟。

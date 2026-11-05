@@ -41,8 +41,8 @@ from __future__ import annotations
 
 import argparse
 import datetime
-import fcntl
 import glob
+import hashlib
 import json
 import os
 import re
@@ -56,6 +56,15 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
+
+# fcntl 仅 POSIX 提供（单实例锁用）。降级为 None 而非 import 失败：
+# 断点续跑/去重/评分等纯逻辑必须能在非 POSIX 环境（本地 Windows 开发机）
+# 导入并测试——2026-11-05 教训：模块级 `import fcntl` 让整个测试套件在
+# 开发机上无法 import，任何改动只能靠线上沙箱验证，等于没有本地验证。
+try:
+    import fcntl
+except ImportError:  # pragma: no cover - 非 POSIX 平台
+    fcntl = None
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, REPO_ROOT)
@@ -230,6 +239,137 @@ PER_NODE_S = 1.2
 # 子集，避免逐轮侵蚀（39→37→…）违背「固化」诉求；超过该值视为真实退化，走
 # 正常自清洁（发布重测通过的子集）。新 CI 轮次（含 pending/rescue）不受此约束。
 CARRYOVER_FLUCTUATION_BAND = 8
+
+# ---- 断点续跑（任务#120，2026-11-05）---------------------------------------
+# 背景：沙箱按「无活动即休眠」回收，实测轮被杀的位置高度集中在 delay 初筛
+# 之后（2026-11-05 的 07:21、13:13 两轮均如此）。此前拨测结果只存在内存
+# dict，进程一被杀即整轮白跑：初筛耗时白烧，下一轮从头再来，实测产能被
+# 反复清零——这是「13h 未刷新主资产」在执行侧的成因（守护侧另见 #120 的
+# 冷却语义修复）。
+# 对策：把逐节点结果增量落盘，重启时按「测试集签名」复用。签名只由测试集
+# 的 probe_name 集合决定：同一批节点才复用，测试集变了（新交接文档 / 新
+# carryover）签名即变、旧检查点自动作废，不会张冠李戴。
+CHECKPOINT_FILE = "probe_checkpoint.json"
+# 复用有效期（秒）：免费节点寿命以小时计，旧结果不再可信。默认 45 分钟，
+# 覆盖「被杀 → 沙箱唤醒 → 守护补跑」的典型间隔，又不至于跨轮复用。
+CHECKPOINT_TTL_S = int(os.environ.get("PROXYSUB_CHECKPOINT_TTL_S", "2700"))
+# 增量落盘节流（秒）：太密拖慢拨测，太疏丢失已完成的工作。
+CHECKPOINT_FLUSH_S = float(os.environ.get("PROXYSUB_CHECKPOINT_FLUSH_S", "15"))
+
+
+def checkpoint_signature(probe_names: list[str]) -> str:
+    """测试集签名：节点名集合 + 数量。集合变了签名就变，旧检查点自动作废。"""
+    h = hashlib.sha1()  # noqa: S324 - 仅作集合指纹，非安全用途
+    for name in sorted(probe_names):
+        h.update(str(name).encode("utf-8", "replace"))
+        h.update(b"\x00")
+    return f"{len(probe_names)}:{h.hexdigest()[:16]}"
+
+
+class ProbeCheckpoint:
+    """拨测结果的增量检查点（初筛/终筛分阶段，可跨进程复用）。
+
+    只做一件事：让「被打断的轮次」在下次启动时接着跑，而不是从零开始。
+    语义边界：
+      * 仅在**签名一致且未过期**时复用；
+      * 复用不改变判定标准——复用的就是当时同一套 mihomo 探测的结论；
+      * 成功发布后由调用方 clear()，避免下一轮误用（新一轮必须重新实测，
+        活性由实时拨测决定，这是项目的核心口径）。
+    """
+
+    def __init__(self, workdir: str, signature: str, round_id: str,
+                 *, ttl_s: int | None = None,
+                 flush_s: float | None = None,
+                 now: float | None = None) -> None:
+        self.path = os.path.join(workdir, CHECKPOINT_FILE)
+        self.signature = signature
+        self.round_id = round_id
+        self.ttl_s = CHECKPOINT_TTL_S if ttl_s is None else ttl_s
+        self.flush_s = CHECKPOINT_FLUSH_S if flush_s is None else flush_s
+        self.now = now
+        self.delay_done: set[str] = set()
+        self.real_done: set[str] = set()
+        self.results: dict[str, dict] = {}
+        self._last_flush = 0.0
+        self._dirty = False
+
+    def _ts(self) -> float:
+        return time.time() if self.now is None else self.now
+
+    def load(self) -> tuple[set[str], set[str], dict[str, dict]]:
+        """读检查点。签名不符 / 过期 / 损坏 / 缺字段一律当作不存在。"""
+        try:
+            with open(self.path, encoding="utf-8") as f:
+                data = json.load(f)
+        except (OSError, ValueError):
+            return set(), set(), {}
+        if not isinstance(data, dict) or data.get("signature") != self.signature:
+            return set(), set(), {}
+        try:
+            age = self._ts() - float(data.get("saved_at") or 0)
+        except (TypeError, ValueError):
+            return set(), set(), {}
+        if age < 0 or age > self.ttl_s:
+            return set(), set(), {}
+        results = data.get("results") if isinstance(data.get("results"), dict) else {}
+        self.results = {k: v for k, v in results.items() if isinstance(v, dict)}
+        self.delay_done = set(self.results)
+        # 终筛已做的判据是「有 real_traffic 字段」：主循环对每个进入终筛的
+        # 节点都无条件写入该字段（无论通过与否），故它等价于「该节点已定论」。
+        self.real_done = {k for k, v in self.results.items() if "real_traffic" in v}
+        return set(self.delay_done), set(self.real_done), dict(self.results)
+
+    def mark_delay(self, name: str, result: dict) -> None:
+        self.results[name] = dict(result)
+        self.delay_done.add(name)
+        self._dirty = True
+        self.flush()
+
+    def mark_real(self, name: str, result: dict) -> None:
+        self.results[name] = dict(result)
+        self.real_done.add(name)
+        self._dirty = True
+        self.flush()
+
+    def flush(self, force: bool = False) -> None:
+        """节流落盘（原子写：临时文件 + os.replace，避免半截 JSON 被复用）。"""
+        if not self._dirty:
+            return
+        now = self._ts()
+        if not force and now - self._last_flush < self.flush_s:
+            return
+        payload = {
+            "version": 1,
+            "signature": self.signature,
+            "round_id": self.round_id,
+            "saved_at": now,
+            "results": self.results,
+        }
+        tmp = self.path + ".tmp"
+        try:
+            with open(tmp, "w", encoding="utf-8") as f:
+                json.dump(payload, f, ensure_ascii=False, default=str)
+                f.flush()
+                os.fsync(f.fileno())
+            os.replace(tmp, self.path)
+            self._last_flush = now
+            self._dirty = False
+        except OSError:
+            # 检查点写失败不致命：最坏结果退化为「整轮重跑」，与修复前一致。
+            pass
+
+    def clear(self) -> None:
+        """删除检查点（成功发布后调用，防下一轮误用旧结论）。"""
+        for p in (self.path, self.path + ".tmp"):
+            try:
+                os.unlink(p)
+            except OSError:
+                pass
+        self.delay_done.clear()
+        self.real_done.clear()
+        self.results.clear()
+        self._dirty = False
+
 
 
 ASSET_FORMAT_REV = {"clean_proxies_only.yaml": "proxies_only",
@@ -1605,12 +1745,34 @@ def main() -> int:
     t0 = time.time()  # 预算起点：轮询/拨测/发布全程计时
 
     # 0) 单实例锁：任务重试/调度重叠时防止两个探针并发发布
-    lock_fd = open(os.path.join(workdir, "cn_probe.lock"), "w")
+    # 锁文件用 "a+" 打开——绝不能用 "w"：那会在取锁失败前先截断文件，把正在
+    # 持锁那个进程的身份信息冲掉，事后无从回答「谁在持锁」。
+    lock_path = os.path.join(workdir, "cn_probe.lock")
+    lock_fd = open(lock_path, "a+", encoding="utf-8")
+    if fcntl is not None:
+        try:
+            fcntl.flock(lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except OSError:
+            holder = ""
+            try:
+                lock_fd.seek(0)
+                holder = lock_fd.read().strip()
+            except (OSError, ValueError):
+                pass
+            log("另一实例正在运行（单实例锁），退出"
+                + (f"；持锁者: {holder}" if holder else "；锁文件无持有者信息"))
+            return 0
+    # 持锁者身份落盘（任务#120）：守护与排障需要回答「谁在持锁、哪一轮、何时
+    # 开始」。此前锁文件恒空，只能靠 pgrep 猜——而 pgrep -f 既会自匹配调用方
+    # 命令行，也把沙箱冻结（SIGSTOP）的进程算作「在跑」，两种误判都发生过。
     try:
-        fcntl.flock(lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-    except OSError:
-        log("另一实例正在运行（单实例锁），退出")
-        return 0
+        lock_fd.seek(0)
+        lock_fd.truncate()
+        lock_fd.write(f"pid={os.getpid()} round={round_id} "
+                      f"started={stamp.strftime('%Y-%m-%dT%H:%M:%SZ')}\n")
+        lock_fd.flush()
+    except (OSError, ValueError):
+        pass
 
     # 0.5) 鉴权自检（grok 2.3）：GH_TOKEN 失效则立即退出，避免空转 20 分钟
     if not auth_selfcheck():
@@ -1734,6 +1896,7 @@ def main() -> int:
         f"carryover {n_carry}）")
 
     # 4) mihomo 拨测
+    ckpt: ProbeCheckpoint | None = None  # 断点续跑检查点（任务#120），见 4.0
     mihomo = ensure_mihomo(workdir)
     if not mihomo:
         log("熔断: mihomo 不可用，不发布")
@@ -1774,36 +1937,58 @@ def main() -> int:
         try:
             t0 = time.time()
             results: dict[str, dict] = {}
+            # 4.0) 断点续跑（任务#120）：被休眠打断的轮次，重启后复用已测结论。
+            # 签名只由测试集节点名集合决定——同一批节点才复用；重跑时 mihomo
+            # 端口是新分配的，故复用的是「判定结论」而非连接，没有脏状态风险。
+            ckpt = ProbeCheckpoint(workdir, checkpoint_signature(probe_names), round_id)
+            ck_delay, ck_real, ck_results = ckpt.load()
+            if ck_results:
+                results.update(ck_results)
+                log(f"断点续跑: 复用上轮已测 {len(ck_delay)} 个节点的初筛结论"
+                    f"（其中 {len(ck_real)} 个已出终筛结论），本轮只补测剩余节点")
             # 4.1) 初筛：mihomo delay API（快速排除完全不可达节点）
-            with ThreadPoolExecutor(max_workers=DELAY_CONCURRENCY) as ex:
-                futs = {ex.submit(delay_test, api_port, n["probe_name"]): n["probe_name"]
-                        for n in nodes}
-                for fut in futs:
-                    name = futs[fut]
-                    try:
-                        results[name] = fut.result()
-                    except Exception:
-                        results[name] = {"ok": False, "latency_ms": None}
+            todo_delay = [n for n in nodes if n["probe_name"] not in ck_delay]
+            if todo_delay:
+                with ThreadPoolExecutor(max_workers=DELAY_CONCURRENCY) as ex:
+                    futs = {ex.submit(delay_test, api_port, n["probe_name"]):
+                            n["probe_name"] for n in todo_delay}
+                    for fut in futs:
+                        name = futs[fut]
+                        try:
+                            res = fut.result()
+                        except Exception:
+                            res = {"ok": False, "latency_ms": None}
+                        results[name] = res
+                        # 初筛是耗时大头，逐节点落盘——被杀的轮次下次直接跳过
+                        ckpt.mark_delay(name, res)
+            ckpt.flush(force=True)
             delay_passed = [n for n in nodes if results.get(n["probe_name"], {}).get("ok")]
             log(f"delay 初筛通过: {len(delay_passed)}/{len(nodes)}（{time.time() - t0:.0f}s）")
 
             # 4.2) 终筛：真实流量测试（经 mixed-port 访问海外被封锁目标）
             if delay_passed:
                 t1 = time.time()
-                with ThreadPoolExecutor(max_workers=REAL_TRAFFIC_CONCURRENCY) as ex:
-                    futs = {ex.submit(real_traffic_test, api_port, mixed_port,
-                                     n["probe_name"]): n["probe_name"]
-                            for n in delay_passed}
-                    for fut in futs:
-                        name = futs[fut]
-                        try:
-                            rt = fut.result()
-                        except Exception:
-                            rt = {"ok": False}
-                        # 真实流量失败则把该节点最终标记为不通过
-                        if not rt.get("ok"):
-                            results[name]["ok"] = False
-                        results[name]["real_traffic"] = rt
+                todo_real = [n for n in delay_passed if n["probe_name"] not in ck_real]
+                if todo_real:
+                    with ThreadPoolExecutor(max_workers=REAL_TRAFFIC_CONCURRENCY) as ex:
+                        futs = {ex.submit(real_traffic_test, api_port, mixed_port,
+                                          n["probe_name"]): n["probe_name"]
+                                for n in todo_real}
+                        for fut in futs:
+                            name = futs[fut]
+                            try:
+                                rt = fut.result()
+                            except Exception:
+                                rt = {"ok": False}
+                            # 真实流量失败则把该节点最终标记为不通过
+                            if not rt.get("ok"):
+                                results[name]["ok"] = False
+                            results[name]["real_traffic"] = rt
+                            ckpt.mark_real(name, results[name])
+                    ckpt.flush(force=True)
+                if len(todo_real) < len(delay_passed):
+                    log(f"断点续跑: 终筛复用 {len(delay_passed) - len(todo_real)} 个结论，"
+                        f"补测 {len(todo_real)} 个")
                 real_passed = [n for n in delay_passed
                                if results.get(n["probe_name"], {}).get("ok")]
                 log(f"真实流量终筛通过: {len(real_passed)}/{len(delay_passed)}"
@@ -2263,6 +2448,11 @@ def main() -> int:
     # 注意用「发布集内沙箱来源数」而非 len(passed)：后者是本轮拨测通过数，
     # 其中若干已因高延迟/稳定性降级到第二资产，与保活数相加会超过发布集
     # 总数（本轮实证 6+6≠11），又是一个假数字。
+    # 断点续跑检查点清理（任务#120）：本轮已走完发布流程，检查点使命结束。
+    # 必须清掉——否则下一轮若测试集签名恰好相同（如纯 carryover 轮），
+    # 就会复用上一轮的判定结论，而项目口径是「活性由实时拨测决定」。
+    if ckpt is not None:
+        ckpt.clear()
     _pub_sandbox = len(verified) - len(pool_add)
     log(f"发布完成: {len(verified)} 个节点（发布集内沙箱来源 {_pub_sandbox} + "
         f"用户实测保活 {len(pool_add)}；本轮沙箱拨测通过 {len(passed)}），"
