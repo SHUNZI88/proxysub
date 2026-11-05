@@ -152,6 +152,26 @@ def token() -> str:
     return _gh_token()
 
 
+def token_source() -> str:
+    """token 的来源描述（排障用，绝不含 token 本身）。
+
+    实测坑：早期日志统一写「已载入持久化 PAT」，而实际可能来自 gh 授权
+    （Windows 凭据管理器），排障时会白找文件。
+    """
+    if os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN"):
+        return "环境变量"
+    for path in pat_paths():
+        try:
+            with open(path, encoding="utf-8") as f:
+                if f.read().strip():
+                    return f"文件 {path}"
+        except OSError:
+            continue
+    if _gh_token():
+        return "gh 授权（凭据管理器）"
+    return ""
+
+
 def _gh_token() -> str:
     """从 `gh auth token` 取 token（未授权返回空串）。绝不打印其内容。"""
     exe = gh_bin()

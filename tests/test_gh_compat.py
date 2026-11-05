@@ -309,3 +309,25 @@ def test_curl_download_without_proxy_has_no_flag(monkeypatch, tmp_path):
     monkeypatch.setattr(gc.subprocess, "run", fake_run)
     gc._curl_download("https://github.com/a/b.zip", str(tmp_path / "f"))
     assert "--proxy" not in seen["cmd"]
+
+
+def test_token_source_reports_where_it_came_from(tmp_path, monkeypatch):
+    """来源必须如实：日志曾一律写「持久化 PAT」，实际来自 gh 授权，排障白找文件。"""
+    monkeypatch.delenv("GH_TOKEN", raising=False)
+    monkeypatch.delenv("GITHUB_TOKEN", raising=False)
+    monkeypatch.setattr(gc, "PERSISTED_PAT_PATH", str(tmp_path / "n1"))
+    monkeypatch.setattr(gc, "HOME_PAT_PATH", str(tmp_path / "n2"))
+    monkeypatch.setattr(gc, "_gh_token", lambda: "")
+    assert gc.token_source() == ""
+
+    f = tmp_path / "pat"
+    f.write_text("x", encoding="utf-8")
+    monkeypatch.setattr(gc, "PERSISTED_PAT_PATH", str(f))
+    assert gc.token_source().startswith("文件 ")
+
+    monkeypatch.setattr(gc, "PERSISTED_PAT_PATH", str(tmp_path / "n1"))
+    monkeypatch.setattr(gc, "_gh_token", lambda: "t")
+    assert "gh" in gc.token_source()
+
+    monkeypatch.setenv("GH_TOKEN", "e")
+    assert gc.token_source() == "环境变量"

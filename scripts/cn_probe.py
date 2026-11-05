@@ -515,8 +515,8 @@ def auth_selfcheck(required: bool = True) -> bool:
         token = gh_compat.token()
         if token:
             os.environ["GH_TOKEN"] = token
-            log("提示: 环境变量无 token，已载入持久化 PAT（候选路径: "
-                + " / ".join(gh_compat.pat_paths()) + "）")
+            log("提示: 环境变量无 token，已载入凭据（来源: "
+                + gh_compat.token_source() + "）")
     if not token:
         if not required:
             log("提示: dry-run 且无 token——仅匿名读取公开 Release，本轮不发布")

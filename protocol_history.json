@@ -1,10 +1,10 @@
 {
  "vless": {
-  "rounds": 2,
-  "tested": 989,
-  "passed": 24,
-  "last_round": "20261104T1217Z",
-  "last_ts": "2026-11-04T13:29:36Z",
+  "rounds": 3,
+  "tested": 1173,
+  "passed": 29,
+  "last_round": "20261105T0237Z",
+  "last_ts": "2026-11-05T07:54:29Z",
   "recent": [
    {
     "round": "20261014T2139Z",
@@ -15,15 +15,20 @@
     "round": "20261104T1217Z",
     "tested": 169,
     "passed": 1
+   },
+   {
+    "round": "20261105T0237Z",
+    "tested": 184,
+    "passed": 5
    }
   ]
  },
  "hysteria2": {
-  "rounds": 2,
-  "tested": 216,
-  "passed": 10,
-  "last_round": "20261104T1217Z",
-  "last_ts": "2026-11-04T13:29:36Z",
+  "rounds": 3,
+  "tested": 280,
+  "passed": 12,
+  "last_round": "20261105T0237Z",
+  "last_ts": "2026-11-05T07:54:29Z",
   "recent": [
    {
     "round": "20261014T2139Z",
@@ -34,15 +39,20 @@
     "round": "20261104T1217Z",
     "tested": 50,
     "passed": 1
+   },
+   {
+    "round": "20261105T0237Z",
+    "tested": 64,
+    "passed": 2
    }
   ]
  },
  "anytls": {
-  "rounds": 2,
-  "tested": 15,
-  "passed": 9,
-  "last_round": "20261104T1217Z",
-  "last_ts": "2026-11-04T13:29:36Z",
+  "rounds": 3,
+  "tested": 20,
+  "passed": 12,
+  "last_round": "20261105T0237Z",
+  "last_ts": "2026-11-05T07:54:29Z",
   "recent": [
    {
     "round": "20261014T2139Z",
@@ -53,15 +63,20 @@
     "round": "20261104T1217Z",
     "tested": 7,
     "passed": 2
+   },
+   {
+    "round": "20261105T0237Z",
+    "tested": 5,
+    "passed": 3
    }
   ]
  },
  "trojan": {
-  "rounds": 2,
-  "tested": 284,
-  "passed": 5,
-  "last_round": "20261104T1217Z",
-  "last_ts": "2026-11-04T13:29:36Z",
+  "rounds": 3,
+  "tested": 326,
+  "passed": 6,
+  "last_round": "20261105T0237Z",
+  "last_ts": "2026-11-05T07:54:29Z",
   "recent": [
    {
     "round": "20261014T2139Z",
@@ -72,15 +87,20 @@
     "round": "20261104T1217Z",
     "tested": 82,
     "passed": 0
+   },
+   {
+    "round": "20261105T0237Z",
+    "tested": 42,
+    "passed": 1
    }
   ]
  },
  "hysteria": {
-  "rounds": 2,
-  "tested": 7,
-  "passed": 2,
-  "last_round": "20261104T1217Z",
-  "last_ts": "2026-11-04T13:29:36Z",
+  "rounds": 3,
+  "tested": 22,
+  "passed": 6,
+  "last_round": "20261105T0237Z",
+  "last_ts": "2026-11-05T07:54:29Z",
   "recent": [
    {
     "round": "20261014T2139Z",
@@ -91,6 +111,11 @@
     "round": "20261104T1217Z",
     "tested": 3,
     "passed": 0
+   },
+   {
+    "round": "20261105T0237Z",
+    "tested": 15,
+    "passed": 4
    }
   ]
  },
