@@ -640,11 +640,12 @@ def cap_test_set(nodes: list[dict], budget_s: float,
     max_nodes = max(0, int(budget_s / per_node_s))
     if len(nodes) <= max_nodes:
         return nodes, 0
-    carry = [n for n in nodes if n.get("origin") == "carryover"]
+    carry = [n for n in nodes if n.get("origin") in ("carryover", "user_pool")]
     pend = [n for n in nodes if n.get("origin") == "pending"]
     resc = [n for n in nodes if n.get("origin") == "rescue"]
     kept: list[dict] = []
-    for bucket in (carry, pend, resc):  # 优先级：carryover > pending > rescue
+    # 优先级：carryover+user_pool（订阅生命线与地面真相）> pending > rescue
+    for bucket in (carry, pend, resc):
         room = max_nodes - len(kept)
         if room <= 0:
             break
@@ -1000,6 +1001,32 @@ def load_user_pool(workdir: str, tag: str, learning: dict | None) -> list[dict]:
             "_user_stale": bool(ts and (now - ts) > config.USER_POOL_STALE_S),
         })
     return out
+
+
+def split_user_pool(pool: list[dict], *, same_vantage: bool) -> tuple[list[dict], list[dict]]:
+    """把用户池节点分成「必须本轮复测」与「可豁免直发」两组（任务#122）。
+
+    背景（2026-11-05 实证）：发布 15 个节点，用户本地 FlClash 6 超时 1 失败；
+    现场复测发现**坏的 7 个恰好就是池里 7 个未复测节点，delay 阶段全灭**
+    （证据年龄 7.3 天）。旧逻辑对池内节点一律免测、只在日志里写一句
+    「建议复验」就把它们并进主资产——明知过期仍直发，是「测得准」的直接漏洞。
+
+    新规则（两条，缺一不可）：
+      * **同 vantage**（本机家宽跑的家宽实测）→ 全部必须复测：
+        原豁免理由是「沙箱路径 ≠ 用户家宽路径」，同一 vantage 下这个理由不存在；
+      * **证据过期**（超过 USER_POOL_STALE_S）→ 无论哪个 vantage 都必须复测：
+        过期证据等于没有证据。
+
+    返回 (require, exempt)；纯函数，便于回归。
+    """
+    require: list[dict] = []
+    exempt: list[dict] = []
+    for n in pool:
+        if same_vantage or n.get("_user_stale"):
+            require.append(n)
+        else:
+            exempt.append(n)
+    return require, exempt
 
 
 def _pool_unrecoverable(workdir: str) -> list[str]:
@@ -1995,13 +2022,25 @@ def main() -> int:
         fresh or os.path.exists(pend_path)) else []
     resc = load_doc_nodes(rescue_path, "rescue") if (
         fresh or os.path.exists(rescue_path)) else []
+    # 用户池复测（任务#122）：同 vantage 或证据过期的池节点，必须走本轮实测，
+    # 不再「免测直发」。learning 提前加载（原本在 6) 合并段才读，纯文件读取，
+    # 提前一次即可，避免二次读盘）。
+    learning = load_learning()
+    pool_all = load_user_pool(workdir, tag, learning)
+    _same_vantage = VANTAGE_LABEL.startswith("cn-home")
+    pool_require, pool_exempt = split_user_pool(pool_all, same_vantage=_same_vantage)
+    if pool_require:
+        log(f"用户池: {len(pool_require)} 个需本轮复测"
+            f"（{'同 vantage' if _same_vantage else '证据过期'}），"
+            f"{len(pool_exempt)} 个可豁免直发")
     # 去重优先级（2026-10-24 任务#99）：carryover 最先——上一轮已发布节点若
     # 与本轮 pending 重复，必须保留 carryover 身份（cap_test_set 中不裁剪、
     # 永远进测试集）。旧顺序 pending 在前，会把已发布节点改标成 pending，
     # 一旦时间预算吃紧被裁剪，好节点就「静默消失」（2026-10-24 实测：
     # 上一轮 50 个发布节点仅 37 个以 carryover 身份进入测试集）。
     # 代价：这批节点的 src 归属让位给滚动保障（分源统计少计十余条，可接受）。
-    nodes = dedup_nodes([("carryover", carry), ("pending", pend), ("rescue", resc)])
+    nodes = dedup_nodes([("carryover", carry), ("user_pool", pool_require),
+                         ("pending", pend), ("rescue", resc)])
     if not nodes:
         log("无任何可测节点（无待测文档且主资产为空），退出")
         return 4
@@ -2017,8 +2056,9 @@ def main() -> int:
     n_pend = sum(1 for n in nodes if n.get("origin") == "pending")
     n_resc = sum(1 for n in nodes if n.get("origin") == "rescue")
     n_carry = sum(1 for n in nodes if n.get("origin") == "carryover")
+    n_pool = sum(1 for n in nodes if n.get("origin") == "user_pool")
     log(f"测试集: {len(nodes)}（pending {n_pend} / rescue {n_resc} / "
-        f"carryover {n_carry}）")
+        f"carryover {n_carry} / 用户池复测 {n_pool}）")
 
     # 4) mihomo 拨测
     ckpt: ProbeCheckpoint | None = None  # 断点续跑检查点（任务#120），见 4.0
@@ -2207,7 +2247,7 @@ def main() -> int:
             proc.kill()
 
     # 6) 合并：通过即留、败即汰（自清洁）；AI 可用优先 + 长寿实证 + 双 vantage
-    learning = load_learning()   # 任务#111：一次加载，避免逐节点重复读盘
+    # learning 已在 3) 测试集段加载（任务#122 提前，供池节点判定使用）
     verified = sorted(passed, key=lambda n: verified_rank(n, results, learning))
 
     # 6.05) 高延迟降级（2026-10-24）：初筛 RTT 超上限的通过节点降级第二资产。
@@ -2297,7 +2337,14 @@ def main() -> int:
     # 在 delay 初筛就被淘汰（沙箱路径与家宽不等价），6.8 对它们完全无感。
     # 池内节点不参与沙箱准入判定，也不冒充「本轮实测通过」——报告里单独标注
     # via=user_verified，用户可自行区分两类证据。dead 硬否决与 30 天退役仍在。
-    pool_nodes = load_user_pool(workdir, tag, learning)
+    # 只有「豁免组」直接并入；需复测的池节点已随测试集跑完，通过者此刻就在
+    # verified 里（origin=user_pool，final=True），不再重复并入。
+    pool_nodes = pool_exempt
+    _req_pass = [n for n in pool_require
+                 if results.get(n["probe_name"], {}).get("ok")]
+    if pool_require:
+        log(f"用户池复测结果: {len(_req_pass)}/{len(pool_require)} 通过"
+            f"（未通过者不发布——它们此前是靠免测特权留在订阅里的）")
     pool_add: list[dict] = []
     if pool_nodes:
         have = {n["fp"] for n in verified} | {n["fp"] for n in degraded}
@@ -2346,7 +2393,8 @@ def main() -> int:
     }
     log(f"验证集: {len(verified)} 个（pending {by_origin['pending']} / "
         f"rescue {by_origin['rescue']} / carryover {by_origin['carryover']} / "
-        f"用户实测保活 {by_origin['user_pool']}）")
+        f"用户池 {by_origin['user_pool']}"
+        f"（本轮复测通过 {len(_req_pass)} + 豁免直发 {len(pool_add)}））")
     if ai_probed:
         log(f"AI 可达性: 探测 {len(ai_probed)} 个，任一可达 {len(ai_reach)}，"
             f"API 层可用 {len(ai_api_ok)}（分域名: "
@@ -2384,7 +2432,11 @@ def main() -> int:
             # 误读成「本轮沙箱新测通过」（nodes[].final 只标后者）。
             "sandbox_passed": len(passed),
             "published_sandbox": len(verified) - len(pool_add),
+            # 任务#122：池节点拆两口径——本轮实测通过 vs 免测直发。
+            # 旧字段 user_pool_kept 保留（CI/dashboard 在读），但语义收窄为
+            # 「免测直发数」，另加 retested 供核对「多少是真验过的」。
             "user_pool_kept": len(pool_add),
+            "user_pool_retested": len(_req_pass),
             # 慢档统计（任务#97）：快档不足但有真实流量的节点数，仅留痕
             "degraded": len(degraded) + len(ai_slow),
             # AI 慢档提级数（6.6）：已并入主资产
@@ -2413,8 +2465,15 @@ def main() -> int:
             "name": n["name"],
             "fp": n["fp"],
             "type": n["proxy"].get("type"),
-            "via": "user_verified" if n.get("_user_verified") else "sandbox_pass",
-            "evidence_age_d": (round((time.time() - n["_user_ts"]) / 86400, 1)
+            # 任务#122：池节点分两种证据强度——「本轮刚复测通过」与「7 天前
+            # 的用户旧证据免测直发」。旧实现两者都写 user_verified + 旧年龄，
+            # 用户核对时无法区分「验过的」和「靠特权留下的」。
+            "via": ("user_pool_retested"
+                    if (n.get("_user_verified") and n.get("final"))
+                    else "user_verified" if n.get("_user_verified")
+                    else "sandbox_pass"),
+            "evidence_age_d": (0.0 if (n.get("_user_verified") and n.get("final"))
+                               else round((time.time() - n["_user_ts"]) / 86400, 1)
                                if n.get("_user_ts") else None),
         } for n in verified],
         "user_pool": {

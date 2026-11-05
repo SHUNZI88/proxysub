@@ -215,3 +215,97 @@ def test_workdir_defaults_agree_across_modules(monkeypatch):
     """
     monkeypatch.delenv("CN_PROBE_WORKDIR", raising=False)
     assert round_guard.default_workdir() == cn_probe.default_workdir()
+
+
+# ------------------------------------------------------------------ 用户池复测闸门
+def _pool_node(name, stale=False):
+    return {"fp": name, "name": name, "origin": "user_pool",
+            "_user_stale": stale, "proxy": {"name": name, "type": "vless",
+                                            "server": "a.example", "port": 443},
+            "final": False, "us_ok": False, "probe_name": f"userpool_{name}"}
+
+
+def test_user_pool_all_require_retest_on_same_vantage():
+    """同 vantage（家宽跑家宽）时豁免理由消失——必须全部复测。
+
+    实测依据：2026-11-05 发布 15 个，其中 7 个池节点（证据 7.3 天）在 FlClash
+    里 6 超时 1 失败；现场复测 delay 阶段全灭。
+    """
+    pool = [_pool_node("a"), _pool_node("b", stale=True)]
+    require, exempt = cn_probe.split_user_pool(pool, same_vantage=True)
+    assert len(require) == 2 and exempt == []
+
+
+def test_user_pool_fresh_exempt_on_other_vantage():
+    """沙箱 vantage 下，7 天内的证据仍可豁免（保留原设计：路径不等价）。"""
+    pool = [_pool_node("a"), _pool_node("b", stale=True)]
+    require, exempt = cn_probe.split_user_pool(pool, same_vantage=False)
+    assert [n["name"] for n in require] == ["b"]
+    assert [n["name"] for n in exempt] == ["a"]
+
+
+def test_user_pool_stale_always_requires_retest():
+    """过期证据等于没有证据——任何 vantage 下都必须复测。"""
+    for same in (True, False):
+        require, _ = cn_probe.split_user_pool([_pool_node("x", stale=True)],
+                                              same_vantage=same)
+        assert len(require) == 1
+
+
+def test_cap_test_set_keeps_user_pool_nodes():
+    """预算再紧也不裁池节点与 carryover：它们承载「地面真相」与订阅生命线。"""
+    nodes = ([{"origin": "user_pool", "fp": f"u{i}", "name": f"u{i}"} for i in range(3)]
+             + [{"origin": "carryover", "fp": f"c{i}", "name": f"c{i}"} for i in range(2)]
+             + [{"origin": "rescue", "fp": f"r{i}", "name": f"r{i}"} for i in range(50)])
+    kept, dropped = cn_probe.cap_test_set(nodes, budget_s=5 * 1.2)
+    origins = [n["origin"] for n in kept]
+    assert origins.count("user_pool") == 3
+    assert origins.count("carryover") == 2
+    assert dropped > 0
+
+
+# ------------------------------------------------------------------ 用户池复测闸门
+def _pool_node(name, stale=False):
+    return {"fp": name, "name": name, "origin": "user_pool",
+            "_user_stale": stale, "proxy": {"name": name, "type": "vless",
+                                            "server": "a.example", "port": 443},
+            "final": False, "us_ok": False, "probe_name": f"userpool_{name}"}
+
+
+def test_user_pool_all_require_retest_on_same_vantage():
+    """同 vantage（家宽跑家宽）时豁免理由消失——必须全部复测。
+
+    实测依据：2026-11-05 发布 15 个，其中 7 个池节点（证据 7.3 天）在 FlClash
+    里 6 超时 1 失败；现场复测 delay 阶段全灭。
+    """
+    pool = [_pool_node("a"), _pool_node("b", stale=True)]
+    require, exempt = cn_probe.split_user_pool(pool, same_vantage=True)
+    assert len(require) == 2 and exempt == []
+
+
+def test_user_pool_fresh_exempt_on_other_vantage():
+    """沙箱 vantage 下，7 天内的证据仍可豁免（保留原设计：路径不等价）。"""
+    pool = [_pool_node("a"), _pool_node("b", stale=True)]
+    require, exempt = cn_probe.split_user_pool(pool, same_vantage=False)
+    assert [n["name"] for n in require] == ["b"]
+    assert [n["name"] for n in exempt] == ["a"]
+
+
+def test_user_pool_stale_always_requires_retest():
+    """过期证据等于没有证据——任何 vantage 下都必须复测。"""
+    for same in (True, False):
+        require, _ = cn_probe.split_user_pool([_pool_node("x", stale=True)],
+                                              same_vantage=same)
+        assert len(require) == 1
+
+
+def test_cap_test_set_keeps_user_pool_nodes():
+    """预算再紧也不裁池节点与 carryover：它们承载「地面真相」与订阅生命线。"""
+    nodes = ([{"origin": "user_pool", "fp": f"u{i}", "name": f"u{i}"} for i in range(3)]
+             + [{"origin": "carryover", "fp": f"c{i}", "name": f"c{i}"} for i in range(2)]
+             + [{"origin": "rescue", "fp": f"r{i}", "name": f"r{i}"} for i in range(50)])
+    kept, dropped = cn_probe.cap_test_set(nodes, budget_s=5 * 1.2)
+    origins = [n["origin"] for n in kept]
+    assert origins.count("user_pool") == 3
+    assert origins.count("carryover") == 2
+    assert dropped > 0
