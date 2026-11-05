@@ -1724,6 +1724,32 @@ def best_source_flow(rt: dict) -> tuple[int, int]:
             max(int(d.get("bps") or 0) for d in srcs))
 
 
+def is_filler_node(node: dict, results: dict, *,
+                   max_latency_ms: int | None = None,
+                   max_bytes: int | None = None) -> bool:
+    """「慢且弱」的填充节点判定（纯函数，任务#126）。
+
+    实证依据（2026-11-05 18:51 那轮发布 36 个，用户 FlClash 超时 6~10 个）：
+      * 拉满 SPEED_MAX_BYTES(4MB) 上限的 20 个 → 全部可用；
+      * 「延迟 >1500ms 且 最好一源 <1MB」7 个 → 与用户报的超时数几乎一一对应；
+      * 反例必须记住：HK 829KB/561ms、A🟢HK 763KB/628ms 在客户端正常。
+        所以判据是「慢」**且**「弱」，单看任一项都会误杀。
+
+    为什么弱流量节点会在客户端超时：128KB 只证明握手成功、首包能回，
+    不证明能持续转发；客户端一次性测全部节点时，这类节点第二个请求就没响应。
+    """
+    if max_latency_ms is None:
+        max_latency_ms = getattr(config, "FILLER_MAX_LATENCY_MS", 1500)
+    if max_bytes is None:
+        max_bytes = getattr(config, "FILLER_MAX_BYTES", 1024 * 1024)
+    res = results.get(node.get("probe_name"), {}) or {}
+    lat = res.get("latency_ms") or 99999
+    if lat <= max_latency_ms:
+        return False                      # 延迟够低，弱一点也能用（HK 829KB 就是例证）
+    nb, _bps = best_source_flow(res.get("real_traffic") or {})
+    return nb < max_bytes
+
+
 def select_usable_promotions(degraded: list[dict], results: dict,
                              cap: int | None = None) -> list[dict]:
     """可用档提级：有真实流量、且不慢到不可用 → 并入主资产（纯函数，任务#123）。
@@ -2385,6 +2411,18 @@ def main() -> int:
             f"（名字带 {USABLE_NAME_SUFFIX} 后缀；门槛 "
             f"≥{config.USABLE_MIN_BYTES // 1024}KB 且 ≥{config.USABLE_MIN_BPS // 1024}KB/s，"
             f"延迟 ≤{getattr(config, 'USABLE_MAX_LATENCY_MS', CN_MAX_PUBLISH_LATENCY_MS)}ms）")
+
+    # 6.68) 填充节点剔除（任务#126，2026-11-05）：所有提级动作之后的终审。
+    # 放在这里而不是各个提级函数里，是因为 6.6 / 6.65 都会把慢档拉进主资产，
+    # 逐处加条件容易漏；一处终审，规则只有一份。
+    _filler = [n for n in verified if is_filler_node(n, results)]
+    if _filler:
+        verified = [n for n in verified if n not in _filler]
+        degraded = degraded + _filler
+        log(f"填充节点剔除: {len(_filler)} 个「延迟 >"
+            f"{getattr(config, 'FILLER_MAX_LATENCY_MS', 1500)}ms 且流量 <"
+            f"{getattr(config, 'FILLER_MAX_BYTES', 1048576) // 1024}KB」的节点退回第二资产"
+            f"（这类节点在客户端一次性测全部时会超时；延迟低的小节点不受影响）")
 
     # 6.7) 用户本地实测硬否决（2026-10-29 任务#113）：用户家宽的实测结论是
     # 最终事实——本地连不上的节点，沙箱再快也不该进主资产。置于 AI 提级之后，

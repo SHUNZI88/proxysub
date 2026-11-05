@@ -1574,3 +1574,46 @@ def test_usable_suffix_lands_in_published_proxy_name():
     cfg = cn_probe.build_verified_config(usable, results)
     names = [p["name"] for p in cfg["proxies"]]
     assert any(x.endswith(cn_probe.USABLE_NAME_SUFFIX) for x in names), names
+
+
+# ------------------------------------------------- 填充节点剔除（任务#126）
+def _fn(name, lat, kb):
+    return ({"fp": name, "name": name, "probe_name": f"p_{name}"},
+            {f"p_{name}": {"ok": True, "latency_ms": lat,
+                           "real_traffic": {"sources": [{"bytes": kb * 1024,
+                                                        "bps": 60 * 1024}]}}})
+
+
+def test_filler_excludes_slow_and_weak():
+    """慢且弱 = 客户端必然超时：2026-11-05 实证「>1500ms 且 <1MB」的 7 个，
+    与用户 FlClash 报的 6~10 个超时几乎一一对应。"""
+    n, r = _fn("x", 2200, 500)
+    assert cn_probe.is_filler_node(n, r) is True
+
+
+def test_filler_keeps_fast_weak_node():
+    """反例必须守住：HK 829KB/561ms 在客户端正常——延迟低的小节点不能误杀。"""
+    n, r = _fn("hk", 561, 829)
+    assert cn_probe.is_filler_node(n, r) is False
+
+
+def test_filler_keeps_slow_strong_node():
+    """慢但能持续转发（拉满 4MB）的节点可用，·慢 档就是为它们设的。"""
+    n, r = _fn("it", 3539, 4096)
+    assert cn_probe.is_filler_node(n, r) is False
+
+
+def test_filler_boundaries():
+    n, r = _fn("a", 1500, 100)      # 延迟恰在上限：不放行剔除
+    assert cn_probe.is_filler_node(n, r) is False
+    n, r = _fn("b", 1501, 1023)     # 刚过两条线：剔除
+    assert cn_probe.is_filler_node(n, r) is True
+    n, r = _fn("c", 1501, 1024)     # 流量刚好达标：保留
+    assert cn_probe.is_filler_node(n, r) is False
+
+
+def test_filler_thresholds_are_config_driven(monkeypatch):
+    n, r = _fn("x", 900, 300)
+    assert cn_probe.is_filler_node(n, r) is False
+    monkeypatch.setattr(cn_probe.config, "FILLER_MAX_LATENCY_MS", 500)
+    assert cn_probe.is_filler_node(n, r) is True
