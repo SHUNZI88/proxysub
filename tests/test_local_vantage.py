@@ -167,7 +167,10 @@ def test_curl_speed_uses_platform_devnull(monkeypatch):
     out = cn_probe._curl_speed("http://127.0.0.1:7897", "https://x/y", 5)
     assert out["bytes"] == 12345
     assert os.devnull in seen["cmd"]
-    assert "/dev/null" not in seen["cmd"]
+    # POSIX 上 os.devnull 本身就是 "/dev/null"，此时该断言无意义——
+    # 只在两者不同（Windows:"nul"）时才有判别力。
+    if os.devnull != "/dev/null":
+        assert "/dev/null" not in seen["cmd"]
 
 
 def test_no_hardcoded_devnull_in_production_code():
