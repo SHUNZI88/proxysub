@@ -32,11 +32,11 @@
       "note": "社区活跃聚合源；池内 tomjiu 占比 68%，扩源降集中度"
     },
     {
-      "url": "https://raw.githubusercontent.com/chengaopan/AutoMergePublicNodes/master/snippets/nodes.meta.yml",
+      "url": "https://raw.githubusercontent.com/ermaozi01/free_clash_vpn/main/subscribe/clash.yml",
       "origin": "discovered",
-      "added": "2026-10-28",
-      "repo": "chengaopan/AutoMergePublicNodes",
-      "probation_runs": 13
+      "added": "2026-11-05",
+      "repo": "ermaozi01/free_clash_vpn",
+      "probation_runs": 3
     }
   ],
   "removed": [
@@ -204,6 +204,11 @@
       "url": "https://raw.githubusercontent.com/tomjiu/proxy-pipeline/main/dist/clean/clash-renamed.yaml",
       "reason": "cn_low_pass_rate:0/118",
       "date": "2026-10-28"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/chengaopan/AutoMergePublicNodes/master/snippets/nodes.meta.yml",
+      "reason": "cn_low_pass_rate:0/138",
+      "date": "2026-11-05"
     }
   ],
   "deny_repos": []
