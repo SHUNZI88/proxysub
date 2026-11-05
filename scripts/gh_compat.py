@@ -48,8 +48,30 @@ HOME_PAT_PATH = os.path.join(os.path.expanduser("~"), ".proxysub_pat")
 # 「实测搬到家宽」无从谈起。
 # 生效范围仅限**公开资产下载**：API 调用与携带 token 的请求绝不走镜像
 # （镜像能看到 Authorization 头，等于把 PAT 交出去）。
+# 代理（任务#121）：GitHub 访问在部分家宽上必须走本地代理（实况：
+# github.com 直连 TLS 握手超时，gh 作为 Go 程序**不读 Windows 系统代理**）。
+# 与 MIRRORS 一样只作用于 GitHub 相关请求——测量流量必须直连，二者不可混。
+PROXY_ENV = "PROXYSUB_GH_PROXY"
+
 MIRRORS_ENV = "PROXYSUB_GH_MIRRORS"
 DEFAULT_MIRRORS = ("https://ghfast.top/", "https://gh-proxy.com/")
+
+
+def gh_proxy() -> str:
+    """GitHub 访问所用代理（空串 = 直连）。只认显式配置，不吃隐式环境变量。
+
+    刻意不读 HTTPS_PROXY：那会把"用户系统里恰好有的代理"偷偷用于发布，
+    也让排障时无法区分"直连不通"与"代理不对"。要代理就显式配。
+    """
+    return (os.environ.get(PROXY_ENV) or "").strip()
+
+
+def _proxy_env() -> dict:
+    """给子进程（gh）用的代理环境变量。"""
+    p = gh_proxy()
+    if not p:
+        return {}
+    return {"HTTP_PROXY": p, "HTTPS_PROXY": p, "http_proxy": p, "https_proxy": p}
 
 
 def mirrors() -> list[str]:
@@ -73,6 +95,8 @@ def _curl_download(url: str, dest: str, *, max_time: int = 300) -> bool:
         cmd = ["curl", "-fsSL", "--connect-timeout", "8",
                "--speed-time", "20", "--speed-limit", "10240",
                "--max-time", str(max_time), "-o", dest, url]
+        if gh_proxy():
+            cmd[-1:-1] = ["--proxy", gh_proxy()]
         try:
             r = subprocess.run(cmd, capture_output=True, text=True, timeout=max_time + 15)
             if r.returncode == 0 and os.path.exists(dest) and os.path.getsize(dest) > 0:
@@ -135,7 +159,7 @@ def _gh_token() -> str:
         return ""
     try:
         r = subprocess.run([exe, "auth", "token"], capture_output=True,
-                           text=True, timeout=20)
+                           text=True, timeout=20, env=_gh_env())
     except (subprocess.SubprocessError, OSError):
         return ""
     return (r.stdout or "").strip() if r.returncode == 0 else ""
@@ -143,6 +167,13 @@ def _gh_token() -> str:
 
 def repo() -> str:
     return os.environ.get("PROXYSUB_REPO", DEFAULT_REPO)
+
+
+def _gh_env() -> dict:
+    """gh 子进程环境：叠加代理设置（其余继承）。"""
+    env = dict(os.environ)
+    env.update(_proxy_env())
+    return env
 
 
 def gh_bin() -> str | None:
@@ -174,6 +205,11 @@ def _req(url: str, *, method: str = "GET", data: bytes | None = None,
     if headers:
         hdrs.update(headers)
     req = urllib.request.Request(url, data=data, headers=hdrs, method=method)
+    p = gh_proxy()
+    if p:
+        opener = urllib.request.build_opener(
+            urllib.request.ProxyHandler({"http": p, "https": p}))
+        return opener.open(req, timeout=timeout)
     return urllib.request.urlopen(req, timeout=timeout)
 
 
@@ -193,7 +229,7 @@ def auth_ok() -> tuple[bool, str]:
         return False, "无 token（环境变量与持久化文件均缺失）"
     if has_gh():
         r = subprocess.run([gh_bin(), "auth", "status"], capture_output=True, text=True,
-                           timeout=60)
+                           timeout=60, env=_gh_env())
         if r.returncode == 0:
             return True, "gh auth status OK"
         tail = ((r.stderr or r.stdout) or "").strip().splitlines()
@@ -215,7 +251,8 @@ def release_assets(tag: str) -> list[dict]:
     if has_gh():
         try:
             r = subprocess.run([gh_bin(), "release", "view", tag, "--json", "assets"],
-                               capture_output=True, text=True, timeout=60)
+                               capture_output=True, text=True, timeout=60,
+                               env=_gh_env())
             if r.returncode == 0:
                 return json.loads(r.stdout).get("assets", []) or []
         except (subprocess.SubprocessError, ValueError):
@@ -238,7 +275,7 @@ def download_asset(tag: str, name: str, dest: str, *, timeout: int = 60) -> bool
             r = subprocess.run(
                 [gh_bin(), "release", "download", tag, "-p", name, "-O", dest,
                  "--clobber"],
-                capture_output=True, text=True, timeout=timeout)
+                capture_output=True, text=True, timeout=timeout, env=_gh_env())
             if r.returncode == 0 and os.path.exists(dest) and os.path.getsize(dest) > 0:
                 return True
         except subprocess.SubprocessError:
@@ -266,7 +303,8 @@ def upload_asset(tag: str, path: str, *, name: str | None = None,
         arg = path if asset_name == os.path.basename(path) else f"{path}#{asset_name}"
         try:
             r = subprocess.run([gh_bin(), "release", "upload", tag, "--clobber", arg],
-                               capture_output=True, text=True, timeout=timeout)
+                               capture_output=True, text=True, timeout=timeout,
+                               env=_gh_env())
             if r.returncode == 0:
                 return True, ""
             gh_err = (r.stderr or r.stdout or "").strip()[:200]

@@ -83,6 +83,13 @@ except Exception:  # 仓库模块缺失时明确失败（脚本与仓库同版�
     write_outputs = None
     classify_proxy = None
 
+# 直连 opener（任务#121）：测量类请求必须绕开一切环境代理。
+# 家宽机器上通常常驻 FlClash/Clash（本机 127.0.0.1:7890），若 HTTP(S)_PROXY
+# 泄进探针进程，`sandbox_selfcheck` 会变成"经代理能通"（自检失去意义），
+# `_sandbox_ip` 会回报代理出口 IP 而非家宽出口（报告字段直接失真）。
+# 显式空 ProxyHandler = 无论环境变量怎么写都直连。
+_DIRECT_OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+
 GENERATE_204 = "https://www.google.com/robots.txt"
 # 真实流量测试：必须是中国大陆被封锁、只有经代理才能访问的海外地址。
 # 早期用 robots.txt / cdn-cgi/trace「几行字」+ 403/非空 body 兜底作判据，放行大量
@@ -729,7 +736,7 @@ def sandbox_selfcheck() -> bool:
     for url in SELFCHECK_URLS:
         try:
             req = urllib.request.Request(url, method="HEAD")
-            with urllib.request.urlopen(req, timeout=10) as resp:
+            with _DIRECT_OPENER.open(req, timeout=10) as resp:
                 if resp.status < 400:
                     return True
         except Exception:
@@ -2584,7 +2591,7 @@ def main() -> int:
 def _sandbox_ip() -> str:
     for url in ("https://cip.cc", "https://myip.ipip.net"):
         try:
-            with urllib.request.urlopen(urllib.request.Request(
+            with _DIRECT_OPENER.open(urllib.request.Request(
                     url, headers={"User-Agent": "curl/8"}), timeout=8) as r:
                 m = re.search(r"(\d{1,3}(?:\.\d{1,3}){3})",
                               r.read().decode("utf-8", "replace"))

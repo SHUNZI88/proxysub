@@ -7,6 +7,7 @@
 """
 
 import json
+import os
 
 from scripts import gh_compat as gc
 
@@ -240,3 +241,71 @@ def test_gh_bin_none_when_nothing(monkeypatch):
     monkeypatch.delenv("PROXYSUB_GH_BIN", raising=False)
     monkeypatch.setattr(gc.shutil, "which", lambda _n: None)
     assert gc.gh_bin() is None
+
+
+# ------------------------------------------------------------------ 代理
+def test_gh_proxy_reads_explicit_env_only(monkeypatch):
+    """只认 PROXYSUB_GH_PROXY，不偷吃 HTTPS_PROXY。
+
+    理由：测量流量必须直连（家宽机器常驻 Clash），若 GitHub 客户端悄悄沿用
+    系统里的代理，排障时无法区分「直连不通」与「代理配错」。
+    """
+    monkeypatch.setenv("HTTPS_PROXY", "http://127.0.0.1:9999")
+    monkeypatch.delenv(gc.PROXY_ENV, raising=False)
+    assert gc.gh_proxy() == ""
+    monkeypatch.setenv(gc.PROXY_ENV, " http://127.0.0.1:7890 ")
+    assert gc.gh_proxy() == "http://127.0.0.1:7890"
+
+
+def test_gh_env_injects_proxy_for_subprocess(monkeypatch):
+    monkeypatch.setenv(gc.PROXY_ENV, "http://127.0.0.1:7890")
+    env = gc._gh_env()
+    assert env["HTTPS_PROXY"] == "http://127.0.0.1:7890"
+    assert env["HTTP_PROXY"] == "http://127.0.0.1:7890"
+
+
+def test_gh_env_empty_without_proxy(monkeypatch):
+    monkeypatch.delenv(gc.PROXY_ENV, raising=False)
+    env = gc._gh_env()
+    assert "HTTPS_PROXY" not in env or env["HTTPS_PROXY"] == os.environ.get("HTTPS_PROXY")
+
+
+def test_curl_download_passes_proxy(monkeypatch, tmp_path):
+    monkeypatch.setenv(gc.PROXY_ENV, "http://127.0.0.1:7890")
+    seen = {}
+
+    class R:
+        returncode = 0
+
+    def fake_run(cmd, **kw):
+        seen["cmd"] = cmd
+        dest = cmd[cmd.index("-o") + 1]
+        with open(dest, "w", encoding="utf-8") as f:
+            f.write("x")
+        return R()
+
+    monkeypatch.setattr(gc.shutil, "which", lambda _n: "curl")
+    monkeypatch.setattr(gc.subprocess, "run", fake_run)
+    assert gc._curl_download("https://github.com/a/b.zip", str(tmp_path / "f")) is True
+    cmd = seen["cmd"]
+    assert cmd[cmd.index("--proxy") + 1] == "http://127.0.0.1:7890"
+
+
+def test_curl_download_without_proxy_has_no_flag(monkeypatch, tmp_path):
+    monkeypatch.delenv(gc.PROXY_ENV, raising=False)
+    seen = {}
+
+    class R:
+        returncode = 0
+
+    def fake_run(cmd, **kw):
+        seen["cmd"] = cmd
+        dest = cmd[cmd.index("-o") + 1]
+        with open(dest, "w", encoding="utf-8") as f:
+            f.write("x")
+        return R()
+
+    monkeypatch.setattr(gc.shutil, "which", lambda _n: "curl")
+    monkeypatch.setattr(gc.subprocess, "run", fake_run)
+    gc._curl_download("https://github.com/a/b.zip", str(tmp_path / "f"))
+    assert "--proxy" not in seen["cmd"]
