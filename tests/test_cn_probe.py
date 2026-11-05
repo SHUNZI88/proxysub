@@ -1622,65 +1622,68 @@ def test_filler_thresholds_are_config_driven(monkeypatch):
     assert cn_probe.is_filler_node(n, r) is True
 
 
-# --------------------------------------------- 延迟串行复测（任务#127）
-def test_serial_latency_recheck_overwrites_concurrent_value():
+# ------------------------------------- 延迟串行复测 + 稳定性闸门（#127/#129）
+def _seq(*vals):
+    """按顺序返回预设结果的假延迟函数（vals 里 None 表示这次失败）。"""
+    it = iter(vals)
+
+    def fn(port, name):
+        v = next(it)
+        return {"ok": v is not None, "latency_ms": v}
+    return fn
+
+
+def test_serial_recheck_overwrites_concurrent_value_with_median():
     """并发初筛 16 路会把 RTT 抬高（实测 4486ms vs 串行 2780ms），
-    闸门必须吃串行值，否则 3000ms 降级 / 1500ms 填充剔除都在拿假数判案。"""
-    nodes = [{"probe_name": "a"}, {"probe_name": "b"}]
-    results = {"a": {"ok": True, "latency_ms": 4486},
-               "b": {"ok": True, "latency_ms": 900}}
-    fixed = cn_probe.serial_latency_recheck(
-        0, nodes, results, delay_fn=lambda p, n: {"ok": True, "latency_ms": 2780})
-    assert results["a"]["latency_ms"] == 2780
-    assert fixed == 2
+    闸门必须吃串行值；且取**中位数**——最小值是运气最好那一次，不是常态。"""
+    nodes = [{"probe_name": "a"}]
+    results = {"a": {"ok": True, "latency_ms": 4486}}
+    r = cn_probe.serial_latency_recheck(
+        0, nodes, results, samples=5,
+        delay_fn=_seq(900, 500, 700, 1200, 800))
+    assert results["a"]["latency_ms"] == 800          # 排序后 [500,700,800,900,1200] 的中位
+    assert r["fixed"] == 1 and r["unstable"] == []
 
 
-def test_serial_latency_recheck_keeps_original_when_serial_fails():
-    """串行这次失败不代表节点变快——保留初筛结论，不拿抖动当好消息。"""
+def test_serial_recheck_flags_node_unstable_below_threshold():
+    """1/5 成功的节点必须被剔除——实证这类节点靠「单次恰好成功」混进发布集，
+    用户在客户端看到的就是「超时」。"""
     nodes = [{"probe_name": "a"}]
     results = {"a": {"ok": True, "latency_ms": 2000}}
-    fixed = cn_probe.serial_latency_recheck(
-        0, nodes, results, delay_fn=lambda p, n: {"ok": False, "latency_ms": None})
-    assert results["a"]["latency_ms"] == 2000
-    assert fixed == 0
+    r = cn_probe.serial_latency_recheck(
+        0, nodes, results, samples=5, min_pass=4,
+        delay_fn=_seq(None, None, None, None, 662))
+    assert r["unstable"] == ["a"]
+    assert results["a"]["latency_ms"] == 2000        # 不稳定时不动延迟值，交由调用方剔除
 
 
-def test_serial_latency_recheck_can_raise_latency():
+def test_serial_recheck_threshold_boundary():
+    """4/5 通过 = 保留（正常节点偶有尖峰）；3/5 才算不合格。"""
+    nodes = [{"probe_name": "a"}, {"probe_name": "b"}]
+    results = {"a": {"ok": True}, "b": {"ok": True}}
+    r = cn_probe.serial_latency_recheck(
+        0, nodes, results, samples=5, min_pass=4,
+        delay_fn=_seq(500, 600, 700, 800, None,      # a: 4/5 → 保留
+                      None, None, 500, 600, 700))    # b: 3/5 → 剔除
+    assert r["unstable"] == ["b"]
+    assert results["a"]["latency_ms"] == 700      # 4 个成功值 [500,600,700,800] 取上中位
+
+
+def test_serial_recheck_all_fail_is_unstable_not_zero_latency():
+    nodes = [{"probe_name": "a"}]
+    results = {"a": {"ok": True, "latency_ms": 1000}}
+    r = cn_probe.serial_latency_recheck(
+        0, nodes, results, samples=3, min_pass=2,
+        delay_fn=lambda p, n: {"ok": False, "latency_ms": None})
+    assert r["unstable"] == ["a"] and r["fixed"] == 0
+    assert results["a"]["latency_ms"] == 1000
+
+
+def test_serial_recheck_can_raise_latency():
     """方向必须双向：串行更慢时也要如实覆盖（保守，宁可不发）。"""
     nodes = [{"probe_name": "a"}]
     results = {"a": {"ok": True, "latency_ms": 800}}
     cn_probe.serial_latency_recheck(
-        0, nodes, results, delay_fn=lambda p, n: {"ok": True, "latency_ms": 3400})
-    assert results["a"]["latency_ms"] == 3400
-
-
-# --------------------------------------------- 延迟串行复测（任务#127）
-def test_serial_latency_recheck_overwrites_concurrent_value():
-    """并发初筛 16 路会把 RTT 抬高（实测 4486ms vs 串行 2780ms），
-    闸门必须吃串行值，否则 3000ms 降级 / 1500ms 填充剔除都在拿假数判案。"""
-    nodes = [{"probe_name": "a"}, {"probe_name": "b"}]
-    results = {"a": {"ok": True, "latency_ms": 4486},
-               "b": {"ok": True, "latency_ms": 900}}
-    fixed = cn_probe.serial_latency_recheck(
-        0, nodes, results, delay_fn=lambda p, n: {"ok": True, "latency_ms": 2780})
-    assert results["a"]["latency_ms"] == 2780
-    assert fixed == 2
-
-
-def test_serial_latency_recheck_keeps_original_when_serial_fails():
-    """串行这次失败不代表节点变快——保留初筛结论，不拿抖动当好消息。"""
-    nodes = [{"probe_name": "a"}]
-    results = {"a": {"ok": True, "latency_ms": 2000}}
-    fixed = cn_probe.serial_latency_recheck(
-        0, nodes, results, delay_fn=lambda p, n: {"ok": False, "latency_ms": None})
-    assert results["a"]["latency_ms"] == 2000
-    assert fixed == 0
-
-
-def test_serial_latency_recheck_can_raise_latency():
-    """方向必须双向：串行更慢时也要如实覆盖（保守，宁可不发）。"""
-    nodes = [{"probe_name": "a"}]
-    results = {"a": {"ok": True, "latency_ms": 800}}
-    cn_probe.serial_latency_recheck(
-        0, nodes, results, delay_fn=lambda p, n: {"ok": True, "latency_ms": 3400})
+        0, nodes, results, samples=3, min_pass=2,
+        delay_fn=_seq(3400, 3300, 3500))
     assert results["a"]["latency_ms"] == 3400

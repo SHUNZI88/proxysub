@@ -1735,30 +1735,46 @@ def best_source_flow(rt: dict) -> tuple[int, int]:
 
 
 def serial_latency_recheck(api_port: int, nodes: list[dict], results: dict,
-                          delay_fn=None) -> int:
-    """对初筛通过的节点串行复测延迟，用真实值覆盖并发测量值（任务#127）。
+                          delay_fn=None, samples: int | None = None,
+                          min_pass: int | None = None) -> dict:
+    """串行多次采样测延迟，返回 {"fixed", "unstable", "checked"}（任务#127/#129）。
 
-    为什么必须做：初筛 16 路并行，本地链路要同时承载 16 条到不同代理的
-    TLS 握手，RTT 被自家突发抬高——实证同一批节点并发报 4486ms、串行 2780ms。
-    而下游全部判据（高延迟降级 3000ms、填充剔除 1500ms、报告延迟）吃的都是
-    这个数。测量方式污染了判据，阈值调得再细也没有意义。
+    两件事一起做，因为都要串行探测、共用同一次遍历：
 
-    返回被修正的节点数。串行反而失败的节点保留初筛结论（那不是「更快」的
-    证据，只是一次抖动，不能拿它做好消息）。
+    1. **用真实延迟覆盖并发初筛值**（#127）：初筛 16 路并发会把 RTT 抬高
+       （同批节点并发 4486ms、串行 2780ms），而下游 3000ms 降级、1500ms 填充
+       剔除、报告延迟全吃这个数。
+    2. **稳定性判定**（#129）：单次采样等于赌运气。实证已发布 23 个各测 5 次：
+       18 个 5/5、3 个 4/5、2 个 1~2/5——后者正是用户在客户端看到「超时」的
+       那批，它们靠「单次恰好成功」混进了主资产。
+
+    延迟取成功样本的**中位数**（不是最小：最小是运气最好的那一次，
+    不是用户常态体验）。通过数 < min_pass 的节点记入 unstable，由调用方剔除。
     """
     fn = delay_fn or (lambda port, name: delay_test(port, name))
-    fixed = 0
+    samples = samples if samples is not None else getattr(
+        config, "SERIAL_LATENCY_SAMPLES", 5)
+    min_pass = min_pass if min_pass is not None else getattr(
+        config, "SERIAL_LATENCY_MIN_PASS", 4)
+    fixed, unstable, checked = 0, [], 0
     for n in nodes:
         key = n["probe_name"]
         cur = (results.get(key) or {}).get("latency_ms")
-        one = fn(api_port, key)
-        if not one.get("ok") or not one.get("latency_ms"):
+        ok: list[int] = []
+        for _ in range(max(1, samples)):
+            one = fn(api_port, key)
+            if one.get("ok") and one.get("latency_ms"):
+                ok.append(int(one["latency_ms"]))
+        checked += 1
+        if len(ok) < min_pass:
+            unstable.append(key)
             continue
-        new = int(one["latency_ms"])
+        ok.sort()
+        new = ok[len(ok) // 2]
         if cur is None or new != cur:
             results.setdefault(key, {})["latency_ms"] = new
             fixed += 1
-    return fixed
+    return {"fixed": fixed, "unstable": unstable, "checked": checked}
 
 
 def is_filler_node(node: dict, results: dict, *,
@@ -2262,9 +2278,19 @@ def main() -> int:
             # 初筛只负责「通不通」，真实延迟由串行复测给出。
             if delay_passed and getattr(config, "SERIAL_LATENCY_RECHECK", True):
                 _t = time.time()
-                _fixed = serial_latency_recheck(api_port, delay_passed, results)
-                log(f"延迟串行复测: {len(delay_passed)} 个节点，{_fixed} 个 RTT 被修正"
-                    f"（并发初筛虚高，闸门改用串行值；耗时 {time.time() - _t:.0f}s）")
+                _r = serial_latency_recheck(api_port, delay_passed, results)
+                if _r["unstable"]:
+                    _bad = {k for k in _r["unstable"]}
+                    delay_passed = [n for n in delay_passed
+                                    if n["probe_name"] not in _bad]
+                    for _k in _bad:
+                        results[_k]["ok"] = False
+                        results[_k]["unstable"] = True
+                log(f"延迟串行复测: {_r['checked']} 个节点，{_r['fixed']} 个 RTT 被修正，"
+                    f"{len(_r['unstable'])} 个因多次采样不达标被剔除"
+                    f"（采样 {getattr(config, 'SERIAL_LATENCY_SAMPLES', 5)} 次，"
+                    f"要求 ≥{getattr(config, 'SERIAL_LATENCY_MIN_PASS', 4)} 次成功；"
+                    f"耗时 {time.time() - _t:.0f}s）")
 
             # 4.2) 终筛：真实流量测试（经 mixed-port 访问海外被封锁目标）
             if delay_passed:
