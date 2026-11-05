@@ -43,6 +43,7 @@ import datetime
 import json
 import os
 import sys
+import tempfile
 import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -54,6 +55,21 @@ BACKOFF_MAX_MIN_DEFAULT = 120
 STATE_FILE = "round_guard.json"
 REPORT_FILE = "verification_report.json"
 LOCK_FILE = "cn_probe.lock"
+
+
+def default_workdir() -> str:
+    """工作目录默认值，与 cn_probe.default_workdir() 保持一致。
+
+    不 import cn_probe（那会拖进 mihomo/网络依赖），但两侧默认值必须同源：
+    否则 `round_guard.py status` 在 Windows 会去看 /tmp/cn_probe（不存在）
+    → 资产龄期恒 999 → 决策恒「该跑」，排查时极易误判成「报告缺字段」。
+    """
+    env = os.environ.get("CN_PROBE_WORKDIR")
+    if env:
+        return env
+    if os.name == "nt":
+        return os.path.join(tempfile.gettempdir(), "cn_probe")
+    return "/tmp/cn_probe"
 
 
 def _env_int(name: str, default: int) -> int:
@@ -278,7 +294,7 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="补跑决策与存活探测（proxysub 任务#120）")
     ap.add_argument("command",
                     choices=["decide", "note-attempt", "note-result", "status"])
-    ap.add_argument("--workdir", default="/tmp/cn_probe")
+    ap.add_argument("--workdir", default=default_workdir())
     ap.add_argument("--stale-h", type=int, default=None)
     ap.add_argument("--rc", type=int, default=0)
     args = ap.parse_args(argv)

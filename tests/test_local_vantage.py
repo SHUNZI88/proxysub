@@ -193,3 +193,25 @@ def test_no_hardcoded_devnull_in_production_code():
             if '"/dev/null"' in code or "'/dev/null'" in code:
                 bad.append(os.path.relpath(path, root))
     assert not bad, f"仍有硬编码 /dev/null: {bad}"
+
+
+def test_workdir_defaults_agree_across_modules(monkeypatch):
+    """两处默认工作目录必须同源。
+
+    实证坑：`round_guard.py status` 曾在 Windows 上仍默认 /tmp/cn_probe，
+    该路径不存在 → 资产龄期恒 999 → 决策恒「该跑」，看起来像「报告缺字段」，
+    实际只是找错了目录。
+    """
+    monkeypatch.delenv("CN_PROBE_WORKDIR", raising=False)
+    assert round_guard.default_workdir() == cn_probe.default_workdir()
+
+
+def test_workdir_defaults_agree_across_modules(monkeypatch):
+    """两处默认工作目录必须同源。
+
+    实证坑：`round_guard.py status` 曾在 Windows 上仍默认 /tmp/cn_probe，
+    该路径不存在 → 资产龄期恒 999 → 决策恒「该跑」，看起来像「报告缺字段」，
+    实际只是找错了目录。
+    """
+    monkeypatch.delenv("CN_PROBE_WORKDIR", raising=False)
+    assert round_guard.default_workdir() == cn_probe.default_workdir()
