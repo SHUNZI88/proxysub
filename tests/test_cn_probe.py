@@ -998,10 +998,11 @@ def test_real_min_bytes_threshold_tightened():
     在沙箱判通过、用户本地不可用。慢档（AI 提级路径）保持 32KB 不变。"""
     assert cn_probe.REAL_MIN_BYTES >= 768 * 1024
     assert cn_probe.REAL_SLOW_MIN_BYTES == 32 * 1024
-    # 任务#116 曾收紧到 1500ms，任务#117 回调 3000ms：1500 的依据是「用户客户端
-    # 实测 2646ms 超时」，但客户端 RTT≠沙箱 RTT。实证 RTT 1713/2582ms 的节点
-    # 两轮稳定通过、198/248KB/s，却被 1500 闸门踢出主资产（资产只剩 1 个）。
-    assert cn_probe.CN_MAX_PUBLISH_LATENCY_MS == 3000
+    # 延迟闸门的数值取决于「探测尺子」，两者必须一起改（任务#128）：
+    # 旧尺子 google robots 中位 1660ms、新尺子 cf-204 中位 549ms，差约 3 倍。
+    # 故 3000ms(google) → 1500ms(cf-204) 是**等效换算**，不是收紧标准。
+    assert cn_probe.GENERATE_204.startswith("http://cp.cloudflare.com/")
+    assert cn_probe.CN_MAX_PUBLISH_LATENCY_MS == 1500
 
 
 def test_longevity_tier_prefers_proven_survivors(monkeypatch):
@@ -1604,11 +1605,13 @@ def test_filler_keeps_slow_strong_node():
 
 
 def test_filler_boundaries():
-    n, r = _fn("a", 1500, 100)      # 延迟恰在上限：不放行剔除
+    """边界值随 config 走（任务#128 起填充线是 1000ms），不写死数字。"""
+    lim = cn_probe.config.FILLER_MAX_LATENCY_MS
+    n, r = _fn("a", lim, 100)              # 延迟恰在上限：不剔除
     assert cn_probe.is_filler_node(n, r) is False
-    n, r = _fn("b", 1501, 1023)     # 刚过两条线：剔除
+    n, r = _fn("b", lim + 1, 1023)         # 刚过两条线：剔除
     assert cn_probe.is_filler_node(n, r) is True
-    n, r = _fn("c", 1501, 1024)     # 流量刚好达标：保留
+    n, r = _fn("c", lim + 1, 1024)         # 流量刚好达标：保留
     assert cn_probe.is_filler_node(n, r) is False
 
 

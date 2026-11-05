@@ -90,7 +90,14 @@ except Exception:  # 仓库模块缺失时明确失败（脚本与仓库同版�
 # 显式空 ProxyHandler = 无论环境变量怎么写都直连。
 _DIRECT_OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 
-GENERATE_204 = "https://www.google.com/robots.txt"
+# 延迟探测目标（任务#128，2026-11-05）：原用 google robots.txt 当尺子，
+# 实测这把尺子对数据中心 IP 系统性偏慢——同一批节点四个目标对照：
+#   google 中位 1660ms / gstatic 1568ms / msft 1449ms / **cf-204 549ms**
+# 而用户在 FlClash 里看到的是 75~604ms，与 cf-204 那一列基本对齐。
+# 后果：我按 google 尺子判「≤3000ms 可用」的节点，客户端超过一半直接超时。
+# 改用 Cloudflare 的 generate_204：HTTP 裸请求、无 TLS、全球任播，最接近
+# 客户端 url-test 的真实手感（也是 Clash 系默认测试地址的同族）。
+GENERATE_204 = "http://cp.cloudflare.com/generate_204"
 # 真实流量测试：必须是中国大陆被封锁、只有经代理才能访问的海外地址。
 # 早期用 robots.txt / cdn-cgi/trace「几行字」+ 403/非空 body 兜底作判据，放行大量
 # 「能握手但下载龟速」的伪可用节点（用户本地实测即暴露无效）。2026-10-17 改为
@@ -151,7 +158,10 @@ REAL_SLOW_MIN_BYTES = 32 * 1024
 # 是全批仅有的两个真快节点，却被 1500ms 闸门踢出主资产；而提级进来的 1064/1414ms
 # 节点速度只有 114/96KB/s。**延迟高但吞吐好 = 握手慢链路通，不该当废节点**。
 # 结论：速度是硬判据，延迟降为排序因子 + 5000ms 极端兜底（挡真死节点）。
-CN_MAX_PUBLISH_LATENCY_MS = 3000
+# 延迟闸门（任务#128 换算）：google 尺子下的 3000ms ≈ cf-204 尺子下的
+# 1000~1200ms。客户端实证：能用的节点 75~604ms，超时的多在 1000ms 以上。
+# 取 1500ms 留一点余量，宁可多放一点点，也不把 800ms 的好节点误杀。
+CN_MAX_PUBLISH_LATENCY_MS = 1500
 REAL_PROBE_URLS = [           # 仅作出口可达性辅助参考，不再单独作为闸门
     "https://www.google.com/robots.txt",
     "https://www.cloudflare.com/cdn-cgi/trace",
