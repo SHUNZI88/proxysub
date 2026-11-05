@@ -364,6 +364,9 @@ SERIAL_LATENCY_SAMPLES = 5
 # 至少几次通过才算稳定。4/5 是权衡：3/5 会放走一半 4/5 节点（发布集在两轮之间
 # 抖动），5/5 过于苛刻（正常节点偶有一次 2s 尖峰很常见，见 D🔴 1559ms 但 5/5）。
 SERIAL_LATENCY_MIN_PASS = 4
+# 稳定性采样单次超时：3000ms。取 3s 而非 5s，因为这里要捕捉的是「这一下能不能
+# 在 3 秒内响应」，而不是「最多能等多久」——客户端 url-test 的超时也在同一量级。
+STABILITY_TIMEOUT_MS = 3000
 PROBE_BATCH = 100
 PROBE_CONCURRENCY = 32
 # Reserve real-probe slots: Asia heavy, US light.

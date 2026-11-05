@@ -1687,3 +1687,53 @@ def test_serial_recheck_can_raise_latency():
         0, nodes, results, samples=3, min_pass=2,
         delay_fn=_seq(3400, 3300, 3500))
     assert results["a"]["latency_ms"] == 3400
+
+
+def test_serial_recheck_default_uses_single_attempt_probe(monkeypatch):
+    """默认必须用 delay_once（不重试）。
+
+    delay_test 失败会自动重试一次（5s→8s），把「偶发失败」洗成「成功」——
+    实测对照：同 23 个节点用 delay_test 采 5 次全部 5/5，换成单次探测立刻
+    分出 18 个 5/5、3 个 4/5、2 个 1~2/5。稳定性闸门若用带重试的探测，
+    等于什么都没测。
+    """
+    calls = {"n": 0}
+
+    def fake_once(port, name, timeout_ms=None):
+        calls["n"] += 1
+        return {"ok": True, "latency_ms": 500}
+
+    monkeypatch.setattr(cn_probe, "delay_once", fake_once)
+
+    def boom(*a, **k):
+        raise AssertionError("稳定性采样不得使用带重试的 delay_test")
+
+    monkeypatch.setattr(cn_probe, "delay_test", boom)
+    cn_probe.serial_latency_recheck(0, [{"probe_name": "a"}], {"a": {}},
+                                    samples=3, min_pass=2)
+    assert calls["n"] == 3
+
+
+def test_serial_recheck_default_uses_single_attempt_probe(monkeypatch):
+    """默认必须用 delay_once（不重试）。
+
+    delay_test 失败会自动重试一次（5s→8s），把「偶发失败」洗成「成功」——
+    实测对照：同 23 个节点用 delay_test 采 5 次全部 5/5，换成单次探测立刻
+    分出 18 个 5/5、3 个 4/5、2 个 1~2/5。稳定性闸门若用带重试的探测，
+    等于什么都没测。
+    """
+    calls = {"n": 0}
+
+    def fake_once(port, name, timeout_ms=None):
+        calls["n"] += 1
+        return {"ok": True, "latency_ms": 500}
+
+    monkeypatch.setattr(cn_probe, "delay_once", fake_once)
+
+    def boom(*a, **k):
+        raise AssertionError("稳定性采样不得使用带重试的 delay_test")
+
+    monkeypatch.setattr(cn_probe, "delay_test", boom)
+    cn_probe.serial_latency_recheck(0, [{"probe_name": "a"}], {"a": {}},
+                                    samples=3, min_pass=2)
+    assert calls["n"] == 3

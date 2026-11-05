@@ -1734,6 +1734,26 @@ def best_source_flow(rt: dict) -> tuple[int, int]:
             max(int(d.get("bps") or 0) for d in srcs))
 
 
+def delay_once(port: int, name: str, timeout_ms: int | None = None) -> dict:
+    """单次延迟探测，**不重试**（任务#129）。
+
+    稳定性采样必须用它，不能用 delay_test：后者失败会自动重试一次（5s→8s），
+    一次偶发失败被重试洗成「成功」——而这正是我们要测的东西。实测对照：
+    用 delay_test 采 5 次，23 个节点全部「5/5 通过」；改用单次探测，
+    立刻分出 18 个 5/5、3 个 4/5、2 个 1~2/5。
+
+    附带好处：失败样本 3s 就返回，不像 delay_test 要等 5s+8s 两轮。
+    """
+    t = int(timeout_ms or getattr(config, "STABILITY_TIMEOUT_MS", 3000))
+    quoted = urllib.parse.quote(name, safe="")
+    data = api_get(port, f"/proxies/{quoted}/delay"
+                         f"?url={urllib.parse.quote(GENERATE_204, safe='')}"
+                         f"&timeout={t}", timeout=t / 1000 + 3)
+    if data and isinstance(data.get("delay"), (int, float)):
+        return {"ok": True, "latency_ms": int(data["delay"])}
+    return {"ok": False, "latency_ms": None}
+
+
 def serial_latency_recheck(api_port: int, nodes: list[dict], results: dict,
                           delay_fn=None, samples: int | None = None,
                           min_pass: int | None = None) -> dict:
@@ -1751,7 +1771,8 @@ def serial_latency_recheck(api_port: int, nodes: list[dict], results: dict,
     延迟取成功样本的**中位数**（不是最小：最小是运气最好的那一次，
     不是用户常态体验）。通过数 < min_pass 的节点记入 unstable，由调用方剔除。
     """
-    fn = delay_fn or (lambda port, name: delay_test(port, name))
+    # 默认用 delay_once 而非 delay_test：后者内部重试会把偶发失败洗成成功
+    fn = delay_fn or (lambda port, name: delay_once(port, name))
     samples = samples if samples is not None else getattr(
         config, "SERIAL_LATENCY_SAMPLES", 5)
     min_pass = min_pass if min_pass is not None else getattr(
