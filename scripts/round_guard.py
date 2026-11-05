@@ -45,6 +45,9 @@ import os
 import sys
 import time
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import xlock  # noqa: E402 - 跨平台文件锁（POSIX flock / Windows msvcrt）
+
 STALE_H_DEFAULT = 3
 DEBOUNCE_MIN_DEFAULT = 10
 BACKOFF_MAX_MIN_DEFAULT = 120
@@ -115,20 +118,21 @@ def probe_lock_state(workdir: str) -> dict:
     由调用方按「不跑」处理（保守）。
     """
     lock_path = os.path.join(workdir, LOCK_FILE)
-    try:
-        import fcntl  # noqa: PLC0415 - 仅 POSIX 有，按需导入
-    except ImportError:
-        return {"state": "unknown", "holder": "", "why": "非 POSIX 平台，无 flock"}
     if not os.path.exists(lock_path):
         return {"state": "idle", "holder": ""}
+    if not xlock.supported():
+        return {"state": "unknown", "holder": "", "why": "本平台无可用文件锁"}
     try:
         fh = open(lock_path, "a+", encoding="utf-8")
+    except PermissionError:
+        # Windows 的 msvcrt 字节锁会连带拒绝其他进程打开该文件——「打不开」
+        # 恰恰等价于「有人持锁」，不能当 unknown（否则 decide 会误判）。
+        return {"state": "running", "holder": "",
+                "why": "锁文件被独占（Windows 字节锁）"}
     except OSError:
         return {"state": "unknown", "holder": "", "why": "锁文件不可读"}
     try:
-        try:
-            fcntl.flock(fh, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except OSError:
+        if not xlock.acquire(fh):
             holder = ""
             try:
                 fh.seek(0)
@@ -137,7 +141,7 @@ def probe_lock_state(workdir: str) -> dict:
                 pass
             return {"state": "running", "holder": holder}
         # 拿到了：说明没有实例持锁，立即释放，不改变文件内容
-        fcntl.flock(fh, fcntl.LOCK_UN)
+        xlock.release(fh)
         return {"state": "idle", "holder": ""}
     finally:
         try:

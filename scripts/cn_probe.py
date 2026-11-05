@@ -42,29 +42,24 @@ from __future__ import annotations
 import argparse
 import datetime
 import glob
+import gzip
 import hashlib
 import json
 import os
+import platform
 import re
 import shutil
 import socket
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 import urllib.error
 import urllib.parse
 import urllib.request
+import zipfile
 from concurrent.futures import ThreadPoolExecutor
-
-# fcntl 仅 POSIX 提供（单实例锁用）。降级为 None 而非 import 失败：
-# 断点续跑/去重/评分等纯逻辑必须能在非 POSIX 环境（本地 Windows 开发机）
-# 导入并测试——2026-11-05 教训：模块级 `import fcntl` 让整个测试套件在
-# 开发机上无法 import，任何改动只能靠线上沙箱验证，等于没有本地验证。
-try:
-    import fcntl
-except ImportError:  # pragma: no cover - 非 POSIX 平台
-    fcntl = None
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, REPO_ROOT)
@@ -76,6 +71,10 @@ PERSISTED_PAT_PATH = os.environ.get("PERSISTED_PAT_PATH", "/root/.github_pat")
 import common  # noqa: E402
 import config  # noqa: E402
 import yaml  # noqa: E402
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import gh_compat  # noqa: E402  - GitHub Release 读写适配（gh 优先，REST 兜底）
+import xlock  # noqa: E402  - 跨平台文件锁（POSIX flock / Windows msvcrt）
 
 try:
     from output import write_outputs  # noqa: E402
@@ -180,6 +179,12 @@ EVIDENCE_CONCURRENCY = 8   # 单节点证据总并行度：GEO 3 源 + AI 5 域�
 # 证据 ≤120s + 发布 ~60s ≈ 204s < PUBLISH_RESERVE_S 300s。
 EVIDENCE_BUDGET_S = 120
 MIHOMO_VERSION = os.environ.get("MIHOMO_VERSION", "v1.19.32")
+
+# 测量 vantage 标签（任务#121）：同一份代码既可在沙箱跑，也可在本机家宽跑。
+# 二者网络路径不同（沙箱出口 vs 家宽出口），报告必须能区分——「沙箱测着活、
+# 本地用着死」的复盘全靠这两个口径分开统计。默认值保持沙箱不变，避免既有
+# 历史数据出现断层。
+VANTAGE_LABEL = os.environ.get("PROXYSUB_VANTAGE", "cn-hn-sandbox")
 DELAY_TIMEOUT_MS = 5000
 DELAY_CONCURRENCY = 16  # 2026-10-27：12→16，提高单轮覆盖（用户痛点「可用节点太少」）
 REAL_TRAFFIC_TIMEOUT_S = 8    # 真实下载硬超时预算（秒）
@@ -402,16 +407,52 @@ def upload_asset_with_retry(tag: str, staged: str,
     就继续——结果 clash 停在上一轮的 12 个旧节点、其余格式已是新的 2 个，
     用户订阅各格式内容不一致（clash 用户仍在用废节点）。GitHub Release
     上传偶发 5xx 属常态，必须退避重试。
+
+    实现走 gh_compat（gh 优先、REST 兜底）：本机无 gh 时仍可上传，
+    沙箱里 gh 偶发 5xx/挂起时也多一条可用路径。
     """
     last = ""
     for i in range(max(1, attempts)):
-        r = run(["gh", "release", "upload", tag, "--clobber", staged])
-        if r.returncode == 0:
+        ok, err = gh_compat.upload_asset(tag, staged)
+        if ok:
             return True, ""
-        last = (r.stderr or "").strip()[:200]
+        last = (err or "").strip()[:200]
         if i < attempts - 1:
             time.sleep(2 * (i + 1))
     return False, last
+
+
+def _upload_report(tag: str, path: str) -> None:
+    """上传 verification_report.json（CI 判定主资产所有权的唯一来源）。
+
+    失败必须显式告警：CI 读不到新报告就会认为本 vantage 没有产出，进而兜底
+    把候选集覆盖主资产（2026-10-17「五层根因」之一），静默失败代价极高。
+    """
+    ok, err = gh_compat.upload_asset(tag, path)
+    if not ok:
+        log(f"警告: 上传 {os.path.basename(path)} 失败: {err}")
+
+
+def _assets_from_prev_report(report_path: str) -> list[dict]:
+    """从上一轮 verification_report.json 反推主/第二资产名（任务#121 兜底）。
+
+    `main_assets` 是上一轮**实际发布成功**的资产名列表，`degraded_asset` 是
+    第二资产——两者合起来足以支撑 carryover 加载，不需要再查 Release API。
+    读取失败一律返回空列表（调用方按「无 carryover」降级，行为与改动前一致）。
+    """
+    try:
+        with open(report_path, encoding="utf-8") as f:
+            rep = json.load(f)
+    except (OSError, ValueError):
+        return []
+    names: list[str] = []
+    for n in (rep.get("main_assets") or []):
+        if isinstance(n, str) and n:
+            names.append(n)
+    deg = rep.get("degraded_asset")
+    if isinstance(deg, str) and deg:
+        names.append(deg)
+    return [{"name": n} for n in dict.fromkeys(names)]
 
 
 def gh_download(tag: str, pattern: str, dest: str, retries: int = 1) -> bool:
@@ -428,35 +469,19 @@ def gh_download(tag: str, pattern: str, dest: str, retries: int = 1) -> bool:
     TimeoutExpired**，整函数重试 `retries` 次，最终仍失败**优雅返回 False**
     （绝不抛出），由调用方决定降级策略（如 rescue 缺失则退化为 carryover 实測）。
     """
-    token = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN") or ""
-    repo = os.environ.get("PROXYSUB_REPO", "SHUNZI88/proxysub")
-    url = f"https://github.com/{repo}/releases/download/{tag}/{pattern}"
     last_err = "未执行"
     for attempt in range(retries + 1):
-        # 1) 优先 gh（超时/失败均交由 curl 兜底）
+        # 单一入口交给 gh_compat：gh 优先、失败自动回退直链下载。
+        # 直链对公开仓库免 token——这是本机（Windows，无 gh）能跑通实测的前提。
         try:
-            r = run(["gh", "release", "download", tag, "-p", pattern, "-O", dest, "--clobber"],
-                    timeout=60)
-            if r.returncode == 0 and os.path.exists(dest) and os.path.getsize(dest) > 0:
+            if gh_compat.download_asset(tag, pattern, dest, timeout=60):
                 return True
+            last_err = "gh 与直链均失败"
         except subprocess.TimeoutExpired:
-            last_err = "gh 超时"
-            log(f"提示: gh 下载 {pattern} 超时，回退 curl")
-        except Exception as e:
-            last_err = f"gh 异常: {e!r}"
-        # 2) 回退 curl（务必显式捕获超时，绝不向上抛出）
-        try:
-            cr = run(["curl", "-fsSL", "--connect-timeout", "10", "--max-time", "45",
-                      "-H", f"Authorization: Bearer {token}", "-o", dest, url],
-                     timeout=60)
-            if cr.returncode == 0 and os.path.exists(dest) and os.path.getsize(dest) > 0:
-                return True
-            last_err = f"curl 返回码 {cr.returncode}"
-        except subprocess.TimeoutExpired:
-            last_err = "curl 超时"
-            log(f"提示: curl 下载 {pattern} 超时")
-        except Exception as e:
-            last_err = f"curl 异常: {e!r}"
+            last_err = "下载超时"
+            log(f"提示: 下载 {pattern} 超时")
+        except Exception as e:  # noqa: BLE001 - 下载失败绝不向上抛
+            last_err = f"{type(e).__name__}: {e}"
         if attempt < retries:
             log(f"下载 {pattern} 失败（{last_err}），8s 后重试（第 {attempt + 2}/{retries + 1} 次）")
             time.sleep(8)
@@ -464,8 +489,11 @@ def gh_download(tag: str, pattern: str, dest: str, retries: int = 1) -> bool:
     return False
 
 
-def auth_selfcheck() -> bool:
-    """鉴权自检（grok 2.3）：GH_TOKEN 缺失或 gh 未登录则立即失败，避免空转。
+def auth_selfcheck(required: bool = True) -> bool:
+    """鉴权自检（grok 2.3）：GH_TOKEN 缺失或凭据无效则立即失败，避免空转。
+
+    `required=False` 用于 `--dry-run`：本机验证链路时常常还没有 PAT，而
+    匿名足以读取公开 Release；dry-run 本来就不发布，不必被 token 挡住。
 
     返回 True 表示可继续；False 表示应非 0 退出。
 
@@ -485,6 +513,9 @@ def auth_selfcheck() -> bool:
         except OSError:
             token = None
     if not token:
+        if not required:
+            log("提示: dry-run 且无 token——仅匿名读取公开 Release，本轮不发布")
+            return True
         log(
             "熔断: 环境变量 GH_TOKEN/GITHUB_TOKEN 均未设置，且持久化路径"
             f" {PERSISTED_PAT_PATH} 不存在——无法读写 Release，中止。\n"
@@ -497,18 +528,18 @@ def auth_selfcheck() -> bool:
             "  完整规则见仓库根目录 AGENTS.md。"
         )
         return False
-    # gh 自动从 GH_TOKEN 读取；auth status 验证 token 实际可用（含 401 检测）
-    r = run(["gh", "auth", "status"], timeout=60)
-    if r.returncode != 0:
-        # 裁剪输出，避免把 token 细节打印到日志
-        msg = (r.stderr or r.stdout).strip().splitlines()
-        tail = "；".join(msg[-3:]) if msg else "gh auth status 异常"
+    # gh 自动从 GH_TOKEN 读取；有 gh 时用 `gh auth status`（含 401 检测），
+    # 没有 gh（本机 Windows）时打一次 REST /user——同一件事两种通道，
+    # 否则本机连「token 是否可用」都无法自检。
+    ok, detail = gh_compat.auth_ok()
+    if not ok:
         log(
-            f"熔断: gh 鉴权失败（GH_TOKEN 可能失效/权限不足）——中止。{tail}\n"
-            f"  【给 AI 协作者】token 可能已轮换，请核对 {PERSISTED_PAT_PATH} 是否为最新，"
+            f"熔断: 鉴权失败（{detail}）——中止。\n"
+            f"  【给 AI 协作者】token 可能已失效/轮换，请核对 {PERSISTED_PAT_PATH} 是否为最新，"
             "并参考 AGENTS.md 的凭据规则。"
         )
         return False
+    log(f"鉴权自检通过: {detail}")
     return True
 
 
@@ -533,13 +564,12 @@ def _official_url_map() -> dict:
 
 
 def release_assets(tag: str) -> list[dict]:
-    r = run(["gh", "release", "view", tag, "--json", "assets"])
-    if r.returncode != 0:
-        return []
-    try:
-        return json.loads(r.stdout).get("assets", [])
-    except Exception:
-        return []
+    """列出 tag 下的资产。走 gh_compat：有 gh 用 gh，没有走 REST。
+
+    原实现直连 `gh release view`，Windows 本机没有 gh 时恒返回空列表，
+    于是 carryover 全丢、只能测候选集——这是「搬到家宽」必须解掉的绑定。
+    """
+    return gh_compat.release_assets(tag)
 
 
 def parse_ts(s: str) -> datetime.datetime | None:
@@ -1008,19 +1038,79 @@ def dedup_nodes(groups: list[tuple[str, list[dict]]]) -> list[dict]:
 
 
 # ---------------------------------------------------------------- mihomo
+def mihomo_asset(plat: str | None = None) -> tuple[str, str]:
+    """返回 (Release 资产名, 解包后二进制文件名)。
+
+    平台差异（任务#121）：
+      * Linux 沙箱：`mihomo-linux-amd64-vX.gz`（原样，不改沙箱行为）；
+      * Windows 本机：`mihomo-windows-amd64-compatible-vX.zip`——
+        选 `compatible` 而非 amd64-v3，因为 v3 需要 AVX2，老 CPU（Ivy Bridge
+        级别的 i7-3770）跑 v3 会直接 illegal instruction；compatible 是官方
+        提供的最大兼容构建，性能足够拨测。
+
+    `plat` 显式传入时按该平台返回（测试用），默认按当前系统判断。
+    """
+    ver = MIHOMO_VERSION
+    if plat is None:
+        plat = "nt" if os.name == "nt" else "posix"
+    if plat == "nt":
+        arch = platform.machine().lower()
+        if arch in ("arm64", "aarch64"):
+            return f"mihomo-windows-arm64-{ver}.zip", "mihomo.exe"
+        if arch in ("x86", "i386", "i686"):
+            return f"mihomo-windows-386-{ver}.zip", "mihomo.exe"
+        return f"mihomo-windows-amd64-compatible-{ver}.zip", "mihomo.exe"
+    return f"mihomo-linux-amd64-{ver}.gz", "mihomo"
+
+
+def _extract_mihomo(archive: str, dest: str, asset_name: str) -> bool:
+    """解包 mihomo（zip 或 gz）。用标准库而非外部 `gunzip`/`unzip`：
+
+    Windows 上没有 `gunzip`，原实现（curl + gunzip）在那边必然失败；
+    标准库两条路都能走，沙箱行为不变。
+    """
+    try:
+        if asset_name.endswith(".zip"):
+            with zipfile.ZipFile(archive) as zf:
+                cand = [n for n in zf.namelist()
+                        if os.path.basename(n).lower().startswith("mihomo")]
+                if not cand:
+                    return False
+                with zf.open(cand[0]) as src, open(dest, "wb") as out:
+                    shutil.copyfileobj(src, out)
+        else:
+            with gzip.open(archive, "rb") as src, open(dest, "wb") as out:
+                shutil.copyfileobj(src, out)
+        return os.path.exists(dest) and os.path.getsize(dest) > 0
+    except (OSError, zipfile.BadZipFile, EOFError):
+        return False
+
+
 def ensure_mihomo(workdir: str) -> str | None:
-    local = "/usr/local/bin/mihomo"
-    if os.path.exists(local):
-        v = run([local, "-v"])
-        if v.returncode == 0 and MIHOMO_VERSION.lstrip("v") in v.stdout + v.stderr:
-            return local
-    dest = os.path.join(workdir, "mihomo")
+    """找到或下载可用的 mihomo，返回可执行文件路径（失败返回 None）。"""
+    _, exe = mihomo_asset()
+    for local in ("/usr/local/bin/mihomo", os.path.join(workdir, exe)):
+        if os.path.exists(local):
+            v = run([local, "-v"])
+            if (v.returncode == 0
+                    and MIHOMO_VERSION.lstrip("v") in (v.stdout or "") + (v.stderr or "")):
+                return local
+    dest = os.path.join(workdir, exe)
+    asset, _ = mihomo_asset()
     url = (f"https://github.com/MetaCubeX/mihomo/releases/download/"
-           f"{MIHOMO_VERSION}/mihomo-linux-amd64-{MIHOMO_VERSION}.gz")
+           f"{MIHOMO_VERSION}/{asset}")
+    archive = f"{dest}.dl"
     for i in range(3):
-        r = run(["curl", "-fsSL", "--retry", "2", "-o", f"{dest}.gz", url], timeout=180)
-        if r.returncode == 0 and run(["gunzip", "-f", f"{dest}.gz"]).returncode == 0:
-            os.chmod(dest, 0o755)
+        # 下载交给 gh_compat.download_url：直连优先、失败走镜像。
+        # 家宽直连 GitHub 资产常被挂住，没有镜像层这一步本机永远拿不到 mihomo。
+        ok = gh_compat.download_url(url, archive, max_time=420)
+        if ok and _extract_mihomo(archive, dest, asset):
+            if os.name != "nt":
+                os.chmod(dest, 0o755)
+            try:
+                os.unlink(archive)
+            except OSError:
+                pass
             return dest
         time.sleep(3 * (i + 1))
     return None
@@ -1127,7 +1217,12 @@ def _curl_speed(proxy: str, url: str, budget: int) -> dict:
     整体硬超时，%{speed_download} 即平均速率（B/s）。
     """
     try:
-        r = run(["curl", "-s", "-o", "/dev/null",
+        # 用 os.devnull 而不是硬编码 "/dev/null"（任务#121）：Windows 上没有
+        # /dev/null，curl 打不开输出文件会以写错误码退出、size_download 恒为 0
+        # ——实测第一轮本机 dry-run 因此把 29 个初筛通过节点全判死（0/29），
+        # 而它们在家宽上其实是通的。这类"平台差异伪装成节点死亡"的坑，
+        # 只有在用户真实网络上跑一遍才会暴露。
+        r = run(["curl", "-s", "-o", os.devnull,
                  "-w", "%{size_download}|%{speed_download}|%{http_code}",
                  "--proxy", proxy, "--max-time", str(budget), url],
                 timeout=budget + 6)
@@ -1721,10 +1816,25 @@ def write_verified_outputs(nodes: list[dict], workdir: str,
 
 
 # ---------------------------------------------------------------- 主流程
+def default_workdir() -> str:
+    """工作目录默认值（任务#121 跨平台）。
+
+    沙箱沿用 /tmp/cn_probe（历史日志、检查点、节点库都在那儿，不能改）；
+    Windows 本机没有 /tmp，改用系统临时目录，避免在盘根写 D:/tmp 这种
+    半吊子路径。两处都可用 CN_PROBE_WORKDIR 覆盖。
+    """
+    env = os.environ.get("CN_PROBE_WORKDIR")
+    if env:
+        return env
+    if os.name == "nt":
+        return os.path.join(tempfile.gettempdir(), "cn_probe")
+    return "/tmp/cn_probe"
+
+
 def build_parser() -> argparse.ArgumentParser:
-    ap = argparse.ArgumentParser(description="中国出口节点实测（沙箱侧）")
+    ap = argparse.ArgumentParser(description="中国出口节点实测（沙箱侧 / 本机家宽侧）")
     ap.add_argument("--tag", default=default_tag())
-    ap.add_argument("--workdir", default=os.environ.get("CN_PROBE_WORKDIR", "/tmp/cn_probe"))
+    ap.add_argument("--workdir", default=default_workdir())
     ap.add_argument("--max-wait", type=int, default=PENDING_POLL_WINDOW_MIN,
                     help="轮次闸门最长等待分钟（受任务 1800s 超时约束，默认 20）")
     ap.add_argument("--budget", type=int, default=TASK_BUDGET_S,
@@ -1749,19 +1859,18 @@ def main() -> int:
     # 持锁那个进程的身份信息冲掉，事后无从回答「谁在持锁」。
     lock_path = os.path.join(workdir, "cn_probe.lock")
     lock_fd = open(lock_path, "a+", encoding="utf-8")
-    if fcntl is not None:
+    if not xlock.supported():  # pragma: no cover - 极简环境
+        log("警告: 本平台无可用文件锁，单实例保护失效（不会并发发布，但请勿并发启动）")
+    elif not xlock.acquire(lock_fd):
+        holder = ""
         try:
-            fcntl.flock(lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except OSError:
-            holder = ""
-            try:
-                lock_fd.seek(0)
-                holder = lock_fd.read().strip()
-            except (OSError, ValueError):
-                pass
-            log("另一实例正在运行（单实例锁），退出"
-                + (f"；持锁者: {holder}" if holder else "；锁文件无持有者信息"))
-            return 0
+            lock_fd.seek(0)
+            holder = lock_fd.read().strip()
+        except (OSError, ValueError):
+            pass
+        log("另一实例正在运行（单实例锁），退出"
+            + (f"；持锁者: {holder}" if holder else "；锁文件无持有者信息"))
+        return 0
     # 持锁者身份落盘（任务#120）：守护与排障需要回答「谁在持锁、哪一轮、何时
     # 开始」。此前锁文件恒空，只能靠 pgrep 猜——而 pgrep -f 既会自匹配调用方
     # 命令行，也把沙箱冻结（SIGSTOP）的进程算作「在跑」，两种误判都发生过。
@@ -1775,7 +1884,7 @@ def main() -> int:
         pass
 
     # 0.5) 鉴权自检（grok 2.3）：GH_TOKEN 失效则立即退出，避免空转 20 分钟
-    if not auth_selfcheck():
+    if not auth_selfcheck(required=not args.dry_run):
         return 3
 
     # 1) 自检：沙箱自身网络
@@ -1843,6 +1952,15 @@ def main() -> int:
 
     # 3) 测试集 = carryover ∪ pending ∪ rescue
     assets = release_assets(tag)
+    if not assets:
+        # 兜底（任务#121）：匿名 API 限流（60 次/小时，共享出口 IP 实测打满）
+        # 或 gh 挂起时，资产列表会拿到空——carryover 随之全丢，只能测候选集，
+        # 发布集立刻塌成个位数。上一轮报告里本来就记着发布过的资产名
+        # （main_assets / degraded_asset），据此反推即可，无需再打一次 API。
+        assets = _assets_from_prev_report(prev_report)
+        if assets:
+            log(f"警告: release 资产列表获取失败，改用上轮报告的 main_assets "
+                f"反推（{len(assets)} 个资产名），carryover 不受影响")
     main_clash = next((a["name"] for a in assets if ASSET_RE.match(a.get("name", ""))
                        and a["name"].endswith("_c.yaml")), None)
     carry = load_carryover(os.path.join(workdir, "main_clash.yaml")) if (
@@ -2232,7 +2350,7 @@ def main() -> int:
         "tested_round": resolve_tested_round(doc_round if fresh else None,
                                              last_round),
         "generated_at": stamp.strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "vantage": "cn-hn-sandbox",
+        "vantage": VANTAGE_LABEL,
         "exit_ip": _sandbox_ip(),
         # 语义说明（口径修正，2026-10-15）：us_ok 与 cn.ok 是**两次不同测量**，
         # 不可当同一维度的重复观测。二者的探测目标/超时/判定标准均不同：
@@ -2330,7 +2448,7 @@ def main() -> int:
         with open(report_path, "w", encoding="utf-8") as f:
             json.dump(report, f, ensure_ascii=False, indent=1)
         if not args.dry_run:
-            run(["gh", "release", "upload", tag, "--clobber", report_path])
+            _upload_report(tag, report_path)
         return 0
 
     # 8) 发布验证集到主资产（p_* 随机名，订阅永久地址不变）
@@ -2387,7 +2505,7 @@ def main() -> int:
             report["degraded_count"] = len(deg_sorted)
         else:
             log(f"警告: 第二资产上传失败（已重试）: {err}")
-    run(["gh", "release", "upload", tag, "--clobber", report_path])
+    _upload_report(tag, report_path)
     report["published"] = bool(uploaded)
     report["main_assets"] = uploaded
     # 任务#116：记录上传失败的格式，便于排查「各格式内容不一致」
@@ -2422,13 +2540,15 @@ def main() -> int:
         log(f"警告: 节点库存档失败（不影响发布）: {e}")
     with open(report_path, "w", encoding="utf-8") as f:
         json.dump(report, f, ensure_ascii=False, indent=1)
-    run(["gh", "release", "upload", tag, "--clobber", report_path])
+    _upload_report(tag, report_path)
     # 轮转：保留本轮消费的待测文档一个世代（pending_probe.prev.json）
     if fresh and os.path.exists(pend_path):
         prev_path = os.path.join(workdir, "pending_probe.prev.json")
         shutil.copyfile(pend_path, prev_path)
-        run(["gh", "release", "upload", tag, "--clobber",
-             f"{prev_path}#pending_probe.prev.json"])
+        _ok, _err = gh_compat.upload_asset(
+            tag, prev_path, name="pending_probe.prev.json")
+        if not _ok:
+            log(f"警告: 上传 pending_probe.prev.json 失败: {_err}")
     # 学习回写（任务#117）：沙箱每轮实测结果**立即**折回进化数据，不再只依赖
     # CI 的 daily-update。实证：source_scores.json 里 26 个源的 cn_last 中有
     # 16 个停在 10-19~10-28（超 CN_DECISION_MAX_AGE_S=48h），cn_fetch_tilt 全部

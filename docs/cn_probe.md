@@ -298,3 +298,49 @@ python3 scripts/round_guard.py note-result --rc 0   # 成败按「资产是否�
 
 **回归防线**：`tests/test_round_guard.py::test_guardians_do_not_reintroduce_pgrep_or_start_mark`
 直接扫守护源码的可执行部分，禁止 `pgrep -f` 与 `.last_round_start` 复辟。
+
+## 11. 本机家宽实测（任务#121，2026-11-05）
+
+> 动机不是"换台机器跑"，而是**消灭一整类误判**：项目一路记录的
+> 「沙箱测着活、本地用着死」「沙箱路径与家宽不等价」，根源都是测量点不在
+> 用户真实网络上。把实测搬到用户自己家宽，这道系统性偏差直接消失。
+
+### 11.1 需要解掉的四个绑定
+
+| 绑定 | 沙箱形态 | 本机（Windows）形态 | 解法 |
+|---|---|---|---|
+| mihomo 二进制 | `mihomo-linux-amd64-vX.gz` + `gunzip` | `mihomo-windows-amd64-compatible-vX.zip`（v3 需 AVX2，老 CPU 崩） | `mihomo_asset()` 按平台选产物；`_extract_mihomo()` 用标准库 zip/gzip，不再依赖外部命令 |
+| GitHub 读写 | `gh` CLI | 无 `gh` | `scripts/gh_compat.py`：有 gh 用 gh，没有走 REST（上传=先删同名再 POST） |
+| 单实例锁 | `fcntl.flock` | Windows 无 fcntl | `scripts/xlock.py`：POSIX flock / Windows `msvcrt.locking` 统一 |
+| 下载通道 | github.com 直连正常 | 直连**拉不动**（20s 内 0 字节） | `PROXYSUB_GH_MIRRORS` 镜像回退（默认 ghfast.top / gh-proxy.com），仅用于**公开资产**，API 与带 token 请求绝不走镜像 |
+
+### 11.2 本机实测怎么跑
+
+```bash
+# 手动一轮（不发布，先验证链路）
+python scripts/cn_probe.py --dry-run --budget 900 --max-wait 3
+
+# 定时一轮（受 round_guard 决策：资产龄期 / 指数退避 / 锁探测）
+python scripts/local_round.py --budget 1800
+
+# 状态自查
+python scripts/round_guard.py status --workdir <workdir>
+```
+
+Windows 任务计划程序定时（每小时，与沙箱 6 轮/天的节律对齐靠决策层控制）：
+
+```
+schtasks /create /tn proxysub-cn-probe /sc hourly /mo 1 /f ^
+  /tr "python D:\path\to\proxysub\scripts\local_round.py"
+```
+
+### 11.3 与沙箱的关系
+
+* **vantage 标签可区分**：报告 `vantage` 默认 `cn-hn-sandbox`，本机用
+  `PROXYSUB_VANTAGE=cn-home` 覆盖——两个 vantage 的通过率必须分开统计，
+  否则"沙箱 3%、家宽 10%"这种关键证据会被混成一个数字；
+* **不冲突**：两边都用同一把 `cn_probe.lock`？不——两个 vantage 各自有自己的
+  workdir，锁互不相干；谁发布谁持有主资产由报告里的 `main_asset_published_at`
+  决定（CI 侧 `verification_fresh` 只看新鲜度）；
+* **家宽优先**：当两边都在跑时，家宽的结论更接近用户实际体验；沙箱保留作
+  冗余（家宽断网/关机时不断供）。

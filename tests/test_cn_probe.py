@@ -599,12 +599,12 @@ def test_auth_selfcheck_falls_back_to_persisted_pat(monkeypatch, tmp_path):
     pat = tmp_path / "github_pat"
     pat.write_text("ghp_from_file\n", encoding="utf-8")
     monkeypatch.setattr(cn_probe, "PERSISTED_PAT_PATH", str(pat))
-    with mock.patch.object(
-        cn_probe, "run",
-        return_value=subprocess.CompletedProcess(["gh"], 0, stdout="ok", stderr=""),
-    ):
+    # 实现已下沉到 gh_compat（gh 优先、无 gh 走 REST，任务#121），
+    # 这里只需守住「env 缺失时能从持久化 PAT 兜底并写回环境变量」。
+    with mock.patch.object(cn_probe.gh_compat, "auth_ok",
+                           return_value=(True, "ok")):
         assert cn_probe.auth_selfcheck() is True
-    # 兜底成功后应写回环境变量，供后续 gh/curl 调用复用
+    # 兜底成功后应写回环境变量，供后续 REST/gh 调用复用
     assert cn_probe.os.environ.get("GH_TOKEN") == "ghp_from_file"
 
 
@@ -620,69 +620,56 @@ def test_auth_selfcheck_no_token_anywhere(monkeypatch, tmp_path):
 def test_auth_selfcheck_gh_status_failure(monkeypatch):
     """GH_TOKEN 存在但 gh auth status 失败（如 401 失效）应判失败。"""
     monkeypatch.setenv("GH_TOKEN", "ghp_dummy")
-    with mock.patch.object(
-        cn_probe, "run",
-        return_value=subprocess.CompletedProcess(
-            ["gh"], 1, stdout="", stderr="graphql: 401 Unauthorized"),
-    ):
+    with mock.patch.object(cn_probe.gh_compat, "auth_ok",
+                           return_value=(False, "REST /user HTTP 401")):
         assert cn_probe.auth_selfcheck() is False
 
 
 def test_auth_selfcheck_ok(monkeypatch):
     """GH_TOKEN 存在且 gh auth status 成功应判通过。"""
     monkeypatch.setenv("GH_TOKEN", "ghp_dummy")
-    with mock.patch.object(
-        cn_probe, "run",
-        return_value=subprocess.CompletedProcess(
-            ["gh"], 0, stdout="Logged in to github.com", stderr=""),
-    ):
+    with mock.patch.object(cn_probe.gh_compat, "auth_ok",
+                           return_value=(True, "REST /user OK（SHUNZI88）")):
         assert cn_probe.auth_selfcheck() is True
 
 
-def test_gh_download_falls_back_to_curl(monkeypatch, tmp_path):
-    """回归（grok 2.4）：gh 失败时应自动回退 curl 并成功下载。"""
-    dest = tmp_path / "asset.json"
-    calls = {"n": 0}
+def test_gh_download_delegates_to_compat(monkeypatch, tmp_path):
+    """回归（grok 2.4 / 任务#121）：下载统一交给 gh_compat（gh 优先、直链+镜像兜底）。
 
-    def fake_run(cmd, **kw):
-        calls["n"] += 1
-        if cmd[0] == "gh":
-            return subprocess.CompletedProcess(cmd, 1, stdout="", stderr="timeout")
-        # curl 回退：真写一个文件模拟下载成功
-        dest.write_text('{"ok": true}')
-        return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
-
-    monkeypatch.setenv("GH_TOKEN", "ghp_dummy")
-    with mock.patch.object(cn_probe, "run", side_effect=fake_run):
-        assert cn_probe.gh_download("sub", "asset.json", str(dest)) is True
-    assert dest.exists()
-    assert calls["n"] == 2  # gh 一次 + curl 一次
-
-
-def test_gh_download_timeout_falls_back_to_curl(monkeypatch, tmp_path):
-    """回归（2026-10-16）：gh 挂起表现为抛 TimeoutExpired 异常，而非非零返回码。
-
-    早期实现只判 returncode、未捕获该异常，于是一次网络抖动就让 gh_download
-    抛异常、整脚本崩溃，curl 回退永不执行——导致 pending_probe.json / 主资产
-    等关键下载静默失败，carryover=0、实测集也发不出。本测试钉死「gh 超时
-    也必须回退 curl 并成功」。
+    回退细节在 tests/test_gh_compat.py 里逐条覆盖；这里只钉死委托契约——
+    参数原样透传、成功即返回 True。
     """
     dest = tmp_path / "asset.json"
-    calls = {"n": 0}
+    seen = {}
 
-    def fake_run(cmd, **kw):
-        calls["n"] += 1
-        if cmd[0] == "gh":
-            # 真实场景：gh 长时间挂起 -> subprocess 超时抛异常
-            raise subprocess.TimeoutExpired(cmd, kw.get("timeout", 90))
-        dest.write_text('{"ok": true}')
-        return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
+    def fake_download(tag, pattern, d, timeout=60):
+        seen.update(tag=tag, pattern=pattern, dest=d)
+        with open(d, "w", encoding="utf-8") as f:
+            f.write('{"ok": true}')
+        return True
 
-    monkeypatch.setenv("GH_TOKEN", "ghp_dummy")
-    with mock.patch.object(cn_probe, "run", side_effect=fake_run):
-        assert cn_probe.gh_download("sub", "asset.json", str(dest)) is True
+    monkeypatch.setattr(cn_probe.gh_compat, "download_asset", fake_download)
+    assert cn_probe.gh_download("sub", "asset.json", str(dest)) is True
+    assert seen == {"tag": "sub", "pattern": "asset.json", "dest": str(dest)}
     assert dest.exists()
-    assert calls["n"] == 2  # gh(超时异常) 一次 + curl 一次
+
+
+def test_gh_download_timeout_never_raises(monkeypatch, tmp_path):
+    """回归（2026-10-16）：下载超时表现为 TimeoutExpired **异常**，不是返回码。
+
+    早期实现只判 returncode，一次网络抖动就让整脚本崩溃、回退永不执行——
+    pending_probe.json / 主资产静默丢失、carryover=0。契约：底层抛什么都吞掉，
+    gh_download 只能返回 False。
+    """
+    dest = tmp_path / "asset.json"
+
+    def boom(*a, **k):
+        raise subprocess.TimeoutExpired("curl", 60)
+
+    monkeypatch.setattr(cn_probe.gh_compat, "download_asset", boom)
+    monkeypatch.setattr(cn_probe.time, "sleep", lambda s: None)
+    assert cn_probe.gh_download("sub", "asset.json", str(dest), retries=0) is False
+    assert not dest.exists()
 
 
 def test_gh_download_both_fail_returns_false(monkeypatch, tmp_path):
@@ -1223,26 +1210,22 @@ def test_upload_retries_on_5xx(monkeypatch, tmp_path):
     """任务#116：Release 上传遇 GitHub 5xx 必须退避重试。
     实证 2026-11-04 upload clash 返回 502 未重试，clash 资产停在上一轮的
     12 个旧节点、其余格式已是新的 2 个——用户订阅各格式内容不一致。"""
-    import types
     calls = {"n": 0}
 
-    def fake_run(cmd, timeout=120, **kw):
+    def fake_upload(tag, path, name=None, timeout=180):
         calls["n"] += 1
         ok = calls["n"] >= 3          # 前两次 502，第三次成功
-        return types.SimpleNamespace(
-            returncode=0 if ok else 1,
-            stderr="" if ok else "HTTP 502: Server Error")
+        return (True, "") if ok else (False, "HTTP 502: Server Error")
 
-    monkeypatch.setattr(cn_probe, "run", fake_run)
+    monkeypatch.setattr(cn_probe.gh_compat, "upload_asset", fake_upload)
     monkeypatch.setattr(cn_probe.time, "sleep", lambda s: None)
     ok, err = cn_probe.upload_asset_with_retry("tag", str(tmp_path / "a.yaml"))
     assert ok is True and err == "" and calls["n"] == 3
 
 
 def test_upload_retry_exhausted(monkeypatch, tmp_path):
-    import types
-    monkeypatch.setattr(cn_probe, "run", lambda *a, **k: types.SimpleNamespace(
-        returncode=1, stderr="HTTP 502: Server Error"))
+    monkeypatch.setattr(cn_probe.gh_compat, "upload_asset",
+                        lambda *a, **k: (False, "HTTP 502: Server Error"))
     monkeypatch.setattr(cn_probe.time, "sleep", lambda s: None)
     ok, err = cn_probe.upload_asset_with_retry("tag", "x.yaml", attempts=2)
     assert ok is False and "502" in err
