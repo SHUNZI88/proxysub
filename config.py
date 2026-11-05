@@ -135,6 +135,24 @@ PROTOCOL_WHITELIST = {
     "tuic",
     "anytls",
     "hysteria",
+    # 任务#124（2026-11-05）：ss 放行 AEAD 档。原注释把 ss/ssr/vmess 一并当
+    # "掺假 legacy 垃圾"排除，但家宽实测给出了反例：
+    #   抽样 60 个 ss → 初筛通过 5（8.3%），且 5/5 有真实流量（终筛率 100%）；
+    #   同轮 80 个 vmess → 0 通过；60 个 vless → 0 通过（整体口径 3.3%）。
+    # 即：vmess 排除是对的，ss 被误伤，且质量优于 vless。只放 AEAD/2022 档，
+    # rc4/des/table/cfb 等弱加密仍拒（见 SS_AEAD_CIPHERS）。
+    "ss",
+}
+
+# ss 允许的加密方式（AEAD + 2022 系列）。实证 Eternity 源 129 个 ss 里
+# 94% 是 chacha20-ietf-poly1305 / aes-gcm，其余 rc4-md5 / aes-cfb 等弱加密
+# 一律拒绝——放行弱加密等于把安全评估的结论推翻。
+SS_AEAD_CIPHERS = {
+    "aes-128-gcm", "aes-192-gcm", "aes-256-gcm",
+    "chacha20-ietf-poly1305", "xchacha20-ietf-poly1305",
+    "aes-128-ccm", "aes-192-ccm", "aes-256-ccm",
+    "2022-blake3-aes-128-gcm", "2022-blake3-aes-256-gcm",
+    "2022-blake3-chacha20-poly1305",
 }
 # 标准 UUID（8-4-4-4-12 hex）
 UUID_RE = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.I)

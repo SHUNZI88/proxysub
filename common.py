@@ -38,6 +38,7 @@ from config import (  # 配置常量（P1-2 迁出）；仅导入本文件实际
     NETWORK_ALIASES,
     PROTOCOL_WHITELIST,
     SHORT_ID_RE,
+    SS_AEAD_CIPHERS,
     SUPPORTED_FLOWS,
     UDP_PROTOCOLS,
     UUID_RE,
@@ -193,6 +194,29 @@ def _gate_hysteria(p: dict) -> str | None:
         return "missing_credentials"
     return None
 
+def _gate_ss(proxy: dict) -> str | None:
+    """Shadowsocks 门槛（任务#124）：只放 AEAD/2022 加密，且必须有密码。
+
+    放行理由见 config.PROTOCOL_WHITELIST 注释（家宽实测 ss 通过率 8.3%、
+    终筛 100%）。拒弱加密的理由同样硬：rc4-md5 / aes-cfb / des 属已知不安全
+    构造，放进来等于推翻安全评估结论。
+    """
+    cipher = str(proxy.get("cipher") or "").lower().strip()
+    if cipher not in SS_AEAD_CIPHERS:
+        return f"ss_cipher_rejected:{cipher or 'missing'}"
+    if not str(proxy.get("password") or "").strip():
+        return "ss_password_missing"
+    if not str(proxy.get("server") or "").strip():
+        return "ss_server_missing"
+    try:
+        port = int(proxy.get("port") or 0)
+    except (TypeError, ValueError):
+        port = 0
+    if not (0 < port <= 65535):
+        return "ss_port_invalid"
+    return None
+
+
 _PROTOCOL_GATES = {
     "hysteria2": _gate_hysteria2,
     "hy2": _gate_hysteria2,
@@ -201,6 +225,7 @@ _PROTOCOL_GATES = {
     "tuic": _gate_tuic,
     "anytls": _gate_generic_password,
     "hysteria": _gate_hysteria,
+    "ss": _gate_ss,
 }
 
 

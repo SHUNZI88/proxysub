@@ -77,3 +77,37 @@ def test_vmess_link_parsed_then_gated():
     assert nodes[0]["type"] == "vmess"
     # 静态门槛：vmess 不在白名单
     assert fc.protocol_gate_reason(nodes[0]).startswith("protocol_not_whitelisted")
+
+
+# ---------------------------------------------------------------- ss 放行（任务#124）
+def _ss(cipher="aes-256-gcm", password="pw", server="ss.example.com", port=8388):
+    return {"name": "SS", "type": "ss", "cipher": cipher, "password": password,
+            "server": server, "port": port}
+
+
+def test_ss_aead_passes_static_gate():
+    """家宽实测 ss 初筛通过率 8.3%、终筛 100%，质量优于 vless(3.3%)——
+    白名单一刀切排除 ss 是产量的人为天花板，故放行 AEAD 档。"""
+    for cipher in ("aes-256-gcm", "chacha20-ietf-poly1305",
+                   "2022-blake3-aes-128-gcm"):
+        assert fc.protocol_gate_reason(_ss(cipher=cipher)) is None
+
+
+def test_ss_weak_cipher_still_rejected():
+    """rc4/des/cfb 属已知不安全构造，放行等于推翻安全评估结论。"""
+    for cipher in ("rc4-md5", "aes-256-cfb", "des-cfb", "", "none"):
+        assert fc.protocol_gate_reason(_ss(cipher=cipher)).startswith(
+            ("ss_cipher_rejected",))
+
+
+def test_ss_requires_password_and_port():
+    assert fc.protocol_gate_reason(_ss(password=" ")) == "ss_password_missing"
+    assert fc.protocol_gate_reason(_ss(port=0)) == "ss_port_invalid"
+    assert fc.protocol_gate_reason(_ss(port=70000)) == "ss_port_invalid"
+
+
+def test_vmess_still_excluded_by_evidence():
+    """vmess 家宽实测 0/80 通过——排除它是被数据支持的决定，不得顺手放开。"""
+    node = {"name": "V", "type": "vmess", "server": "v.example.com", "port": 443,
+            "uuid": "b831381d-6324-4d53-ad4f-8cda48b30811"}
+    assert fc.protocol_gate_reason(node).startswith("protocol_not_whitelisted")
