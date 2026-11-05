@@ -1536,8 +1536,8 @@ def test_best_source_flow_empty():
 
 def test_select_usable_promotions_filters_correctly():
     nodes, results = _usable_fixture()
-    got = [n["name"] for n in cn_probe.select_usable_promotions(
-        nodes, results, cap=3000)]
+    got = [n["name"].removesuffix(cn_probe.USABLE_NAME_SUFFIX)
+           for n in cn_probe.select_usable_promotions(nodes, results, cap=3000)]
     assert got == ["good"]
 
 
@@ -1552,6 +1552,25 @@ def test_select_usable_promotions_thresholds_are_config_driven(monkeypatch):
     nodes, results = _usable_fixture()
     monkeypatch.setattr(cn_probe.config, "USABLE_MIN_BYTES", 20 * 1024)
     monkeypatch.setattr(cn_probe.config, "USABLE_MIN_BPS", 5 * 1024)
-    got = [n["name"] for n in cn_probe.select_usable_promotions(
-        nodes, results, cap=3000)]
+    got = [n["name"].removesuffix(cn_probe.USABLE_NAME_SUFFIX)
+           for n in cn_probe.select_usable_promotions(nodes, results, cap=3000)]
     assert set(got) == {"good", "tiny", "slow"}
+
+
+def test_usable_suffix_lands_in_published_proxy_name():
+    """回归：·慢 后缀必须写进 proxy.name，否则订阅里根本看不到。
+
+    2026-11-05 实测：13 个 via=usable_slow 的节点，订阅里名字一个 ·慢 都没有——
+    输出层取的是 n["proxy"]["name"]，只改 n["name"] 是空转。
+    """
+    n = {"fp": "f", "name": "HK 01", "origin": "carryover", "probe_name": "p_HK 01",
+         "proxy": {"name": "HK 01", "type": "vless"}, "final": False, "us_ok": False}
+    results = {"p_HK 01": {"ok": False, "latency_ms": 1200,
+                           "real_traffic": {"ok": False,
+                                            "sources": [{"bytes": 400 * 1024,
+                                                         "bps": 40 * 1024}]}}}
+    usable = cn_probe.select_usable_promotions([n], results)
+    assert len(usable) == 1
+    cfg = cn_probe.build_verified_config(usable, results)
+    names = [p["name"] for p in cfg["proxies"]]
+    assert any(x.endswith(cn_probe.USABLE_NAME_SUFFIX) for x in names), names

@@ -1747,6 +1747,15 @@ def select_usable_promotions(degraded: list[dict], results: dict,
         rt = res.get("real_traffic") or {}
         nb, nbps = best_source_flow(rt)
         if nb >= config.USABLE_MIN_BYTES and nbps >= config.USABLE_MIN_BPS:
+            # 打标与改名都在这里做（而非调用方）：输出层 build_verified_config
+            # 取的是 n["proxy"]["name"]，只改 n["name"] 不会出现在订阅里
+            # （2026-11-05 实测：13 个 via=usable_slow 的节点名字一个 ·慢 都没有）。
+            # 指纹忽略 name，改它不影响去重与 carryover 身份。
+            n["_usable_tier"] = True
+            if not str(n.get("name", "")).endswith(USABLE_NAME_SUFFIX):
+                n["name"] = f"{n['name']}{USABLE_NAME_SUFFIX}"
+                if isinstance(n.get("proxy"), dict):
+                    n["proxy"] = dict(n["proxy"], name=n["name"])
             out.append(n)
     return out
 
@@ -2367,11 +2376,7 @@ def main() -> int:
     # 名称加 `·慢` 后缀：用户一眼能分辨，客户端 url-test 也会把快的排前面，
     # 不必牺牲透明度换数量。
     _usable = select_usable_promotions(degraded, results)
-    if _usable:
-        for _n in _usable:
-            _n["_usable_tier"] = True
-            if not _n["name"].endswith(USABLE_NAME_SUFFIX):
-                _n["name"] = _n["name"] + USABLE_NAME_SUFFIX
+    if _usable:                      # 打标/改名已在 select_usable_promotions 内完成
         verified = sorted(verified + _usable,
                           key=lambda n: verified_rank(n, results, learning))
         _kept = {id(n) for n in _usable}
