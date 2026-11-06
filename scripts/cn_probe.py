@@ -884,7 +884,8 @@ def _epoch_of(stamp) -> float:
         return 0.0
 
 
-def save_node_library(nodes: list[dict], workdir: str, stamp: str) -> int:
+def save_node_library(nodes: list[dict], workdir: str, stamp: str,
+                      tested: list[tuple[dict, bool]] | None = None) -> int:
     """把本轮通过/降级节点的**完整配置**存档（任务#117），供后续轮次跨源复测。
 
     动机：carryover 只从「上一轮主资产 + 上一轮第二资产」滚动。节点连续两轮
@@ -894,6 +895,13 @@ def save_node_library(nodes: list[dict], workdir: str, stamp: str) -> int:
     这是「时多时少」的机制根源。
 
     只存通过/降级（有真实流量）的节点，不存从没通过的——避免库里沉淀垃圾。
+
+    **任务#130 补正**：原实现只存「本轮通过 + 慢档」，于是每个节点只要有一轮
+    没通过（晚高峰、抖动、过了新闸门），配置就彻底丢失——池子只减不增，
+    这是「订阅源锐减」的机制根源之一。现在 `tested` 把**本轮测过的全部节点**
+    都写进库（含失败的），只记 last_seen / fails，不增加 passes；
+    裁剪也改为按 last_seen，而非 last_pass——否则「最近没通过」的记录会被清掉，
+    等于又把复测入口堵回去。
     """
     path = _lib_path(workdir)
     lib: dict = {}
@@ -916,8 +924,23 @@ def save_node_library(nodes: list[dict], workdir: str, stamp: str) -> int:
         rec["passes"] = int(rec.get("passes") or 0) + 1
         lib[n["fp"]] = rec
         added += 1
+    # 全量测试记录：只更新存在性/计数，不增加 passes
+    for n, ok in (tested or []):
+        p = n.get("proxy")
+        if not isinstance(p, dict) or not p.get("server"):
+            continue
+        rec = lib.get(n["fp"]) or {"passes": 0}
+        rec.setdefault("proxy", dict(p))
+        rec["last_seen_ts"] = int(now)
+        rec["last_ok"] = bool(ok)
+        rec["fails"] = 0 if ok else int(rec.get("fails") or 0) + 1
+        lib[n["fp"]] = rec
+
+    # 裁剪按「最近一次见到」而不是「最近一次通过」：后者会把仍在复测中的
+    # 节点清掉，等于把复测入口重新堵死（任务#130）。
     cutoff = now - config.NODE_LIBRARY_MAX_AGE_D * 86400
-    lib = {k: v for k, v in lib.items() if _epoch_of(v.get("last_pass")) >= cutoff}
+    lib = {k: v for k, v in lib.items()
+           if max(_epoch_of(v.get("last_pass")), float(v.get("last_seen_ts") or 0)) >= cutoff}
     try:
         with open(path, "w", encoding="utf-8") as f:
             json.dump({"nodes": lib}, f, ensure_ascii=False)
@@ -944,17 +967,26 @@ def load_node_library(workdir: str, exclude_fps: set[str], *,
     except Exception:
         return []
     limit = config.NODE_LIBRARY_LOAD_LIMIT if limit is None else limit
+    now = time.time()
+    quiet_s = float(getattr(config, "NODE_LIBRARY_RETEST_H", 6)) * 3600
     cands = []
+    skipped_fresh = 0
     for fp, rec in lib.items():
         if fp in exclude_fps:
             continue
         p = rec.get("proxy")
         if not isinstance(p, dict) or not p.get("server"):
             continue
-        cands.append((int(rec.get("passes") or 0), fp, p))
-    cands.sort(key=lambda x: -x[0])
+        seen = float(rec.get("last_seen_ts") or 0) or _epoch_of(rec.get("last_pass"))
+        # 刚测过的让位：否则高 passes 的节点每轮都占满名额，新血永远进不来
+        if now - seen < quiet_s:
+            skipped_fresh += 1
+            continue
+        cands.append((int(rec.get("passes") or 0), seen, fp, p))
+    # 通过次数多优先；同档内「最久没测」优先（轮转，避免饿死）
+    cands.sort(key=lambda x: (-x[0], x[1]))
     out: list[dict] = []
-    for passes, fp, p in cands[:limit]:
+    for passes, seen, fp, p in cands[:limit]:
         exclude_fps.add(fp)
         out.append({
             "fp": fp,
@@ -964,9 +996,10 @@ def load_node_library(workdir: str, exclude_fps: set[str], *,
             "final": False,
             "us_ok": False,
         })
-    if out:
-        log(f"节点库: {len(out)} 个历史通过节点并入复测集"
-            f"（库内共 {len(lib)} 个，取通过次数前 {limit}）")
+    if out or skipped_fresh:
+        log(f"节点库: {len(out)} 个历史节点并入复测集"
+            f"（库内共 {len(lib)} 个；{skipped_fresh} 个刚测过让位，"
+            f"本轮取 {limit}，按通过次数+最久未测轮转）")
     return out
 
 
@@ -2798,8 +2831,13 @@ def main() -> int:
     # 跨源复测。没有这层，节点滑出最近两轮资产后配置即永久丢失（实测 781 个
     # 历史通过节点全部失联），订阅数量只能随源波动。
     try:
+        # 全量留痕（任务#130）：把本轮测过的**所有**节点（含失败/被闸门剔除的）
+        # 一并写库，只记 last_seen/fails、不增 passes——否则一轮没通过就永久失联。
+        _tested = [(n, bool((results.get(n["probe_name"]) or {}).get("ok")))
+                   for n in nodes]
         _lib_n = save_node_library(verified + degraded, workdir,
-                                   stamp.strftime("%Y-%m-%dT%H:%M:%SZ"))
+                                   stamp.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                                   tested=_tested)
         log(f"节点库存档: 本轮 {_lib_n} 个节点（通过 {len(verified)} + "
             f"慢档 {len(degraded)}）")
         # 任务#119：回传 release，避免沙箱重启后失忆；同时把用户验证池一并

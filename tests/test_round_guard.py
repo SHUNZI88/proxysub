@@ -228,9 +228,20 @@ def test_status_cli_reports_decision(tmp_path, capsys, monkeypatch):
 
 
 def test_decide_cli_exit_codes(tmp_path, monkeypatch, capsys):
+    """退出码契约：0=该跑，1=不跑。
+
+    时间戳必须相对「现在」构造——写死日期会在跨过那一刻后必然失败
+    （2026-11-06 实测：写死 11-05T13:00Z 的用例在次日全红，报「龄期 12.9h」）。
+    """
+    import datetime as _dt
     monkeypatch.setattr(rg, "probe_lock_state", lambda _w: {"state": "idle"})
-    _write_report(tmp_path, "2026-11-05T13:00:00Z")
+
+    def _ago(hours: float) -> str:
+        t = _dt.datetime.now(_dt.timezone.utc) - _dt.timedelta(hours=hours)
+        return t.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    _write_report(tmp_path, _ago(1))     # 1 小时前 → 新鲜，不跑
     assert rg.main(["decide", "--workdir", str(tmp_path), "--stale-h", "3"]) == 1
-    _write_report(tmp_path, "2026-11-05T00:24:00Z")
+    _write_report(tmp_path, _ago(20))    # 20 小时前 → 超龄，该跑
     assert rg.main(["decide", "--workdir", str(tmp_path), "--stale-h", "3"]) == 0
     capsys.readouterr()

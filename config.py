@@ -515,6 +515,10 @@ LONGEVITY_CN_PASS_RATE = 0.6    # 历史 CN 通过率下限（cn_history.cn_pass
 NODE_LIBRARY_FILE = "node_library.json"
 NODE_LIBRARY_MAX_AGE_D = 30      # 库内记录保留期（天）
 NODE_LIBRARY_LOAD_LIMIT = 60     # 单轮从库复测的节点上限（控测试预算）
+# 库内节点「刚测过」的静默期（小时）：期间不再重复拉进测试集，把名额让给
+# 更久没测的节点（任务#130）。不设它的话，高 passes 节点会每轮占满 60 个名额，
+# 库再大也只有同一小批在循环——这正是「池子看着有、实际不动」的成因。
+NODE_LIBRARY_RETEST_H = 6
 USER_PROBE_FILE = "user_probe.json"     # 用户本地实测回灌文件
 USER_PROBE_MAX_AGE_S = 48 * 3600        # 兼容旧字段（排序用，48h）；过期不参与
 USER_PROBE_DEAD_PENALTY = 1.0           # 用户实测失败节点的排序降权（档位惩罚）

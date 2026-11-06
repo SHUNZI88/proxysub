@@ -46,6 +46,21 @@ OFFICIAL_ZERO_UNIQUE_DEMOTE = 16  # consecutive runs w/o unique alive node (= ~4
 OFFICIAL_ZERO_REAL_DEMOTE = 4     # consecutive runs with probes but 0 real-ok (= ~1 day)
 REMOVED_COOLDOWN_DAYS = 30
 
+# ---- 判据版本与「旧判决失效」（任务#130，2026-11-06）----------------------
+# 源淘汰有三条通道吃 CN 实测结果：cn_low_pass_rate / zero_real_ok /
+# zero_unique_contribution。而 2026-11-05 之前那套实测被查出一连串缺陷：
+#   探测目标 google 对 IDC 偏慢 3 倍 → 延迟普遍虚高
+#   初筛 16 路并发抬高 RTT → 闸门判据被污染
+#   终筛 6 路并发压塌吞吐 → 好节点判「先快后断」
+#   单样本判定 → 偶发可用的节点被当成可用
+#   可用档门槛 128KB → 只证明握手，不证明能转发
+# 用坏尺子做的判决不能永久生效。故：判决记录带 mv（判据版本）；
+# 版本升级后，**依赖实测的判决自动失效**、源退回 official 重试；
+# 与尺子无关的判决（redistributes_bait / honeypot_tamper / 抓取失败）不受影响。
+MEASUREMENT_VERSION = 2
+MEASUREMENT_DEPENDENT_REASONS = ("cn_low_pass_rate", "zero_real_ok",
+                                 "zero_unique_contribution")
+
 # ---- discovery knobs ----
 # 每轮新候选 10→15（2026-10-20）：用户反馈有效节点数长期停在 29，根因之一是
 # 输入池窄（官方源仅 11/30、候选池枯竭至 2 个）——免费节点池绝对死亡率 97%
@@ -127,6 +142,13 @@ def load_sources(fallback_urls: list[str] | None = None) -> dict:
     data.setdefault("max_official", MAX_OFFICIAL)
     data.setdefault("removed", [])
     data.setdefault("deny_repos", [])
+    # 判据版本升级后，旧尺子判死的源自动回归试用（任务#130，幂等）
+    try:
+        _r = rehab_measurement_invalidated(data)
+        if _r["readmitted"]:
+            data["_rehab"] = _r
+    except Exception:
+        pass
     return data
 
 
@@ -148,9 +170,70 @@ def active_candidate_urls(cands: dict) -> list[str]:
     return [u for u, _ in items[:MAX_ACTIVE_CANDIDATES]]
 
 
+def reason_kind(reason: str) -> str:
+    """淘汰原因的主干（去掉 :4runs 这类参数）。"""
+    return (reason or "").split(":", 1)[0]
+
+
+def is_measurement_dependent(reason: str) -> bool:
+    """该判决是否依赖 CN 实测结论（依赖则可随判据版本升级而失效）。"""
+    return reason_kind(reason) in MEASUREMENT_DEPENDENT_REASONS
+
+
+def stale_judgement(entry: dict) -> bool:
+    """这条淘汰记录是否「用旧尺子判的」——是则不应再阻止该源回来。"""
+    if not is_measurement_dependent(entry.get("reason")):
+        return False
+    return int(entry.get("mv") or 1) < MEASUREMENT_VERSION
+
+
 def _recently_removed(sources: dict, url: str) -> bool:
     cutoff = (date.today() - timedelta(days=REMOVED_COOLDOWN_DAYS)).isoformat()
-    return any(r.get("url") == url and r.get("date", "") >= cutoff for r in sources.get("removed", []))
+    for r in sources.get("removed", []):
+        if r.get("url") != url or r.get("date", "") < cutoff:
+            continue
+        if stale_judgement(r):
+            continue      # 旧尺子判的，不作为阻止依据（rehab 会把它送回 official）
+        return True
+    return False
+
+
+def rehab_measurement_invalidated(sources: dict) -> dict:
+    """把「用旧尺子判死」的源退回 official 重新试用（任务#130）。
+
+    约束三条：
+      1. 只动依赖实测的判决，诱饵转载 / 蜜罐篡改 / 抓取失败一律保持原判；
+      2. 受 max_official 上限约束——超出上限的留在 removed 里**保留记录**，
+         下一轮继续排队，绝不因为装不下就删除；
+      3. 幂等：改过的记录带 mv=当前版本，重复调用不再处理。
+
+    返回 {"readmitted": [...], "kept": int, "deferred": int}。
+    """
+    cap = int(sources.get("max_official") or MAX_OFFICIAL)
+    known = {u if isinstance(u, str) else u.get("url") for u in sources.get("official", [])}
+    readmitted, kept, deferred = [], 0, 0
+    remaining = []
+    for entry in sources.get("removed", []):
+        url = entry.get("url")
+        if not url or not stale_judgement(entry):
+            remaining.append(entry)
+            kept += 1
+            continue
+        if url in known or len(sources["official"]) >= cap:
+            deferred += 1
+            remaining.append(entry)
+            continue
+        sources["official"].append({
+            "url": url,
+            "origin": "rehab",
+            "added": _today(),
+            "rehab_from": entry.get("reason"),
+            "rehab_date": _today(),
+        })
+        known.add(url)
+        readmitted.append(url)
+    sources["removed"] = remaining
+    return {"readmitted": readmitted, "kept": kept, "deferred": deferred}
 
 
 def _repo_of(url: str) -> str | None:
@@ -683,7 +766,8 @@ def update_official(sources: dict, stats_hist: dict, run: dict[str, dict],
         keep.sort(key=lambda e: order.get(e["url"], 0))
         sources["official"] = keep
         for url, why in rep["demoted"].items():
-            sources["removed"].append({"url": url, "reason": why, "date": _today()})
+            sources["removed"].append({"url": url, "reason": why, "date": _today(),
+                                       "mv": MEASUREMENT_VERSION})
             # 淘汰即清零 cn streak：防 30 天冷却后回迁的源被旧 streak 瞬杀
             if url in stats_hist:
                 stats_hist[url]["cn_low_streak"] = 0
