@@ -662,6 +662,11 @@ def cap_test_set(nodes: list[dict], budget_s: float,
     上一轮已发布验证集，绝不把规模失控的拨测推过超时线。
     """
     max_nodes = max(0, int(budget_s / per_node_s))
+    # 显式上限（任务#130）：per_node_s 只覆盖初筛，不覆盖 5 次稳定性采样与
+    # 真实流量测试；源池恢复后单轮上千节点会让一轮跑到 70 分钟。
+    _cap = int(getattr(config, "TEST_SET_MAX_NODES", 0) or 0)
+    if _cap > 0:
+        max_nodes = min(max_nodes, _cap)
     if len(nodes) <= max_nodes:
         return nodes, 0
     carry = [n for n in nodes if n.get("origin") in ("carryover", "user_pool")]
