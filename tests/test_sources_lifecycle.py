@@ -827,3 +827,62 @@ class TestDiscoveryThroughput:
         repo = _repo("o/promo", description="免费机场 招商 TG@xxx 返利")
         verdict, why = sm.repo_reputation(repo)
         assert verdict == "reject" and why == "spam_keywords"
+
+
+# ------------------------------------------------ 旧判决失效与回迁（任务#130）
+def _entry(url, reason, mv=None, date="2026-10-15"):
+    e = {"url": url, "reason": reason, "date": date}
+    if mv is not None:
+        e["mv"] = mv
+    return e
+
+
+def test_stale_judgement_only_for_measurement_dependent_reasons():
+    """只有「依赖实测」的判决会随判据版本失效；蜜罐/诱饵/抓取失败不在此列。"""
+    assert sm.stale_judgement(_entry("u", "cn_low_pass_rate:3")) is True
+    assert sm.stale_judgement(_entry("u", "no_stable_contribution")) is True
+    assert sm.stale_judgement(_entry("u", "honeypot_tamper:4/9")) is False
+    assert sm.stale_judgement(_entry("u", "fetch_failures")) is False
+    assert sm.stale_judgement(_entry("u", "redistributes_bait")) is False
+
+
+def test_current_version_judgement_stays():
+    """当前版本判死的源不得反复回迁——否则淘汰机制形同虚设。"""
+    e = _entry("u", "zero_real_ok:4runs", mv=sm.MEASUREMENT_VERSION)
+    assert sm.stale_judgement(e) is False
+
+
+def test_rehab_readmits_within_capacity_and_keeps_records():
+    """回迁受 max_official 约束；装不下的留在 removed 里，绝不删除记录。"""
+    sources = {"max_official": 3,
+               "official": [{"url": "keep1", "origin": "manual"}],
+               "removed": [_entry("a", "cn_low_pass_rate:3"),
+                           _entry("b", "zero_real_ok:4"),
+                           _entry("c", "zero_unique_contribution:16runs"),
+                           _entry("d", "honeypot_tamper:4/9")],
+               "deny_repos": []}
+    rep = sm.rehab_measurement_invalidated(sources)
+    assert len(rep["readmitted"]) == 2          # 上限 3，已有 1 个
+    assert [u["url"] for u in sources["official"]] == ["keep1", "a", "b"]
+    # 装不下的 c 与与尺子无关的 d 都必须留在 removed
+    assert {e["url"] for e in sources["removed"]} == {"c", "d"}
+    assert rep["deferred"] == 1 and rep["kept"] == 1
+
+
+def test_rehab_is_idempotent():
+    sources = {"max_official": 30, "official": [], "deny_repos": [],
+               "removed": [_entry("a", "cn_low_pass_rate:3")]}
+    sm.rehab_measurement_invalidated(sources)
+    again = sm.rehab_measurement_invalidated(sources)
+    assert again["readmitted"] == [] and len(sources["official"]) == 1
+
+
+def test_rehab_rejected_candidates_respects_limit_and_reason():
+    cands = {"candidates": {},
+             "rejected": {"x": _entry("x", "no_stable_contribution"),
+                          "y": _entry("y", "honeypot_structure:flag"),
+                          "z": _entry("z", "no_stable_contribution")}}
+    out = sm.rehab_rejected_candidates(cands, {"official": []}, limit=1)
+    assert len(out) == 1                      # limit 生效，避免一次涌入
+    assert "y" in cands["rejected"]           # 与尺子无关的拒绝保持原判
+    assert len(cands["candidates"]) == 1

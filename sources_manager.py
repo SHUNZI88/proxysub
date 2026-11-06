@@ -58,8 +58,13 @@ REMOVED_COOLDOWN_DAYS = 30
 # 版本升级后，**依赖实测的判决自动失效**、源退回 official 重试；
 # 与尺子无关的判决（redistributes_bait / honeypot_tamper / 抓取失败）不受影响。
 MEASUREMENT_VERSION = 2
-MEASUREMENT_DEPENDENT_REASONS = ("cn_low_pass_rate", "zero_real_ok",
-                                 "zero_unique_contribution")
+MEASUREMENT_DEPENDENT_REASONS = (
+    # official 侧
+    "cn_low_pass_rate", "zero_real_ok", "zero_unique_contribution",
+    # candidate 侧：连续 16 轮「没有稳定贡献」，取决于 CI 侧 real-probe 的
+    # usable / unique 计数——那两个计数同样被旧口径压低（任务#130）
+    "no_stable_contribution",
+)
 
 # ---- discovery knobs ----
 # 每轮新候选 10→15（2026-10-20）：用户反馈有效节点数长期停在 29，根因之一是
@@ -163,6 +168,39 @@ def load_candidates() -> dict:
     data.setdefault("candidates", {})
     data.setdefault("rejected", {})
     return data
+
+
+def rehab_rejected_candidates(cands: dict, sources: dict | None = None,
+                             limit: int = 10) -> list[str]:
+    """把「用旧尺子拒掉」的候选源放回候选池重新试用（任务#130）。
+
+    候选淘汰同样有测量依赖通道：`no_stable_contribution`（连续 16 轮没有
+    稳定贡献）取决于 CI 侧 real-probe 的 usable/unique 计数，而那两个计数
+    在 2026-11-05 前的口径下被系统性压低（并发压塌吞吐、768KB 门槛）。
+    与 official 侧同理：旧判决不得永久生效。
+
+    只处理测量依赖原因；蜜罐结构/诱饵转载/抓取失败保持原判。
+    返回本次放回试用的 url 列表（受 limit 约束，避免一次涌入挤占拨测预算）。
+    """
+    out: list[str] = []
+    occupied = set()
+    if sources:
+        occupied = {u if isinstance(u, str) else u.get("url")
+                    for u in sources.get("official", [])}
+    occupied |= set(cands.get("candidates") or {})
+    for u, v in list((cands.get("rejected") or {}).items()):
+        if len(out) >= limit:
+            break
+        if u in occupied or not stale_judgement(v):
+            continue
+        cands["rejected"].pop(u, None)
+        cands.setdefault("candidates", {})[u] = {
+            "first_seen": _today(), "runs": 0, "good_streak": 0,
+            "required_runs": PROBATION_RUNS, "repo": v.get("repo"),
+            "rehab_from": v.get("reason"),
+        }
+        out.append(u)
+    return out
 
 
 def active_candidate_urls(cands: dict) -> list[str]:
@@ -570,7 +608,9 @@ def evaluate_candidates(cands: dict, run: dict[str, dict], sources: dict,
         elif c["runs"] >= PROBATION_MAX_RUNS:
             reason = "no_stable_contribution"
         if reason:
-            cands["rejected"][url] = {"reason": reason, "date": _today(), "repo": c.get("repo")}
+            cands["rejected"][url] = {"reason": reason, "date": _today(),
+                                      "repo": c.get("repo"),
+                                      "mv": MEASUREMENT_VERSION}
             cands["candidates"].pop(url, None)
             rep["rejected"][url] = reason
             continue
@@ -607,9 +647,10 @@ def evaluate_candidates(cands: dict, run: dict[str, dict], sources: dict,
         })
         cands["candidates"].pop(url, None)
         rep["promoted"].append(url)
-    # prune rejected older than cooldown so they may be rediscovered later
+    # 冷却到期 / 旧尺子判的 → 退出 rejected，允许重新被发现或直接回炉（任务#130）
     cutoff = (date.today() - timedelta(days=REMOVED_COOLDOWN_DAYS)).isoformat()
-    for u in [u for u, v in cands["rejected"].items() if v.get("date", "") < cutoff]:
+    for u in [u for u, v in cands["rejected"].items()
+              if v.get("date", "") < cutoff or stale_judgement(v)]:
         cands["rejected"].pop(u, None)
     return rep
 
