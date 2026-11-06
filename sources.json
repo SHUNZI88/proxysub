@@ -158,6 +158,27 @@
       "added": "2026-11-06",
       "rehab_from": "cn_low_pass_rate:0/181",
       "rehab_date": "2026-11-06"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/tomjiu/proxy-pipeline/main/dist/online/clash.yaml",
+      "origin": "rehab",
+      "added": "2026-11-06",
+      "rehab_from": "cn_low_pass_rate:0/120",
+      "rehab_date": "2026-11-06"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/tomjiu/proxy-pipeline/main/dist/clean/clash-renamed.yaml",
+      "origin": "rehab",
+      "added": "2026-11-06",
+      "rehab_from": "cn_low_pass_rate:0/118",
+      "rehab_date": "2026-11-06"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/chengaopan/AutoMergePublicNodes/master/snippets/nodes.meta.yml",
+      "origin": "rehab",
+      "added": "2026-11-06",
+      "rehab_from": "cn_low_pass_rate:0/138",
+      "rehab_date": "2026-11-06"
     }
   ],
   "removed": [
@@ -195,21 +216,6 @@
       "url": "https://raw.githubusercontent.com/free-nodes/clashfree/main/clash20261016.yml",
       "reason": "consecutive_failures:4",
       "date": "2026-10-21"
-    },
-    {
-      "url": "https://raw.githubusercontent.com/tomjiu/proxy-pipeline/main/dist/online/clash.yaml",
-      "reason": "cn_low_pass_rate:0/120",
-      "date": "2026-10-28"
-    },
-    {
-      "url": "https://raw.githubusercontent.com/tomjiu/proxy-pipeline/main/dist/clean/clash-renamed.yaml",
-      "reason": "cn_low_pass_rate:0/118",
-      "date": "2026-10-28"
-    },
-    {
-      "url": "https://raw.githubusercontent.com/chengaopan/AutoMergePublicNodes/master/snippets/nodes.meta.yml",
-      "reason": "cn_low_pass_rate:0/138",
-      "date": "2026-11-05"
     },
     {
       "url": "https://raw.githubusercontent.com/F0rc3Run/F0rc3Run/main/Best-Results/clash.yaml",
@@ -257,32 +263,11 @@
   "deny_repos": [],
   "_rehab": {
     "readmitted": [
-      "https://raw.githubusercontent.com/zhangkaiitugithub/passcro/main/speednodes.yaml",
-      "https://raw.githubusercontent.com/F0rc3Run/F0rc3Run/main/Best-Results/clash.yaml",
-      "https://raw.githubusercontent.com/F0rc3Run/F0rc3Run/main/Best-Results/clash-provider.yaml",
-      "https://raw.githubusercontent.com/xiaocongyu66/proxypool/main/output/clash.yml",
-      "https://raw.githubusercontent.com/anaer/Sub/main/clash.yaml",
-      "https://raw.githubusercontent.com/Barabama/FreeNodes/main/nodes/nodefree.yaml",
-      "https://raw.githubusercontent.com/OgdenThomas/freesub/main/output/by-country/clash-US.yaml",
-      "https://raw.githubusercontent.com/ermaozi/get_subscribe/main/subscribe/v2ray.txt",
-      "https://raw.githubusercontent.com/clashfreenodecom/clashfreenode.com/main/feed/clash-20261003.yaml",
-      "https://raw.githubusercontent.com/wuge0/free-nodes/main/output/clash.yaml",
-      "https://raw.githubusercontent.com/OgdenThomas/freesub/main/output/clash.yaml",
-      "https://raw.githubusercontent.com/VPN-Subcription-Links/ClashX-V2Ray-TopFreeProxy/main/combine/clash.config.yaml",
-      "https://raw.githubusercontent.com/free-nodes/clashfree/main/clash20261017.yml",
-      "https://raw.githubusercontent.com/ermaozi/get_subscribe/main/subscribe/clash.yml",
-      "https://raw.githubusercontent.com/ermaozi/get_subscribe/main/subscribe/reachable/clash.yml",
-      "https://raw.githubusercontent.com/yy1588133/proxy-pool/main/clash.yaml",
-      "https://raw.githubusercontent.com/Au1rxx/free-vpn-subscriptions/main/output/clash.yaml",
-      "https://raw.githubusercontent.com/lanzm/MetaFetch/master/list.meta.yml",
-      "https://raw.githubusercontent.com/chengaopan/AutoMergePublicNodes/master/list.meta.yml",
-      "https://raw.githubusercontent.com/ovmvo/FreeSub/main/sub/permanent/mihomo.yaml",
-      "https://raw.githubusercontent.com/Au1rxx/free-vpn-subscriptions/main/output/stable/clash-0001.yaml",
-      "https://blog.ermao.net/sub/clash/ermao.net",
-      "https://raw.githubusercontent.com/hamzawih0/zorVPN/main/clash.yaml",
-      "https://raw.githubusercontent.com/peasoft/NoMoreWalls/master/list.meta.yml"
+      "https://raw.githubusercontent.com/tomjiu/proxy-pipeline/main/dist/online/clash.yaml",
+      "https://raw.githubusercontent.com/tomjiu/proxy-pipeline/main/dist/clean/clash-renamed.yaml",
+      "https://raw.githubusercontent.com/chengaopan/AutoMergePublicNodes/master/snippets/nodes.meta.yml"
     ],
-    "kept": 7,
-    "deferred": 3
+    "kept": 14,
+    "deferred": 0
   }
 }
