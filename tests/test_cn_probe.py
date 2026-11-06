@@ -618,6 +618,9 @@ def test_auth_selfcheck_no_token_anywhere(monkeypatch, tmp_path):
                         str(tmp_path / "not_exist"))
     monkeypatch.setattr(cn_probe.gh_compat, "HOME_PAT_PATH",
                         str(tmp_path / "not_exist_home"))
+    # 第三处凭据来源：本机已 `gh auth login` 时 `gh auth token` 会返回 token，
+    # 不隔离的话这条「无 token」用例在开发机上必然假红（2026-11-06 实测）。
+    monkeypatch.setattr(cn_probe.gh_compat, "_gh_token", lambda: "")
     assert cn_probe.auth_selfcheck() is False
 
 
