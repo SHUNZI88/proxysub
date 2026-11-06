@@ -1,89 +1,14 @@
 {
   "candidates": {
-    "https://clashgithub.com/clashnode-20261103.html": {
-      "channel": "web:https://clashgithub.com/",
-      "origin": "channel_web",
-      "added": "2026-11-02",
-      "first_seen": "2026-11-02",
-      "runs": 15,
-      "good_streak": 0,
-      "fail_streak": 0,
-      "history": [
-        {
-          "date": "2026-11-04",
-          "count": 32,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-05",
-          "count": 32,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-05",
-          "count": 32,
-          "usable": 8,
-          "unique_new": 1,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-05",
-          "count": 32,
-          "usable": 8,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-05",
-          "count": 32,
-          "usable": 9,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-05",
-          "count": 32,
-          "usable": 9,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-06",
-          "count": 32,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-06",
-          "count": 32,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        }
-      ],
-      "required_runs": 3
-    },
     "https://clashgithub.com/clashnode-20261104.html": {
       "channel": "web:https://clashgithub.com/",
       "origin": "channel_web",
       "added": "2026-11-03",
       "first_seen": "2026-11-03",
-      "runs": 12,
+      "runs": 13,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-11-04",
-          "count": 34,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-11-05",
           "count": 34,
@@ -116,6 +41,13 @@
           "date": "2026-11-05",
           "count": 34,
           "usable": 9,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-06",
+          "count": 34,
+          "usable": 0,
           "unique_new": 0,
           "tamper": 0
         },
@@ -141,7 +73,7 @@
       "origin": "channel_web",
       "added": "2026-11-05",
       "first_seen": "2026-11-05",
-      "runs": 3,
+      "runs": 4,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -165,13 +97,20 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-06",
+          "count": 20,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ],
       "required_runs": 3
     },
     "https://raw.githubusercontent.com/freenodess/freenodess/main/output/clash.yaml": {
       "first_seen": "2026-11-06",
-      "runs": 2,
+      "runs": 3,
       "good_streak": 0,
       "required_runs": 3,
       "repo": "freenodess/freenodess",
@@ -191,28 +130,10 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
-        }
-      ]
-    },
-    "https://raw.githubusercontent.com/wenxig/free-nodes-sub/main/data/sub.yaml": {
-      "first_seen": "2026-11-06",
-      "runs": 2,
-      "good_streak": 0,
-      "required_runs": 3,
-      "repo": "wenxig/free-nodes-sub",
-      "rehab_from": "no_stable_contribution",
-      "fail_streak": 2,
-      "history": [
-        {
-          "date": "2026-11-06",
-          "count": 0,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
         },
         {
           "date": "2026-11-06",
-          "count": 0,
+          "count": 1,
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
@@ -221,7 +142,7 @@
     },
     "https://raw.githubusercontent.com/BiliRumble/NoMoreRules/master/list.meta.yml": {
       "first_seen": "2026-11-06",
-      "runs": 2,
+      "runs": 3,
       "good_streak": 0,
       "required_runs": 3,
       "repo": "BiliRumble/NoMoreRules",
@@ -239,6 +160,13 @@
           "date": "2026-11-06",
           "count": 122,
           "usable": 16,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-06",
+          "count": 118,
+          "usable": 12,
           "unique_new": 0,
           "tamper": 0
         }
@@ -246,7 +174,7 @@
     },
     "https://raw.githubusercontent.com/BiliRumble/NoMoreRules/master/snippets/nodes.meta.yml": {
       "first_seen": "2026-11-06",
-      "runs": 2,
+      "runs": 3,
       "good_streak": 0,
       "required_runs": 3,
       "repo": "BiliRumble/NoMoreRules",
@@ -266,29 +194,11 @@
           "usable": 16,
           "unique_new": 0,
           "tamper": 0
-        }
-      ]
-    },
-    "https://raw.githubusercontent.com/Barabama/FreeNodes/feat/ai-crawler-v2/nodes/nodev2ray.yaml": {
-      "first_seen": "2026-11-06",
-      "runs": 2,
-      "good_streak": 0,
-      "required_runs": 3,
-      "repo": "Barabama/FreeNodes",
-      "rehab_from": "no_stable_contribution",
-      "fail_streak": 2,
-      "history": [
-        {
-          "date": "2026-11-06",
-          "count": 0,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
         },
         {
           "date": "2026-11-06",
-          "count": 0,
-          "usable": 0,
+          "count": 118,
+          "usable": 12,
           "unique_new": 0,
           "tamper": 0
         }
@@ -296,7 +206,7 @@
     },
     "https://raw.githubusercontent.com/ReaJason/Clash-Butler/master/clash.yaml": {
       "first_seen": "2026-11-06",
-      "runs": 2,
+      "runs": 3,
       "good_streak": 0,
       "required_runs": 3,
       "repo": "ReaJason/Clash-Butler",
@@ -316,18 +226,32 @@
           "usable": 1,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-06",
+          "count": 249,
+          "usable": 1,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
     "https://raw.githubusercontent.com/dongchengjie/airport/main/subs/clashfree.yaml": {
       "first_seen": "2026-11-06",
-      "runs": 2,
+      "runs": 3,
       "good_streak": 0,
       "required_runs": 3,
       "repo": "dongchengjie/airport",
       "rehab_from": "no_stable_contribution",
       "fail_streak": 0,
       "history": [
+        {
+          "date": "2026-11-06",
+          "count": 533,
+          "usable": 3,
+          "unique_new": 3,
+          "tamper": 0
+        },
         {
           "date": "2026-11-06",
           "count": 533,
@@ -346,7 +270,7 @@
     },
     "https://raw.githubusercontent.com/dongchengjie/airport/main/subs/clashnodev2ray.yaml": {
       "first_seen": "2026-11-06",
-      "runs": 2,
+      "runs": 3,
       "good_streak": 0,
       "required_runs": 3,
       "repo": "dongchengjie/airport",
@@ -366,28 +290,10 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
-        }
-      ]
-    },
-    "https://raw.githubusercontent.com/svinakraft-maker/FlareFeed/main/public/clash.yaml": {
-      "first_seen": "2026-11-06",
-      "runs": 2,
-      "good_streak": 0,
-      "required_runs": 3,
-      "repo": "svinakraft-maker/FlareFeed",
-      "rehab_from": "no_stable_contribution",
-      "fail_streak": 2,
-      "history": [
-        {
-          "date": "2026-11-06",
-          "count": 0,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
         },
         {
           "date": "2026-11-06",
-          "count": 0,
+          "count": 108,
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
@@ -403,10 +309,18 @@
       "required_runs": 3,
       "first_seen": "2026-11-06",
       "initial_nodes": 976,
-      "runs": 0,
+      "runs": 1,
       "good_streak": 0,
       "fail_streak": 0,
-      "history": []
+      "history": [
+        {
+          "date": "2026-11-06",
+          "count": 976,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        }
+      ]
     },
     "https://raw.githubusercontent.com/peacefish/nodefree/main/sub/clash_openshare.yaml": {
       "repo": "peacefish/nodefree",
@@ -417,10 +331,18 @@
       "required_runs": 3,
       "first_seen": "2026-11-06",
       "initial_nodes": 26,
-      "runs": 0,
+      "runs": 1,
       "good_streak": 0,
       "fail_streak": 0,
-      "history": []
+      "history": [
+        {
+          "date": "2026-11-06",
+          "count": 26,
+          "usable": 2,
+          "unique_new": 2,
+          "tamper": 0
+        }
+      ]
     },
     "https://raw.githubusercontent.com/MrWQ/nodefreebot/master/clash.yml": {
       "repo": "MrWQ/nodefreebot",
@@ -431,20 +353,36 @@
       "required_runs": 3,
       "first_seen": "2026-11-06",
       "initial_nodes": 30,
-      "runs": 0,
+      "runs": 1,
       "good_streak": 0,
       "fail_streak": 0,
-      "history": []
+      "history": [
+        {
+          "date": "2026-11-06",
+          "count": 30,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        }
+      ]
     },
     "https://clashgithub.com/clashnode-20261028.html": {
       "channel": "web:https://clashgithub.com/",
       "origin": "channel_web",
       "added": "2026-11-06",
       "first_seen": "2026-11-06",
-      "runs": 0,
+      "runs": 1,
       "good_streak": 0,
       "fail_streak": 0,
-      "history": [],
+      "history": [
+        {
+          "date": "2026-11-06",
+          "count": 25,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        }
+      ],
       "required_runs": 3
     },
     "https://clashgithub.com/clashnode-20261029.html": {
@@ -452,10 +390,18 @@
       "origin": "channel_web",
       "added": "2026-11-06",
       "first_seen": "2026-11-06",
-      "runs": 0,
+      "runs": 1,
       "good_streak": 0,
       "fail_streak": 0,
-      "history": [],
+      "history": [
+        {
+          "date": "2026-11-06",
+          "count": 25,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        }
+      ],
       "required_runs": 3
     },
     "https://clashgithub.com/clashnode-20261030.html": {
@@ -463,10 +409,18 @@
       "origin": "channel_web",
       "added": "2026-11-06",
       "first_seen": "2026-11-06",
-      "runs": 0,
+      "runs": 1,
       "good_streak": 0,
       "fail_streak": 0,
-      "history": [],
+      "history": [
+        {
+          "date": "2026-11-06",
+          "count": 25,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        }
+      ],
       "required_runs": 3
     },
     "https://anaer.github.io/Sub/clash.yaml": {
@@ -474,13 +428,40 @@
       "origin": "channel_web",
       "added": "2026-11-06",
       "first_seen": "2026-11-06",
-      "runs": 0,
+      "runs": 1,
       "good_streak": 0,
       "fail_streak": 0,
-      "history": [],
+      "history": [
+        {
+          "date": "2026-11-06",
+          "count": 1796,
+          "usable": 2,
+          "unique_new": 0,
+          "tamper": 0
+        }
+      ],
       "required_runs": 3
     },
     "https://cdn.jsdelivr.net/gh/anaer/Sub@main/clash.yaml": {
+      "channel": "web:https://clashsub.net/free-subscribe/",
+      "origin": "channel_web",
+      "added": "2026-11-06",
+      "first_seen": "2026-11-06",
+      "runs": 1,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": [
+        {
+          "date": "2026-11-06",
+          "count": 2248,
+          "usable": 5,
+          "unique_new": 0,
+          "tamper": 0
+        }
+      ],
+      "required_runs": 3
+    },
+    "https://git.io/emzclash": {
       "channel": "web:https://clashsub.net/free-subscribe/",
       "origin": "channel_web",
       "added": "2026-11-06",
@@ -491,8 +472,8 @@
       "history": [],
       "required_runs": 3
     },
-    "https://git.io/emzclash": {
-      "channel": "web:https://clashsub.net/free-subscribe/",
+    "https://clashgithub.com/clashnode-20261107.html": {
+      "channel": "web:https://clashgithub.com/",
       "origin": "channel_web",
       "added": "2026-11-06",
       "first_seen": "2026-11-06",
@@ -638,6 +619,30 @@
       "reason": "honeypot_structure:template_cluster:e67f6d48:38.76.140.0/24(32/35)",
       "date": "2026-11-06",
       "repo": "MyLeiH/ClashMeta",
+      "mv": 2
+    },
+    "https://clashgithub.com/clashnode-20261103.html": {
+      "reason": "no_stable_contribution",
+      "date": "2026-11-06",
+      "repo": null,
+      "mv": 2
+    },
+    "https://raw.githubusercontent.com/wenxig/free-nodes-sub/main/data/sub.yaml": {
+      "reason": "fetch_failures",
+      "date": "2026-11-06",
+      "repo": "wenxig/free-nodes-sub",
+      "mv": 2
+    },
+    "https://raw.githubusercontent.com/Barabama/FreeNodes/feat/ai-crawler-v2/nodes/nodev2ray.yaml": {
+      "reason": "fetch_failures",
+      "date": "2026-11-06",
+      "repo": "Barabama/FreeNodes",
+      "mv": 2
+    },
+    "https://raw.githubusercontent.com/svinakraft-maker/FlareFeed/main/public/clash.yaml": {
+      "reason": "fetch_failures",
+      "date": "2026-11-06",
+      "repo": "svinakraft-maker/FlareFeed",
       "mv": 2
     }
   }

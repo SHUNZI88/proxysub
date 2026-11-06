@@ -260,14 +260,14 @@
   "cn_last": "2026-10-31T01:18:01Z"
  },
  "897a39a6c08946631b3f88dd9fb2695e526cf48f": {
-  "cn_ok": true,
-  "cn_streak": 2,
-  "cn_fails": 0,
-  "cn_runs": 85,
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 86,
   "cn_pass": 54,
   "cn_latency_ms": 1514,
   "cn_egress": "法国 法兰西岛大区 巴黎  scaleway.com",
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "b92386522139fa66bfbb7216a37ce13587abc9a2": {
   "cn_ok": true,
@@ -1452,12 +1452,12 @@
  "b9f52371f515ff89a62e5d3cd68351291fe898ad": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 7,
-  "cn_runs": 103,
+  "cn_fails": 8,
+  "cn_runs": 104,
   "cn_pass": 63,
   "cn_latency_ms": 3824,
   "cn_egress": "中国 台湾 彰化县",
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "f32c1fd166e81ed9bbcac2a6a60b013f30e5fabc": {
   "cn_ok": false,
@@ -3004,12 +3004,12 @@
  "42a01ec7cac0e5003be0ab5ba418a91e6e0e2eaf": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 7,
-  "cn_runs": 47,
+  "cn_fails": 8,
+  "cn_runs": 48,
   "cn_pass": 16,
   "cn_latency_ms": 2593,
   "cn_egress": "中国 香港   pccw.com",
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "3723affda57939ca903b9177bbc849c2d92b13ca": {
   "cn_ok": false,
@@ -3093,10 +3093,10 @@
  "ca19f63f70e83d7a8c8090ef68934a9b0d401d53": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 32,
-  "cn_runs": 62,
+  "cn_fails": 33,
+  "cn_runs": 63,
   "cn_pass": 5,
-  "cn_last": "2026-11-06T10:14:43Z",
+  "cn_last": "2026-11-06T16:14:42Z",
   "cn_latency_ms": 1132
  },
  "a6e6a93a3b7ab0a6dd50b20cb3554398240902ce": {
@@ -3891,11 +3891,11 @@
  "fb2db0622015bb52cebf28e525f8afa79665a5a5": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 24,
-  "cn_runs": 26,
+  "cn_fails": 25,
+  "cn_runs": 27,
   "cn_pass": 2,
   "cn_latency_ms": 1579,
-  "cn_last": "2026-10-28T17:18:02Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "63fc0138660ffd75d62cd1b428ed5adbd36433e9": {
   "cn_ok": true,
@@ -4384,11 +4384,11 @@
  "4e503222cbb6cabf0a25e9a70733ed63abb9041c": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 21,
-  "cn_runs": 71,
+  "cn_fails": 22,
+  "cn_runs": 72,
   "cn_pass": 31,
   "cn_latency_ms": 2947,
-  "cn_last": "2026-11-06T10:14:43Z",
+  "cn_last": "2026-11-06T16:14:42Z",
   "cn_egress": "中国 台湾 彰化县"
  },
  "4f9cfd9ee8ccc65c90199c45b2aaaf606e5706c7": {
@@ -4998,10 +4998,10 @@
  "c867da58e080a561419da1e17edc3cb2c015a6f5": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 64,
-  "cn_runs": 64,
+  "cn_fails": 65,
+  "cn_runs": 65,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "5a24fc4072a029d950b2915c6de57b76639a5814": {
   "cn_ok": false,
@@ -5843,18 +5843,18 @@
  "bd55c4acede7902c7c7c1ddf191135159190a3ac": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 34,
-  "cn_runs": 34,
+  "cn_fails": 35,
+  "cn_runs": 35,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "7e833cb2bd3bde61d56607ab2fbf495ed9caf6b7": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 36,
-  "cn_runs": 36,
+  "cn_fails": 37,
+  "cn_runs": 37,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "c9ae289cc02beec744fd1ac3f3e63b4c8425af31": {
   "cn_ok": false,
@@ -5969,10 +5969,10 @@
  "071ce1aedb722eb43cf92c3a7aa0c2a422300a10": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 23,
+  "cn_fails": 7,
+  "cn_runs": 24,
   "cn_pass": 9,
-  "cn_last": "2026-11-06T10:14:43Z",
+  "cn_last": "2026-11-06T16:14:42Z",
   "cn_latency_ms": 3999,
   "cn_egress": "捷克 布拉格   hostuj.to"
  },
@@ -6183,12 +6183,12 @@
  "1cba8b0d04ae7c98f6d76b4f519488cb9440fc80": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 21,
+  "cn_fails": 4,
+  "cn_runs": 22,
   "cn_pass": 2,
   "cn_latency_ms": 1948,
   "cn_egress": "德国 黑森州 美茵河畔奥芬巴赫  dataforest.net",
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "abefbe0acb2a97e61a1fe60a45f712a4a05d3b57": {
   "cn_ok": true,
@@ -6508,10 +6508,10 @@
  "a5c58a7db8921875402c3ed3653489366987738c": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 28,
-  "cn_runs": 28,
+  "cn_fails": 29,
+  "cn_runs": 29,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "cd38821a56975301b4fc1116702ba5c6499e9452": {
   "cn_ok": false,
@@ -6571,14 +6571,14 @@
   "cn_last": "2026-10-30T17:18:01Z"
  },
  "cff2e65215f3302ec9ed18b291e5b594ae4f41c3": {
-  "cn_ok": true,
-  "cn_streak": 1,
-  "cn_fails": 0,
-  "cn_runs": 21,
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 22,
   "cn_pass": 13,
   "cn_latency_ms": 1513,
   "cn_egress": "中国 台湾 彰化县  cht.com.tw",
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "83e8610d508cbb0a08deb18c7c009b445ab93eaa": {
   "cn_ok": false,
@@ -6668,14 +6668,6 @@
   "cn_latency_ms": 1306,
   "cn_egress": "美国"
  },
- "187a1199f5c2cd25aedcacc6514d131babcacb20": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 30,
-  "cn_runs": 30,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
  "46c9a05a8f4baf88839f5ee6af87a1e25291d9cf": {
   "cn_ok": false,
   "cn_streak": 0,
@@ -6746,13 +6738,13 @@
  },
  "b1447ca9a257f2b04200f0934c14e276512db3af": {
   "cn_ok": true,
-  "cn_streak": 10,
+  "cn_streak": 11,
   "cn_fails": 0,
-  "cn_runs": 37,
-  "cn_pass": 22,
-  "cn_last": "2026-11-06T10:14:43Z",
-  "cn_latency_ms": 1759,
-  "cn_egress": "法国 法兰西岛大区 巴黎  scaleway.com"
+  "cn_runs": 38,
+  "cn_pass": 23,
+  "cn_last": "2026-11-06T16:14:42Z",
+  "cn_latency_ms": 1754,
+  "cn_egress": "法国"
  },
  "147e297e4a1805b10ca441b63e9b7c956ee2172a": {
   "cn_ok": true,
@@ -6994,18 +6986,18 @@
  "b147ebfcc84c85bb1d9b6da37747ab399d138e00": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 29,
-  "cn_runs": 29,
+  "cn_fails": 30,
+  "cn_runs": 30,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "07d83a845b5d312b7d0c0c7d46e20c2d1cf5fbbb": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 23,
-  "cn_runs": 23,
+  "cn_fails": 24,
+  "cn_runs": 24,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "530995369cab61d7c452752261830ba2ab50e284": {
   "cn_ok": false,
@@ -7127,18 +7119,18 @@
  "4e0d5e47ba2406640dd3bdc832a8ee5a4f908d1b": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 29,
-  "cn_runs": 29,
+  "cn_fails": 30,
+  "cn_runs": 30,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "a85a26fc2d68a921ff3d15042ce4960e6f67b782": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 27,
-  "cn_runs": 27,
+  "cn_fails": 28,
+  "cn_runs": 28,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "284d50d5aaf9c66278f1b9f20564b1b20c3fc31b": {
   "cn_ok": false,
@@ -7182,10 +7174,10 @@
  "a51cf4791a1f18a82c0ad7871e5794c1c572703a": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 27,
-  "cn_runs": 27,
+  "cn_fails": 28,
+  "cn_runs": 28,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "6d8ce17e6c822c9fad41b0eeb0865dd08c00b9f6": {
   "cn_ok": false,
@@ -7326,10 +7318,10 @@
  "6166541d941ce22909d836b9d569d27e0e0cb928": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 20,
-  "cn_runs": 20,
+  "cn_fails": 21,
+  "cn_runs": 21,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "88be68aaddc9e05b610cf5d5def40ded7896af5c": {
   "cn_ok": false,
@@ -7364,18 +7356,18 @@
  "1c52fc34ad524060fa2ac6055bf7992c5c78e2ac": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 18,
-  "cn_runs": 18,
+  "cn_fails": 19,
+  "cn_runs": 19,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "678bf0abb84eef386ee9bf56b79b641aaae6b887": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 26,
-  "cn_runs": 26,
+  "cn_fails": 27,
+  "cn_runs": 27,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "bfce739e845d8743427fd5d077c1dfe11c30a350": {
   "cn_ok": true,
@@ -7671,10 +7663,10 @@
  "ea0cbb24ffc8d317ad2f772895b8b3d463c0c5fd": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 24,
-  "cn_runs": 24,
+  "cn_fails": 25,
+  "cn_runs": 25,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "8df163ee644c066d81a9835aa3f263cba53f9625": {
   "cn_ok": false,
@@ -7687,10 +7679,10 @@
  "2776091eb450c08885bffe6cdecb5a67460f0c3a": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 21,
-  "cn_runs": 21,
+  "cn_fails": 22,
+  "cn_runs": 22,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:02:55Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "c1eab30314e356e1346b6018e58a718249f1c597": {
   "cn_ok": false,
@@ -7867,14 +7859,6 @@
   "cn_pass": 0,
   "cn_last": "2026-11-06T02:02:55Z"
  },
- "8cac5aaed4731c3a24226ca20002db6ec2b5dd32": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 13,
-  "cn_runs": 13,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
  "bf5ffc4607a8021efbb710a5220270e07e20c4d2": {
   "cn_ok": false,
   "cn_streak": 0,
@@ -7882,14 +7866,6 @@
   "cn_runs": 20,
   "cn_pass": 0,
   "cn_last": "2026-11-06T02:02:55Z"
- },
- "1e6a990d95cce9c948b3aaa6281887370a655d58": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 18,
-  "cn_runs": 18,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
  },
  "12b66742820b6ade1ac29ce89af19a9322e4405f": {
   "cn_ok": false,
@@ -7961,42 +7937,42 @@
  "8a2e4a1faed70c41105b323123b3d58e2984aee2": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 21,
-  "cn_runs": 21,
+  "cn_fails": 22,
+  "cn_runs": 22,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "566ab0e3499e5b5dcce45133ab45f5d0063aaced": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 13,
-  "cn_runs": 13,
+  "cn_fails": 14,
+  "cn_runs": 14,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "81e8cab69b7b9388bbe2d88545d2308c635e4c13": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 18,
-  "cn_runs": 18,
+  "cn_fails": 19,
+  "cn_runs": 19,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "1a70d15ad07475aaa6f2f73de95793201e6b054f": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 10,
-  "cn_runs": 10,
+  "cn_fails": 11,
+  "cn_runs": 11,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "578257b81c0e5725a1085a4e6403c07f2bcc833b": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 13,
-  "cn_runs": 13,
+  "cn_fails": 14,
+  "cn_runs": 14,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "ab9dcbc92ffe74cdcd698b6e9e68eb1c0e6b7685": {
   "cn_ok": false,
@@ -8182,14 +8158,6 @@
   "cn_pass": 0,
   "cn_last": "2026-11-06T10:14:43Z"
  },
- "d62a309a8c880def7c2768a6cd9624494e51b907": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 17,
-  "cn_runs": 17,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
  "c73b62c5c82d565a09d3b578ec7181412b52a035": {
   "cn_ok": false,
   "cn_streak": 0,
@@ -8214,14 +8182,6 @@
   "cn_pass": 0,
   "cn_last": "2026-11-06T02:02:55Z"
  },
- "056cf90d5a809a7817ae5a42a9e30f7a3bbbdce0": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 17,
-  "cn_runs": 17,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
  "840f3bcb885cae53bb2df17024d100332bf7430a": {
   "cn_ok": false,
   "cn_streak": 0,
@@ -8233,10 +8193,10 @@
  "a0617e2973caaa7e40f388ef078251280fd36c49": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 12,
-  "cn_runs": 12,
+  "cn_fails": 13,
+  "cn_runs": 13,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "4e873192621911052a60950e95952ee5fcd40396": {
   "cn_ok": false,
@@ -8289,10 +8249,10 @@
  "b52d11339f8101c955cffb1d1304ad40951dbfb1": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 21,
-  "cn_runs": 21,
+  "cn_fails": 22,
+  "cn_runs": 22,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "0fbba4a46f6e95cead39c589b938f2e3f5761889": {
   "cn_ok": false,
@@ -8318,14 +8278,6 @@
   "cn_pass": 0,
   "cn_last": "2026-11-06T02:02:55Z"
  },
- "d344f658a2d061755e13a0b676ad2c6a1726ac5c": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 17,
-  "cn_runs": 17,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
  "e6491348aeb09011dfcfcf8aebe2a455d84974c7": {
   "cn_ok": false,
   "cn_streak": 0,
@@ -8350,87 +8302,79 @@
   "cn_pass": 0,
   "cn_last": "2026-11-06T02:02:55Z"
  },
- "028827cfc50a652401cb9aecd4d073a5b60a924f": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 12,
-  "cn_runs": 12,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
  "40b6d4b6711c6326015b2965a1b5ddd9edafe165": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 9,
-  "cn_runs": 15,
+  "cn_fails": 10,
+  "cn_runs": 16,
   "cn_pass": 3,
-  "cn_last": "2026-11-06T10:14:43Z",
+  "cn_last": "2026-11-06T16:14:42Z",
   "cn_latency_ms": 2424,
   "cn_egress": "捷克 布拉格   hostuj.to"
  },
  "07349104f5bf52f4af6cc2021dff68be953d1b04": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 14,
-  "cn_runs": 14,
+  "cn_fails": 15,
+  "cn_runs": 15,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "54efbda4b5d7a642e273dfaa868cf4c6f608aa8d": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 7,
-  "cn_runs": 7,
+  "cn_fails": 8,
+  "cn_runs": 8,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "8682988a4f34e250eaacf59a14005b051037be0a": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 7,
-  "cn_runs": 7,
+  "cn_fails": 8,
+  "cn_runs": 8,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "e69333f46feccef755bedf26c40eacbb58f62550": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 15,
-  "cn_runs": 15,
+  "cn_fails": 16,
+  "cn_runs": 16,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "6aa05f21af95a63a205f97d8d60c26b9be915b6b": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 15,
-  "cn_runs": 15,
+  "cn_fails": 16,
+  "cn_runs": 16,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "590ea9aaab9467c0757a06104a7e69a38d3b0139": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 7,
-  "cn_runs": 7,
+  "cn_fails": 8,
+  "cn_runs": 8,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "7f7d09b171de6e7336792239128323d15baf3596": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 7,
-  "cn_runs": 7,
+  "cn_fails": 8,
+  "cn_runs": 8,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "f8deb77e4fa9be14969cc536bfae5ecc1952300a": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 15,
-  "cn_runs": 15,
+  "cn_fails": 16,
+  "cn_runs": 16,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "8b2348d4368f640b4ff196d8baeafd5a52bdf013": {
   "cn_ok": false,
@@ -8696,55 +8640,23 @@
  },
  "bb6c3f9982c59e3a96e603b8c408393f0c7b1d1d": {
   "cn_ok": true,
-  "cn_streak": 5,
+  "cn_streak": 6,
   "cn_fails": 0,
-  "cn_runs": 15,
-  "cn_pass": 10,
-  "cn_last": "2026-11-06T10:14:43Z",
-  "cn_latency_ms": 1480,
+  "cn_runs": 16,
+  "cn_pass": 11,
+  "cn_last": "2026-11-06T16:14:42Z",
+  "cn_latency_ms": 2058,
   "cn_egress": "法国"
  },
  "2266ef61422f133d4506fb48cc4235039407027c": {
   "cn_ok": true,
-  "cn_streak": 10,
+  "cn_streak": 11,
   "cn_fails": 0,
-  "cn_runs": 15,
-  "cn_pass": 11,
-  "cn_last": "2026-11-06T10:14:43Z",
-  "cn_latency_ms": 1479,
+  "cn_runs": 16,
+  "cn_pass": 12,
+  "cn_last": "2026-11-06T16:14:42Z",
+  "cn_latency_ms": 1572,
   "cn_egress": "美国 加利福尼亚州 圣何塞  petaexpress.com"
- },
- "b265bdf94e118e1d45be986f64ee5bb49def33ea": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
- "33b9b73817e43c305908e83b5c4974c6ea4cb138": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
- "aac292b1d76f6206bb0e9b6d42d223c526704124": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
- "b785ef4208faf842de8969b3e12aa32fd9ffb3a1": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
  },
  "83bc800e16a063d01d801cfc8604bae99020ee08": {
   "cn_ok": false,
@@ -8792,63 +8704,55 @@
   "cn_egress": "中国 香港   pccw.com",
   "cn_last": "2026-11-06T10:14:43Z"
  },
- "d4609f6227911436d5c3d3f9a6e5cff67391d35a": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
  "7c0626286ff2f21271b0e46ce8bb0293b75308d5": {
+  "cn_ok": true,
+  "cn_streak": 11,
+  "cn_fails": 0,
+  "cn_runs": 16,
+  "cn_pass": 13,
+  "cn_latency_ms": 1625,
+  "cn_egress": "法国 法兰西岛大区 巴黎  scaleway.com",
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "c7b0efc4cf57f49d36aa9993ce34988732dee13c": {
+  "cn_ok": true,
+  "cn_streak": 6,
+  "cn_fails": 0,
+  "cn_runs": 16,
+  "cn_pass": 10,
+  "cn_latency_ms": 2036,
+  "cn_egress": "荷兰 林堡省 艾赫尔斯霍芬  ghostnet.de",
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "bf2c35ce36a7830fed931d653b9586c0795d3e35": {
+  "cn_ok": true,
+  "cn_streak": 4,
+  "cn_fails": 0,
+  "cn_runs": 15,
+  "cn_pass": 6,
+  "cn_latency_ms": 1549,
+  "cn_egress": "美国 加利福尼亚州 圣何塞  petaexpress.com",
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "8bc437b3fa394ac0c6dcb2e81a825eea0a77aa0d": {
   "cn_ok": true,
   "cn_streak": 10,
   "cn_fails": 0,
   "cn_runs": 15,
   "cn_pass": 12,
-  "cn_latency_ms": 1690,
-  "cn_egress": "法国 法兰西岛大区 巴黎  scaleway.com",
-  "cn_last": "2026-11-06T10:14:43Z"
- },
- "c7b0efc4cf57f49d36aa9993ce34988732dee13c": {
-  "cn_ok": true,
-  "cn_streak": 5,
-  "cn_fails": 0,
-  "cn_runs": 15,
-  "cn_pass": 9,
-  "cn_latency_ms": 1576,
-  "cn_egress": "荷兰 林堡省 艾赫尔斯霍芬  ghostnet.de",
-  "cn_last": "2026-11-06T10:14:43Z"
- },
- "bf2c35ce36a7830fed931d653b9586c0795d3e35": {
-  "cn_ok": true,
-  "cn_streak": 3,
-  "cn_fails": 0,
-  "cn_runs": 14,
-  "cn_pass": 5,
-  "cn_latency_ms": 1511,
-  "cn_egress": "美国 加利福尼亚州 圣何塞  petaexpress.com",
-  "cn_last": "2026-11-06T02:33:33Z"
- },
- "8bc437b3fa394ac0c6dcb2e81a825eea0a77aa0d": {
-  "cn_ok": true,
-  "cn_streak": 9,
-  "cn_fails": 0,
-  "cn_runs": 14,
-  "cn_pass": 11,
-  "cn_latency_ms": 1553,
-  "cn_last": "2026-11-06T02:33:33Z",
+  "cn_latency_ms": 1768,
+  "cn_last": "2026-11-06T16:14:42Z",
   "cn_egress": "美国 加利福尼亚州 圣何塞  petaexpress.com"
  },
  "9afbd88d69f7393103d42ce784c1b99adac93c08": {
   "cn_ok": true,
-  "cn_streak": 10,
+  "cn_streak": 11,
   "cn_fails": 0,
-  "cn_runs": 15,
-  "cn_pass": 11,
-  "cn_latency_ms": 1422,
+  "cn_runs": 16,
+  "cn_pass": 12,
+  "cn_latency_ms": 1452,
   "cn_egress": "法国 法兰西岛大区 巴黎  scaleway.com",
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "920446319bb3a5649ba888e2092dad070757ba62": {
   "cn_ok": false,
@@ -8907,22 +8811,14 @@
   "cn_last": "2026-11-06T02:02:55Z"
  },
  "aabade2845fd3c5b9f95e8918f61cc7a1feb41ab": {
-  "cn_ok": true,
-  "cn_streak": 4,
-  "cn_fails": 0,
-  "cn_runs": 15,
-  "cn_pass": 5,
-  "cn_last": "2026-11-06T10:14:43Z",
-  "cn_latency_ms": 122,
-  "cn_egress": "中国 台湾 台中市"
- },
- "7addce5f433024189bc67da81753a336d806c325": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
+  "cn_fails": 1,
+  "cn_runs": 16,
+  "cn_pass": 5,
+  "cn_last": "2026-11-06T16:14:42Z",
+  "cn_latency_ms": 122,
+  "cn_egress": "中国 台湾 台中市"
  },
  "1fb117755c8836e3614f1bbff97abf84eb751f72": {
   "cn_ok": false,
@@ -8972,14 +8868,6 @@
   "cn_pass": 0,
   "cn_last": "2026-11-06T10:14:43Z"
  },
- "2f5a6c34162ec58d5341c69fb9c86ebc6f0ba125": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
  "2267a06ece6509761fd9d1adc3eacb2563daef78": {
   "cn_ok": false,
   "cn_streak": 0,
@@ -9004,14 +8892,6 @@
   "cn_pass": 0,
   "cn_last": "2026-11-06T02:02:55Z"
  },
- "e75485da5505233482edca93977e52f8445d1569": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
  "0075b00103ad383b866c75a8a509d610d00abac5": {
   "cn_ok": false,
   "cn_streak": 0,
@@ -9028,91 +8908,75 @@
   "cn_pass": 0,
   "cn_last": "2026-11-06T02:02:55Z"
  },
- "0f4ce8d576b8618c8deba5c91aa6f4542ff33299": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
- "0fb50ff709db037c2c91f5e8306dd2b500d251e0": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 11,
-  "cn_runs": 11,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
  "9945fa383ac2397effe151a663c0097235f2dd52": {
-  "cn_ok": true,
-  "cn_streak": 4,
-  "cn_fails": 0,
-  "cn_runs": 10,
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 11,
   "cn_pass": 6,
   "cn_latency_ms": 533,
   "cn_egress": "意大利 伦巴第大区 米兰  redipo.es",
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "2a5c3a3b57223903f1ec0a18d14516f546107925": {
-  "cn_ok": true,
-  "cn_streak": 5,
-  "cn_fails": 0,
-  "cn_runs": 10,
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 11,
   "cn_pass": 5,
-  "cn_last": "2026-11-06T10:14:43Z",
+  "cn_last": "2026-11-06T16:14:42Z",
   "cn_latency_ms": 525,
   "cn_egress": "意大利 伦巴第大区 米兰  redipo.es"
  },
  "92ed8932ebe6e49acacfe1805e3a6c7a537b2b9c": {
   "cn_ok": true,
-  "cn_streak": 4,
+  "cn_streak": 5,
   "cn_fails": 0,
-  "cn_runs": 10,
-  "cn_pass": 5,
-  "cn_last": "2026-11-06T10:14:43Z",
-  "cn_latency_ms": 548,
+  "cn_runs": 11,
+  "cn_pass": 6,
+  "cn_last": "2026-11-06T16:14:42Z",
+  "cn_latency_ms": 579,
   "cn_egress": "意大利 伦巴第大区 米兰  redipo.es"
  },
  "dd5528facf071062bf5079596179fdb02faf3427": {
   "cn_ok": true,
-  "cn_streak": 6,
+  "cn_streak": 7,
   "cn_fails": 0,
-  "cn_runs": 10,
-  "cn_pass": 8,
-  "cn_last": "2026-11-06T10:14:43Z",
-  "cn_latency_ms": 535,
+  "cn_runs": 11,
+  "cn_pass": 9,
+  "cn_last": "2026-11-06T16:14:42Z",
+  "cn_latency_ms": 609,
   "cn_egress": "意大利 伦巴第大区 米兰  redipo.es"
  },
  "ceaec3d2dcd9f3ecb1bdf12563c046632e49e35b": {
   "cn_ok": true,
-  "cn_streak": 7,
+  "cn_streak": 8,
   "cn_fails": 0,
-  "cn_runs": 10,
-  "cn_pass": 8,
-  "cn_latency_ms": 564,
+  "cn_runs": 11,
+  "cn_pass": 9,
+  "cn_latency_ms": 776,
   "cn_egress": "意大利 伦巴第大区 米兰  redipo.es",
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "5aaed8b65c01401b05ee33e125ae307a66b6cfb6": {
-  "cn_ok": true,
-  "cn_streak": 5,
-  "cn_fails": 0,
-  "cn_runs": 10,
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 11,
   "cn_pass": 9,
   "cn_latency_ms": 558,
   "cn_egress": "意大利 伦巴第大区 米兰  redipo.es",
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "fd6bb8754027a588114eef5a93ad21030ecf29f1": {
-  "cn_ok": true,
-  "cn_streak": 4,
-  "cn_fails": 0,
-  "cn_runs": 10,
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 11,
   "cn_pass": 7,
   "cn_latency_ms": 577,
   "cn_egress": "意大利 伦巴第大区 米兰  redipo.es",
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "54a74bb172d90dc3e3d77a7736cab8fb5d2164b2": {
   "cn_ok": false,
@@ -9126,13 +8990,13 @@
  },
  "5e49d4162716e97ae5793342fbe7267fbb3e04a2": {
   "cn_ok": true,
-  "cn_streak": 4,
+  "cn_streak": 5,
   "cn_fails": 0,
-  "cn_runs": 10,
-  "cn_pass": 8,
-  "cn_latency_ms": 561,
+  "cn_runs": 11,
+  "cn_pass": 9,
+  "cn_latency_ms": 696,
   "cn_egress": "意大利 伦巴第大区 米兰  redipo.es",
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "3bf4235b51c50b725470e9b5dea5b6e332c6f2f1": {
   "cn_ok": true,
@@ -9145,22 +9009,22 @@
   "cn_last": "2026-11-06T10:14:43Z"
  },
  "99ca7d93620ff1b60e2ed1747bbf64ad7f8272a5": {
-  "cn_ok": true,
-  "cn_streak": 6,
-  "cn_fails": 0,
-  "cn_runs": 10,
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 11,
   "cn_pass": 9,
   "cn_latency_ms": 542,
   "cn_egress": "意大利 伦巴第大区 米兰  redipo.es",
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "1274322009a256d1a4906bb10210f56550a6a60a": {
-  "cn_ok": true,
-  "cn_streak": 9,
-  "cn_fails": 0,
-  "cn_runs": 10,
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 11,
   "cn_pass": 9,
-  "cn_last": "2026-11-06T10:14:43Z",
+  "cn_last": "2026-11-06T16:14:42Z",
   "cn_latency_ms": 533,
   "cn_egress": "意大利 伦巴第大区 米兰  redipo.es"
  },
@@ -9175,12 +9039,12 @@
   "cn_last": "2026-11-06T10:14:43Z"
  },
  "31ec596514850c2f644dd5ef778ba9358082b2f8": {
-  "cn_ok": true,
-  "cn_streak": 7,
-  "cn_fails": 0,
-  "cn_runs": 10,
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 11,
   "cn_pass": 7,
-  "cn_last": "2026-11-06T10:14:43Z",
+  "cn_last": "2026-11-06T16:14:42Z",
   "cn_latency_ms": 532,
   "cn_egress": "意大利 伦巴第大区 米兰  redipo.es"
  },
@@ -9197,75 +9061,75 @@
  "f52a32288c2659d8117db7b61cfd604b153ae16e": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 10,
-  "cn_runs": 10,
+  "cn_fails": 11,
+  "cn_runs": 11,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "81c4f725f006b0ab63f60f3241b38c0235c2cb4a": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 10,
-  "cn_runs": 10,
+  "cn_fails": 11,
+  "cn_runs": 11,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "b30d88a26df79660ac3d9192320496554f2dabf1": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 10,
-  "cn_runs": 10,
+  "cn_fails": 11,
+  "cn_runs": 11,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "f0dad4aaaa85b739423ed420059955084fa4bde1": {
   "cn_ok": true,
-  "cn_streak": 10,
+  "cn_streak": 11,
   "cn_fails": 0,
-  "cn_runs": 10,
-  "cn_pass": 10,
-  "cn_latency_ms": 549,
+  "cn_runs": 11,
+  "cn_pass": 11,
+  "cn_latency_ms": 1611,
   "cn_egress": "意大利 伦巴第大区 米兰  redipo.es",
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "9294a0c31600793ad85849d2f6655e7ece1b27ce": {
   "cn_ok": true,
-  "cn_streak": 1,
+  "cn_streak": 2,
   "cn_fails": 0,
-  "cn_runs": 10,
-  "cn_pass": 5,
-  "cn_latency_ms": 564,
+  "cn_runs": 11,
+  "cn_pass": 6,
+  "cn_latency_ms": 1368,
   "cn_egress": "意大利 伦巴第大区 米兰  redipo.es",
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "0ceb1713e71be3cf900d7ba339e801e08800e1b0": {
-  "cn_ok": true,
-  "cn_streak": 4,
-  "cn_fails": 0,
-  "cn_runs": 10,
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 11,
   "cn_pass": 6,
-  "cn_last": "2026-11-06T10:14:43Z",
+  "cn_last": "2026-11-06T16:14:42Z",
   "cn_latency_ms": 562,
   "cn_egress": "意大利 伦巴第大区 米兰  redipo.es"
  },
  "9898fd976c5ace9266da812ac053574ee8186724": {
-  "cn_ok": true,
-  "cn_streak": 6,
-  "cn_fails": 0,
-  "cn_runs": 10,
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 11,
   "cn_pass": 6,
-  "cn_last": "2026-11-06T10:14:43Z",
+  "cn_last": "2026-11-06T16:14:42Z",
   "cn_latency_ms": 529,
   "cn_egress": "意大利 伦巴第大区 米兰  redipo.es"
  },
  "caf4735bd90fc87a692c5ba282a7bf13909d880e": {
   "cn_ok": true,
-  "cn_streak": 4,
+  "cn_streak": 5,
   "cn_fails": 0,
-  "cn_runs": 10,
-  "cn_pass": 5,
-  "cn_last": "2026-11-06T10:14:43Z",
-  "cn_latency_ms": 560,
+  "cn_runs": 11,
+  "cn_pass": 6,
+  "cn_last": "2026-11-06T16:14:42Z",
+  "cn_latency_ms": 607,
   "cn_egress": "意大利 伦巴第大区 米兰  redipo.es"
  },
  "ede351d0bc499019847fb28bf3604db0589b9099": {
@@ -9300,14 +9164,6 @@
   "cn_pass": 0,
   "cn_last": "2026-11-06T02:02:55Z"
  },
- "5ca9d04665abad01106b0e68ce24aa51415d1463": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
  "b5a47bb5c87b6ea7ab1dd4220822914e58820acb": {
   "cn_ok": false,
   "cn_streak": 0,
@@ -9315,14 +9171,6 @@
   "cn_runs": 9,
   "cn_pass": 0,
   "cn_last": "2026-11-06T10:14:43Z"
- },
- "0b54e201578ce8c6ac8cd514c19a1d171d154d3b": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
  },
  "d0e1337cc74593b707c99f1f1bdb1bbcdff06bea": {
   "cn_ok": false,
@@ -9340,14 +9188,6 @@
   "cn_pass": 0,
   "cn_last": "2026-11-06T02:02:55Z"
  },
- "6c7db7c4c37e3cfb461cb4acba787977bfaa0ad2": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
  "f07de6fc185be408b76316d14b5b7d1d4ea26a4e": {
   "cn_ok": false,
   "cn_streak": 0,
@@ -9364,62 +9204,30 @@
   "cn_pass": 0,
   "cn_last": "2026-11-06T02:02:55Z"
  },
- "1c0da54805d8e1cbf39f36aaaac8c8315709f6d7": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
- "b83930b841c02bd543334b5d137ca1bd970f3792": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
  "a309b62c4e380abe599d9a6f7467b48137604145": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 5,
-  "cn_runs": 5,
+  "cn_fails": 6,
+  "cn_runs": 6,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "15b0ad54cb9f4d13db9c892774ad033bc6d92ab7": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 10,
-  "cn_runs": 10,
+  "cn_fails": 11,
+  "cn_runs": 11,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "a6c63a5e216fbdec52f373e0940fb4530cdac823": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 4,
-  "cn_runs": 10,
+  "cn_fails": 5,
+  "cn_runs": 11,
   "cn_pass": 1,
-  "cn_last": "2026-11-06T10:14:43Z",
+  "cn_last": "2026-11-06T16:14:42Z",
   "cn_latency_ms": 1222
- },
- "3a08f03581edcb86ef7f6e67df2f90aa52210421": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
- "7b5298056791e7f20ebd0a698e5859b0aafb2e25": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
  },
  "7d69b6e4ba8becdb755d4d87e4213ff26176ff38": {
   "cn_ok": false,
@@ -9437,30 +9245,6 @@
   "cn_pass": 0,
   "cn_last": "2026-11-06T02:02:55Z"
  },
- "98dd04efedae9a99f4c93e91aa4ef30b74831143": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
- "8b0ba54131678a467b7e3fe54002a0e8a101d48d": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
- "679b4824d8cf2044822d3efd6621999132364b5e": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 6,
-  "cn_runs": 6,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
  "892972b5588283b0355d4e12cc03c3b02bb2d3b9": {
   "cn_ok": false,
   "cn_streak": 0,
@@ -9469,21 +9253,13 @@
   "cn_pass": 0,
   "cn_last": "2026-11-06T02:02:55Z"
  },
- "b8447e4fabe652fbce62f3dd341bdec783f21463": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
  "76a90e50022c1e78b2ca8ff0aa5040ec4104ffac": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 7,
-  "cn_runs": 7,
+  "cn_fails": 8,
+  "cn_runs": 8,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "ce69ec0f2b18e3d2661b570be068706cbf1cb06d": {
   "cn_ok": false,
@@ -9493,39 +9269,15 @@
   "cn_pass": 0,
   "cn_last": "2026-11-06T02:02:55Z"
  },
- "33bf53e9d3e406a6067560c6f4eb0592448c6a09": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
- "e314f1f1a64614793df22f44b7ef7fa605538c23": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
- "77bcb26e3d655662d281da5877d3e7afd83028b8": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
  "06b90db1808c316e74b5f31a6365538235ace6e4": {
   "cn_ok": true,
-  "cn_streak": 5,
+  "cn_streak": 6,
   "cn_fails": 0,
-  "cn_runs": 7,
-  "cn_pass": 6,
-  "cn_latency_ms": 1433,
+  "cn_runs": 8,
+  "cn_pass": 7,
+  "cn_latency_ms": 1451,
   "cn_egress": "法国 法兰西岛大区 巴黎  scaleway.com",
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "3156edf922ebba5cf20d3cb19dc57e195970a438": {
   "cn_ok": false,
@@ -9538,10 +9290,10 @@
  "9697ba93000802fd8f5542e564374f05d9340bd9": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 7,
-  "cn_runs": 7,
+  "cn_fails": 8,
+  "cn_runs": 8,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "a55d060e525da770ccd5490a931bfb9ae2c8a42a": {
   "cn_ok": false,
@@ -9551,14 +9303,6 @@
   "cn_pass": 0,
   "cn_last": "2026-11-06T02:02:55Z"
  },
- "f9c8156f74d1a38f9d5e512332627e9f537637af": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
  "568506f58eb30c5b10c2c4234b8d4e511921d5b6": {
   "cn_ok": false,
   "cn_streak": 0,
@@ -9566,14 +9310,6 @@
   "cn_runs": 5,
   "cn_pass": 0,
   "cn_last": "2026-11-06T02:02:55Z"
- },
- "85143da0aa020c76ce5fef1e7db41c86c92fa03a": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
  },
  "35e1e1147ef41c8ef3208a3faea76ecd3d76b6bf": {
   "cn_ok": false,
@@ -9583,29 +9319,13 @@
   "cn_pass": 0,
   "cn_last": "2026-11-06T02:02:55Z"
  },
- "12696848d90a822b979819d64d5d67d624d536ba": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
  "c53159e492b1a245bfc88a561bfd8d5e08348d11": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 7,
-  "cn_runs": 7,
+  "cn_fails": 8,
+  "cn_runs": 8,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
- },
- "1def387aca52afdd5c26bcf8ddd5385f1224857d": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "e2d05345f0341dfece7321ee64f2ad53d3f7212d": {
   "cn_ok": false,
@@ -9615,102 +9335,6 @@
   "cn_pass": 0,
   "cn_last": "2026-11-06T02:02:55Z"
  },
- "38aeb3b6db1e4aaedc80738eecb1aec8c60dac3a": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
- "dbb7a842c7240ee75701d7c38ffd19493b3a6967": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
- "74fd2b79ccfd368b5d8e15a6db62af9e33c23175": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
- "0ffe5082619f7867027b35586b19e9876bae0a67": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
- "f81dba48fba20d691eaa95184848ef0961b64afb": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
- "012b7c070d64430079c173bc7243592d435fa78a": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
- "94c65a009888bfb382bc68b5545d462a8483f84d": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
- "c60286d8860de06730efdc8d6d4b38809485701e": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
- "d1ff7ed7c611c367f703f6b2cf084f0f7631d631": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
- "e7b03032e60cd53ccfee12e942500cbc74705a3f": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
- "a8154d677491c13ae6df333e6bb892730e0b65ec": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
- "083a9c63c533d23d0b5ecf2b20e0f6e34176175d": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
  "cd95e344d4b68e542756020204b971f6c29303e7": {
   "cn_ok": false,
   "cn_streak": 0,
@@ -9719,61 +9343,13 @@
   "cn_pass": 0,
   "cn_last": "2026-11-06T02:02:55Z"
  },
- "0c40d6f3569c14baa0e6b3e09b7484fb8b6c94c8": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
- "f1770dcebb68c4b0d592bd1045ce744d213f0eab": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
  "ce3e68a3f3a46ea9d4a88b424ea7b8195c98b003": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 5,
-  "cn_runs": 5,
+  "cn_fails": 6,
+  "cn_runs": 6,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
- },
- "5a66eae02762541c222560d4259220e618d13ca2": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
- "9453397b7c8ce7f59554c592d68589297c0cabb0": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
- "2323ae2874e11d19734638c1f887b080e421bbfa": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
- "9dac2ead26ae2756282f8b019c05f576a5002753": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "88a93c2abafc8b363a2d0e4a8bd8bedfe7f5bd27": {
   "cn_ok": false,
@@ -9802,130 +9378,26 @@
  "a53a134bb7a677f63a62bd81453adfd1cd79711d": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 7,
-  "cn_runs": 7,
+  "cn_fails": 8,
+  "cn_runs": 8,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
- },
- "4d8375d5206f2644b54d0745bd039df4ac13a58d": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
- "045e19525003b437fddfcb37b9a73879c0c98cee": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
- "27e066057d55ef611736a034d524a4c65c4300bf": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
- "6ea9c3c1711beac4bae727f994d6fc0b30354021": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
- "1f59d378a9dd3ca3537706ed7ed918d2db6a6925": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
- "5a46826b0ac264d720716ee4c800410ee57f7f89": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
- "dc3dec24f68c960130742e3e42e22ffcdb13f6d2": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
- "d90e63d83eb7b5b47ae7bf86edd043c568f0bd0f": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
- "f04c891949eeee666a46bc66f495b2a6da1ed1de": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
- "47e22e221dfe44b967b6948cd6a85ce0a8b6554e": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
- "d4d31fbfac0b3cca67de43293568f7ae0ee0e1bd": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
- "19b4e239b9354c35bcb9410d25cfcff780de5943": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
- },
- "44c707cafd2768e4e5cb41a9ec0eecbd4f446dc9": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 3,
-  "cn_runs": 3,
-  "cn_pass": 0,
-  "cn_last": "2026-11-05T14:50:56Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "746beb6f1e525e072a5ab07698f72320e0823dec": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 4,
-  "cn_runs": 4,
+  "cn_fails": 5,
+  "cn_runs": 5,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "93c0f361634cfefd9b1dd8b1d27f680586b15d8f": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 4,
-  "cn_runs": 4,
+  "cn_fails": 5,
+  "cn_runs": 5,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "3fcbcf8ff305ca17df258e609222f80d00c0fe75": {
   "cn_ok": false,
@@ -9956,31 +9428,31 @@
  "6382d110aed4452af77aa67eb2cc43c1d8a45a80": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 3,
+  "cn_fails": 3,
+  "cn_runs": 4,
   "cn_pass": 1,
   "cn_latency_ms": 258,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "60c4c47a35ecce2ae475ef6d92cbdc6c87215378": {
   "cn_ok": true,
-  "cn_streak": 4,
+  "cn_streak": 5,
   "cn_fails": 0,
-  "cn_runs": 4,
-  "cn_pass": 4,
-  "cn_latency_ms": 567,
+  "cn_runs": 5,
+  "cn_pass": 5,
+  "cn_latency_ms": 592,
   "cn_egress": "意大利 伦巴第大区 米兰  redipo.es",
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "a194925de6c209135ca65d6cc5016a085f1753ea": {
-  "cn_ok": true,
-  "cn_streak": 4,
-  "cn_fails": 0,
-  "cn_runs": 4,
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 5,
   "cn_pass": 4,
   "cn_latency_ms": 565,
   "cn_egress": "意大利 伦巴第大区 米兰  redipo.es",
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "8500bcb67aa504de574722a5dfd2e19a51d7a857": {
   "cn_ok": false,
@@ -10009,10 +9481,10 @@
  "8c5c41a1e6cdaf91f549745da957dad804e0f0af": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 4,
-  "cn_runs": 4,
+  "cn_fails": 5,
+  "cn_runs": 5,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "d927e4985ecc0354b7248d7f9c01a7ad64b3681b": {
   "cn_ok": false,
@@ -10105,18 +9577,18 @@
  "960ad2f1c7903a98a8d741445ca385f0fdaf3b91": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "69d8cb4e53670c2631c07e1d2bc0ee3c045f4b22": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "81ff98bae31959820e655e1d02ec3f2856aebfad": {
   "cn_ok": false,
@@ -10129,58 +9601,58 @@
  "b724f986396a9ca2d0b072fa4f79603fda7708a8": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "06d61169d3d441bdc44917650070c86b2a7d9f58": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "10812878763fb5b627d760f63f6dacf4e778beb7": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "9fc2286573f54a8c85b28a047e6d97473bbec6ce": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "ab23b457c66021ecdc90e4eee13e70ec491d9969": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "4084af70d63ee453d31d640836ec3477f2c58fd7": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "9d01163b7469d11f50e6ae68b76cd8f1378d28e7": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "9ca967230d0733a96b6ccd291aa27202fb1c0482": {
   "cn_ok": false,
@@ -10193,34 +9665,34 @@
  "d373eaf6f68ede5c726678ea3e9b8791db356b57": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "abfb61446d27e427a628f882dc5dae3f3608f11e": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "b727bc32cb06ad69cdf8ea54adb693a5a296fe7f": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "1ec54cd514b5c503a3151209ed2bd0f565dcc6d4": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "aa1ddbd52804bb57634d39dad60616cba8a830a6": {
   "cn_ok": false,
@@ -10233,34 +9705,34 @@
  "92e07ad01960bbf377697adc7308d83dfd89c7f1": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "2128232189abd74c2f230548d790d7c66457be76": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "6c4d749ce6af352b3754ddf164853a3ee55fef47": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "a7350b04a53ae8065a665a1ae808f1a47d9dff07": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "d81dd51d0bc2b6fc0c653d70d90f6db5249bc0b8": {
   "cn_ok": false,
@@ -10273,42 +9745,42 @@
  "ba0f718cfa10215fd9e84f79ac62ac2d0ea3f154": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "d5084b69e1005b06394d4b4f339c394afa00f311": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "a731c2fbaa26be7fb8c642dc46d3470f345a9e3e": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "90431993c7ca8e243cd8b82ae329cc5c54ae4bde": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "881d707923a85ac6f71d6a2ca2384ab606f427c6": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "b7389fab7f1c37d9fa39f0473e754e1ae684497e": {
   "cn_ok": false,
@@ -10321,58 +9793,58 @@
  "9caea242f80a70a9528eaee9eb1859211d5d6f44": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "e7e21eac97bff828a08e72d3c74237aba7e5dba1": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "6b72bc05edef382215309c5c43c4bf88b55979dd": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "8fda81a02f36575dd077b5752cb7746afa77e68f": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "869cf5663079b25fb76dcc830e8c1895b06d2dcf": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "42e2d9888caf0a418fa41e388a3a82d3d82b87c6": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "f102e1288f9ff677e8da348ecac80993777d0ce0": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "df22e6e255e32e3dab871aff1b245ea058a766ab": {
   "cn_ok": false,
@@ -10545,10 +10017,10 @@
  "60f91ec8f52330673b2db14596ba87c2b6c9396f": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "f6781907ffa7ee3d91357c14561502269d32efa6": {
   "cn_ok": false,
@@ -10569,18 +10041,18 @@
  "847b588fbb55e78d93b7fb415a4e7893030c1e20": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "9c43b4089d4e10dccb35a3701cb1fe9f90107e66": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "527558c95e43fda27462fd77e944407686ed769d": {
   "cn_ok": false,
@@ -10601,18 +10073,18 @@
  "bfea6e1922a46d3f01b4c772515cd05a3444dd45": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "8869bb4a5ca7ff603b71a4164fd257d4b2e4bcec": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "f4c8ebb00dbe41b3045e60ab81cf542ae79079e2": {
   "cn_ok": false,
@@ -10634,18 +10106,18 @@
  "d734d7b2c9461cb5402aef1b799ac2708390092e": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "76372754842750ed11e47a198a61511426704d83": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "eeac186e972f53bd77f5bfdab753a10141023484": {
   "cn_ok": false,
@@ -10658,10 +10130,10 @@
  "3a37306fcc7aec3418dbdb325c3143a11bfe5456": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "1e728650a1e6148f62c0782645001b8e5ee752c5": {
   "cn_ok": false,
@@ -10674,10 +10146,10 @@
  "f7e8d32639ebc5aba46a7b0d1ef117d29d0b1b3b": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "e4559107a4005f13a5b3ab50720a3eb9d0cdaef9": {
   "cn_ok": false,
@@ -10690,18 +10162,18 @@
  "c335fd7c750a8be4b995e18457c90b2c0362030d": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "407c3cfddbb707e6292abdd1fcc18b162d560f47": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "3d848206a55b589756f364c925eaba78d3888b99": {
   "cn_ok": false,
@@ -10762,10 +10234,10 @@
  "9ed4b0eb185dfba2f897f006c4d1e01ef2fb0fca": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "3ef29b1ed9d201f64a1eb87f15673a87c91a4b2a": {
   "cn_ok": false,
@@ -10786,18 +10258,18 @@
  "bb18426013fdac40a1eb447727607566d72ae539": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "b598a3d88c3a67bd089aa87b6af35579abfabd2c": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "7ea7465193c2aa44ca35bc103da6aff69badb44b": {
   "cn_ok": false,
@@ -10810,18 +10282,18 @@
  "a1e12e6cdf84ca7854480852a6493f6208f11475": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "0da00ad68206e095e03e6c4034005d9e7d6a1479": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "b451d87ac6e4ee99ba8c7b7af1c876eb94f95462": {
   "cn_ok": false,
@@ -10898,10 +10370,10 @@
  "4f3a09d4928cdf261ecb79d10b12da0fb693a20e": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "f2193a638fb5bec26c7058447d45076e39973a42": {
   "cn_ok": false,
@@ -10938,10 +10410,10 @@
  "334c844fa9dd276484c4d95a626dbf532ebad241": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "97ed5c875d91abcc0dadd48d2240c622bd8958a9": {
   "cn_ok": false,
@@ -10970,10 +10442,10 @@
  "719f15c1a84d17459d720fb8dab779cc703eb3ff": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "c507f3997fa730162aa4274a2218c2930f7ecfe6": {
   "cn_ok": false,
@@ -11034,10 +10506,10 @@
  "d8169979cae7b741807bf6b556ea156f7d918cfe": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "302298f059d0a0bb3212c1bdc686616d807d7816": {
   "cn_ok": false,
@@ -11066,10 +10538,10 @@
  "fa1fd91d01e4486de1a91aece2875851dc475b3f": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "55bc99ad4ab89b6f253fc57b607697c46730a146": {
   "cn_ok": false,
@@ -11098,10 +10570,10 @@
  "a846a36dc2c2989ef5e04d18307230a907e2e22e": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "ceed48b43319212b515b16d14d1c89ce7d321b30": {
   "cn_ok": false,
@@ -11114,10 +10586,10 @@
  "fa78ae3246ad1a04b756e7195de4ac63a45af902": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "889d64e465b80a4f6f8d2cfb524f4afa5acbfce3": {
   "cn_ok": false,
@@ -11130,10 +10602,10 @@
  "ea800d69e76c3d1b496571bf023a528f873c7184": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "73efb11b1c1f64fbe88f5ea073da3b7a35a02979": {
   "cn_ok": false,
@@ -11178,18 +10650,18 @@
  "2fbc28af940667326466c76812439e98de3a19c5": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "bc3d8bfac3a779f5483ded6e7d20dfdcb76a5fcb": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "d5fd88edf3df2fd3b7765cdda967351f78b6dc4c": {
   "cn_ok": false,
@@ -11202,18 +10674,18 @@
  "e8222d1415298ca6a04c756b55b734a2d625191c": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "eb4dc6ab3e6bee9c96ee683c66a0bf89e1e2a549": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "7519025fa73884eb29a6b8e3628e71febd05cac3": {
   "cn_ok": false,
@@ -11226,10 +10698,10 @@
  "308b18aceb1b1af51841253ea69e5b826da7aac2": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "2e5875d9cb58a8a878a662f31b3c7b0dab6ae47a": {
   "cn_ok": false,
@@ -11274,18 +10746,20 @@
  "5168a86a05e0402e688ead382cf56e127ae106b1": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "5c8b068c9d548b84cfbb03c3e8783229ef08c846": {
-  "cn_ok": false,
-  "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
-  "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_ok": true,
+  "cn_streak": 1,
+  "cn_fails": 0,
+  "cn_runs": 3,
+  "cn_pass": 1,
+  "cn_last": "2026-11-06T16:14:42Z",
+  "cn_latency_ms": 2435,
+  "cn_egress": "伊朗 德黑兰省 德黑兰  airoserver.com"
  },
  "8c2f77efe419f5450c1acab99b17d73e8d1d8fce": {
   "cn_ok": false,
@@ -11314,18 +10788,18 @@
  "e8b547d7565a8d8c81baf7082257c70d42f04439": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "5eaed41fff05835e1e9778dcc0474e8f8877e30f": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 2,
-  "cn_runs": 2,
+  "cn_fails": 3,
+  "cn_runs": 3,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T10:14:43Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "9bbd9519172157f6aa939899e48db8a0694dd65b": {
   "cn_ok": false,
@@ -11466,10 +10940,10 @@
  "1af1d33abc83ce0815b19dcefb1c7a7739d48a76": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "d010949b7f404f61e80435130ff8e6661382bf2b": {
   "cn_ok": false,
@@ -11482,10 +10956,10 @@
  "6cb67199543832917da3db52e8ab581f9723bb4b": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "7fa2de63619ae5ddda0fe4e6dcb6c4c423b4e1ae": {
   "cn_ok": false,
@@ -11570,90 +11044,90 @@
  "9ce663a0f69aa82bd243a0a96492329436a1ff77": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "b544fb2c3562a4c343b930b1642334b602a75c93": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "e1e5f12e57153cfabdc19bd76ad9e62a39b851d6": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "26f1ac5bef0de81a07190a079519ee1f5a46d7f4": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "9f6b6448bbb3e886b72c9b70be502c95293255ef": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "6705974f9f766013873a71b4d6a4f31594f144bb": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "bb2acc1bd80c34f55f6bfc7c7841273906bc6b0b": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "1dd6ad02b3af81d38daf73c74be9677a33c68069": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "f269b4362175b3f78f545ead18eafa5a8e4f565e": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "dcf3dafde555ec67e6afc2007fa4502cacb9951a": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "dc1443c6d9171e020f814a519ec7d0d5ce8d1820": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "7ad90589ec3fee83faf4d9a9d15785d56dc40bc1": {
   "cn_ok": false,
@@ -11666,10 +11140,10 @@
  "301dc5ef53c61f420a732880aade5f06415e0aab": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "86fada4a04cba9a4f715233f35b925f00f0ec35a": {
   "cn_ok": false,
@@ -11690,34 +11164,34 @@
  "4d3d8660077952eaa32b336b653cee3cd038cda4": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "d0ddb2647b1334209a4c07386227e123ed3faa7e": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "356bebdd15abaf495556c0fb0fd47bca3331ad35": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "eb9f23ffa19a64324a46ebeeb5929c87c7c917d0": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "ace63d34665ddaf24f92e9683bee7062abaa1efe": {
   "cn_ok": false,
@@ -11746,82 +11220,82 @@
  "332d6a108c0175e293b1b805d31f1558f45660cb": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "818e1390c42602356b8bbfefe73e9ea2eb988954": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "f1fcd4661b99827791bd3caa1e3143291601175f": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "6919a98ab648266082e6af26c96c9ee9dba57e78": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "6e69b92e0532916925a1d7be0aa28513361b3882": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "66767a691f9fd7d9399c70aff92de19f73cc433a": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "f8eed8434e21f4deb90353f5de47627fc3fe0b03": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "e416eca4a68c5b1e81c1d3899d16fb09f10c48d6": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "552dc85b8344e4941c2683787d4f49f8b05edc92": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "9309a0948e6528c5ce8a65834aea02728b67677e": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "737bc58983c05537c6347684f5c0f5f85c7d0a06": {
   "cn_ok": false,
@@ -11834,50 +11308,50 @@
  "8a05c9983bffba9672c9df149f7f7f85a58ea03c": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "998044de610ea36ff2aa76f16eb8fea06f8d747c": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "6848881356ecd15935600806898a0de69b545128": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "b579fb0d0351ca2e2bc96a78991738bb5eabe2e9": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "bb3778cd4f242587c98ebcc83cf2080d2d75fcd7": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "7513d43b8d8cbd71ed7b5de19bc82b96704f93ad": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "b3954dc1c050f4e3b2d14e8931d17676311fb1cc": {
   "cn_ok": false,
@@ -11898,18 +11372,18 @@
  "852b7676f10acb7dac94d12aa86f94980a2689e9": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "9e9b89f799b1d360402838588e4273231fec5bc7": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "8dc52934fd524b9baac13c6f7c3c49ea3c91690a": {
   "cn_ok": false,
@@ -11922,18 +11396,18 @@
  "17ed4ce483d369af8c07f1966a4112d4f2048bee": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "e54bf26519dec330b6595a81e0a65c8f1d5be83d": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "505858841382b79940daa7e1f15032d499e1406a": {
   "cn_ok": false,
@@ -11946,18 +11420,18 @@
  "9921db921d4ed33021112c8c94e29921283999b9": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "45d01bf4d817038b96a8ff8c5e58cddf30411821": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "d7999ce645703d2f975542b6b899d3b8236b9387": {
   "cn_ok": false,
@@ -11970,18 +11444,18 @@
  "1ab7e78aa5e63903445992a17969ccc9f564a539": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "477a9040edbf921543c679e5e5cc083806911c6c": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "7529851bbba784455e6a513f594d57a33fe37cf1": {
   "cn_ok": false,
@@ -11994,10 +11468,10 @@
  "e219e3634723fd2f129173b228c65fce1ddbe454": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "c27c6ba510978bc94c89b0ecb73bfb64cd968665": {
   "cn_ok": false,
@@ -12010,122 +11484,122 @@
  "63aae1d6aa5fcbcc1f94922e41a2286f6f321977": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "566b5e2459d26301607207a71a67cac7f07d5e97": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "aa5532d2d6c39d2c2fb27706c5c7e1b0b655b490": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "a481da819c0bd28e85ad8405e590eed36705b7c6": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "631027e152fb37b02474e193ab2a37f57ff519cb": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "8cd84b9cd1d37e5487ec04e6b378c95969f6eefb": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "2fc2864693a6fb934eb463626b22d0712ce4b816": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "aee1534376237c7c9dec6ade56ad1e3a4adedf1c": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "d8a2dfa3891b134c166e9cb249fb71cfe23901f3": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "3bc7df92e9aa4ae6081b29710f4dbd16e6ff460f": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "1c03ae5b5ec1734f4cbdbce43c3e084760a1f0f3": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "1ac7eef8cd2bb17efc94e3317c7835be9f87b0ac": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "a19764f0b4c2a4c8c8fbd17a4d64d3f8b5e0808a": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "00ff64c2c0fd721851a9fa1917ae577c8c5777a1": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "06fe1d3557720a46a244caebd15ef1e421dbba72": {
   "cn_ok": false,
   "cn_streak": 0,
-  "cn_fails": 1,
-  "cn_runs": 1,
+  "cn_fails": 2,
+  "cn_runs": 2,
   "cn_pass": 0,
-  "cn_last": "2026-11-06T02:33:33Z"
+  "cn_last": "2026-11-06T16:14:42Z"
  },
  "dbeee31e0c5ba85cfdf0500caa4529fd64464506": {
   "cn_ok": false,
@@ -12326,5 +11800,1191 @@
   "cn_runs": 1,
   "cn_pass": 0,
   "cn_last": "2026-11-06T10:14:43Z"
+ },
+ "2ba17fce8c8a9bee01f5ee1888b816784bd695a1": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "5ea2582cd68a1b9fb8b3d90159f7da801e5f3eb1": {
+  "cn_ok": true,
+  "cn_streak": 1,
+  "cn_fails": 0,
+  "cn_runs": 1,
+  "cn_pass": 1,
+  "cn_latency_ms": 1740,
+  "cn_egress": "伊朗 德黑兰省 德黑兰  airoserver.com",
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "b55ae6e4f5ff5294a786f33cc1d03c3632a0b214": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "d92af55cf896de9c814f3acb7b656f76bcf16771": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "1cb9c65d5be725671ceaefb397886b525f52c956": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "ad0f1411eb37f411b27b4eadf874632774a614f3": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "f93b4e9bf98df1080aa9430306d3ce92ff59953b": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "b49f5ddaf30d172833b064fcacf05032e8580a44": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "0209bcdbb005e0199079ae396dd7a84ed9682133": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "fbc1d208e0e3e59aa116be1e1eda0a96f30229f4": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "7ad50d438aaa4f47031cdf5b80b3dd71544f9917": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "1057cbd25eee9bddcceab7b4f64fcbf800cde751": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "a1f93b9f4e325fa1c759b490669018ddd75d1be1": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "a625036ec29e8caca9ccc40228e9a4f609ddce44": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "82ea61fa3aa4a2ddda2052f8474cd09a5d6f8a46": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "d1801a1f19912d663bf63ba9d9fd53d1e5a7b048": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "6d1d406f34f3d56a45a1c1a5a2e3ce10f5afd5c8": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "4f84ed848f8d766cb83378df8e3d327db619bed5": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "6fd764caba0a607b1a0c708632cc3c1d1ca3bd46": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "038f08fe1bf8f695ba52531b76692c418bc6f4d2": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "85586e0f259ffec72d27773de73b00052d5c840b": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "f95f323ab8d30248ce278100ca0f5e4711944b9a": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "6fcb04576cc54839333fb68162d649498a227700": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "228a8b4540872f7a3af3e7ee475ef140795611ee": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "82362cd9a4a7cba661fe649e0e9704293cc3ab85": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "125a2d04ec2c95b93004130cbcd29ff1332b1ac4": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "1fb68222e09e90486f125ba5d636339ace048127": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "92f179389a0ac1414eeac4f9d2e4fbd0c7a73af1": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "0261e8eee47a6effe95432a47b3faa7a01093504": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "6eb69dc0e38c0f1e17cdec1301dc9b277a9a43ed": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "e110b914c4cd9471c73b91603b41a59cedee85eb": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "6aa37b7f4750334188627ff44585b9f8732d4c85": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "1a413369026031d4ea7ce9c04268a9169ffe668d": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "fa99efe7817bf5a9594bf25fc0b40419a6a1e248": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "05fc1f2d053578dc01b0ba8ccc15e49dabb28cb7": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "5fa07636dd925f763c0c9d4d99247795dda23c34": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "83e4a8b66e6aeddc92d07565eecd1749542978d1": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "06bda9e63c1e7ee0db537d298b0b61a70c07b91d": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "41835b7a2cb1e6a54bb02ac8c828aaca68816861": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "a6b5a1d02dff86401e0c6f9d2c70566fb5694866": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "b1c8d9900e4081d04401eca94ef050ca44e37dae": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "031e46e9b9a1d967a87868e511f6af178f1a55c4": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "6669990aa22c85e6bb95fb993b14286ed6a89598": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "66ec13beac29bf88eaf872b0912f5f50aab97c45": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "20954646117b6a053400ecf3749d4bdd1a280113": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "2d2f04e95b90719c029d76d8dc7c702279bf2d47": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "2e951fac5aa9d245079f0b322d5fae29d7a93df9": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "4d5fdcc0ef5fe3a253f08c0387b80b10ee17db70": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "b408f7e6db1526870bfa6032db76d81b3c514574": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "71af066e19fcff4cdb7ed6a98e2474acbb647c23": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "01d7094ed3feb06504eac5f984113effb6cec76f": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "2f88624863eacbeaeba41430b58dc903df5e0d95": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "fd92731a79977ca585ec152bdd154cbf73f7ebbf": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "c9bd1c0798b97b4b1b4573b5e44cdd06508417bb": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "e730dd261b6d5bf11c965c23e2fe3e2a88779fe7": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "3e9bac00f5488257a9b3fc6f25b82299a71a7c06": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "d6ebe592d899396b34ec744cbb6167290da8e600": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "551bd4f08ca658c8fa8409498fda4b9c98fefdff": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "5d7b0e36db32804592889aecc1ead4390b7de433": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "1ae5492453371ae06135de7b293ca9eb533f11fa": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "b1e8bfd23202f8b855d891f38cd9bc4713b20f50": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "4e86bf05499d9ac330c7664a00bc62bf443d3887": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "cf541e65c3aeb2bc9e5217bc0466894f61f22606": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "9832ffbefc7d7e5afe44939e177101bc6319b7c9": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "27a43447ae6283bd038a146dd58132713f02ad61": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "b87572293a2c6cac3b4e01b98004cbcb50c6b1b9": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "1195d116092575295949598ed4d77bd25da59d9c": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "27b17469fdb5129174e08798d3d58714588c2314": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "7f1bab3a309e069edc1e16a8dfbb8b384b10be33": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "1841decd12eec23b4ccce7bbc09a404dc82e4fb5": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "fd345c62e906ce6a7511fc25aad7d408fe8d51c6": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "252b0eb254f8590c717a8377cdea6a443ad94ddc": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "522087ab47b20b5fdf1143bcbe7a97d4f97d7f7b": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "bbe3ee449a95affa162cf5f5c8a7a8434d78dd96": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "d488240c77aee5aaa9ecf7bce3064d87d995c158": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "72ada21c5688df81cd58cd381c12d7cf8b9fd4d7": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "b6e8c727cf91fcc7287586a3a695d6565cbcc39e": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "f8197166cf63ab614d99613829791a57971233e4": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "6750eba0ba07858d0482467d61b79a0bbbcf8afe": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "7ba71bb24d4d4e3ad3c473d2186a1afb796969a5": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "83b688babb8eb88849e8b5d135a6a3b812aba338": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "82e986c3f618bd43110d7a9244dce0732b68afbb": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "d42c3037d1e923400daf57e7412adf7579d17c92": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "a90ed06c52ceab6148d9a30a2e88eb23645291a3": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "d7b1be9e7109fbdbf27733af854196d25aed62be": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "e2d404492ae173125cc94c1c083e3784183623c8": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "a2c28ac12c47b96ecb874d1b60afdd335944b0ee": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "d60ef4388fab9a18a951338c4548c66a28d4b3ef": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "4c2155d914cd0b0054985a4264bad624545b59b0": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "beced05916a532af422242bdc7a20f66b0b3ea15": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "b3e7331b2b0a1ac53b71aae1c31d4ec29b7ded88": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "d49db62c9960b26d0064d3265272415c568ca824": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "6fe96f88308a09cf45bfb069451053d3221dc4a7": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "4e8625bd14076c837506a043f397368e18a6d020": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "3e4cd0101b6a4d34c9b55a5c6637ee4eab0d809b": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "5db7db27cd56be6f304c924cb927d7a7c08d1a55": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "e6153a3997165668e840cf61d70e5df76bbbe18d": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "aa40fe8114d8cdec74c651ec8803dee314005a46": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "552c1eb9eca8a5224704c886fdc516a1e268b739": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "14c43b996478231b011f90166bcbf700c18d3ddb": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "71292072624edc8e37a749e3a8a3b9c2884b1199": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "b2eea98ffa02c2e065f6a4521e437e90205d4eb3": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "6aeaf1bbe5f3e2657e9f1c0c85679d7520a3013a": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "7ec2b411de2034d6552897ff2b0b9afbb242ac5b": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "696b2346f973fd7a8f3fcbd3e4ac18c322008180": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "61e54960964c68106f762cc4f8bc6b4d33b4552f": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "27325565cf7a5ef4ed3043db3fe3d1be675f5a91": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "01bdfa0c939b43c21e303ff0aa1d3a9c83df22d8": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "707e369d70d0f54a8bdb06181b10bda0f30d944a": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "2781c059c108e67236f9778651cd1a476cbefb8d": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "d7a4434a1ff9de932a5a6a76ae0be0baed667d91": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "11b70cd7ac1be53b531dc885b0e252a694496096": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "3045789a4a0f52cbd5887185fcc82ea82c9c52b7": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "6ffd7d215f0c47b59610db3b911abcaf5fdf4480": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "43c671f82024ebbc709b49401dc142c451b24b66": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "45986c480c56bd53e1a6a607bfd7c7afafb6344e": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "8e0b50727d18c929c70f6983116a4e19e3353017": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "07c1744a9530d5657f232f79fbc1e2ed376367fb": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "d2d486010689a3f5f096d54f5048e872d1868956": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "82e0d00897ff765b2c91c986c915af27db2be2e3": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "7fd865b38c86af21e9d63ec7cacdbce536e5e658": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "7932c37c986db933c6f7f02d2eac0b9f6cbcc8d6": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "c05216b768883c0011ec23263121d4581b423369": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "6e656aadd80e4cff0b578839389b7241824d6730": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "ea52232096c7613f7afd7d7e18b58ec80f1b4dd8": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "69f69a9d642459539badf1b29e183b3afda00fd6": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "7f39b7796afd7c14336931934bce8d3e5e13b2a1": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "70e4425e9997cf98265cd527495f51735d1d21fc": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "ebcae0e611a315abff8d3d557af8ffbf1d290cdc": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "866597871e94617c473bbd7e581100d8cb1d5f0f": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "a7b6414fe86aef60c7bf0d0684d8861e12d7dea3": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "75a8f6a189d1138bb6fbffe695ede9b392f96386": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "e87604383d7600fb52c927f418c9620eb464f384": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "e908875ba4b2981047543338e82a29ecbee68954": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "000506ce6cd60960db75d3575752462272463e09": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "c801889c5ee37c9e9c5c5eade176d8d87c207d67": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "8fae8cfcdb5d306d4600f86375f2117e85dded9b": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "16fb49ed79f9568d0c71bf6ffb99538a5bc63efe": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "9ac4e8b0b2980e08eecdcc4128a854d2d0fe73e2": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "204b51dce4dc7e3a50cd3b37bf9e3ba3ac856157": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "8fc75dca91a2580538e052f9f958ee98d4663a25": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "0b98e1dd97f696d0e81e74eddf945999032b7cf5": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "7d40f0721bcec7af44dfa9c39c0661c2cff69177": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "9ef9e736df48ae09e590cb5ea0e2f8bbab5da7db": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "bb5d41de56091e5c2ffbed49bb06b0c1e332aebe": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "d7ff85eb59b7fa1dd20b86e9d8ccf744d2cb6ad4": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "e4917fa8f8635c097d0442749404208c99d71755": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
+ },
+ "72e061a261e672c1b7425576b8e1e6b9ff5ebf56": {
+  "cn_ok": false,
+  "cn_streak": 0,
+  "cn_fails": 1,
+  "cn_runs": 1,
+  "cn_pass": 0,
+  "cn_last": "2026-11-06T16:14:42Z"
  }
 }
