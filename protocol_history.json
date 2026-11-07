@@ -1,10 +1,10 @@
 {
  "vless": {
-  "rounds": 7,
-  "tested": 1851,
-  "passed": 38,
-  "last_round": "20261106T0213Z",
-  "last_ts": "2026-11-06T02:33:33Z",
+  "rounds": 9,
+  "tested": 2258,
+  "passed": 41,
+  "last_round": "20261106T1226Z",
+  "last_ts": "2026-11-06T14:14:42Z",
   "recent": [
    {
     "round": "20261014T2139Z",
@@ -40,15 +40,25 @@
     "round": "20261106T0213Z",
     "tested": 204,
     "passed": 1
+   },
+   {
+    "round": "20261106T0249Z",
+    "tested": 206,
+    "passed": 2
+   },
+   {
+    "round": "20261106T1226Z",
+    "tested": 201,
+    "passed": 1
    }
   ]
  },
  "hysteria2": {
-  "rounds": 7,
-  "tested": 326,
+  "rounds": 9,
+  "tested": 359,
   "passed": 15,
-  "last_round": "20261106T0213Z",
-  "last_ts": "2026-11-06T02:33:33Z",
+  "last_round": "20261106T1226Z",
+  "last_ts": "2026-11-06T14:14:42Z",
   "recent": [
    {
     "round": "20261014T2139Z",
@@ -84,15 +94,25 @@
     "round": "20261106T0213Z",
     "tested": 16,
     "passed": 1
+   },
+   {
+    "round": "20261106T0249Z",
+    "tested": 16,
+    "passed": 0
+   },
+   {
+    "round": "20261106T1226Z",
+    "tested": 17,
+    "passed": 0
    }
   ]
  },
  "anytls": {
-  "rounds": 7,
-  "tested": 41,
+  "rounds": 9,
+  "tested": 51,
   "passed": 17,
-  "last_round": "20261106T0213Z",
-  "last_ts": "2026-11-06T02:33:33Z",
+  "last_round": "20261106T1226Z",
+  "last_ts": "2026-11-06T14:14:42Z",
   "recent": [
    {
     "round": "20261014T2139Z",
@@ -128,15 +148,25 @@
     "round": "20261106T0213Z",
     "tested": 5,
     "passed": 0
+   },
+   {
+    "round": "20261106T0249Z",
+    "tested": 5,
+    "passed": 0
+   },
+   {
+    "round": "20261106T1226Z",
+    "tested": 5,
+    "passed": 0
    }
   ]
  },
  "trojan": {
-  "rounds": 7,
-  "tested": 499,
-  "passed": 12,
-  "last_round": "20261106T0213Z",
-  "last_ts": "2026-11-06T02:33:33Z",
+  "rounds": 9,
+  "tested": 632,
+  "passed": 15,
+  "last_round": "20261106T1226Z",
+  "last_ts": "2026-11-06T14:14:42Z",
   "recent": [
    {
     "round": "20261014T2139Z",
@@ -172,15 +202,25 @@
     "round": "20261106T0213Z",
     "tested": 69,
     "passed": 2
+   },
+   {
+    "round": "20261106T0249Z",
+    "tested": 64,
+    "passed": 2
+   },
+   {
+    "round": "20261106T1226Z",
+    "tested": 69,
+    "passed": 1
    }
   ]
  },
  "hysteria": {
-  "rounds": 7,
-  "tested": 67,
-  "passed": 36,
-  "last_round": "20261106T0213Z",
-  "last_ts": "2026-11-06T02:33:33Z",
+  "rounds": 9,
+  "tested": 89,
+  "passed": 42,
+  "last_round": "20261106T1226Z",
+  "last_ts": "2026-11-06T14:14:42Z",
   "recent": [
    {
     "round": "20261014T2139Z",
@@ -216,6 +256,16 @@
     "round": "20261106T0213Z",
     "tested": 11,
     "passed": 4
+   },
+   {
+    "round": "20261106T0249Z",
+    "tested": 11,
+    "passed": 5
+   },
+   {
+    "round": "20261106T1226Z",
+    "tested": 11,
+    "passed": 1
    }
   ]
  },
@@ -234,11 +284,11 @@
   ]
  },
  "ss": {
-  "rounds": 4,
-  "tested": 183,
-  "passed": 79,
-  "last_round": "20261106T0213Z",
-  "last_ts": "2026-11-06T02:33:33Z",
+  "rounds": 6,
+  "tested": 278,
+  "passed": 118,
+  "last_round": "20261106T1226Z",
+  "last_ts": "2026-11-06T14:14:42Z",
   "recent": [
    {
     "round": "20261105T0944Z",
@@ -259,6 +309,16 @@
     "round": "20261106T0213Z",
     "tested": 45,
     "passed": 23
+   },
+   {
+    "round": "20261106T0249Z",
+    "tested": 48,
+    "passed": 21
+   },
+   {
+    "round": "20261106T1226Z",
+    "tested": 47,
+    "passed": 18
    }
   ]
  }

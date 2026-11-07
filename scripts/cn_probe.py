@@ -186,6 +186,22 @@ AI_TARGETS = {
     "copilot": "https://copilot.microsoft.com/",
     "openai_api": "https://api.openai.com/v1/models",
 }
+# 「真实站点」可达性目标（任务#131，2026-11-06）。
+# 实证：24 个订阅节点里 16 个意大利 ss，**测速域名与 apple/microsoft/example
+# 都能通，而 google/youtube/chatgpt/github 全部在 TLS 握手被掐断**——这是运营商
+# 定向「免流」节点的典型特征：只放行计费豁免名单内的域名，所以测速有数据、
+# 真实站点一概不通。而我们的闸门恰好只用测速域名（CF/OVH/阿里云）验证，
+# 等于拿它们的白名单做体检。故补一组「用户真正要访问」的目标，状态码任意
+# （403/429 也算通——那说明 TLS 与 HTTP 都走通了，只是被目标站策略拒绝）。
+SITE_TARGETS = {
+    "google": "https://www.google.com/generate_204",
+    "youtube": "https://www.youtube.com/",
+    "github": "https://github.com/",
+}
+# 判定「可上网」的必测集合（chatgpt 复用 AI_TARGETS 的那条）
+USABILITY_TARGETS = ("google", "youtube", "github", "chatgpt")
+USABILITY_MIN_HITS = 2
+SITE_TIMEOUT_S = 8
 AI_TIMEOUT_S = 8
 AI_CONCURRENCY = 5     # 单节点 5 个 AI 域并行（共享同一 PROBE 选择，节点间必须串行）
 EVIDENCE_CONCURRENCY = 8   # 单节点证据总并行度：GEO 3 源 + AI 5 域（任务#91 合并）
@@ -939,6 +955,11 @@ def save_node_library(nodes: list[dict], workdir: str, stamp: str,
         rec["last_seen_ts"] = int(now)
         rec["last_ok"] = bool(ok)
         rec["fails"] = 0 if ok else int(rec.get("fails") or 0) + 1
+        # 可用性不达标（免流白名单型）单列标记：这类节点复测再多次也过不了
+        # 真实站点，继续排队只是浪费拨测预算（任务#131）。
+        if n.get("_usability_fail"):
+            rec["usability_bad_ts"] = int(now)
+            rec["usability_reason"] = n.get("_usability_fail")
         lib[n["fp"]] = rec
 
     # 裁剪按「最近一次见到」而不是「最近一次通过」：后者会把仍在复测中的
@@ -982,6 +1003,9 @@ def load_node_library(workdir: str, exclude_fps: set[str], *,
         p = rec.get("proxy")
         if not isinstance(p, dict) or not p.get("server"):
             continue
+        bad_ts = float(rec.get("usability_bad_ts") or 0)
+        if bad_ts and now - bad_ts < float(getattr(config, "USABILITY_BAD_QUIET_D", 7)) * 86400:
+            continue      # 可用性判定不合格的节点，静默期内不再占复测名额
         seen = float(rec.get("last_seen_ts") or 0) or _epoch_of(rec.get("last_pass"))
         # 刚测过的让位：否则高 passes 的节点每轮都占满名额，新血永远进不来
         if now - seen < quiet_s:
@@ -1575,15 +1599,62 @@ def node_evidence(api_port: int, mixed_port: int, name: str) -> dict:
                     for u in GEO_URLS]
         ai_futs = [ex.submit(_http_status_via_proxy, u, proxy, AI_TIMEOUT_S)
                    for u in AI_TARGETS.values()]
+        site_futs = [ex.submit(_http_status_via_proxy, u, proxy, SITE_TIMEOUT_S)
+                     for u in SITE_TARGETS.values()]
         geo_results = [f.result() for f in geo_futs]
         ai_codes = dict(zip(AI_TARGETS, (f.result() for f in ai_futs)))
+        site_codes = dict(zip(SITE_TARGETS, (f.result() for f in site_futs)))
     geo_ev: dict = {}
     for url, ev in zip(GEO_URLS, geo_results):
         if ev:
             ev["via"] = url
             geo_ev = ev
             break
-    return {"geo": geo_ev, "ai": classify_ai(ai_codes)}
+    # codes 保留原始状态码：可用性闸门要判「TLS 有没有走通」，403 也算通
+    codes = dict(site_codes)
+    codes["chatgpt"] = ai_codes.get("chatgpt")
+    return {"geo": geo_ev, "ai": classify_ai(ai_codes), "codes": codes}
+
+
+def usability_verdict(codes: dict | None, need: int | None = None) -> tuple[bool, str]:
+    """真实站点可达性判定（纯函数，任务#131）。
+
+    `codes` 是 {站点: HTTP 状态码 or None}。判据：只要有 HTTP 响应就算「通」，
+    包括 403/429——那说明 TLS 握手与 HTTP 往返都完成了，只是被目标站按策略
+    拒绝；免流节点则在 TLS 阶段就被掐断（None）。
+
+    默认要求 USABILITY_MIN_HITS(2) / 4 个必测站点。返回 (是否可用, 说明)。
+    """
+    need = USABILITY_MIN_HITS if need is None else need
+    codes = codes or {}
+    hit = [k for k in USABILITY_TARGETS if codes.get(k)]
+    detail = f"{len(hit)}/{len(USABILITY_TARGETS)}"
+    if hit:
+        detail += ":" + ",".join(hit)
+    return len(hit) >= need, detail
+
+
+def apply_diversity_cap(nodes: list[dict], per_server: int | None = None) -> tuple[list[dict], list[dict]]:
+    """同一服务器地址的主资产配额（纯函数，任务#131）。
+
+    实证：24 个节点里 16 个意大利 ss，来自 15 个地址但命名/指纹同源，说明
+    同一供应商在用大量端口灌节点。集中度太高有两个后果：
+      1. 供应商挂了订阅同时归零（单点故障）；
+      2. 用户看到「几乎都是意大利节点」，主观可用性极差。
+    按 server 限流，超出的退回第二资产（不删除，仍在复测池里）。
+    """
+    cap = int(per_server or getattr(config, "MAX_NODES_PER_SERVER", 3))
+    kept: list[dict] = []
+    dropped: list[dict] = []
+    seen: dict[str, int] = {}
+    for n in nodes:
+        srv = str((n.get("proxy") or {}).get("server") or "?")
+        if seen.get(srv, 0) >= cap:
+            dropped.append(n)
+            continue
+        seen[srv] = seen.get(srv, 0) + 1
+        kept.append(n)
+    return kept, dropped
 
 
 def load_learning() -> dict:
@@ -2554,6 +2625,41 @@ def main() -> int:
             f"{getattr(config, 'FILLER_MAX_LATENCY_MS', 1500)}ms 且流量 <"
             f"{getattr(config, 'FILLER_MAX_BYTES', 1048576) // 1024}KB」的节点退回第二资产"
             f"（这类节点在客户端一次性测全部时会超时；延迟低的小节点不受影响）")
+
+    # 6.69) 真实站点可用性闸门（任务#131，2026-11-06）：发布前置条件。
+    # 背景见 config.USABILITY_ENABLED 注释——免流节点能过测速域名却上不了网。
+    # 无证据的节点不判（不拿缺失当不合格），只在日志里计数。
+    if verified and getattr(config, "USABILITY_ENABLED", True):
+        _ux_ok, _ux_bad, _ux_unknown = [], [], 0
+        for n in verified:
+            codes = (results.get(n["probe_name"]) or {}).get("codes") or {}
+            if not codes:
+                _ux_unknown += 1
+                _ux_ok.append(n)
+                continue
+            _ok, _why = usability_verdict(codes)
+            if _ok:
+                _ux_ok.append(n)
+            else:
+                n["_usability_fail"] = _why
+                _ux_bad.append(n)
+        if _ux_bad:
+            verified = _ux_ok
+            degraded = degraded + _ux_bad
+            log(f"可用性闸门: {len(_ux_bad)} 个节点「测速能通但真实站点不通」"
+                f"（google/youtube/github/chatgpt ≥2 未达成，免流白名单特征）→ 退回第二资产"
+                + (f"；{_ux_unknown} 个无证据保留" if _ux_unknown else ""))
+
+    # 6.69b) 集中度上限（任务#131）：同一 server 超过 MAX_NODES_PER_SERVER 的退回
+    if verified:
+        _dkept, _ddrop = apply_diversity_cap(
+            verified, getattr(config, "MAX_NODES_PER_SERVER", 3))
+        if _ddrop:
+            verified = _dkept
+            degraded = degraded + _ddrop
+            log(f"集中度上限: {len(_ddrop)} 个节点因同一服务器超过 "
+                f"{getattr(config, 'MAX_NODES_PER_SERVER', 3)} 个而退回第二资产"
+                "（防单供应商单点故障、防「全是同一个国家」）")
 
     # 6.7) 用户本地实测硬否决（2026-10-29 任务#113）：用户家宽的实测结论是
     # 最终事实——本地连不上的节点，沙箱再快也不该进主资产。置于 AI 提级之后，

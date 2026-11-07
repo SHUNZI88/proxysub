@@ -58,6 +58,12 @@ def test_node_evidence_single_switch_and_merges_geo_ai(monkeypatch):
         ai_calls.append((url, proxy))
         codes = {"chatgpt": 403, "claude": 200, "gemini": None,
                  "copilot": 302, "openai_api": 401}
+        # 任务#131：同一个 HTTP 探测函数也用于「真实站点」目标
+        sites = {"https://www.google.com/generate_204": 204,
+                 "https://www.youtube.com/": 200,
+                 "https://github.com/": None}
+        if url in sites:
+            return sites[url]
         return codes[next(k for k, v in cn_probe.AI_TARGETS.items() if v == url)]
 
     monkeypatch.setattr(cn_probe, "_geo_evidence_via_proxy", _fake_geo)
@@ -65,14 +71,18 @@ def test_node_evidence_single_switch_and_merges_geo_ai(monkeypatch):
     out = cn_probe.node_evidence(9097, 7897, "node-x")
     # 恰好一次切组（selector=PROBE）——GEO 与 AI 合并后不得重复切组
     assert len(puts) == 1 and puts[0][1] == "/proxies/PROBE"
-    # 8 路并行全部发出：GEO 3 源 + AI 5 域，且都经 mixed-port 代理
-    assert len(geo_calls) == 3 and len(ai_calls) == 5
+    # 全部并行发出：GEO 3 源 + AI 5 域 + 真实站点 3 个（任务#131），都经 mixed-port
+    assert len(geo_calls) == 3 and len(ai_calls) == 5 + len(cn_probe.SITE_TARGETS)
     assert all(p == "http://127.0.0.1:7897" for _, p in geo_calls + ai_calls)
     # GEO 证据合并（首个成功源的 via 归属）
     assert out["geo"]["exit_ip"] == "9.9.9.9"
     assert out["geo"]["via"] == cn_probe.GEO_URLS[0]
     # AI 证据合并（openai_api=401 ⇒ API 层可用）
     assert out["ai"]["ai_reachable"] is True
+    # 真实站点状态码原样回传，供可用性闸门判定（403 也算通）
+    assert out["codes"]["google"] == 204 and out["codes"]["chatgpt"] == 403
+    # 真实站点状态码原样回传，供可用性闸门判定（403 也算通）
+    assert out["codes"]["google"] == 204 and out["codes"]["chatgpt"] == 403
     assert out["ai"]["ai_api"] is True
     assert set(out["ai"]["reach"]) == {"chatgpt", "claude", "copilot", "openai_api"}
 
@@ -1740,3 +1750,41 @@ def test_serial_recheck_default_uses_single_attempt_probe(monkeypatch):
     cn_probe.serial_latency_recheck(0, [{"probe_name": "a"}], {"a": {}},
                                     samples=3, min_pass=2)
     assert calls["n"] == 3
+
+
+# ------------------------------------- 真实站点可用性闸门（任务#131）
+def test_usability_verdict_counts_any_http_status():
+    """403/429 也算通：那说明 TLS 与 HTTP 都走通了，只是被目标站策略拒绝；
+    免流节点在 TLS 阶段就被掐断（None），这才是要拦的。"""
+    ok, why = cn_probe.usability_verdict({"google": 204, "youtube": 200,
+                                          "github": None, "chatgpt": 403})
+    assert ok is True and why.startswith("3/4")
+
+
+def test_usability_verdict_rejects_whitelist_only_nodes():
+    """实证：意大利 ss 节点 apple/microsoft 能通、google/youtube/chatgpt/github
+    全灭——这正是「测速有数据、实际不能用」的形态。"""
+    ok, why = cn_probe.usability_verdict({"google": None, "youtube": None,
+                                          "github": None, "chatgpt": None})
+    assert ok is False and why == "0/4"
+
+
+def test_usability_verdict_needs_two_hits():
+    assert cn_probe.usability_verdict({"google": 204})[0] is False
+    assert cn_probe.usability_verdict({"google": 204, "github": 200})[0] is True
+
+
+def test_diversity_cap_limits_per_server():
+    """24 个节点里 16 个来自同一批意大利 ss——单供应商占三分之二，必须限流。"""
+    nodes = [{"proxy": {"server": "a"}} for _ in range(5)] + \
+            [{"proxy": {"server": "b"}} for _ in range(2)]
+    kept, dropped = cn_probe.apply_diversity_cap(nodes, per_server=3)
+    assert len(kept) == 5 and len(dropped) == 2      # a 留 3，b 留 2
+    assert sum(1 for n in kept if n["proxy"]["server"] == "a") == 3
+
+
+def test_diversity_cap_keeps_order():
+    nodes = [{"proxy": {"server": s}} for s in ("a", "a", "b", "a", "a")]
+    kept, dropped = cn_probe.apply_diversity_cap(nodes, per_server=2)
+    assert [n["proxy"]["server"] for n in kept] == ["a", "a", "b"]
+    assert len(dropped) == 2
