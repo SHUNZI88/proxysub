@@ -59,7 +59,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 import zipfile
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, REPO_ROOT)
@@ -853,6 +853,132 @@ def load_doc_nodes(path: str, origin: str) -> list[dict]:
             "us_ok": bool(n.get("us_ok")),
             "src": str(n["src"]) if n.get("src") else None,
         })
+    return nodes
+
+
+def even_sample(items: list, n: int) -> list:
+    """全表均匀取样（纯函数，任务#133）。
+
+    聚合源的开头往往是最早收录、最旧的一批。实测 anaer/Sub 1796 个节点，
+    取前 100 个全部失效；按位置截断等于每轮都在测最旧的那一段。
+    """
+    if n <= 0 or len(items) <= n:
+        return list(items)
+    step = len(items) / float(n)
+    return [items[int(i * step)] for i in range(n)]
+
+
+def fetch_live_pool(workdir: str, per_source: int | None = None,
+                    timeout: int = 20) -> list[dict]:
+    """实时抓取官方源，产出与 pending 同形的待测节点（任务#133）。
+
+    **为什么必须实时抓**：本地轮次原来只测 CI 生成的 pending_probe.json，
+    实测其 generated_at 与实测时刻相差 3~6 小时（2026-11-07：02:16Z 生成、
+    06:05Z 才测）。免费节点寿命以小时计，等于「拿已经凉了的名单去体检」——
+    1137 个候选只过 3 个（0.26%），而被用户随手一抓的源里活节点远多于此。
+    结论：这不是源枯竭，也不是测量失灵，是**供给链路把新鲜节点放凉了**。
+
+    抓取失败不致命：返回空列表，调用方继续用快照（退化行为与修复前一致）。
+    """
+    per_source = int(per_source or getattr(config, "LIVE_PER_SOURCE", 120))
+    src_file = os.path.join(REPO_ROOT, "sources.json")
+    try:
+        with open(src_file, encoding="utf-8") as f:
+            data = json.load(f)
+    except Exception as e:
+        log(f"警告: 读取 sources.json 失败，跳过实时抓取（{e}）")
+        return []
+    urls: list[str] = []
+    for item in (data.get("official") or []):
+        u = item.get("url") if isinstance(item, dict) else item
+        if u:
+            urls.append(u)
+    if not urls:
+        return []
+
+    def _one(url: str) -> list[dict]:
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "curl/8"})
+            with urllib.request.urlopen(req, timeout=timeout) as r:
+                txt = r.read().decode("utf-8", "ignore")
+        except Exception:
+            return []
+        try:
+            doc = yaml.safe_load(txt)
+        except Exception:
+            return []
+        if not isinstance(doc, dict):
+            return []
+        out = []
+        for proxy in (doc.get("proxies") or []):
+            if not isinstance(proxy, dict) or not proxy.get("server"):
+                continue
+            if common.protocol_gate_reason(proxy):
+                continue          # 静态闸门（协议/加密/结构），与 CI 侧同源
+            out.append(proxy)
+        return even_sample(out, per_source)
+
+    # 总时限 + 逐源回报（任务#133）：不能因为一两个源黑洞化就拖死整轮。
+    # 实测：ex.map 会等最慢的那一批，22 个源里只要有一个 SYN 被丢，
+    # 整轮就卡在抓取阶段 7 分钟以上、日志一片空白——用户看到的是「没动静」。
+    budget = float(getattr(config, "LIVE_FETCH_BUDGET_S", 90))
+    fetched: dict[str, list[dict]] = {}
+    ex = ThreadPoolExecutor(max_workers=8)
+    futs = {ex.submit(_one, u): u for u in urls}
+    try:
+        for fut in as_completed(futs, timeout=budget):
+            url = futs[fut]
+            try:
+                fetched[url] = fut.result()
+            except Exception:
+                fetched[url] = []
+            short = url.rsplit("/", 1)[-1][:28]
+            n = len(fetched[url])
+            log(f"实时抓取：{short} → {n} 个" + ("" if n else "（空/失败）"))
+    except Exception:
+        log(f"实时抓取：超出总时限 {budget:.0f}s，已取到的源先用于本轮，"
+            f"剩余 {len(urls) - len(fetched)} 个跳过")
+    finally:
+        for f in futs:
+            f.cancel()
+        ex.shutdown(wait=False)
+
+    seen: set[str] = set()
+    nodes: list[dict] = []
+    per_src: dict[str, int] = {}
+    for url, proxies in fetched.items():
+        if not proxies:
+            continue
+        short = url.split("githubusercontent.com/")[-1].split("/")[0] if "githubusercontent" in url else url[:24]
+        for proxy in proxies:
+            fp = common.fingerprint(proxy)
+            if fp in seen:
+                continue
+            seen.add(fp)
+            per_src[short] = per_src.get(short, 0) + 1
+            nodes.append({
+                "fp": fp,
+                "name": str(proxy.get("name") or "node"),
+                "proxy": dict(proxy),
+                "origin": "pending",
+                "final": False,
+                "us_ok": False,
+                "src": short,
+                "live": True,
+            })
+    if nodes:
+        dead = sum(1 for p in fetched.values() if not p)
+        log(f"实时抓取: {len(nodes)} 个节点 / {len(urls)} 个源"
+            f"（{len(per_src)} 个源有产出，{dead} 个源抓取失败或为空）")
+        try:
+            doc_path = os.path.join(workdir, "pending_live.json")
+            with open(doc_path, "w", encoding="utf-8") as f:
+                json.dump({"generated_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                           "nodes": [{"fp": n["fp"], "name": n["name"],
+                                      "proxy": n["proxy"], "src": n["src"]}
+                                     for n in nodes]}, f, ensure_ascii=False)
+        except OSError:
+            pass
     return nodes
 
 
@@ -1703,6 +1829,178 @@ def target_test(api_port: int, mixed_port: int, name: str) -> dict:
     return {"ok": len(good) >= need, "targets": codes, "hits": good, "ai_ok": ai_ok}
 
 
+def alloc_port(start: int, used: set[int]) -> int:
+    """分配一个未被本进程占用的端口（free_port 会重给出同一端口）。"""
+    for port in range(start, start + 400):
+        if port in used:
+            continue
+        with socket.socket() as sock:
+            try:
+                sock.bind(("127.0.0.1", port))
+            except OSError:
+                continue
+        used.add(port)
+        return port
+    raise RuntimeError("无可用端口")
+
+
+def start_shards(proxies: list[dict], workdir: str, k: int) -> list[dict]:
+    """启动 k 个独立 mihomo 实例（任务#133）。
+
+    为什么必须是独立实例：`target_test` 靠 `PUT /proxies/PROBE` 切换选组，
+    而一个实例里只有一个 PROBE。四个线程并发测四个节点时，后一个 `PUT` 会
+    把前一个节点的流量改道——结果挂到别的节点头上。实测对照（29 个节点）：
+    串行与 4 路并发有 2 个结论相反（1 个假通过、1 个假淘汰）。假通过会让
+    用户看到「发布出来却打不开」，假淘汰会让好节点被永久丢弃。
+    k 个实例 = k 条独立通道，每片串行切换，竞态消失，同时保留并行吞吐。
+    """
+    exe = ensure_mihomo(workdir)
+    if not exe:
+        return []
+    base = os.path.join(workdir, "shards")
+    os.makedirs(base, exist_ok=True)
+    used: set[int] = set()
+    shards: list[dict] = []
+    for i in range(max(1, k)):
+        d = os.path.join(base, f"s{i}")
+        os.makedirs(d, exist_ok=True)
+        mixed = alloc_port(17890 + i * 4, used)
+        api = alloc_port(17990 + i * 4, used)
+        cfg = {
+            "mixed-port": mixed, "allow-lan": False, "mode": "rule",
+            "log-level": "warning", "external-controller": f"127.0.0.1:{api}",
+            "proxies": [dict(p) for p in proxies],
+            "proxy-groups": [{"name": "PROBE", "type": "select",
+                              "proxies": [p["name"] for p in proxies] + ["DIRECT"]}],
+            "rules": ["MATCH,PROBE"],
+        }
+        cp = os.path.join(d, "cfg.yaml")
+        with open(cp, "w", encoding="utf-8") as f:
+            yaml.dump(cfg, f, allow_unicode=True, sort_keys=False)
+        proc = subprocess.Popen(
+            [exe, "-d", d, "-f", cp],
+            stdout=open(os.path.join(d, "m.log"), "w"), stderr=subprocess.STDOUT)
+        shards.append({"api": api, "mixed": mixed, "proc": proc, "dir": d})
+    for sh in shards:
+        if not wait_controller(sh["api"], timeout=45):
+            stop_shards(shards)
+            return []
+    return shards
+
+
+def stop_shards(shards: list[dict]) -> None:
+    for sh in shards:
+        try:
+            sh["proc"].terminate()
+            sh["proc"].wait(timeout=8)
+        except Exception:
+            try:
+                sh["proc"].kill()
+            except Exception:
+                pass
+
+
+def run_sharded(shards: list[dict], items: list, fn):
+    """把 items 轮转分给各分片，每片**串行**执行 fn(shard, item)。
+
+    串行是正确性要求（见 start_shards），并行度来自分片数而不是线程数。
+    """
+    out: dict = {}
+    if not shards or not items:
+        return out
+    lock = threading.Lock()
+
+    def worker(shard: dict, queue: list) -> None:
+        for it in queue:
+            try:
+                res = fn(shard, it)
+            except Exception:
+                res = None
+            with lock:
+                out[it] = res
+
+    threads = [threading.Thread(target=worker, args=(sh, items[i::len(shards)]),
+                                daemon=True)
+               for i, sh in enumerate(shards)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+    return out
+
+
+def run_target_phase(nodes: list[dict], workdir: str, api_port: int,
+                     mixed_port: int, log=print) -> dict:
+    """分片并行直测 + 复测确认，返回 {probe_name: rt}（任务#133）。
+
+    两道设计都有实证支撑：
+      * **分片**：单实例 4 路并发会因选组竞态把结论挂错节点；
+      * **复测确认**（TARGET_CONFIRM_PASSES=2）：单次采样会把「偶发可用」判成
+        可用——用户客户端里 29 个有 11 个超时，主要就是这个来源。第一轮通过者
+        立刻在另一个分片上再测一次，两轮都过才发布。
+    另在收尾时用分片（6 路，接近串行）补测延迟：初筛是 24 路并发，RTT 明显虚高。
+    """
+    if not nodes:
+        return {}
+    k = int(getattr(config, "SHARD_K", 6))
+    passes = max(1, int(getattr(config, "TARGET_CONFIRM_PASSES", 2)))
+    proxies = [dict(n["proxy"], name=n["probe_name"]) for n in nodes]
+    shards = start_shards(proxies, workdir, k)
+    if not shards:
+        log("提示: 分片实例启动失败，回退单实例串行直测（慢但结论正确）")
+        out = {}
+        for n in nodes:
+            out[n["probe_name"]] = target_test(api_port, mixed_port, n["probe_name"])
+        return out
+    out: dict = {}
+    try:
+        alive = [n["probe_name"] for n in nodes]
+        tot = len(alive)
+        for rnd in range(1, passes + 1):
+            res = run_sharded(shards, alive,
+                              lambda sh, nm: target_test(sh["api"], sh["mixed"], nm))
+            for nm in alive:
+                r = res.get(nm) or {"ok": False, "targets": {}}
+                out[nm] = r
+            alive = [nm for nm in alive if (out.get(nm) or {}).get("ok")]
+            log(f"目标直测第 {rnd}/{passes} 轮: 通过 {len(alive)}/{tot if rnd == 1 else '上一轮'}")
+            if not alive:
+                break
+        if alive:
+            lat = run_sharded(shards, alive,
+                              lambda sh, nm: delay_once(
+                                  sh["api"], nm,
+                                  int(getattr(config, "TARGET_LATENCY_TIMEOUT_MS", 5000))))
+            for nm, r in lat.items():
+                if r and r.get("ok") and r.get("latency_ms"):
+                    out[nm]["latency_ms"] = int(r["latency_ms"])
+    finally:
+        stop_shards(shards)
+    return out
+
+
+def synth_ai_from_targets(nodes: list[dict], results: dict) -> None:
+    """直测模式下用目标站结果合成 AI 口径（任务#133）。
+
+    证据采集原本要串行跑满 GEO+AI 八个目标，占上一轮 55% 的时长（361s/660s），
+    却对发布决策零贡献——`codes` 已由 target_test 给出。这里把 chatgpt/claude
+    的实测结果映射成 `ai` 结构，保证报告口径与 dashboard 不断裂。
+    """
+    for n in nodes:
+        ev = results.get(n["probe_name"]) or {}
+        codes = ev.get("codes") or {}
+        if not codes:
+            continue
+        ev["ai"] = {
+            "codes": {k: codes.get(k) for k in ("chatgpt", "claude", "youtube")},
+            # reach 沿用 classify_ai 语义：任何 HTTP 响应（含 403）都算可达；
+            # ai_api 才是「能不能真开」——用实测 ai_ok 填充，两者别混。
+            "reach": [k for k, v in codes.items() if v],
+            "ai_reachable": any(codes.values()),
+            "ai_api": bool(ev.get("ai_ok")),
+        }
+
+
 _REGION_WORDS = ("意大利", "美国", "法国", "德国", "日本", "香港", "台湾", "新加坡",
                  "韩国", "英国", "荷兰", "加拿大", "印度", "阿联酋", "捷克", "越南",
                  "波兰", "西班牙", "土耳其", "巴西", "澳大利亚", "俄罗斯", "泰国",
@@ -2445,6 +2743,18 @@ def main() -> int:
     # 下载失败的 fresh 轮 pend_path 不存在，加载自然为空，与原行为一致。
     pend = load_doc_nodes(pend_path, "pending") if (
         fresh or os.path.exists(pend_path)) else []
+    # 实时抓取替换快照（任务#133）：快照平均 3~6 小时前生成，免费节点早已死亡。
+    # 若实时抓取拿到东西，用它作 pending 主体，快照里未被覆盖的节点保留。
+    if getattr(config, "LIVE_FETCH_ENABLED", True):
+        _live = fetch_live_pool(workdir)
+        if _live:
+            # 实时源独占 pending（任务#133）：快照平均 3~6 小时前生成、通过率
+            # 0.26%，留着只会稀释名额。实测 1500 个测试集里 926 个来自快照，
+            # 白占半天时间换来个位数产出；丢掉它们，同样时长能多测一倍新节点。
+            _old = len(pend)
+            pend = _live
+            log(f"测试集来源: 实时 {len(_live)} 个（丢弃快照 {_old} 个，"
+                f"快照通过率 0.26% 不值预算）")
     resc = load_doc_nodes(rescue_path, "rescue") if (
         fresh or os.path.exists(rescue_path)) else []
     # 用户池复测（任务#122）：同 vantage 或证据过期的池节点，必须走本轮实测，
@@ -2538,10 +2848,24 @@ def main() -> int:
                     f"（其中 {len(ck_real)} 个已出终筛结论），本轮只补测剩余节点")
             # 4.1) 初筛：mihomo delay API（快速排除完全不可达节点）
             todo_delay = [n for n in nodes if n["probe_name"] not in ck_delay]
+            # 直测模式下初筛只做「探活」（任务#133）：
+            #  * delay_test 失败会自动重试（5s→8s），死节点要占 13s——这是
+            #    「单轮只能测 350 个」的隐藏成本；探活用 delay_once 单次 5s；
+            #  * 并发 16→24：初筛不再承担延迟判据（延迟改由分片补测），
+            #    只判通不通，可以更激进。
+            _live = bool(getattr(config, "TARGET_TEST_ENABLED", False))
+            _dly_fn = delay_once if _live else delay_test
+            _dly_workers = (int(getattr(config, "LIVENESS_CONCURRENCY", 24))
+                            if _live else DELAY_CONCURRENCY)
+            _dly_ms = int(getattr(config, "LIVENESS_TIMEOUT_MS", 5000))
             if todo_delay:
-                with ThreadPoolExecutor(max_workers=DELAY_CONCURRENCY) as ex:
-                    futs = {ex.submit(delay_test, api_port, n["probe_name"]):
-                            n["probe_name"] for n in todo_delay}
+                with ThreadPoolExecutor(max_workers=_dly_workers) as ex:
+                    if _live:
+                        futs = {ex.submit(delay_once, api_port, n["probe_name"], _dly_ms):
+                                n["probe_name"] for n in todo_delay}
+                    else:
+                        futs = {ex.submit(_dly_fn, api_port, n["probe_name"]):
+                                n["probe_name"] for n in todo_delay}
                     for fut in futs:
                         name = futs[fut]
                         try:
@@ -2558,7 +2882,8 @@ def main() -> int:
             # 4.15) 延迟串行复测（任务#127）：初筛并发 16 会虚高 RTT，而后续
             # 所有延迟判据（3000ms 降级 / 1500ms 填充剔除 / 报告）都吃这个数。
             # 初筛只负责「通不通」，真实延迟由串行复测给出。
-            if delay_passed and getattr(config, "SERIAL_LATENCY_RECHECK", True):
+            if (delay_passed and getattr(config, "SERIAL_LATENCY_RECHECK", True)
+                    and not getattr(config, "TARGET_TEST_ENABLED", False)):
                 _t = time.time()
                 _r = serial_latency_recheck(api_port, delay_passed, results)
                 if _r["unstable"]:
@@ -2581,9 +2906,24 @@ def main() -> int:
             if delay_passed:
                 t1 = time.time()
                 todo_real = [n for n in delay_passed if n["probe_name"] not in ck_real]
-                if todo_real:
-                    _final_fn = (target_test if getattr(config, "TARGET_TEST_ENABLED", False)
-                                 else real_traffic_test)
+                if todo_real and getattr(config, "TARGET_TEST_ENABLED", False):
+                    # 分片并行 + 复测确认（任务#133）：解决「选组竞态」与
+                    # 「单次采样」两个已实证的错判来源。
+                    _tr = run_target_phase(todo_real, workdir, api_port, mixed_port, log)
+                    for _nm, _rt in _tr.items():
+                        results.setdefault(_nm, {})
+                        if _rt.get("latency_ms"):
+                            results[_nm]["latency_ms"] = _rt["latency_ms"]
+                        if not _rt.get("ok"):
+                            results[_nm]["ok"] = False
+                        results[_nm]["real_traffic"] = _rt
+                        if _rt.get("targets") is not None:
+                            results[_nm]["codes"] = dict(_rt.get("targets") or {})
+                            results[_nm]["ai_ok"] = bool(_rt.get("ai_ok"))
+                        ckpt.mark_real(_nm, results[_nm])
+                    ckpt.flush(force=True)
+                elif todo_real:
+                    _final_fn = real_traffic_test
                     _workers = (TARGET_TEST_CONCURRENCY
                                 if _final_fn is target_test else REAL_TRAFFIC_CONCURRENCY)
                     with ThreadPoolExecutor(max_workers=_workers) as ex:
@@ -2656,7 +2996,17 @@ def main() -> int:
             _deg_ev = sorted(
                 degraded,
                 key=lambda n: 0 if n.get("origin") == "carryover" else 1)
-            ev_nodes = passed[:GEO_MAX_NODES] + _deg_ev
+            if getattr(config, "TARGET_TEST_ENABLED", False):
+                # 直测模式跳过证据采集（任务#133）：它要串行跑满 GEO+AI 八个
+                # 目标，上一轮吃掉 361s/660s（55% 时长），却对发布决策零贡献
+                # ——codes 已由 target_test 给出。跳过它换来「整池可测」，
+                # AI 口径用实测的 chatgpt/claude 结果合成，报告不断裂。
+                synth_ai_from_targets(passed, results)
+                ev_nodes = []
+                log("证据采集: 直测模式已跳过（GEO+AI 八目标串行占总时长 55%，"
+                    "对决策无贡献）；AI 口径改由 chatgpt/claude 实测合成")
+            else:
+                ev_nodes = passed[:GEO_MAX_NODES] + _deg_ev
             # 动态证据预算（2026-10-24 任务#98；2026-11-05 任务#123 修正分母）：
             # 旧实现按 len(passed) 算，而真正要探的是 ev_nodes（passed + 慢档）。
             # 可用档提级上线后慢档也进主资产，分母算漏导致实测「27 个待探只探

@@ -1881,3 +1881,101 @@ def test_interleave_by_source_spreads_slots():
     out = cn_probe.interleave_by_source(big + small)
     assert [n["src"] for n in out[:4]] == ["big", "small", "big", "small"]
     assert len(out) == 12
+
+
+# ------------------------------------- 分片并行与复测确认（任务#133）
+def test_run_sharded_is_serial_within_shard_and_covers_all():
+    """分片内必须串行（选组竞态的唯一解法），跨片并行。
+
+    直接钉住两个性质：① 每个分片拿到的队列互不重叠、并集等于全部输入；
+    ② 同一分片上的执行不重叠（no overlap）。第二条是正确性要求，不是性能偏好。
+    """
+    import time as _time          # 本文件未导入 time；缺失会让 fn 抛异常被吞，
+    shards = [{"api": 1}, {"api": 2}]   # 表现为「假 overlap」，反而掩盖真问题
+    active: dict[int, int] = {}
+    overlap = {"hit": False}
+    seen: dict[int, list] = {1: [], 2: []}
+
+    def fn(shard, item):
+        api = shard["api"]
+        if active.get(api):
+            overlap["hit"] = True
+        active[api] = 1
+        seen[api].append(item)
+        _time.sleep(0.001)
+        active[api] = 0
+        return {"ok": item % 2 == 0}
+
+    items = list(range(10))
+    out = cn_probe.run_sharded(shards, items, fn)
+    assert set(out) == set(items)
+    assert overlap["hit"] is False
+    assert sorted(seen[1] + seen[2]) == items
+    assert out[0]["ok"] is True and out[1]["ok"] is False
+
+
+def test_run_sharded_empty_inputs():
+    assert cn_probe.run_sharded([], [1, 2], lambda s, i: i) == {}
+    assert cn_probe.run_sharded([{"api": 1}], [], lambda s, i: i) == {}
+
+
+def test_run_target_phase_requires_two_consecutive_passes(monkeypatch):
+    """复测确认：第一轮通过、第二轮失败 → 不发布（偶发可用的节点必须被拦下）。"""
+    nodes = [{"probe_name": "a", "proxy": {"name": "a", "type": "ss", "server": "x", "port": 1}},
+             {"probe_name": "b", "proxy": {"name": "b", "type": "ss", "server": "y", "port": 2}}]
+    calls = {"a": 0, "b": 0}
+
+    def fake_target(api, mixed, nm):
+        calls[nm] += 1
+        # a 两次都过；b 只在第一轮过（典型「偶发可用」）
+        ok = True if nm == "a" else calls[nm] == 1
+        return {"ok": ok, "targets": {"youtube": 200}, "ai_ok": False}
+
+    monkeypatch.setattr(cn_probe, "start_shards",
+                        lambda proxies, workdir, k: [{"api": 1, "mixed": 2, "proc": None}])
+    monkeypatch.setattr(cn_probe, "stop_shards", lambda shards: None)
+    monkeypatch.setattr(cn_probe, "target_test", fake_target)
+    monkeypatch.setattr(cn_probe, "delay_once",
+                        lambda port, nm, ms=None: {"ok": True, "latency_ms": 500})
+    out = cn_probe.run_target_phase(nodes, ".", 0, 0, log=lambda *_: None)
+    assert out["a"]["ok"] is True
+    assert out["b"]["ok"] is False          # 第二轮没过，最终判不通过
+    assert calls == {"a": 2, "b": 2}
+
+
+def test_synth_ai_from_targets_maps_codes():
+    """跳过证据采集后，报告里的 ai 口径不能断（dashboard 按 ai_api 统计）。"""
+    results = {"p_x": {"codes": {"chatgpt": 403, "claude": None, "youtube": 200},
+                       "ai_ok": False}}
+    cn_probe.synth_ai_from_targets([{"probe_name": "p_x"}], results)
+    ai = results["p_x"]["ai"]
+    # reach 口径沿用 classify_ai：**任何** HTTP 响应（含 403）都算「可达」，
+    # 而 ai_api 才是「能不能真用」——两者不可互推，这是 2026-10-20 定下的口径。
+    assert ai["ai_reachable"] is True
+    assert ai["ai_api"] is False
+    assert ai["codes"]["youtube"] == 200
+    assert "chatgpt" in ai["reach"]
+
+
+def test_alloc_port_never_repeats():
+    used: set[int] = set()
+    ports = [cn_probe.alloc_port(28000, used) for _ in range(5)]
+    assert len(set(ports)) == 5
+
+
+# ------------------------------------- 实时抓取与取样（任务#133）
+def test_even_sample_spreads_across_whole_list():
+    """取前 N 个等于每轮都在测最旧的那一段——实测 anaer/Sub 1796 个节点，
+    取前 100 全部失效。均匀取样必须覆盖头、中、尾。"""
+    items = list(range(1000))
+    picked = cn_probe.even_sample(items, 100)
+    assert len(picked) == 100
+    assert picked[0] == 0
+    assert 400 < picked[50] < 600
+    assert picked[-1] > 980
+    assert picked == sorted(picked)
+
+
+def test_even_sample_keeps_all_when_small():
+    assert cn_probe.even_sample([1, 2, 3], 10) == [1, 2, 3]
+    assert cn_probe.even_sample([], 5) == []

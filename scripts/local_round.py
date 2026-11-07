@@ -125,8 +125,25 @@ def main(argv: list[str] | None = None) -> int:
     if args.dry_run:
         cmd.append("--dry-run")
     log("启动：" + " ".join(cmd))
+    # 子进程输出必须落盘（任务#133）：计划任务里没有控制台，stdout 直接丢弃。
+    # 实证 2026-11-07 13:14 的定时轮次返回 3（mihomo 未就绪）却没有任何日志可查，
+    # 只能看到一个退出码——排障成本极高，而这类失败会让订阅静默停更。
+    round_log = os.path.join(workdir, "cn_probe_last.log")
+    # 直接写文件而不是先 pipe 再落盘：pipe 版本要等子进程结束才写，
+    # 运行期间完全看不到进度（实测当天就踩到，一轮 10 分钟内无从观察）。
     try:
-        rc = subprocess.run(cmd, env=env).returncode
+        with open(round_log, "w", encoding="utf-8") as lf:
+            rc = subprocess.run(cmd, env=env, stdout=lf,
+                                stderr=subprocess.STDOUT).returncode
+        if rc != 0:
+            try:
+                with open(round_log, encoding="utf-8") as lf:
+                    tail = "\n".join(list(lf)[-12:])
+            except OSError:
+                tail = "(日志读取失败)"
+            log(f"子进程失败（退出码 {rc}），日志尾部：\n{tail}")
+        else:
+            log(f"子进程日志：{round_log}")
     except KeyboardInterrupt:
         rc = 130
     state = round_guard.note_result(workdir, rc)
