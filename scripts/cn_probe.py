@@ -235,6 +235,10 @@ REAL_TRAFFIC_TIMEOUT_S = 8    # 真实下载硬超时预算（秒）
 # 根因不是节点烂，是测量自伤：每节点每源最多拉十几 MB × 3 源 × 2 轮 × 6 并发，
 # 家宽瞬间被打满，第二轮自然掉速。并发降低 + 单源限流（见 SPEED_MAX_BYTES）
 # 后，速度闸门测的才是节点，不是自家的带宽上限。
+# 目标直测并发（任务#132）：每节点只发 3 个 HTTPS 请求、不下大文件，
+# 可以比测速阶段激进；仍限 4 路避免把家宽打满造成假失败。
+TARGET_TEST_CONCURRENCY = 4
+
 REAL_TRAFFIC_CONCURRENCY = 2
 # 出口证据节点数上限（顺序取证时代的限量残留；预算由 EVIDENCE_BUDGET_S
 # 统一封顶，此上限仅在极端通过规模下兜底）。
@@ -663,6 +667,31 @@ def resolve_tested_round(consumed_round: str | None,
     return consumed_round or last_round
 
 
+def interleave_by_source(bucket: list[dict]) -> list[dict]:
+    """把一个桶按来源轮转重排（纯函数，任务#132）。
+
+    免费聚合源的供给量差距极大：一个源能灌 300 个节点、另一个只有 5 个。
+    直接按下标截断，等于把名额全给了最大的那个源——审计时发现 980 个候选里
+    近一半来自两三个源，发布出来自然「满屏同一个国家」。轮转重排后，
+    350 个名额会均摊到全部 19 个源上。
+    """
+    groups: dict[str, list[dict]] = {}
+    for n in bucket:
+        groups.setdefault(str(n.get("src") or "?"), []).append(n)
+    out: list[dict] = []
+    idx = 0
+    while True:
+        added = False
+        for g in groups.values():
+            if idx < len(g):
+                out.append(g[idx])
+                added = True
+        if not added:
+            break
+        idx += 1
+    return out
+
+
 def cap_test_set(nodes: list[dict], budget_s: float,
                  per_node_s: float = PER_NODE_S) -> tuple[list[dict], int]:
     """按剩余时间预算裁剪测试集，返回 (保留集, 裁剪数)。
@@ -690,7 +719,7 @@ def cap_test_set(nodes: list[dict], budget_s: float,
     resc = [n for n in nodes if n.get("origin") == "rescue"]
     kept: list[dict] = []
     # 优先级：carryover+user_pool（订阅生命线与地面真相）> pending > rescue
-    for bucket in (carry, pend, resc):
+    for bucket in (carry, interleave_by_source(pend), resc):
         room = max_nodes - len(kept)
         if room <= 0:
             break
@@ -1634,7 +1663,74 @@ def usability_verdict(codes: dict | None, need: int | None = None) -> tuple[bool
     return len(hit) >= need, detail
 
 
-def apply_diversity_cap(nodes: list[dict], per_server: int | None = None) -> tuple[list[dict], list[dict]]:
+def target_test(api_port: int, mixed_port: int, name: str) -> dict:
+    """直接打 ChatGPT / Claude / YouTube（任务#132）。
+
+    用户的要求是「别再做代理指标，直接测我要用的站」。这不只是简化，更是
+    纠偏：测速域名、4MB 下载、AI API 端点都曾与真实用途背离（上一轮 20 个
+    节点 API 可达而 chatgpt 网页全 403）。
+
+    判据：三站任一返回 2xx/3xx 即算可用（403/超时都不算——403 意味着
+    Cloudflare 把这个出口拦了，用户浏览器里同样打不开）。
+    `ai_ok` 单列：chatgpt 或 claude 至少一个通，用于名字标注。
+    """
+    if not api_put(api_port, "/proxies/PROBE", {"name": name}):
+        return {"ok": False, "targets": {}, "ai_ok": False}
+    proxy = f"http://127.0.0.1:{mixed_port}"
+    sites = getattr(config, "TARGET_SITES", {}) or {}
+    codes: dict[str, int | None] = {}
+    with ThreadPoolExecutor(max_workers=max(1, len(sites))) as ex:
+        futs = {k: ex.submit(_http_status_via_proxy, u, proxy,
+                             getattr(config, "TARGET_TIMEOUT_S", 10))
+                for k, u in sites.items()}
+        for k, f in futs.items():
+            try:
+                codes[k] = f.result()
+            except Exception:
+                codes[k] = None
+    good = [k for k, v in codes.items() if v and 200 <= int(v) < 400]
+    ai_ok = any(codes.get(k) and 200 <= int(codes[k]) < 400 for k in ("chatgpt", "claude"))
+    need = int(getattr(config, "TARGET_MIN_HITS", 1))
+    return {"ok": len(good) >= need, "targets": codes, "hits": good, "ai_ok": ai_ok}
+
+
+_REGION_WORDS = ("意大利", "美国", "法国", "德国", "日本", "香港", "台湾", "新加坡",
+                 "韩国", "英国", "荷兰", "加拿大", "印度", "阿联酋", "捷克", "越南",
+                 "波兰", "西班牙", "土耳其", "巴西", "澳大利亚", "俄罗斯", "泰国",
+                 "马来西亚", "菲律宾", "印尼", "阿根廷", "墨西哥", "瑞典", "瑞士")
+
+
+def region_of(name: str) -> str:
+    """从节点名推断地区（用于多样性配额）。识别不了归 '其他'。"""
+    n = str(name or "")
+    for w in _REGION_WORDS:
+        if w in n:
+            return w
+    return "其他"
+
+
+def family_of(name: str) -> str:
+    """从节点名推断「供应商家族」（用于多样性配额）。
+
+    免费聚合源常把同一供应商的几百个节点灌进池子，名字里带同一个域名或
+    同一段固定前缀（如 dokng.com / v2nodes / `IT_意大利_IPV4`）。按家族限流，
+    比按 IP 限流更能压住「满屏同一个国家」。
+    """
+    n = str(name or "")
+    m = re.search(r"([a-z0-9-]+\.(?:com|net|org|xyz|top|cc|io))", n.lower())
+    if m:
+        return m.group(1)
+    for w in _REGION_WORDS:
+        if w in n:
+            tail = n.split(w)[-1]
+            token = re.sub(r"[^A-Za-z_]+", "", tail)[:10]
+            return f"{w}{token}"
+    return n[:8] or "其他"
+
+
+def apply_diversity_cap(nodes: list[dict], per_server: int | None = None,
+                        per_region: int | None = None,
+                        per_family: int | None = None) -> tuple[list[dict], list[dict]]:
     """同一服务器地址的主资产配额（纯函数，任务#131）。
 
     实证：24 个节点里 16 个意大利 ss，来自 15 个地址但命名/指纹同源，说明
@@ -1644,15 +1740,25 @@ def apply_diversity_cap(nodes: list[dict], per_server: int | None = None) -> tup
     按 server 限流，超出的退回第二资产（不删除，仍在复测池里）。
     """
     cap = int(per_server or getattr(config, "MAX_NODES_PER_SERVER", 3))
+    cap_r = int(per_region or getattr(config, "MAX_NODES_PER_REGION", 5))
+    cap_f = int(per_family or getattr(config, "MAX_NODES_PER_FAMILY", 3))
     kept: list[dict] = []
     dropped: list[dict] = []
-    seen: dict[str, int] = {}
+    by_srv: dict[str, int] = {}
+    by_reg: dict[str, int] = {}
+    by_fam: dict[str, int] = {}
     for n in nodes:
-        srv = str((n.get("proxy") or {}).get("server") or "?")
-        if seen.get(srv, 0) >= cap:
+        p = n.get("proxy") or {}
+        srv = str(p.get("server") or "?")
+        nm = str(n.get("name") or p.get("name") or "")
+        reg, fam = region_of(nm), family_of(nm)
+        if (by_srv.get(srv, 0) >= cap or by_reg.get(reg, 0) >= cap_r
+                or by_fam.get(fam, 0) >= cap_f):
             dropped.append(n)
             continue
-        seen[srv] = seen.get(srv, 0) + 1
+        by_srv[srv] = by_srv.get(srv, 0) + 1
+        by_reg[reg] = by_reg.get(reg, 0) + 1
+        by_fam[fam] = by_fam.get(fam, 0) + 1
         kept.append(n)
     return kept, dropped
 
@@ -2422,13 +2528,20 @@ def main() -> int:
                     f"要求 ≥{getattr(config, 'SERIAL_LATENCY_MIN_PASS', 4)} 次成功；"
                     f"耗时 {time.time() - _t:.0f}s）")
 
-            # 4.2) 终筛：真实流量测试（经 mixed-port 访问海外被封锁目标）
+            # 4.2) 终筛：目标直测（ChatGPT / Claude / YouTube）或真实流量测速。
+            # 任务#132：用户明确要求「别再搞多指标，直接打我要用的站」。
+            # 代理指标曾两次与真实用途背离（测速域名落进免流白名单、AI API
+            # 可达而 chatgpt 网页 403），故默认走目标直测。
             if delay_passed:
                 t1 = time.time()
                 todo_real = [n for n in delay_passed if n["probe_name"] not in ck_real]
                 if todo_real:
-                    with ThreadPoolExecutor(max_workers=REAL_TRAFFIC_CONCURRENCY) as ex:
-                        futs = {ex.submit(real_traffic_test, api_port, mixed_port,
+                    _final_fn = (target_test if getattr(config, "TARGET_TEST_ENABLED", False)
+                                 else real_traffic_test)
+                    _workers = (TARGET_TEST_CONCURRENCY
+                                if _final_fn is target_test else REAL_TRAFFIC_CONCURRENCY)
+                    with ThreadPoolExecutor(max_workers=_workers) as ex:
+                        futs = {ex.submit(_final_fn, api_port, mixed_port,
                                           n["probe_name"]): n["probe_name"]
                                 for n in todo_real}
                         for fut in futs:
@@ -2441,6 +2554,10 @@ def main() -> int:
                             if not rt.get("ok"):
                                 results[name]["ok"] = False
                             results[name]["real_traffic"] = rt
+                            if rt.get("targets") is not None:
+                                results[name]["codes"] = dict(rt.get("targets") or {})
+                                if rt.get("ai_ok"):
+                                    results[name]["ai_ok"] = True
                             ckpt.mark_real(name, results[name])
                     ckpt.flush(force=True)
                 if len(todo_real) < len(delay_passed):
@@ -2448,7 +2565,10 @@ def main() -> int:
                         f"补测 {len(todo_real)} 个")
                 real_passed = [n for n in delay_passed
                                if results.get(n["probe_name"], {}).get("ok")]
-                log(f"真实流量终筛通过: {len(real_passed)}/{len(delay_passed)}"
+                _label = ("目标直测（ChatGPT/Claude/YouTube）"
+                          if getattr(config, "TARGET_TEST_ENABLED", False)
+                          else "真实流量终筛")
+                log(f"{_label}通过: {len(real_passed)}/{len(delay_passed)}"
                     f"（{time.time() - t1:.0f}s）")
                 # 不稳定计数（2026-10-26）：首轮达标、复测不达标的「先快后断」
                 # 节点——它们正是「沙箱测着像活的、用户用着全死」的主因，
@@ -2627,7 +2747,8 @@ def main() -> int:
     # 6.68) 填充节点剔除（任务#126，2026-11-05）：所有提级动作之后的终审。
     # 放在这里而不是各个提级函数里，是因为 6.6 / 6.65 都会把慢档拉进主资产，
     # 逐处加条件容易漏；一处终审，规则只有一份。
-    _filler = [n for n in verified if is_filler_node(n, results)]
+    _filler = ([n for n in verified if is_filler_node(n, results)]
+               if getattr(config, "FILLER_ENABLED", True) else [])
     if _filler:
         verified = [n for n in verified if n not in _filler]
         degraded = degraded + _filler
@@ -2639,7 +2760,8 @@ def main() -> int:
     # 6.69) 真实站点可用性闸门（任务#131，2026-11-06）：发布前置条件。
     # 背景见 config.USABILITY_ENABLED 注释——免流节点能过测速域名却上不了网。
     # 无证据的节点不判（不拿缺失当不合格），只在日志里计数。
-    if verified and getattr(config, "USABILITY_ENABLED", True):
+    if (verified and getattr(config, "USABILITY_ENABLED", True)
+            and not getattr(config, "TARGET_TEST_ENABLED", False)):
         _ux_ok, _ux_bad, _ux_unknown = [], [], 0
         for n in verified:
             codes = (results.get(n["probe_name"]) or {}).get("codes") or {}
@@ -2676,8 +2798,14 @@ def main() -> int:
     # 但必须让用户一眼分辨「能上网」与「能开 ChatGPT」，这是两件事。
     _ai_blocked = 0
     for n in verified:
-        codes = (results.get(n["probe_name"]) or {}).get("codes") or {}
-        if codes.get("chatgpt") == 403:
+        ev = results.get(n["probe_name"]) or {}
+        codes = ev.get("codes") or {}
+        if getattr(config, "TARGET_TEST_ENABLED", False):
+            # 直测模式：ai_ok 已由 target_test 给出（chatgpt/claude 任一 2xx/3xx）
+            _blocked = not ev.get("ai_ok")
+        else:
+            _blocked = codes.get("chatgpt") == 403
+        if _blocked:
             n["_ai_web_blocked"] = True
             if not str(n.get("name", "")).endswith(config.AI_WEB_MARK):
                 n["name"] = f"{n['name']}{config.AI_WEB_MARK}"

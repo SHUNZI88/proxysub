@@ -1778,14 +1778,18 @@ def test_diversity_cap_limits_per_server():
     """24 个节点里 16 个来自同一批意大利 ss——单供应商占三分之二，必须限流。"""
     nodes = [{"proxy": {"server": "a"}} for _ in range(5)] + \
             [{"proxy": {"server": "b"}} for _ in range(2)]
-    kept, dropped = cn_probe.apply_diversity_cap(nodes, per_server=3)
+    # 只验 server 维度：把 region/family 上限放到不生效
+    kept, dropped = cn_probe.apply_diversity_cap(nodes, per_server=3,
+                                                per_region=99, per_family=99)
     assert len(kept) == 5 and len(dropped) == 2      # a 留 3，b 留 2
     assert sum(1 for n in kept if n["proxy"]["server"] == "a") == 3
 
 
 def test_diversity_cap_keeps_order():
-    nodes = [{"proxy": {"server": s}} for s in ("a", "a", "b", "a", "a")]
-    kept, dropped = cn_probe.apply_diversity_cap(nodes, per_server=2)
+    nodes = [{"name": f"n{i}", "proxy": {"server": s}}
+             for i, s in enumerate(("a", "a", "b", "a", "a"))]
+    kept, dropped = cn_probe.apply_diversity_cap(nodes, per_server=2,
+                                                per_region=99, per_family=99)
     assert [n["proxy"]["server"] for n in kept] == ["a", "a", "b"]
     assert len(dropped) == 2
 
@@ -1836,3 +1840,44 @@ def test_evidence_codes_reach_results(monkeypatch, tmp_path):
     assert "codes" in cn_probe.node_evidence.__doc__ or True
     fn_src = __import__("inspect").getsource(cn_probe.main)
     assert 'results[n["probe_name"]]["codes"] = ev["codes"]' in fn_src
+
+
+# ------------------------------------- 目标直测与多样性（任务#132）
+def test_region_and_family_extraction():
+    """地区/供应商识别是多样性配额的基础：名字里带同一个域名或同一段固定
+    前缀的节点，必然来自同一供应商的批量灌入。"""
+    assert cn_probe.region_of("🇮🇹_IT_意大利_IPV4 (7)") == "意大利"
+    assert cn_probe.region_of("🇭🇰_HK_香港_IPV4") == "香港"
+    assert cn_probe.region_of("https://example.com/x") == "其他"
+    assert cn_probe.family_of("D🔴🇮🇹hos_..._dokng.com_cca0d92f") == "dokng.com"
+    assert cn_probe.family_of("[www.v2nodes.com] ss-IT-1602") == "v2nodes.com"
+    assert cn_probe.family_of("意大利 | ITA #3").startswith("意大利")
+
+
+def test_diversity_cap_limits_region_and_family():
+    """上一轮 32 个里 17 个意大利——只按 server 限流压不住，必须按地区/家族。"""
+    nodes = ([{"name": f"意大利 | ITA #{i}", "proxy": {"server": f"it{i}"}}
+              for i in range(8)]
+             + [{"name": f"美国 节点{i}", "proxy": {"server": f"us{i}"}} for i in range(3)])
+    kept, dropped = cn_probe.apply_diversity_cap(nodes, per_server=99,
+                                                 per_region=5, per_family=99)
+    assert sum(1 for n in kept if "意大利" in n["name"]) == 5
+    assert len(dropped) == 3
+
+
+def test_diversity_cap_family_beats_server():
+    """同一供应商多个 IP 也要限流（server 各不相同，family 相同）。"""
+    nodes = [{"name": f"X | ITA #{i}", "proxy": {"server": f"s{i}"}} for i in range(6)]
+    kept, dropped = cn_probe.apply_diversity_cap(nodes, per_server=99,
+                                                 per_region=99, per_family=3)
+    assert len(kept) == 3 and len(dropped) == 3
+
+
+def test_interleave_by_source_spreads_slots():
+    """一个源 10 个、另一个源 2 个：轮转后前 4 个名额应覆盖两个源，
+    而不是被大源全部占满。"""
+    big = [{"src": "big", "name": f"b{i}"} for i in range(10)]
+    small = [{"src": "small", "name": f"s{i}"} for i in range(2)]
+    out = cn_probe.interleave_by_source(big + small)
+    assert [n["src"] for n in out[:4]] == ["big", "small", "big", "small"]
+    assert len(out) == 12
