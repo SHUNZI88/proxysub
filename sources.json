@@ -62,13 +62,6 @@
       "rehab_date": "2026-11-06"
     },
     {
-      "url": "https://raw.githubusercontent.com/Au1rxx/free-vpn-subscriptions/main/output/clash.yaml",
-      "origin": "rehab",
-      "added": "2026-11-06",
-      "rehab_from": "cn_low_pass_rate:0/311",
-      "rehab_date": "2026-11-06"
-    },
-    {
       "url": "https://raw.githubusercontent.com/lanzm/MetaFetch/master/list.meta.yml",
       "origin": "rehab",
       "added": "2026-11-06",
@@ -255,6 +248,12 @@
     {
       "url": "https://blog.ermao.net/sub/clash/ermao.net",
       "reason": "cn_low_pass_rate:0/20",
+      "date": "2026-11-07",
+      "mv": 2
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Au1rxx/free-vpn-subscriptions/main/output/clash.yaml",
+      "reason": "cn_low_pass_rate:0/39",
       "date": "2026-11-07",
       "mv": 2
     }

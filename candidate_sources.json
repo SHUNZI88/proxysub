@@ -1,79 +1,11 @@
 {
   "candidates": {
-    "https://clashgithub.com/clashnode-20261104.html": {
-      "channel": "web:https://clashgithub.com/",
-      "origin": "channel_web",
-      "added": "2026-11-03",
-      "first_seen": "2026-11-03",
-      "runs": 15,
-      "good_streak": 0,
-      "fail_streak": 0,
-      "history": [
-        {
-          "date": "2026-11-05",
-          "count": 34,
-          "usable": 8,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-05",
-          "count": 34,
-          "usable": 9,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-05",
-          "count": 34,
-          "usable": 9,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-06",
-          "count": 34,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-06",
-          "count": 34,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-06",
-          "count": 34,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-07",
-          "count": 34,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-07",
-          "count": 34,
-          "usable": 8,
-          "unique_new": 0,
-          "tamper": 0
-        }
-      ],
-      "required_runs": 3
-    },
     "https://clashgithub.com/clashnode-20261106.html": {
       "channel": "web:https://clashgithub.com/",
       "origin": "channel_web",
       "added": "2026-11-05",
       "first_seen": "2026-11-05",
-      "runs": 6,
+      "runs": 7,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -118,13 +50,20 @@
           "usable": 8,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-07",
+          "count": 20,
+          "usable": 10,
+          "unique_new": 0,
+          "tamper": 0
         }
       ],
       "required_runs": 3
     },
     "https://raw.githubusercontent.com/freenodess/freenodess/main/output/clash.yaml": {
       "first_seen": "2026-11-06",
-      "runs": 5,
+      "runs": 6,
       "good_streak": 0,
       "required_runs": 3,
       "repo": "freenodess/freenodess",
@@ -165,12 +104,19 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-07",
+          "count": 1,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
     "https://raw.githubusercontent.com/BiliRumble/NoMoreRules/master/list.meta.yml": {
       "first_seen": "2026-11-06",
-      "runs": 5,
+      "runs": 6,
       "good_streak": 0,
       "required_runs": 3,
       "repo": "BiliRumble/NoMoreRules",
@@ -209,6 +155,13 @@
           "date": "2026-11-07",
           "count": 111,
           "usable": 4,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-07",
+          "count": 115,
+          "usable": 7,
           "unique_new": 0,
           "tamper": 0
         }
@@ -216,7 +169,7 @@
     },
     "https://raw.githubusercontent.com/BiliRumble/NoMoreRules/master/snippets/nodes.meta.yml": {
       "first_seen": "2026-11-06",
-      "runs": 5,
+      "runs": 6,
       "good_streak": 0,
       "required_runs": 3,
       "repo": "BiliRumble/NoMoreRules",
@@ -257,12 +210,19 @@
           "usable": 4,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-07",
+          "count": 115,
+          "usable": 7,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
     "https://raw.githubusercontent.com/ReaJason/Clash-Butler/master/clash.yaml": {
       "first_seen": "2026-11-06",
-      "runs": 5,
+      "runs": 6,
       "good_streak": 0,
       "required_runs": 3,
       "repo": "ReaJason/Clash-Butler",
@@ -303,12 +263,19 @@
           "usable": 8,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-07",
+          "count": 249,
+          "usable": 17,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
     "https://raw.githubusercontent.com/dongchengjie/airport/main/subs/clashfree.yaml": {
       "first_seen": "2026-11-06",
-      "runs": 5,
+      "runs": 6,
       "good_streak": 0,
       "required_runs": 3,
       "repo": "dongchengjie/airport",
@@ -349,12 +316,19 @@
           "usable": 3,
           "unique_new": 3,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-07",
+          "count": 533,
+          "usable": 3,
+          "unique_new": 3,
+          "tamper": 0
         }
       ]
     },
     "https://raw.githubusercontent.com/dongchengjie/airport/main/subs/clashnodev2ray.yaml": {
       "first_seen": "2026-11-06",
-      "runs": 5,
+      "runs": 6,
       "good_streak": 0,
       "required_runs": 3,
       "repo": "dongchengjie/airport",
@@ -377,6 +351,13 @@
         },
         {
           "date": "2026-11-06",
+          "count": 108,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-07",
           "count": 108,
           "usable": 0,
           "unique_new": 0,
@@ -407,12 +388,19 @@
       "required_runs": 3,
       "first_seen": "2026-11-06",
       "initial_nodes": 976,
-      "runs": 3,
+      "runs": 4,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
         {
           "date": "2026-11-06",
+          "count": 976,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-07",
           "count": 976,
           "usable": 0,
           "unique_new": 0,
@@ -443,12 +431,19 @@
       "required_runs": 3,
       "first_seen": "2026-11-06",
       "initial_nodes": 26,
-      "runs": 3,
+      "runs": 4,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
         {
           "date": "2026-11-06",
+          "count": 26,
+          "usable": 2,
+          "unique_new": 2,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-07",
           "count": 26,
           "usable": 2,
           "unique_new": 2,
@@ -479,7 +474,7 @@
       "required_runs": 3,
       "first_seen": "2026-11-06",
       "initial_nodes": 30,
-      "runs": 3,
+      "runs": 4,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -503,6 +498,13 @@
           "usable": 1,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-07",
+          "count": 13,
+          "usable": 5,
+          "unique_new": 1,
+          "tamper": 0
         }
       ]
     },
@@ -511,12 +513,19 @@
       "origin": "channel_web",
       "added": "2026-11-06",
       "first_seen": "2026-11-06",
-      "runs": 3,
+      "runs": 4,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
         {
           "date": "2026-11-06",
+          "count": 25,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-07",
           "count": 25,
           "usable": 0,
           "unique_new": 0,
@@ -544,12 +553,19 @@
       "origin": "channel_web",
       "added": "2026-11-06",
       "first_seen": "2026-11-06",
-      "runs": 3,
+      "runs": 4,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
         {
           "date": "2026-11-06",
+          "count": 25,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-07",
           "count": 25,
           "usable": 0,
           "unique_new": 0,
@@ -577,12 +593,19 @@
       "origin": "channel_web",
       "added": "2026-11-06",
       "first_seen": "2026-11-06",
-      "runs": 3,
+      "runs": 4,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
         {
           "date": "2026-11-06",
+          "count": 25,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-07",
           "count": 25,
           "usable": 0,
           "unique_new": 0,
@@ -610,7 +633,7 @@
       "origin": "channel_web",
       "added": "2026-11-06",
       "first_seen": "2026-11-06",
-      "runs": 3,
+      "runs": 4,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -634,6 +657,13 @@
           "usable": 3,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-07",
+          "count": 2189,
+          "usable": 8,
+          "unique_new": 0,
+          "tamper": 0
         }
       ],
       "required_runs": 3
@@ -643,7 +673,7 @@
       "origin": "channel_web",
       "added": "2026-11-06",
       "first_seen": "2026-11-06",
-      "runs": 3,
+      "runs": 4,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -667,6 +697,13 @@
           "usable": 3,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-07",
+          "count": 1796,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ],
       "required_runs": 3
@@ -676,7 +713,7 @@
       "origin": "channel_web",
       "added": "2026-11-06",
       "first_seen": "2026-11-06",
-      "runs": 2,
+      "runs": 3,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -693,6 +730,13 @@
           "usable": 30,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-07",
+          "count": 366,
+          "usable": 81,
+          "unique_new": 1,
+          "tamper": 0
         }
       ],
       "required_runs": 3
@@ -702,10 +746,17 @@
       "origin": "channel_web",
       "added": "2026-11-06",
       "first_seen": "2026-11-06",
-      "runs": 2,
+      "runs": 3,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
+        {
+          "date": "2026-11-07",
+          "count": 24,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
         {
           "date": "2026-11-07",
           "count": 24,
@@ -728,7 +779,7 @@
       "origin": "channel_web",
       "added": "2026-11-07",
       "first_seen": "2026-11-07",
-      "runs": 1,
+      "runs": 2,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -737,6 +788,13 @@
           "count": 24,
           "usable": 0,
           "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-07",
+          "count": 24,
+          "usable": 4,
+          "unique_new": 2,
           "tamper": 0
         }
       ],
@@ -902,6 +960,12 @@
       "reason": "fetch_failures",
       "date": "2026-11-06",
       "repo": "svinakraft-maker/FlareFeed",
+      "mv": 2
+    },
+    "https://clashgithub.com/clashnode-20261104.html": {
+      "reason": "no_stable_contribution",
+      "date": "2026-11-07",
+      "repo": null,
       "mv": 2
     }
   }
