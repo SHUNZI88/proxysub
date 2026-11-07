@@ -2661,6 +2661,23 @@ def main() -> int:
                 f"{getattr(config, 'MAX_NODES_PER_SERVER', 3)} 个而退回第二资产"
                 "（防单供应商单点故障、防「全是同一个国家」）")
 
+    # 6.69c) AI 网页可用性标注（任务#131 续）：chatgpt.com 403 的节点加 ·无AI。
+    # 不剔除——免费池里 AI 网页干净的本就稀少，全剔会让订阅归零；
+    # 但必须让用户一眼分辨「能上网」与「能开 ChatGPT」，这是两件事。
+    _ai_blocked = 0
+    for n in verified:
+        codes = (results.get(n["probe_name"]) or {}).get("codes") or {}
+        if codes.get("chatgpt") == 403:
+            n["_ai_web_blocked"] = True
+            if not str(n.get("name", "")).endswith(config.AI_WEB_MARK):
+                n["name"] = f"{n['name']}{config.AI_WEB_MARK}"
+                if isinstance(n.get("proxy"), dict):
+                    n["proxy"] = dict(n["proxy"], name=n["name"])
+            _ai_blocked += 1
+    if _ai_blocked:
+        log(f"AI 网页标注: {_ai_blocked} 个节点 chatgpt.com 返回 403"
+            f"（API 端点可达但网页被 Cloudflare 拦），名字加 {config.AI_WEB_MARK} 后缀")
+
     # 6.7) 用户本地实测硬否决（2026-10-29 任务#113）：用户家宽的实测结论是
     # 最终事实——本地连不上的节点，沙箱再快也不该进主资产。置于 AI 提级之后，
     # 防止「AI 可达」把用户已判死的节点复活。

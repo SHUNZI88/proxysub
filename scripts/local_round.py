@@ -52,6 +52,9 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--force", action="store_true",
                     help="无视决策强制跑一轮（排障用；仍受单实例锁保护）")
     ap.add_argument("--verbose", action="store_true", help="打印决策原因")
+    ap.add_argument("--reset-pool", action="store_true",
+                    help="清空库存（节点库/用户池/检查点）后再跑，从订阅源候选重建；"
+                         "原文件移到 <workdir>/reset_backup_<时间>/")
     ap.add_argument("--log", default=None,
                     help="追加日志文件（默认 <workdir>/local_round.log）；"
                          "任务计划程序不保存 stdout，本机排障全靠它")
@@ -82,6 +85,27 @@ def main(argv: list[str] | None = None) -> int:
     workdir = args.workdir or cn_probe.default_workdir()
     os.makedirs(workdir, exist_ok=True)
     log = _make_logger(args.log or os.path.join(workdir, "local_round.log"))
+
+    if args.reset_pool:
+        # 「全部重新从订阅源拉取」：库存即历史结论，清空后才不会反复把
+        # 旧结论（含用坏判据得出的）带回来。先备份再清，可回退。
+        # 候选文档（pending_probe.json）**保留**——它才是订阅源侧的最新输入。
+        stamp = time.strftime("%Y%m%d-%H%M%S")
+        backup = os.path.join(workdir, f"reset_backup_{stamp}")
+        os.makedirs(backup, exist_ok=True)
+        moved = []
+        for name in ("node_library.json", "user_verified_pool.json",
+                     "probe_checkpoint.json", "verification_report.json",
+                     "round_guard.json", "prev_verification_report.json"):
+            src = os.path.join(workdir, name)
+            if os.path.exists(src):
+                try:
+                    os.replace(src, os.path.join(backup, name))
+                    moved.append(name)
+                except OSError:
+                    pass
+        log(f"库存重置：已备份并移走 {len(moved)} 个文件（{', '.join(moved) or '无'}）"
+            f"→ {backup}；候选文档保留，下轮从订阅源重建")
 
     if not args.force:
         ok, why = round_guard.decide(workdir, stale_h=args.stale_h)

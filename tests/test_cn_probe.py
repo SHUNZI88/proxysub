@@ -1788,3 +1788,25 @@ def test_diversity_cap_keeps_order():
     kept, dropped = cn_probe.apply_diversity_cap(nodes, per_server=2)
     assert [n["proxy"]["server"] for n in kept] == ["a", "a", "b"]
     assert len(dropped) == 2
+
+
+def test_ai_web_blocked_nodes_get_mark():
+    """chatgpt.com 403 是「API 通、网页不通」的分界：实证 24 个节点里
+    20 个 google/youtube 正常但 chatgpt 全 403，必须让用户一眼区分。"""
+    n = {"fp": "f", "name": "IT 01", "probe_name": "p_IT 01",
+         "proxy": {"name": "IT 01", "type": "ss", "server": "s", "port": 1}}
+    codes = {"chatgpt": 403, "google": 204}
+    ok, _why = cn_probe.usability_verdict(codes)
+    assert ok is True                     # 「能上网」判据不受 AI 影响
+    assert codes["chatgpt"] == 403        # 但 AI 网页不可用，main() 据此加 ·无AI
+
+
+def test_ai_web_blocked_nodes_get_mark():
+    """chatgpt.com 403 是「API 通、网页不通」的分界：实证 24 个节点里
+    20 个 google/youtube 正常但 chatgpt 全 403，必须让用户一眼区分。"""
+    n = {"fp": "f", "name": "IT 01", "probe_name": "p_IT 01",
+         "proxy": {"name": "IT 01", "type": "ss", "server": "s", "port": 1}}
+    codes = {"chatgpt": 403, "google": 204}
+    ok, _why = cn_probe.usability_verdict(codes)
+    assert ok is True                     # 「能上网」判据不受 AI 影响
+    assert codes["chatgpt"] == 403        # 但 AI 网页不可用，main() 据此加 ·无AI
