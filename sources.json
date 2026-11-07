@@ -48,24 +48,10 @@
       "rehab_date": "2026-11-06"
     },
     {
-      "url": "https://raw.githubusercontent.com/wuge0/free-nodes/main/output/clash.yaml",
-      "origin": "rehab",
-      "added": "2026-11-06",
-      "rehab_from": "cn_low_pass_rate:2/74",
-      "rehab_date": "2026-11-06"
-    },
-    {
       "url": "https://raw.githubusercontent.com/VPN-Subcription-Links/ClashX-V2Ray-TopFreeProxy/main/combine/clash.config.yaml",
       "origin": "rehab",
       "added": "2026-11-06",
       "rehab_from": "cn_low_pass_rate:8/302",
-      "rehab_date": "2026-11-06"
-    },
-    {
-      "url": "https://raw.githubusercontent.com/free-nodes/clashfree/main/clash20261017.yml",
-      "origin": "rehab",
-      "added": "2026-11-06",
-      "rehab_from": "cn_low_pass_rate:0/75",
       "rehab_date": "2026-11-06"
     },
     {
@@ -255,6 +241,18 @@
       "url": "https://raw.githubusercontent.com/OgdenThomas/freesub/main/output/clash.yaml",
       "reason": "cn_low_pass_rate:0/24",
       "date": "2026-11-06",
+      "mv": 2
+    },
+    {
+      "url": "https://raw.githubusercontent.com/free-nodes/clashfree/main/clash20261017.yml",
+      "reason": "consecutive_failures:4",
+      "date": "2026-11-07",
+      "mv": 2
+    },
+    {
+      "url": "https://raw.githubusercontent.com/wuge0/free-nodes/main/output/clash.yaml",
+      "reason": "cn_low_pass_rate:0/25",
+      "date": "2026-11-07",
       "mv": 2
     }
   ],

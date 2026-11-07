@@ -16,6 +16,12 @@
       "added": "2026-11-01",
       "expires": "2026-11-15",
       "source": "https://raw.githubusercontent.com/shaoyouvip/free/main/mihomo.yaml"
+    },
+    "fp:21aad52ae8efc931ecd46e375c6c0d354383c61a": {
+      "reason": "tls_mitm:certificate verify failed: Hostname mismatch, certificate is not valid for ",
+      "added": "2026-11-07",
+      "expires": "2026-11-21",
+      "source": "https://raw.githubusercontent.com/lanzm/MetaFetch/master/list.meta.yml"
     }
   }
 }
