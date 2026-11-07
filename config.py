@@ -518,11 +518,14 @@ LONGEVITY_CN_PASS_RATE = 0.6    # 历史 CN 通过率下限（cn_history.cn_pass
 # 波动，这是「时多时少」的机制根源。
 NODE_LIBRARY_FILE = "node_library.json"
 NODE_LIBRARY_MAX_AGE_D = 30      # 库内记录保留期（天）
-NODE_LIBRARY_LOAD_LIMIT = 60     # 单轮从库复测的节点上限（控测试预算）
+NODE_LIBRARY_LOAD_LIMIT = 80     # 单轮从库复测的节点上限（控测试预算）
 # 库内节点「刚测过」的静默期（小时）：期间不再重复拉进测试集，把名额让给
 # 更久没测的节点（任务#130）。不设它的话，高 passes 节点会每轮占满 60 个名额，
 # 库再大也只有同一小批在循环——这正是「池子看着有、实际不动」的成因。
-NODE_LIBRARY_RETEST_H = 6
+# 任务#132：直测模式后单节点成本降到 3 个 HTTPS 请求，静默期没有意义——
+# 反而让每轮只能在「刚测过的一小批」里挑，池子越挑越窄、越挑越同质。
+# 改为 0（每轮都重新验证），名额 60→80，让跨轮通过的节点持续参与竞争。
+NODE_LIBRARY_RETEST_H = 0
 
 # ---- 单轮测试集上限（任务#130）--------------------------------------------
 # 源池恢复后 pending 单轮可达 980 个（实测 2026-11-06），而 cap_test_set 只用
@@ -578,8 +581,8 @@ TARGET_TIMEOUT_S = 10
 # ---- 多样性配额（任务#132）------------------------------------------------
 # 上一轮 32 个节点里 17 个意大利、23 个 ss，用户直接抱怨「满屏意大利国旗」。
 # 按地址限流不够（同一供应商有大量不同 IP），必须同时按地区与供应商限流。
-MAX_NODES_PER_REGION = 5
-MAX_NODES_PER_FAMILY = 3
+MAX_NODES_PER_REGION = 6
+MAX_NODES_PER_FAMILY = 4
 USER_PROBE_FILE = "user_probe.json"     # 用户本地实测回灌文件
 USER_PROBE_MAX_AGE_S = 48 * 3600        # 兼容旧字段（排序用，48h）；过期不参与
 USER_PROBE_DEAD_PENALTY = 1.0           # 用户实测失败节点的排序降权（档位惩罚）

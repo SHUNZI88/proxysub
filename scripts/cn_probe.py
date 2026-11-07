@@ -1700,12 +1700,49 @@ _REGION_WORDS = ("意大利", "美国", "法国", "德国", "日本", "香港", 
                  "马来西亚", "菲律宾", "印尼", "阿根廷", "墨西哥", "瑞典", "瑞士")
 
 
+# ISO 国家代码 → 中文（免费源大量用 `_IT_` / `| ITA` 这类写法，只认中文会漏）
+_ISO_REGION = {
+    "IT": "意大利", "ITA": "意大利", "US": "美国", "USA": "美国",
+    "FR": "法国", "FRA": "法国", "DE": "德国", "DEU": "德国",
+    "JP": "日本", "JPN": "日本", "HK": "香港", "HKG": "香港",
+    "TW": "台湾", "TWN": "台湾", "SG": "新加坡", "SGP": "新加坡",
+    "KR": "韩国", "KOR": "韩国", "GB": "英国", "UK": "英国", "GBR": "英国",
+    "NL": "荷兰", "NLD": "荷兰", "CA": "加拿大", "CAN": "加拿大",
+    "IN": "印度", "IND": "印度", "AE": "阿联酋", "ARE": "阿联酋",
+    "CZ": "捷克", "CZE": "捷克", "VN": "越南", "VNM": "越南",
+    "RU": "俄罗斯", "RUS": "俄罗斯", "TR": "土耳其", "TUR": "土耳其",
+    "BR": "巴西", "BRA": "巴西", "AU": "澳大利亚", "AUS": "澳大利亚",
+}
+
+
 def region_of(name: str) -> str:
-    """从节点名推断地区（用于多样性配额）。识别不了归 '其他'。"""
+    """从节点名推断地区（用于多样性配额）。
+
+    两级识别：中文地名 → ISO 代码（`_IT_` / `| ITA` / `[HKG]`）。
+    只认中文会漏掉大量节点——实测上一轮 5 个「其他」其实全是意大利节点，
+    等于绕过了地区配额（这是跨轮复现「满屏意大利」的直接原因）。
+    """
     n = str(name or "")
     for w in _REGION_WORDS:
         if w in n:
             return w
+    # 国旗 emoji（🇮🇹 = 两个区域指示符）→ 国家代码。免费源的节点名大量只用旗帜，
+    # 不解析它，同一批意大利节点就会被算作「其他」而绕过地区配额。
+    for ch in n:
+        cp = ord(ch)
+        if 0x1F1E6 <= cp <= 0x1F1FF:
+            i = n.index(ch)
+            pair = n[i:i + 2]
+            if len(pair) == 2:
+                code = "".join(chr(ord(c) - 0x1F1E6 + ord("A")) for c in pair)
+                if code in _ISO_REGION:
+                    return _ISO_REGION[code]
+            break
+    up = n.upper()
+    for code, zh in _ISO_REGION.items():
+        # 只匹配独立的 2~3 位代码段，避免 "ITA" 命中 "ITALY..." 之类的巧合
+        if re.search(rf"(?<![A-Z]){code}(?![A-Z])", up):
+            return zh
     return "其他"
 
 
