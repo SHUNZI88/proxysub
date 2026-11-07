@@ -667,6 +667,15 @@ def resolve_tested_round(consumed_round: str | None,
     return consumed_round or last_round
 
 
+def counts_by(items: list, key) -> dict:
+    """分组计数（排障用）。"""
+    out: dict = {}
+    for it in items:
+        k = key(it)
+        out[k] = out.get(k, 0) + 1
+    return dict(sorted(out.items(), key=lambda kv: -kv[1]))
+
+
 def interleave_by_source(bucket: list[dict]) -> list[dict]:
     """把一个桶按来源轮转重排（纯函数，任务#132）。
 
@@ -2714,14 +2723,18 @@ def main() -> int:
     # 6.05) 高延迟降级（2026-10-24）：初筛 RTT 超上限的通过节点降级第二资产。
     # 沙箱「能通」≠ 本地可用——延迟 2.5s+ 的节点用户点开即弃。置于此处：
     # 早于波动带判定（降级者计入缺口）与 AI 慢档提级（AI 可达者仍可回升）。
+    # 任务#132：直测模式下延迟不再是判据（目标站能开就是能用），只保留一个
+    # 很宽的粗筛，避免把「能开 ChatGPT 但 RTT 2s」的节点误降级。
+    _lat_cap = (3000 if getattr(config, "TARGET_TEST_ENABLED", False)
+                else CN_MAX_PUBLISH_LATENCY_MS)
     _slow = [n for n in verified
              if (results.get(n["probe_name"], {}).get("latency_ms") or 99999)
-             > CN_MAX_PUBLISH_LATENCY_MS]
+             > _lat_cap]
     if _slow:
         verified = [n for n in verified if n not in _slow]
         degraded = degraded + _slow
-        log(f"高延迟降级: {len(_slow)} 个节点 RTT > "
-            f"{CN_MAX_PUBLISH_LATENCY_MS}ms，降级第二资产（AI 可达者可提级回升）")
+        log(f"高延迟降级: {len(_slow)} 个节点 RTT > {_lat_cap}ms，"
+            f"降级第二资产（AI 可达者可提级回升）")
 
     # 6.5) 纯 carryover 轮次「保留已发布集」修复（2026-10-17，服务「固化闭环」）：
     # 当本轮没有新 CI 待测文档（n_pend==0 且 n_resc==0，测试集全为 carryover），
@@ -2826,9 +2839,13 @@ def main() -> int:
         if _ddrop:
             verified = _dkept
             degraded = degraded + _ddrop
-            log(f"集中度上限: {len(_ddrop)} 个节点因同一服务器超过 "
-                f"{getattr(config, 'MAX_NODES_PER_SERVER', 3)} 个而退回第二资产"
-                "（防单供应商单点故障、防「全是同一个国家」）")
+            _reg = counts_by(_ddrop, lambda n: region_of(n.get("name", "")))
+            _fam = counts_by(_ddrop, lambda n: family_of(n.get("name", "")))
+            log(f"集中度上限: {len(_ddrop)} 个节点退回第二资产"
+                f"（server ≤{getattr(config, 'MAX_NODES_PER_SERVER', 3)} / "
+                f"地区 ≤{getattr(config, 'MAX_NODES_PER_REGION', 6)} / "
+                f"家族 ≤{getattr(config, 'MAX_NODES_PER_FAMILY', 4)}）；"
+                f"被压掉的地区 {dict(_reg)}，家族 {dict(list(_fam.items())[:4])}")
 
     # 6.69c) AI 网页可用性标注（任务#131 续）：chatgpt.com 403 的节点加 ·无AI。
     # 不剔除——免费池里 AI 网页干净的本就稀少，全剔会让订阅归零；
