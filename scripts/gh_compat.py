@@ -26,9 +26,11 @@ from __future__ import annotations
 
 import json
 import os
+import socket
 import shutil
 import subprocess
 import urllib.error
+import urllib.parse
 import urllib.request
 
 API = "https://api.github.com"
@@ -66,9 +68,51 @@ def gh_proxy() -> str:
     return (os.environ.get(PROXY_ENV) or "").strip()
 
 
-def _proxy_env() -> dict:
-    """给子进程（gh）用的代理环境变量。"""
+_PROXY_ALIVE: dict[str, bool] = {}
+_PROXY_WARNED: set[str] = set()
+
+
+def _proxy_reachable(proxy: str, timeout: float = 0.6) -> bool:
+    """代理端口是否在监听（带缓存）。
+
+    用途只有一个：**别把死代理当配置用**。实证 2026-11-07 19:14 起订阅停更
+    10 小时——用户级环境变量 PROXYSUB_GH_PROXY 指向的本地代理已退出，而
+    `gh auth status` 在代理连不通时会把网络错误报成
+    「The token in keyring is invalid」，于是一轮轮全在鉴权处中止，
+    看起来像 token 坏了，实际只是代理没了。
+    """
+    if proxy in _PROXY_ALIVE:
+        return _PROXY_ALIVE[proxy]
+    ok = False
+    try:
+        u = urllib.parse.urlsplit(proxy if "://" in proxy else f"http://{proxy}")
+        host = u.hostname or "127.0.0.1"
+        port = u.port or (443 if u.scheme == "https" else 80)
+        with socket.create_connection((host, port), timeout=timeout):
+            ok = True
+    except OSError:
+        ok = False
+    _PROXY_ALIVE[proxy] = ok
+    return ok
+
+
+def effective_proxy() -> str:
+    """实际生效的代理：配置了但连不通 → 空串（直连），并只告警一次。"""
     p = gh_proxy()
+    if not p:
+        return ""
+    if _proxy_reachable(p):
+        return p
+    if p not in _PROXY_WARNED:
+        _PROXY_WARNED.add(p)
+        print(f"警告: 配置的 GitHub 代理 {p} 连不通，本轮改为直连"
+              f"（gh 在代理失效时会误报「token 无效」，不要据此判断凭据坏了）")
+    return ""
+
+
+def _proxy_env() -> dict:
+    """给子进程（gh）用的代理环境变量（代理不可达时为空）。"""
+    p = effective_proxy()
     if not p:
         return {}
     return {"HTTP_PROXY": p, "HTTPS_PROXY": p, "http_proxy": p, "https_proxy": p}
@@ -95,8 +139,8 @@ def _curl_download(url: str, dest: str, *, max_time: int = 300) -> bool:
         cmd = ["curl", "-fsSL", "--connect-timeout", "8",
                "--speed-time", "20", "--speed-limit", "10240",
                "--max-time", str(max_time), "-o", dest, url]
-        if gh_proxy():
-            cmd[-1:-1] = ["--proxy", gh_proxy()]
+        if effective_proxy():
+            cmd[-1:-1] = ["--proxy", effective_proxy()]
         try:
             r = subprocess.run(cmd, capture_output=True, text=True, timeout=max_time + 15)
             if r.returncode == 0 and os.path.exists(dest) and os.path.getsize(dest) > 0:
@@ -225,7 +269,7 @@ def _req(url: str, *, method: str = "GET", data: bytes | None = None,
     if headers:
         hdrs.update(headers)
     req = urllib.request.Request(url, data=data, headers=hdrs, method=method)
-    p = gh_proxy()
+    p = effective_proxy()
     if p:
         opener = urllib.request.build_opener(
             urllib.request.ProxyHandler({"http": p, "https": p}))

@@ -131,16 +131,23 @@ def main(argv: list[str] | None = None) -> int:
     round_log = os.path.join(workdir, "cn_probe_last.log")
     # 直接写文件而不是先 pipe 再落盘：pipe 版本要等子进程结束才写，
     # 运行期间完全看不到进度（实测当天就踩到，一轮 10 分钟内无从观察）。
+    #
+    # 编码必须强制 UTF-8（任务#134）：Windows 子进程默认按 cp936 写 stdout，
+    # 而本文件按 UTF-8 读——中文日志会解码失败、抛异常，直接**吃掉后面的
+    # 「结束」记录与 note_result**。实测 2026-11-07 19:14 起连续 6 轮定时任务
+    # 只有「启动」没有「结束」，守护状态停在旧值，排障时完全看不出轮次结果。
+    env.setdefault("PYTHONIOENCODING", "utf-8")
     try:
-        with open(round_log, "w", encoding="utf-8") as lf:
+        with open(round_log, "w", encoding="utf-8", errors="replace") as lf:
             rc = subprocess.run(cmd, env=env, stdout=lf,
                                 stderr=subprocess.STDOUT).returncode
         if rc != 0:
+            tail = "(日志读取失败)"
             try:
-                with open(round_log, encoding="utf-8") as lf:
+                with open(round_log, encoding="utf-8", errors="replace") as lf:
                     tail = "\n".join(list(lf)[-12:])
-            except OSError:
-                tail = "(日志读取失败)"
+            except OSError as e:
+                tail = f"(日志读取失败: {e})"
             log(f"子进程失败（退出码 {rc}），日志尾部：\n{tail}")
         else:
             log(f"子进程日志：{round_log}")

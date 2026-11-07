@@ -259,6 +259,8 @@ def test_gh_proxy_reads_explicit_env_only(monkeypatch):
 
 def test_gh_env_injects_proxy_for_subprocess(monkeypatch):
     monkeypatch.setenv(gc.PROXY_ENV, "http://127.0.0.1:7890")
+    monkeypatch.setattr(gc, "_proxy_reachable", lambda p, timeout=0.6: True)
+    monkeypatch.setattr(gc, "_proxy_reachable", lambda p, timeout=0.6: True)
     env = gc._gh_env()
     assert env["HTTPS_PROXY"] == "http://127.0.0.1:7890"
     assert env["HTTP_PROXY"] == "http://127.0.0.1:7890"
@@ -272,6 +274,8 @@ def test_gh_env_empty_without_proxy(monkeypatch):
 
 def test_curl_download_passes_proxy(monkeypatch, tmp_path):
     monkeypatch.setenv(gc.PROXY_ENV, "http://127.0.0.1:7890")
+    monkeypatch.setattr(gc, "_proxy_reachable", lambda p, timeout=0.6: True)
+    monkeypatch.setattr(gc, "_proxy_reachable", lambda p, timeout=0.6: True)
     seen = {}
 
     class R:
@@ -331,3 +335,45 @@ def test_token_source_reports_where_it_came_from(tmp_path, monkeypatch):
 
     monkeypatch.setenv("GH_TOKEN", "e")
     assert gc.token_source() == "环境变量"
+
+
+def test_dead_proxy_falls_back_to_direct(monkeypatch):
+    """代理连不通必须自动直连（任务#134）。
+
+    实证：用户级变量 PROXYSUB_GH_PROXY 指向的本地代理退出后，`gh auth status`
+    把网络错误报成「The token in keyring is invalid」——订阅因此停更 10 小时，
+    而 token 一直是好的。判据必须落在「端口能不能连」上，不能信 gh 的措辞。
+    """
+    monkeypatch.setenv(gc.PROXY_ENV, "http://127.0.0.1:65001")
+    monkeypatch.setattr(gc, "_proxy_reachable", lambda p, timeout=0.6: False)
+    assert gc.gh_proxy() == "http://127.0.0.1:65001"      # 配置原样保留
+    assert gc.effective_proxy() == ""                      # 但不生效
+    env = gc._gh_env()
+    assert "HTTPS_PROXY" not in env or env["HTTPS_PROXY"] != "http://127.0.0.1:65001"
+
+
+def test_alive_proxy_is_used(monkeypatch):
+    monkeypatch.setenv(gc.PROXY_ENV, "http://127.0.0.1:65002")
+    monkeypatch.setattr(gc, "_proxy_reachable", lambda p, timeout=0.6: True)
+    assert gc.effective_proxy() == "http://127.0.0.1:65002"
+
+
+def test_dead_proxy_falls_back_to_direct(monkeypatch):
+    """代理连不通必须自动直连（任务#134）。
+
+    实证：用户级变量 PROXYSUB_GH_PROXY 指向的本地代理退出后，`gh auth status`
+    把网络错误报成「The token in keyring is invalid」——订阅因此停更 10 小时，
+    而 token 一直是好的。判据必须落在「端口能不能连」上，不能信 gh 的措辞。
+    """
+    monkeypatch.setenv(gc.PROXY_ENV, "http://127.0.0.1:65001")
+    monkeypatch.setattr(gc, "_proxy_reachable", lambda p, timeout=0.6: False)
+    assert gc.gh_proxy() == "http://127.0.0.1:65001"      # 配置原样保留
+    assert gc.effective_proxy() == ""                      # 但不生效
+    env = gc._gh_env()
+    assert "HTTPS_PROXY" not in env or env["HTTPS_PROXY"] != "http://127.0.0.1:65001"
+
+
+def test_alive_proxy_is_used(monkeypatch):
+    monkeypatch.setenv(gc.PROXY_ENV, "http://127.0.0.1:65002")
+    monkeypatch.setattr(gc, "_proxy_reachable", lambda p, timeout=0.6: True)
+    assert gc.effective_proxy() == "http://127.0.0.1:65002"

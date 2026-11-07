@@ -1,10 +1,10 @@
 {
  "vless": {
-  "rounds": 11,
-  "tested": 2679,
-  "passed": 48,
-  "last_round": "20261107T0216Z",
-  "last_ts": "2026-11-07T02:43:29Z",
+  "rounds": 12,
+  "tested": 3307,
+  "passed": 60,
+  "last_round": "20261107T1125Z",
+  "last_ts": "2026-11-07T17:08:31Z",
   "recent": [
    {
     "round": "20261014T2139Z",
@@ -60,15 +60,20 @@
     "round": "20261107T0216Z",
     "tested": 210,
     "passed": 3
+   },
+   {
+    "round": "20261107T1125Z",
+    "tested": 628,
+    "passed": 12
    }
   ]
  },
  "hysteria2": {
-  "rounds": 11,
-  "tested": 403,
-  "passed": 15,
-  "last_round": "20261107T0216Z",
-  "last_ts": "2026-11-07T02:43:29Z",
+  "rounds": 12,
+  "tested": 491,
+  "passed": 18,
+  "last_round": "20261107T1125Z",
+  "last_ts": "2026-11-07T17:08:31Z",
   "recent": [
    {
     "round": "20261014T2139Z",
@@ -124,15 +129,20 @@
     "round": "20261107T0216Z",
     "tested": 23,
     "passed": 0
+   },
+   {
+    "round": "20261107T1125Z",
+    "tested": 88,
+    "passed": 3
    }
   ]
  },
  "anytls": {
-  "rounds": 11,
-  "tested": 62,
-  "passed": 19,
-  "last_round": "20261107T0216Z",
-  "last_ts": "2026-11-07T02:43:29Z",
+  "rounds": 12,
+  "tested": 79,
+  "passed": 20,
+  "last_round": "20261107T1125Z",
+  "last_ts": "2026-11-07T17:08:31Z",
   "recent": [
    {
     "round": "20261014T2139Z",
@@ -188,15 +198,20 @@
     "round": "20261107T0216Z",
     "tested": 4,
     "passed": 1
+   },
+   {
+    "round": "20261107T1125Z",
+    "tested": 17,
+    "passed": 1
    }
   ]
  },
  "trojan": {
-  "rounds": 11,
-  "tested": 727,
+  "rounds": 12,
+  "tested": 1011,
   "passed": 18,
-  "last_round": "20261107T0216Z",
-  "last_ts": "2026-11-07T02:43:29Z",
+  "last_round": "20261107T1125Z",
+  "last_ts": "2026-11-07T17:08:31Z",
   "recent": [
    {
     "round": "20261014T2139Z",
@@ -252,15 +267,20 @@
     "round": "20261107T0216Z",
     "tested": 49,
     "passed": 1
+   },
+   {
+    "round": "20261107T1125Z",
+    "tested": 284,
+    "passed": 0
    }
   ]
  },
  "hysteria": {
-  "rounds": 11,
-  "tested": 109,
-  "passed": 49,
-  "last_round": "20261107T0216Z",
-  "last_ts": "2026-11-07T02:43:29Z",
+  "rounds": 12,
+  "tested": 125,
+  "passed": 59,
+  "last_round": "20261107T1125Z",
+  "last_ts": "2026-11-07T17:08:31Z",
   "recent": [
    {
     "round": "20261014T2139Z",
@@ -316,6 +336,11 @@
     "round": "20261107T0216Z",
     "tested": 9,
     "passed": 4
+   },
+   {
+    "round": "20261107T1125Z",
+    "tested": 16,
+    "passed": 10
    }
   ]
  },
@@ -334,11 +359,11 @@
   ]
  },
  "ss": {
-  "rounds": 8,
-  "tested": 387,
-  "passed": 164,
-  "last_round": "20261107T0216Z",
-  "last_ts": "2026-11-07T02:43:29Z",
+  "rounds": 9,
+  "tested": 772,
+  "passed": 179,
+  "last_round": "20261107T1125Z",
+  "last_ts": "2026-11-07T17:08:31Z",
   "recent": [
    {
     "round": "20261105T0944Z",
@@ -379,6 +404,11 @@
     "round": "20261107T0216Z",
     "tested": 55,
     "passed": 23
+   },
+   {
+    "round": "20261107T1125Z",
+    "tested": 385,
+    "passed": 15
    }
   ]
  }
