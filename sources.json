@@ -1,275 +1,272 @@
 {
- "_doc": "official: 正式源（每次都抓取）。origin=manual 为手工添加，discovered 为自动发现后晋升。removed: 被淘汰的源及原因（30 天内不会被重新发现）。deny_repos: 永不自动收录的仓库 owner/repo。",
- "max_official": 30,
- "official": [
-  {
-   "url": "https://raw.githubusercontent.com/Russ534/clash/cdf534db8f8c9306d61c630b840d0a1936d09dd2/bp.yaml",
-   "origin": "manual",
-   "added": "2026-10-10"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/shaoyouvip/free/main/mihomo.yaml",
-   "origin": "manual",
-   "added": "2026-10-10"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/awesome-vpn/awesome-vpn/master/clash.yaml",
-   "origin": "discovered",
-   "added": "2026-10-10",
-   "repo": "awesome-vpn/awesome-vpn",
-   "probation_runs": 3
-  },
-  {
-   "url": "https://raw.githubusercontent.com/ermaozi01/free_clash_vpn/main/subscribe/clash.yml",
-   "origin": "discovered",
-   "added": "2026-11-05",
-   "repo": "ermaozi01/free_clash_vpn",
-   "probation_runs": 3
-  },
-  {
-   "url": "https://raw.githubusercontent.com/zhangkaiitugithub/passcro/main/speednodes.yaml",
-   "origin": "rehab",
-   "added": "2026-11-06",
-   "rehab_from": "zero_unique_contribution:16runs",
-   "rehab_date": "2026-11-06"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/anaer/Sub/main/clash.yaml",
-   "origin": "rehab",
-   "added": "2026-11-06",
-   "rehab_from": "zero_real_ok:4runs",
-   "rehab_date": "2026-11-06"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/clashfreenodecom/clashfreenode.com/main/feed/clash-20261003.yaml",
-   "origin": "rehab",
-   "added": "2026-11-06",
-   "rehab_from": "cn_low_pass_rate:0/260",
-   "rehab_date": "2026-11-06"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/VPN-Subcription-Links/ClashX-V2Ray-TopFreeProxy/main/combine/clash.config.yaml",
-   "origin": "rehab",
-   "added": "2026-11-06",
-   "rehab_from": "cn_low_pass_rate:8/302",
-   "rehab_date": "2026-11-06"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/ermaozi/get_subscribe/main/subscribe/clash.yml",
-   "origin": "rehab",
-   "added": "2026-11-06",
-   "rehab_from": "cn_low_pass_rate:5/49",
-   "rehab_date": "2026-11-06"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/ermaozi/get_subscribe/main/subscribe/reachable/clash.yml",
-   "origin": "rehab",
-   "added": "2026-11-06",
-   "rehab_from": "cn_low_pass_rate:5/49",
-   "rehab_date": "2026-11-06"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/yy1588133/proxy-pool/main/clash.yaml",
-   "origin": "rehab",
-   "added": "2026-11-06",
-   "rehab_from": "cn_low_pass_rate:0/236",
-   "rehab_date": "2026-11-06"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/Au1rxx/free-vpn-subscriptions/main/output/clash.yaml",
-   "origin": "rehab",
-   "added": "2026-11-06",
-   "rehab_from": "cn_low_pass_rate:0/311",
-   "rehab_date": "2026-11-06"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/lanzm/MetaFetch/master/list.meta.yml",
-   "origin": "rehab",
-   "added": "2026-11-06",
-   "rehab_from": "cn_low_pass_rate:0/86",
-   "rehab_date": "2026-11-06"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/chengaopan/AutoMergePublicNodes/master/list.meta.yml",
-   "origin": "rehab",
-   "added": "2026-11-06",
-   "rehab_from": "cn_low_pass_rate:0/65",
-   "rehab_date": "2026-11-06"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/ovmvo/FreeSub/main/sub/permanent/mihomo.yaml",
-   "origin": "rehab",
-   "added": "2026-11-06",
-   "rehab_from": "cn_low_pass_rate:0/23",
-   "rehab_date": "2026-11-06"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/Au1rxx/free-vpn-subscriptions/main/output/stable/clash-0001.yaml",
-   "origin": "rehab",
-   "added": "2026-11-06",
-   "rehab_from": "cn_low_pass_rate:0/199",
-   "rehab_date": "2026-11-06"
-  },
-  {
-   "url": "https://blog.ermao.net/sub/clash/ermao.net",
-   "origin": "rehab",
-   "added": "2026-11-06",
-   "rehab_from": "cn_low_pass_rate:0/126",
-   "rehab_date": "2026-11-06"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/hamzawih0/zorVPN/main/clash.yaml",
-   "origin": "rehab",
-   "added": "2026-11-06",
-   "rehab_from": "cn_low_pass_rate:0/92",
-   "rehab_date": "2026-11-06"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/peasoft/NoMoreWalls/master/list.meta.yml",
-   "origin": "rehab",
-   "added": "2026-11-06",
-   "rehab_from": "cn_low_pass_rate:0/181",
-   "rehab_date": "2026-11-06"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/tomjiu/proxy-pipeline/main/dist/online/clash.yaml",
-   "origin": "rehab",
-   "added": "2026-11-06",
-   "rehab_from": "cn_low_pass_rate:0/120",
-   "rehab_date": "2026-11-06"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/tomjiu/proxy-pipeline/main/dist/clean/clash-renamed.yaml",
-   "origin": "rehab",
-   "added": "2026-11-06",
-   "rehab_from": "cn_low_pass_rate:0/118",
-   "rehab_date": "2026-11-06"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/chengaopan/AutoMergePublicNodes/master/snippets/nodes.meta.yml",
-   "origin": "rehab",
-   "added": "2026-11-06",
-   "rehab_from": "cn_low_pass_rate:0/138",
-   "rehab_date": "2026-11-06"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/mahdibland/ShadowsocksAggregator/master/Eternity.yml",
-   "origin": "live_probe",
-   "added": "2026-11-07",
-   "note": "live_probe: 实时抓取对照实测 100 样本通过 7（7%），现有源普遍 <2%"
-  }
- ],
- "removed": [
-  {
-   "url": "https://raw.githubusercontent.com/zhuhaiuk/free-nodes/main/clash_config.yaml",
-   "reason": "honeypot_tamper:4/9",
-   "date": "2026-10-10"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/PuddinCat/BestClash/refs/heads/main/proxies.yaml",
-   "reason": "cf_blocked:4/12",
-   "date": "2026-10-11"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/snakem982/proxypool/main/source/clash-meta-2.yaml",
-   "reason": "cf_blocked:8/23",
-   "date": "2026-10-12"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/mahdibland/V2RayAggregator/master/Eternity.yml",
-   "reason": "cf_blocked:5/15",
-   "date": "2026-10-15"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/free-nodes/clashfree/main/clash20261013.yml",
-   "reason": "consecutive_failures:4",
-   "date": "2026-10-18"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/free-nodes/clashfree/main/clash20261014.yml",
-   "reason": "consecutive_failures:4",
-   "date": "2026-10-19"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/free-nodes/clashfree/main/clash20261016.yml",
-   "reason": "consecutive_failures:4",
-   "date": "2026-10-21"
-  },
-  {
-   "url": "https://raw.githubusercontent.com/F0rc3Run/F0rc3Run/main/Best-Results/clash.yaml",
-   "reason": "zero_unique_contribution:17runs",
-   "date": "2026-11-06",
-   "mv": 2
-  },
-  {
-   "url": "https://raw.githubusercontent.com/F0rc3Run/F0rc3Run/main/Best-Results/clash-provider.yaml",
-   "reason": "zero_unique_contribution:17runs",
-   "date": "2026-11-06",
-   "mv": 2
-  },
-  {
-   "url": "https://raw.githubusercontent.com/xiaocongyu66/proxypool/main/output/clash.yml",
-   "reason": "zero_unique_contribution:17runs",
-   "date": "2026-11-06",
-   "mv": 2
-  },
-  {
-   "url": "https://raw.githubusercontent.com/Barabama/FreeNodes/main/nodes/nodefree.yaml",
-   "reason": "zero_real_ok:4runs",
-   "date": "2026-11-06",
-   "mv": 2
-  },
-  {
-   "url": "https://raw.githubusercontent.com/OgdenThomas/freesub/main/output/by-country/clash-US.yaml",
-   "reason": "zero_unique_contribution:17runs",
-   "date": "2026-11-06",
-   "mv": 2
-  },
-  {
-   "url": "https://raw.githubusercontent.com/peasoft/NoMoreWalls/master/list.txt",
-   "reason": "cn_low_pass_rate:0/123",
-   "date": "2026-11-06",
-   "mv": 2
-  },
-  {
-   "url": "https://raw.githubusercontent.com/Ruk1ng001/freeSub/main/clash.yaml",
-   "reason": "cn_low_pass_rate:0/22",
-   "date": "2026-11-06",
-   "mv": 2
-  },
-  {
-   "url": "https://raw.githubusercontent.com/ermaozi/get_subscribe/main/subscribe/v2ray.txt",
-   "reason": "cn_low_pass_rate:0/24",
-   "date": "2026-11-06",
-   "mv": 2
-  },
-  {
-   "url": "https://raw.githubusercontent.com/OgdenThomas/freesub/main/output/clash.yaml",
-   "reason": "cn_low_pass_rate:0/24",
-   "date": "2026-11-06",
-   "mv": 2
-  },
-  {
-   "url": "https://raw.githubusercontent.com/free-nodes/clashfree/main/clash20261017.yml",
-   "reason": "consecutive_failures:4",
-   "date": "2026-11-07",
-   "mv": 2
-  },
-  {
-   "url": "https://raw.githubusercontent.com/wuge0/free-nodes/main/output/clash.yaml",
-   "reason": "cn_low_pass_rate:0/25",
-   "date": "2026-11-07",
-   "mv": 2
-  }
- ],
- "deny_repos": [],
- "_rehab": {
-  "readmitted": [
-   "https://raw.githubusercontent.com/tomjiu/proxy-pipeline/main/dist/online/clash.yaml",
-   "https://raw.githubusercontent.com/tomjiu/proxy-pipeline/main/dist/clean/clash-renamed.yaml",
-   "https://raw.githubusercontent.com/chengaopan/AutoMergePublicNodes/master/snippets/nodes.meta.yml"
+  "_doc": "official: 正式源（每次都抓取）。origin=manual 为手工添加，discovered 为自动发现后晋升。removed: 被淘汰的源及原因（30 天内不会被重新发现）。deny_repos: 永不自动收录的仓库 owner/repo。",
+  "max_official": 30,
+  "official": [
+    {
+      "url": "https://raw.githubusercontent.com/Russ534/clash/cdf534db8f8c9306d61c630b840d0a1936d09dd2/bp.yaml",
+      "origin": "manual",
+      "added": "2026-10-10"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/shaoyouvip/free/main/mihomo.yaml",
+      "origin": "manual",
+      "added": "2026-10-10"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/awesome-vpn/awesome-vpn/master/clash.yaml",
+      "origin": "discovered",
+      "added": "2026-10-10",
+      "repo": "awesome-vpn/awesome-vpn",
+      "probation_runs": 3
+    },
+    {
+      "url": "https://raw.githubusercontent.com/ermaozi01/free_clash_vpn/main/subscribe/clash.yml",
+      "origin": "discovered",
+      "added": "2026-11-05",
+      "repo": "ermaozi01/free_clash_vpn",
+      "probation_runs": 3
+    },
+    {
+      "url": "https://raw.githubusercontent.com/zhangkaiitugithub/passcro/main/speednodes.yaml",
+      "origin": "rehab",
+      "added": "2026-11-06",
+      "rehab_from": "zero_unique_contribution:16runs",
+      "rehab_date": "2026-11-06"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/anaer/Sub/main/clash.yaml",
+      "origin": "rehab",
+      "added": "2026-11-06",
+      "rehab_from": "zero_real_ok:4runs",
+      "rehab_date": "2026-11-06"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/clashfreenodecom/clashfreenode.com/main/feed/clash-20261003.yaml",
+      "origin": "rehab",
+      "added": "2026-11-06",
+      "rehab_from": "cn_low_pass_rate:0/260",
+      "rehab_date": "2026-11-06"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/ermaozi/get_subscribe/main/subscribe/reachable/clash.yml",
+      "origin": "rehab",
+      "added": "2026-11-06",
+      "rehab_from": "cn_low_pass_rate:5/49",
+      "rehab_date": "2026-11-06"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/yy1588133/proxy-pool/main/clash.yaml",
+      "origin": "rehab",
+      "added": "2026-11-06",
+      "rehab_from": "cn_low_pass_rate:0/236",
+      "rehab_date": "2026-11-06"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Au1rxx/free-vpn-subscriptions/main/output/clash.yaml",
+      "origin": "rehab",
+      "added": "2026-11-06",
+      "rehab_from": "cn_low_pass_rate:0/311",
+      "rehab_date": "2026-11-06"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/lanzm/MetaFetch/master/list.meta.yml",
+      "origin": "rehab",
+      "added": "2026-11-06",
+      "rehab_from": "cn_low_pass_rate:0/86",
+      "rehab_date": "2026-11-06"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/chengaopan/AutoMergePublicNodes/master/list.meta.yml",
+      "origin": "rehab",
+      "added": "2026-11-06",
+      "rehab_from": "cn_low_pass_rate:0/65",
+      "rehab_date": "2026-11-06"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/ovmvo/FreeSub/main/sub/permanent/mihomo.yaml",
+      "origin": "rehab",
+      "added": "2026-11-06",
+      "rehab_from": "cn_low_pass_rate:0/23",
+      "rehab_date": "2026-11-06"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Au1rxx/free-vpn-subscriptions/main/output/stable/clash-0001.yaml",
+      "origin": "rehab",
+      "added": "2026-11-06",
+      "rehab_from": "cn_low_pass_rate:0/199",
+      "rehab_date": "2026-11-06"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/hamzawih0/zorVPN/main/clash.yaml",
+      "origin": "rehab",
+      "added": "2026-11-06",
+      "rehab_from": "cn_low_pass_rate:0/92",
+      "rehab_date": "2026-11-06"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/peasoft/NoMoreWalls/master/list.meta.yml",
+      "origin": "rehab",
+      "added": "2026-11-06",
+      "rehab_from": "cn_low_pass_rate:0/181",
+      "rehab_date": "2026-11-06"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/tomjiu/proxy-pipeline/main/dist/online/clash.yaml",
+      "origin": "rehab",
+      "added": "2026-11-06",
+      "rehab_from": "cn_low_pass_rate:0/120",
+      "rehab_date": "2026-11-06"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/tomjiu/proxy-pipeline/main/dist/clean/clash-renamed.yaml",
+      "origin": "rehab",
+      "added": "2026-11-06",
+      "rehab_from": "cn_low_pass_rate:0/118",
+      "rehab_date": "2026-11-06"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/chengaopan/AutoMergePublicNodes/master/snippets/nodes.meta.yml",
+      "origin": "rehab",
+      "added": "2026-11-06",
+      "rehab_from": "cn_low_pass_rate:0/138",
+      "rehab_date": "2026-11-06"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/mahdibland/ShadowsocksAggregator/master/Eternity.yml",
+      "origin": "live_probe",
+      "added": "2026-11-07",
+      "note": "live_probe: 实时抓取对照实测 100 样本通过 7（7%），现有源普遍 <2%"
+    }
   ],
-  "kept": 14,
-  "deferred": 0
- }
+  "removed": [
+    {
+      "url": "https://raw.githubusercontent.com/zhuhaiuk/free-nodes/main/clash_config.yaml",
+      "reason": "honeypot_tamper:4/9",
+      "date": "2026-10-10"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/PuddinCat/BestClash/refs/heads/main/proxies.yaml",
+      "reason": "cf_blocked:4/12",
+      "date": "2026-10-11"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/snakem982/proxypool/main/source/clash-meta-2.yaml",
+      "reason": "cf_blocked:8/23",
+      "date": "2026-10-12"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/mahdibland/V2RayAggregator/master/Eternity.yml",
+      "reason": "cf_blocked:5/15",
+      "date": "2026-10-15"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/free-nodes/clashfree/main/clash20261013.yml",
+      "reason": "consecutive_failures:4",
+      "date": "2026-10-18"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/free-nodes/clashfree/main/clash20261014.yml",
+      "reason": "consecutive_failures:4",
+      "date": "2026-10-19"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/free-nodes/clashfree/main/clash20261016.yml",
+      "reason": "consecutive_failures:4",
+      "date": "2026-10-21"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/F0rc3Run/F0rc3Run/main/Best-Results/clash.yaml",
+      "reason": "zero_unique_contribution:17runs",
+      "date": "2026-11-06",
+      "mv": 2
+    },
+    {
+      "url": "https://raw.githubusercontent.com/F0rc3Run/F0rc3Run/main/Best-Results/clash-provider.yaml",
+      "reason": "zero_unique_contribution:17runs",
+      "date": "2026-11-06",
+      "mv": 2
+    },
+    {
+      "url": "https://raw.githubusercontent.com/xiaocongyu66/proxypool/main/output/clash.yml",
+      "reason": "zero_unique_contribution:17runs",
+      "date": "2026-11-06",
+      "mv": 2
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Barabama/FreeNodes/main/nodes/nodefree.yaml",
+      "reason": "zero_real_ok:4runs",
+      "date": "2026-11-06",
+      "mv": 2
+    },
+    {
+      "url": "https://raw.githubusercontent.com/OgdenThomas/freesub/main/output/by-country/clash-US.yaml",
+      "reason": "zero_unique_contribution:17runs",
+      "date": "2026-11-06",
+      "mv": 2
+    },
+    {
+      "url": "https://raw.githubusercontent.com/peasoft/NoMoreWalls/master/list.txt",
+      "reason": "cn_low_pass_rate:0/123",
+      "date": "2026-11-06",
+      "mv": 2
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Ruk1ng001/freeSub/main/clash.yaml",
+      "reason": "cn_low_pass_rate:0/22",
+      "date": "2026-11-06",
+      "mv": 2
+    },
+    {
+      "url": "https://raw.githubusercontent.com/ermaozi/get_subscribe/main/subscribe/v2ray.txt",
+      "reason": "cn_low_pass_rate:0/24",
+      "date": "2026-11-06",
+      "mv": 2
+    },
+    {
+      "url": "https://raw.githubusercontent.com/OgdenThomas/freesub/main/output/clash.yaml",
+      "reason": "cn_low_pass_rate:0/24",
+      "date": "2026-11-06",
+      "mv": 2
+    },
+    {
+      "url": "https://raw.githubusercontent.com/free-nodes/clashfree/main/clash20261017.yml",
+      "reason": "consecutive_failures:4",
+      "date": "2026-11-07",
+      "mv": 2
+    },
+    {
+      "url": "https://raw.githubusercontent.com/wuge0/free-nodes/main/output/clash.yaml",
+      "reason": "cn_low_pass_rate:0/25",
+      "date": "2026-11-07",
+      "mv": 2
+    },
+    {
+      "url": "https://raw.githubusercontent.com/VPN-Subcription-Links/ClashX-V2Ray-TopFreeProxy/main/combine/clash.config.yaml",
+      "reason": "cn_low_pass_rate:0/74",
+      "date": "2026-11-07",
+      "mv": 2
+    },
+    {
+      "url": "https://raw.githubusercontent.com/ermaozi/get_subscribe/main/subscribe/clash.yml",
+      "reason": "cn_low_pass_rate:0/24",
+      "date": "2026-11-07",
+      "mv": 2
+    },
+    {
+      "url": "https://blog.ermao.net/sub/clash/ermao.net",
+      "reason": "cn_low_pass_rate:0/20",
+      "date": "2026-11-07",
+      "mv": 2
+    }
+  ],
+  "deny_repos": [],
+  "_rehab": {
+    "readmitted": [
+      "https://raw.githubusercontent.com/tomjiu/proxy-pipeline/main/dist/online/clash.yaml",
+      "https://raw.githubusercontent.com/tomjiu/proxy-pipeline/main/dist/clean/clash-renamed.yaml",
+      "https://raw.githubusercontent.com/chengaopan/AutoMergePublicNodes/master/snippets/nodes.meta.yml"
+    ],
+    "kept": 14,
+    "deferred": 0
+  }
 }
