@@ -2511,6 +2511,16 @@ def main() -> int:
                     log(f"证据收集异常（节点 {n['probe_name']}，已跳过）："
                         f"{type(e).__name__}: {e}")
                     ev = {}
+                # 真实站点状态码必须落进 results，否则 6.69 可用性闸门拿不到证据
+                # （2026-11-07 实测踩坑：闸门读 results[name]["codes"]，而这里只
+                #  合并了 geo/ai，导致闸门永远判「无证据」→ 一个都没拦）。
+                if ev.get("codes"):
+                    results[n["probe_name"]]["codes"] = ev["codes"]
+                # 真实站点状态码必须落进 results，否则 6.69 可用性闸门拿不到证据
+                # （2026-11-07 实测踩坑：闸门读 results[name]["codes"]，而这里只
+                #  合并了 geo/ai，导致闸门永远判「无证据」→ 一个都没拦）。
+                if ev.get("codes"):
+                    results[n["probe_name"]]["codes"] = ev["codes"]
                 if ev.get("geo"):
                     results[n["probe_name"]].update(ev["geo"])
                     n_geo += 1

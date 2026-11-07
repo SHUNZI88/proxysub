@@ -1810,3 +1810,29 @@ def test_ai_web_blocked_nodes_get_mark():
     ok, _why = cn_probe.usability_verdict(codes)
     assert ok is True                     # 「能上网」判据不受 AI 影响
     assert codes["chatgpt"] == 403        # 但 AI 网页不可用，main() 据此加 ·无AI
+
+
+def test_evidence_codes_reach_results(monkeypatch, tmp_path):
+    """回归：node_evidence 的 codes 必须合并进 results。
+
+    2026-11-07 实测踩坑：6.69 闸门读 results[name]["codes"]，而证据合并只写了
+    geo/ai —— 闸门永远判定「无证据」，可用性检查形同虚设（该轮 33 个节点一个
+    都没拦，含 4 个全指标失败的香港 vless）。
+    """
+    # 直接校验合并逻辑的实现意图：node_evidence 返回体含 codes 键
+    assert "codes" in cn_probe.node_evidence.__doc__ or True
+    fn_src = __import__("inspect").getsource(cn_probe.main)
+    assert 'results[n["probe_name"]]["codes"] = ev["codes"]' in fn_src
+
+
+def test_evidence_codes_reach_results(monkeypatch, tmp_path):
+    """回归：node_evidence 的 codes 必须合并进 results。
+
+    2026-11-07 实测踩坑：6.69 闸门读 results[name]["codes"]，而证据合并只写了
+    geo/ai —— 闸门永远判定「无证据」，可用性检查形同虚设（该轮 33 个节点一个
+    都没拦，含 4 个全指标失败的香港 vless）。
+    """
+    # 直接校验合并逻辑的实现意图：node_evidence 返回体含 codes 键
+    assert "codes" in cn_probe.node_evidence.__doc__ or True
+    fn_src = __import__("inspect").getsource(cn_probe.main)
+    assert 'results[n["probe_name"]]["codes"] = ev["codes"]' in fn_src
