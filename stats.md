@@ -1,25 +1,24 @@
 # proxysub 健康报告
 
-更新时间：2026-11-07 21:39 UTC
+更新时间：2026-11-08 01:48 UTC
 运行模式：**mihomo**
 
 ## 概览
 
-- 最终节点：**185**（合规 119，高风险隔离 66）
-- 真实拨测通过率：**39.9%**（450/1127）
-- TCP 存活：4938 | 正式源 19 个 | 候选源 18 个
+- 最终节点：**213**（合规 167，高风险隔离 46）
+- 真实拨测通过率：**30.9%**（346/1121）
+- TCP 存活：5027 | 正式源 19 个 | 候选源 18 个
 
 ## 协议分布
 
 | 协议 | 数量 |
 |---|---|
-| Hysteria2 | 65 |
-| VLESS-Reality | 61 |
-| VLESS-TLS | 35 |
-| Trojan | 19 |
+| VLESS-Reality | 117 |
+| Hysteria2 | 34 |
+| VLESS-TLS | 31 |
+| Trojan | 27 |
 | Anytls | 3 |
 | Ss | 1 |
-| Hysteria | 1 |
 
 ## 区域分布
 
@@ -27,27 +26,27 @@
 |---|---|
 | 🌐 其他 | 60 |
 | 🇯🇵 日本 | 35 |
+| 🇸🇬 新加坡 | 30 |
 | 🇺🇸 美国 | 30 |
-| 🇸🇬 新加坡 | 22 |
+| 🇭🇰 香港 | 24 |
+| 🇹🇼 台湾 | 13 |
 | 🇰🇷 韩国 | 13 |
-| 🇹🇼 台湾 | 9 |
-| 🇭🇰 香港 | 8 |
 | 🇬🇧 英国 | 8 |
 
 ## 源贡献 Top 10（正式源）
 
 | 源 | 真实通过 | 独有存活 | 存活 |
 |---|---|---|---|
-| `Au1rxx/free-vpn-subscriptions` | 167 | 630 | 747 |
-| `tomjiu/proxy-pipeline` | 141 | 621 | 973 |
-| `tomjiu/proxy-pipeline` | 112 | 8 | 329 |
-| `yy1588133/proxy-pool` | 99 | 513 | 816 |
-| `ermaozi/get_subscribe` | 72 | 6 | 216 |
-| `chengaopan/AutoMergePublicNodes` | 67 | 0 | 232 |
-| `peasoft/NoMoreWalls` | 67 | 0 | 232 |
-| `chengaopan/AutoMergePublicNodes` | 67 | 0 | 232 |
-| `mahdibland/ShadowsocksAggregator` | 48 | 16 | 174 |
-| `lanzm/MetaFetch` | 21 | 84 | 201 |
+| `Au1rxx/free-vpn-subscriptions` | 91 | 633 | 749 |
+| `tomjiu/proxy-pipeline` | 88 | 639 | 985 |
+| `tomjiu/proxy-pipeline` | 72 | 16 | 330 |
+| `ermaozi/get_subscribe` | 50 | 25 | 236 |
+| `lanzm/MetaFetch` | 42 | 104 | 207 |
+| `clashfreenodecom/clashfreenode.com` | 36 | 1037 | 1059 |
+| `yy1588133/proxy-pool` | 36 | 531 | 857 |
+| `chengaopan/AutoMergePublicNodes` | 28 | 0 | 231 |
+| `peasoft/NoMoreWalls` | 28 | 0 | 231 |
+| `chengaopan/AutoMergePublicNodes` | 28 | 0 | 231 |
 
 ## 警告
 
