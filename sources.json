@@ -83,13 +83,6 @@
       "rehab_date": "2026-11-06"
     },
     {
-      "url": "https://raw.githubusercontent.com/Au1rxx/free-vpn-subscriptions/main/output/stable/clash-0001.yaml",
-      "origin": "rehab",
-      "added": "2026-11-06",
-      "rehab_from": "cn_low_pass_rate:0/199",
-      "rehab_date": "2026-11-06"
-    },
-    {
       "url": "https://raw.githubusercontent.com/hamzawih0/zorVPN/main/clash.yaml",
       "origin": "rehab",
       "added": "2026-11-06",
@@ -129,6 +122,13 @@
       "origin": "live_probe",
       "added": "2026-11-07",
       "note": "live_probe: 实时抓取对照实测 100 样本通过 7（7%），现有源普遍 <2%"
+    },
+    {
+      "url": "https://tt.vg/freeclash",
+      "origin": "discovered",
+      "added": "2026-11-08",
+      "repo": null,
+      "probation_runs": 6
     }
   ],
   "removed": [
@@ -255,6 +255,12 @@
       "url": "https://raw.githubusercontent.com/Au1rxx/free-vpn-subscriptions/main/output/clash.yaml",
       "reason": "cn_low_pass_rate:0/39",
       "date": "2026-11-07",
+      "mv": 2
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Au1rxx/free-vpn-subscriptions/main/output/stable/clash-0001.yaml",
+      "reason": "cn_low_pass_rate:0/47",
+      "date": "2026-11-08",
       "mv": 2
     }
   ],
