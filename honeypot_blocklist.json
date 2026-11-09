@@ -22,6 +22,12 @@
       "added": "2026-11-07",
       "expires": "2026-11-21",
       "source": "https://raw.githubusercontent.com/lanzm/MetaFetch/master/list.meta.yml"
+    },
+    "104.19.173.68": {
+      "reason": "tls_mitm:certificate verify failed: unable to get local issuer certificate (_ssl.c:1011",
+      "added": "2026-11-09",
+      "expires": "2026-11-23",
+      "source": "https://raw.githubusercontent.com/clashfreenodecom/clashfreenode.com/main/feed/clash-20261003.yaml"
     }
   }
 }

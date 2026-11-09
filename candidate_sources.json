@@ -5,17 +5,10 @@
       "origin": "channel_web",
       "added": "2026-11-05",
       "first_seen": "2026-11-05",
-      "runs": 12,
+      "runs": 13,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-11-07",
-          "count": 20,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-11-07",
           "count": 20,
@@ -64,26 +57,26 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-09",
+          "count": 20,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ],
       "required_runs": 3
     },
     "https://raw.githubusercontent.com/freenodess/freenodess/main/output/clash.yaml": {
       "first_seen": "2026-11-06",
-      "runs": 11,
+      "runs": 12,
       "good_streak": 0,
       "required_runs": 3,
       "repo": "freenodess/freenodess",
       "rehab_from": "no_stable_contribution",
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-11-07",
-          "count": 1,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-11-07",
           "count": 100,
@@ -132,25 +125,25 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-09",
+          "count": 1,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
     "https://raw.githubusercontent.com/BiliRumble/NoMoreRules/master/list.meta.yml": {
       "first_seen": "2026-11-06",
-      "runs": 11,
+      "runs": 12,
       "good_streak": 0,
       "required_runs": 3,
       "repo": "BiliRumble/NoMoreRules",
       "rehab_from": "no_stable_contribution",
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-11-07",
-          "count": 118,
-          "usable": 15,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-11-07",
           "count": 111,
@@ -197,6 +190,13 @@
           "date": "2026-11-08",
           "count": 120,
           "usable": 14,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-09",
+          "count": 120,
+          "usable": 15,
           "unique_new": 0,
           "tamper": 0
         }
@@ -204,20 +204,13 @@
     },
     "https://raw.githubusercontent.com/BiliRumble/NoMoreRules/master/snippets/nodes.meta.yml": {
       "first_seen": "2026-11-06",
-      "runs": 11,
+      "runs": 12,
       "good_streak": 0,
       "required_runs": 3,
       "repo": "BiliRumble/NoMoreRules",
       "rehab_from": "no_stable_contribution",
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-11-07",
-          "count": 118,
-          "usable": 15,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-11-07",
           "count": 111,
@@ -266,25 +259,25 @@
           "usable": 14,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-09",
+          "count": 120,
+          "usable": 15,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
     "https://raw.githubusercontent.com/ReaJason/Clash-Butler/master/clash.yaml": {
       "first_seen": "2026-11-06",
-      "runs": 11,
+      "runs": 12,
       "good_streak": 0,
       "required_runs": 3,
       "repo": "ReaJason/Clash-Butler",
       "rehab_from": "no_stable_contribution",
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-11-07",
-          "count": 249,
-          "usable": 1,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-11-07",
           "count": 249,
@@ -333,12 +326,19 @@
           "usable": 2,
           "unique_new": 1,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-09",
+          "count": 249,
+          "usable": 2,
+          "unique_new": 2,
+          "tamper": 0
         }
       ]
     },
     "https://raw.githubusercontent.com/dongchengjie/airport/main/subs/clashfree.yaml": {
       "first_seen": "2026-11-06",
-      "runs": 11,
+      "runs": 12,
       "good_streak": 0,
       "required_runs": 3,
       "repo": "dongchengjie/airport",
@@ -348,13 +348,6 @@
         {
           "date": "2026-11-07",
           "count": 533,
-          "usable": 2,
-          "unique_new": 2,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-07",
-          "count": 533,
           "usable": 3,
           "unique_new": 3,
           "tamper": 0
@@ -399,13 +392,20 @@
           "count": 533,
           "usable": 3,
           "unique_new": 3,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-09",
+          "count": 533,
+          "usable": 2,
+          "unique_new": 2,
           "tamper": 0
         }
       ]
     },
     "https://raw.githubusercontent.com/dongchengjie/airport/main/subs/clashnodev2ray.yaml": {
       "first_seen": "2026-11-06",
-      "runs": 11,
+      "runs": 12,
       "good_streak": 0,
       "required_runs": 3,
       "repo": "dongchengjie/airport",
@@ -434,13 +434,6 @@
           "tamper": 0
         },
         {
-          "date": "2026-11-07",
-          "count": 108,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
           "date": "2026-11-08",
           "count": 108,
           "usable": 0,
@@ -463,6 +456,13 @@
         },
         {
           "date": "2026-11-08",
+          "count": 108,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-09",
           "count": 108,
           "usable": 0,
           "unique_new": 0,
@@ -479,7 +479,7 @@
       "required_runs": 3,
       "first_seen": "2026-11-06",
       "initial_nodes": 976,
-      "runs": 9,
+      "runs": 10,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -505,13 +505,6 @@
           "tamper": 0
         },
         {
-          "date": "2026-11-07",
-          "count": 976,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
           "date": "2026-11-08",
           "count": 976,
           "usable": 0,
@@ -534,6 +527,13 @@
         },
         {
           "date": "2026-11-08",
+          "count": 976,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-09",
           "count": 976,
           "usable": 0,
           "unique_new": 0,
@@ -550,7 +550,7 @@
       "required_runs": 3,
       "first_seen": "2026-11-06",
       "initial_nodes": 26,
-      "runs": 9,
+      "runs": 10,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -576,13 +576,6 @@
           "tamper": 0
         },
         {
-          "date": "2026-11-07",
-          "count": 26,
-          "usable": 2,
-          "unique_new": 2,
-          "tamper": 0
-        },
-        {
           "date": "2026-11-08",
           "count": 26,
           "usable": 2,
@@ -605,6 +598,13 @@
         },
         {
           "date": "2026-11-08",
+          "count": 26,
+          "usable": 2,
+          "unique_new": 2,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-09",
           "count": 26,
           "usable": 2,
           "unique_new": 2,
@@ -621,17 +621,10 @@
       "required_runs": 3,
       "first_seen": "2026-11-06",
       "initial_nodes": 30,
-      "runs": 9,
+      "runs": 10,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-11-07",
-          "count": 30,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-11-07",
           "count": 13,
@@ -680,6 +673,13 @@
           "usable": 2,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-09",
+          "count": 13,
+          "usable": 2,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -688,7 +688,7 @@
       "origin": "channel_web",
       "added": "2026-11-06",
       "first_seen": "2026-11-06",
-      "runs": 9,
+      "runs": 10,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -714,13 +714,6 @@
           "tamper": 0
         },
         {
-          "date": "2026-11-07",
-          "count": 25,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
           "date": "2026-11-08",
           "count": 25,
           "usable": 0,
@@ -743,6 +736,13 @@
         },
         {
           "date": "2026-11-08",
+          "count": 25,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-09",
           "count": 25,
           "usable": 0,
           "unique_new": 0,
@@ -756,7 +756,7 @@
       "origin": "channel_web",
       "added": "2026-11-06",
       "first_seen": "2026-11-06",
-      "runs": 9,
+      "runs": 10,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -782,13 +782,6 @@
           "tamper": 0
         },
         {
-          "date": "2026-11-07",
-          "count": 25,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
           "date": "2026-11-08",
           "count": 25,
           "usable": 0,
@@ -811,6 +804,13 @@
         },
         {
           "date": "2026-11-08",
+          "count": 25,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-09",
           "count": 25,
           "usable": 0,
           "unique_new": 0,
@@ -824,7 +824,7 @@
       "origin": "channel_web",
       "added": "2026-11-06",
       "first_seen": "2026-11-06",
-      "runs": 9,
+      "runs": 10,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -850,13 +850,6 @@
           "tamper": 0
         },
         {
-          "date": "2026-11-07",
-          "count": 25,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
           "date": "2026-11-08",
           "count": 25,
           "usable": 0,
@@ -879,6 +872,13 @@
         },
         {
           "date": "2026-11-08",
+          "count": 25,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-09",
           "count": 25,
           "usable": 0,
           "unique_new": 0,
@@ -892,17 +892,10 @@
       "origin": "channel_web",
       "added": "2026-11-06",
       "first_seen": "2026-11-06",
-      "runs": 9,
+      "runs": 10,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-11-07",
-          "count": 1796,
-          "usable": 2,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-11-07",
           "count": 1796,
@@ -951,6 +944,13 @@
           "usable": 9,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-09",
+          "count": 2180,
+          "usable": 13,
+          "unique_new": 0,
+          "tamper": 0
         }
       ],
       "required_runs": 3
@@ -960,17 +960,10 @@
       "origin": "channel_web",
       "added": "2026-11-06",
       "first_seen": "2026-11-06",
-      "runs": 9,
+      "runs": 10,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-11-07",
-          "count": 2248,
-          "usable": 2,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-11-07",
           "count": 1796,
@@ -1019,6 +1012,13 @@
           "usable": 3,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-09",
+          "count": 2180,
+          "usable": 13,
+          "unique_new": 0,
+          "tamper": 0
         }
       ],
       "required_runs": 3
@@ -1028,17 +1028,10 @@
       "origin": "channel_web",
       "added": "2026-11-06",
       "first_seen": "2026-11-06",
-      "runs": 8,
+      "runs": 9,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-11-07",
-          "count": 416,
-          "usable": 53,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-11-07",
           "count": 416,
@@ -1087,6 +1080,13 @@
           "usable": 58,
           "unique_new": 2,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-09",
+          "count": 372,
+          "usable": 83,
+          "unique_new": 2,
+          "tamper": 0
         }
       ],
       "required_runs": 3
@@ -1096,7 +1096,7 @@
       "origin": "channel_web",
       "added": "2026-11-06",
       "first_seen": "2026-11-06",
-      "runs": 8,
+      "runs": 9,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -1122,13 +1122,6 @@
           "tamper": 0
         },
         {
-          "date": "2026-11-07",
-          "count": 24,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
           "date": "2026-11-08",
           "count": 24,
           "usable": 0,
@@ -1151,6 +1144,13 @@
         },
         {
           "date": "2026-11-08",
+          "count": 24,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-09",
           "count": 24,
           "usable": 0,
           "unique_new": 0,
@@ -1168,7 +1168,7 @@
       "required_runs": 3,
       "first_seen": "2026-11-08",
       "initial_nodes": 90,
-      "runs": 2,
+      "runs": 3,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -1185,6 +1185,13 @@
           "usable": 1,
           "unique_new": 1,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-09",
+          "count": 90,
+          "usable": 1,
+          "unique_new": 1,
+          "tamper": 0
         }
       ]
     },
@@ -1193,12 +1200,19 @@
       "origin": "channel_web",
       "added": "2026-11-08",
       "first_seen": "2026-11-08",
-      "runs": 1,
+      "runs": 2,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
         {
           "date": "2026-11-08",
+          "count": 28,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-09",
           "count": 28,
           "usable": 0,
           "unique_new": 0,
