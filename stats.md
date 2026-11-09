@@ -1,24 +1,24 @@
 # proxysub 健康报告
 
-更新时间：2026-11-09 02:05 UTC
+更新时间：2026-11-09 13:17 UTC
 运行模式：**mihomo**
 
 ## 概览
 
-- 最终节点：**203**（合规 151，高风险隔离 52）
-- 真实拨测通过率：**32.0%**（352/1099）
-- TCP 存活：3855 | 正式源 19 个 | 候选源 19 个
+- 最终节点：**193**（合规 140，高风险隔离 53）
+- 真实拨测通过率：**31.7%**（335/1058）
+- TCP 存活：3917 | 正式源 18 个 | 候选源 19 个
 
 ## 协议分布
 
 | 协议 | 数量 |
 |---|---|
-| VLESS-Reality | 84 |
-| VLESS-TLS | 47 |
-| Hysteria2 | 45 |
+| VLESS-Reality | 89 |
+| Hysteria2 | 44 |
+| VLESS-TLS | 28 |
 | Trojan | 17 |
-| Ss | 6 |
-| Anytls | 3 |
+| Ss | 12 |
+| Anytls | 2 |
 | Hysteria | 1 |
 
 ## 区域分布
@@ -26,29 +26,29 @@
 | 区域 | 数量 |
 |---|---|
 | 🌐 其他 | 60 |
-| 🇯🇵 日本 | 35 |
-| 🇸🇬 新加坡 | 30 |
+| 🇯🇵 日本 | 34 |
 | 🇺🇸 美国 | 30 |
-| 🇰🇷 韩国 | 17 |
-| 🇹🇼 台湾 | 14 |
-| 🇭🇰 香港 | 9 |
+| 🇸🇬 新加坡 | 27 |
+| 🇰🇷 韩国 | 16 |
+| 🇹🇼 台湾 | 11 |
 | 🇬🇧 英国 | 8 |
+| 🇭🇰 香港 | 7 |
 
 ## 源贡献 Top 10（正式源）
 
 | 源 | 真实通过 | 独有存活 | 存活 |
 |---|---|---|---|
-| `tomjiu/proxy-pipeline` | 145 | 663 | 1001 |
-| `tomjiu/proxy-pipeline` | 115 | 19 | 340 |
-| `chengaopan/AutoMergePublicNodes` | 71 | 0 | 258 |
-| `peasoft/NoMoreWalls` | 71 | 0 | 241 |
-| `chengaopan/AutoMergePublicNodes` | 71 | 0 | 258 |
-| `yy1588133/proxy-pool` | 65 | 162 | 480 |
-| `ermaozi/get_subscribe` | 60 | 12 | 224 |
-| `clashfreenodecom/clashfreenode.com` | 52 | 1044 | 1058 |
-| `mahdibland/ShadowsocksAggregator` | 16 | 20 | 168 |
-| `lanzm/MetaFetch` | 14 | 100 | 196 |
+| `tomjiu/proxy-pipeline` | 191 | 672 | 1011 |
+| `tomjiu/proxy-pipeline` | 151 | 16 | 338 |
+| `yy1588133/proxy-pool` | 72 | 250 | 549 |
+| `chengaopan/AutoMergePublicNodes` | 55 | 0 | 254 |
+| `peasoft/NoMoreWalls` | 55 | 0 | 254 |
+| `chengaopan/AutoMergePublicNodes` | 55 | 0 | 254 |
+| `ermaozi/get_subscribe` | 32 | 7 | 201 |
+| `lanzm/MetaFetch` | 23 | 95 | 190 |
+| `mahdibland/ShadowsocksAggregator` | 15 | 23 | 179 |
+| `anaer/Sub` | 6 | 598 | 627 |
 
 ## 警告
 
-- 本轮无源被淘汰
+- 淘汰源 `https://raw.githubusercontent.com/yy1588133/proxy-pool/main/clash.yaml`：cn_low_pass_rate:0/23
