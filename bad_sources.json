@@ -2,7 +2,7 @@
   "https://raw.githubusercontent.com/shaoyouvip/free/main/mihomo.yaml": {
     "fail_streak": 0,
     "last_error": null,
-    "last_count": 3
+    "last_count": 101
   },
   "https://raw.githubusercontent.com/Russ534/clash/cdf534db8f8c9306d61c630b840d0a1936d09dd2/bp.yaml": {
     "fail_streak": 0,
@@ -42,7 +42,7 @@
   "https://raw.githubusercontent.com/anaer/Sub/main/clash.yaml": {
     "fail_streak": 0,
     "last_error": null,
-    "last_count": 2180
+    "last_count": 2203
   },
   "https://raw.githubusercontent.com/ovmvo/FreeSub/main/sub/permanent/mihomo.yaml": {
     "fail_streak": 0,
@@ -54,11 +54,6 @@
     "last_error": null,
     "last_count": 329
   },
-  "https://raw.githubusercontent.com/yy1588133/proxy-pool/main/clash.yaml": {
-    "fail_streak": 0,
-    "last_error": null,
-    "last_count": 1127
-  },
   "https://raw.githubusercontent.com/hamzawih0/zorVPN/main/clash.yaml": {
     "fail_streak": 0,
     "last_error": null,
@@ -67,7 +62,7 @@
   "https://raw.githubusercontent.com/lanzm/MetaFetch/master/list.meta.yml": {
     "fail_streak": 0,
     "last_error": null,
-    "last_count": 253
+    "last_count": 255
   },
   "https://raw.githubusercontent.com/peasoft/NoMoreWalls/master/list.meta.yml": {
     "fail_streak": 0,
@@ -110,14 +105,14 @@
     "last_count": 3728
   },
   "https://raw.githubusercontent.com/tomjiu/proxy-pipeline/main/dist/clean/clash-renamed.yaml": {
-    "fail_streak": 0,
-    "last_error": null,
-    "last_count": 405
+    "fail_streak": 1,
+    "last_error": "404 Client Error: Not Found for url: https://raw.githubusercontent.com/tomjiu/proxy-pipeline/main/dist/clean/clash-renamed.yaml",
+    "last_count": 0
   },
   "https://raw.githubusercontent.com/tomjiu/proxy-pipeline/main/dist/online/clash.yaml": {
-    "fail_streak": 0,
-    "last_error": null,
-    "last_count": 1351
+    "fail_streak": 1,
+    "last_error": "404 Client Error: Not Found for url: https://raw.githubusercontent.com/tomjiu/proxy-pipeline/main/dist/online/clash.yaml",
+    "last_count": 0
   },
   "https://raw.githubusercontent.com/chengaopan/AutoMergePublicNodes/master/snippets/nodes.meta.yml": {
     "fail_streak": 0,
@@ -142,7 +137,7 @@
   "https://anaer.github.io/Sub/clash.yaml": {
     "fail_streak": 0,
     "last_error": null,
-    "last_count": 2180
+    "last_count": 2203
   },
   "https://clashgithub.com/clashnode-20261028.html": {
     "fail_streak": 0,
