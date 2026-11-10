@@ -62,13 +62,6 @@
       "rehab_date": "2026-11-06"
     },
     {
-      "url": "https://raw.githubusercontent.com/chengaopan/AutoMergePublicNodes/master/list.meta.yml",
-      "origin": "rehab",
-      "added": "2026-11-06",
-      "rehab_from": "cn_low_pass_rate:0/65",
-      "rehab_date": "2026-11-06"
-    },
-    {
       "url": "https://raw.githubusercontent.com/ovmvo/FreeSub/main/sub/permanent/mihomo.yaml",
       "origin": "rehab",
       "added": "2026-11-06",
@@ -90,27 +83,6 @@
       "rehab_date": "2026-11-06"
     },
     {
-      "url": "https://raw.githubusercontent.com/tomjiu/proxy-pipeline/main/dist/online/clash.yaml",
-      "origin": "rehab",
-      "added": "2026-11-06",
-      "rehab_from": "cn_low_pass_rate:0/120",
-      "rehab_date": "2026-11-06"
-    },
-    {
-      "url": "https://raw.githubusercontent.com/tomjiu/proxy-pipeline/main/dist/clean/clash-renamed.yaml",
-      "origin": "rehab",
-      "added": "2026-11-06",
-      "rehab_from": "cn_low_pass_rate:0/118",
-      "rehab_date": "2026-11-06"
-    },
-    {
-      "url": "https://raw.githubusercontent.com/chengaopan/AutoMergePublicNodes/master/snippets/nodes.meta.yml",
-      "origin": "rehab",
-      "added": "2026-11-06",
-      "rehab_from": "cn_low_pass_rate:0/138",
-      "rehab_date": "2026-11-06"
-    },
-    {
       "url": "https://raw.githubusercontent.com/mahdibland/ShadowsocksAggregator/master/Eternity.yml",
       "origin": "live_probe",
       "added": "2026-11-07",
@@ -122,6 +94,13 @@
       "added": "2026-11-08",
       "repo": null,
       "probation_runs": 6
+    },
+    {
+      "url": "https://git.io/emzclash",
+      "origin": "discovered",
+      "added": "2026-11-10",
+      "repo": null,
+      "probation_runs": 14
     }
   ],
   "removed": [
@@ -260,6 +239,30 @@
       "url": "https://raw.githubusercontent.com/yy1588133/proxy-pool/main/clash.yaml",
       "reason": "cn_low_pass_rate:0/23",
       "date": "2026-11-09",
+      "mv": 2
+    },
+    {
+      "url": "https://raw.githubusercontent.com/chengaopan/AutoMergePublicNodes/master/list.meta.yml",
+      "reason": "zero_unique_contribution:16runs",
+      "date": "2026-11-10",
+      "mv": 2
+    },
+    {
+      "url": "https://raw.githubusercontent.com/tomjiu/proxy-pipeline/main/dist/online/clash.yaml",
+      "reason": "consecutive_failures:4",
+      "date": "2026-11-10",
+      "mv": 2
+    },
+    {
+      "url": "https://raw.githubusercontent.com/tomjiu/proxy-pipeline/main/dist/clean/clash-renamed.yaml",
+      "reason": "consecutive_failures:4",
+      "date": "2026-11-10",
+      "mv": 2
+    },
+    {
+      "url": "https://raw.githubusercontent.com/chengaopan/AutoMergePublicNodes/master/snippets/nodes.meta.yml",
+      "reason": "zero_unique_contribution:16runs",
+      "date": "2026-11-10",
       "mv": 2
     }
   ],
