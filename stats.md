@@ -1,25 +1,25 @@
 # proxysub 健康报告
 
-更新时间：2026-11-09 21:43 UTC
+更新时间：2026-11-10 00:37 UTC
 运行模式：**mihomo**
 
 ## 概览
 
-- 最终节点：**163**（合规 108，高风险隔离 55）
-- 真实拨测通过率：**10.1%**（112/1106）
-- TCP 存活：2806 | 正式源 18 个 | 候选源 20 个
+- 最终节点：**174**（合规 141，高风险隔离 33）
+- 真实拨测通过率：**25.9%**（289/1115）
+- TCP 存活：2867 | 正式源 18 个 | 候选源 20 个
 
 ## 协议分布
 
 | 协议 | 数量 |
 |---|---|
-| Hysteria2 | 39 |
-| VLESS-Reality | 38 |
-| VLESS-TLS | 38 |
+| VLESS-TLS | 69 |
+| VLESS-Reality | 43 |
 | Trojan | 23 |
-| Ss | 16 |
-| Hysteria | 6 |
-| Anytls | 3 |
+| Hysteria2 | 22 |
+| Ss | 14 |
+| Anytls | 2 |
+| Hysteria | 1 |
 
 ## 区域分布
 
@@ -27,27 +27,27 @@
 |---|---|
 | 🌐 其他 | 60 |
 | 🇺🇸 美国 | 30 |
-| 🇯🇵 日本 | 25 |
-| 🇸🇬 新加坡 | 17 |
+| 🇯🇵 日本 | 27 |
+| 🇸🇬 新加坡 | 23 |
 | 🇰🇷 韩国 | 12 |
-| 🇹🇼 台湾 | 9 |
-| 🇬🇧 英国 | 7 |
+| 🇹🇼 台湾 | 11 |
+| 🇬🇧 英国 | 8 |
 | 🇭🇰 香港 | 3 |
 
 ## 源贡献 Top 10（正式源）
 
 | 源 | 真实通过 | 独有存活 | 存活 |
 |---|---|---|---|
-| `chengaopan/AutoMergePublicNodes` | 38 | 0 | 243 |
-| `peasoft/NoMoreWalls` | 38 | 0 | 243 |
-| `chengaopan/AutoMergePublicNodes` | 38 | 0 | 243 |
-| `ermaozi/get_subscribe` | 27 | 6 | 189 |
-| `lanzm/MetaFetch` | 21 | 175 | 191 |
-| `mahdibland/ShadowsocksAggregator` | 18 | 124 | 180 |
-| `anaer/Sub` | 13 | 599 | 631 |
-| `ermaozi01/free_clash_vpn` | 5 | 9 | 20 |
-| `hamzawih0/zorVPN` | 4 | 29 | 29 |
-| `https://tt.vg/freeclash` | 4 | 18 | 30 |
+| `clashfreenodecom/clashfreenode.com` | 112 | 1055 | 1058 |
+| `chengaopan/AutoMergePublicNodes` | 82 | 0 | 258 |
+| `peasoft/NoMoreWalls` | 82 | 0 | 258 |
+| `chengaopan/AutoMergePublicNodes` | 82 | 0 | 258 |
+| `ermaozi/get_subscribe` | 26 | 21 | 189 |
+| `anaer/Sub` | 22 | 603 | 630 |
+| `shaoyouvip/free` | 19 | 16 | 23 |
+| `lanzm/MetaFetch` | 18 | 177 | 192 |
+| `mahdibland/ShadowsocksAggregator` | 17 | 119 | 180 |
+| `https://tt.vg/freeclash` | 5 | 9 | 19 |
 
 ## 警告
 
