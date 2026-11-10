@@ -1,25 +1,25 @@
 # proxysub 健康报告
 
-更新时间：2026-11-10 00:37 UTC
+更新时间：2026-11-10 13:04 UTC
 运行模式：**mihomo**
 
 ## 概览
 
-- 最终节点：**174**（合规 141，高风险隔离 33）
-- 真实拨测通过率：**25.9%**（289/1115）
-- TCP 存活：2867 | 正式源 18 个 | 候选源 20 个
+- 最终节点：**175**（合规 114，高风险隔离 61）
+- 真实拨测通过率：**15.4%**（168/1088）
+- TCP 存活：2798 | 正式源 18 个 | 候选源 15 个
 
 ## 协议分布
 
 | 协议 | 数量 |
 |---|---|
-| VLESS-TLS | 69 |
-| VLESS-Reality | 43 |
-| Trojan | 23 |
-| Hysteria2 | 22 |
-| Ss | 14 |
-| Anytls | 2 |
-| Hysteria | 1 |
+| VLESS-TLS | 45 |
+| VLESS-Reality | 39 |
+| Hysteria2 | 34 |
+| Trojan | 33 |
+| Ss | 11 |
+| Hysteria | 7 |
+| Anytls | 6 |
 
 ## 区域分布
 
@@ -27,27 +27,27 @@
 |---|---|
 | 🌐 其他 | 60 |
 | 🇺🇸 美国 | 30 |
-| 🇯🇵 日本 | 27 |
-| 🇸🇬 新加坡 | 23 |
-| 🇰🇷 韩国 | 12 |
-| 🇹🇼 台湾 | 11 |
+| 🇯🇵 日本 | 23 |
+| 🇸🇬 新加坡 | 20 |
+| 🇭🇰 香港 | 12 |
+| 🇹🇼 台湾 | 12 |
+| 🇰🇷 韩国 | 10 |
 | 🇬🇧 英国 | 8 |
-| 🇭🇰 香港 | 3 |
 
 ## 源贡献 Top 10（正式源）
 
 | 源 | 真实通过 | 独有存活 | 存活 |
 |---|---|---|---|
-| `clashfreenodecom/clashfreenode.com` | 112 | 1055 | 1058 |
-| `chengaopan/AutoMergePublicNodes` | 82 | 0 | 258 |
-| `peasoft/NoMoreWalls` | 82 | 0 | 258 |
-| `chengaopan/AutoMergePublicNodes` | 82 | 0 | 258 |
-| `ermaozi/get_subscribe` | 26 | 21 | 189 |
-| `anaer/Sub` | 22 | 603 | 630 |
-| `shaoyouvip/free` | 19 | 16 | 23 |
-| `lanzm/MetaFetch` | 18 | 177 | 192 |
-| `mahdibland/ShadowsocksAggregator` | 17 | 119 | 180 |
-| `https://tt.vg/freeclash` | 5 | 9 | 19 |
+| `peasoft/NoMoreWalls` | 64 | 0 | 268 |
+| `chengaopan/AutoMergePublicNodes` | 61 | 0 | 264 |
+| `chengaopan/AutoMergePublicNodes` | 61 | 0 | 264 |
+| `ermaozi/get_subscribe` | 60 | 28 | 259 |
+| `lanzm/MetaFetch` | 31 | 189 | 204 |
+| `mahdibland/ShadowsocksAggregator` | 16 | 121 | 176 |
+| `ermaozi01/free_clash_vpn` | 8 | 7 | 19 |
+| `anaer/Sub` | 6 | 609 | 629 |
+| `hamzawih0/zorVPN` | 5 | 29 | 29 |
+| `awesome-vpn/awesome-vpn` | 4 | 4 | 6 |
 
 ## 警告
 
