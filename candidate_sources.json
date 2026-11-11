@@ -9,18 +9,11 @@
       "required_runs": 3,
       "first_seen": "2026-11-08",
       "initial_nodes": 90,
-      "runs": 12,
+      "runs": 13,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
         {
-          "date": "2026-11-09",
-          "count": 90,
-          "usable": 1,
-          "unique_new": 1,
-          "tamper": 0
-        },
-        {
           "date": "2026-11-10",
           "count": 90,
           "usable": 1,
@@ -43,6 +36,13 @@
         },
         {
           "date": "2026-11-10",
+          "count": 90,
+          "usable": 1,
+          "unique_new": 1,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-11",
           "count": 90,
           "usable": 1,
           "unique_new": 1,
@@ -76,18 +76,11 @@
       "origin": "channel_web",
       "added": "2026-11-08",
       "first_seen": "2026-11-08",
-      "runs": 11,
+      "runs": 12,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
         {
-          "date": "2026-11-09",
-          "count": 28,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
           "date": "2026-11-10",
           "count": 28,
           "usable": 0,
@@ -110,6 +103,13 @@
         },
         {
           "date": "2026-11-10",
+          "count": 28,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-11",
           "count": 28,
           "usable": 0,
           "unique_new": 0,
@@ -144,7 +144,7 @@
       "origin": "channel_web",
       "added": "2026-11-09",
       "first_seen": "2026-11-09",
-      "runs": 7,
+      "runs": 8,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -171,6 +171,13 @@
         },
         {
           "date": "2026-11-10",
+          "count": 30,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-11",
           "count": 30,
           "usable": 0,
           "unique_new": 0,
@@ -209,7 +216,7 @@
       "required_runs": 3,
       "first_seen": "2026-11-10",
       "initial_nodes": 35,
-      "runs": 6,
+      "runs": 7,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -254,6 +261,13 @@
           "usable": 2,
           "unique_new": 2,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-11",
+          "count": 32,
+          "usable": 4,
+          "unique_new": 4,
+          "tamper": 0
         }
       ]
     },
@@ -266,8 +280,8 @@
       "required_runs": 3,
       "first_seen": "2026-11-10",
       "initial_nodes": 82,
-      "runs": 5,
-      "good_streak": 1,
+      "runs": 6,
+      "good_streak": 2,
       "fail_streak": 0,
       "history": [
         {
@@ -304,6 +318,13 @@
           "usable": 26,
           "unique_new": 25,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-11",
+          "count": 42,
+          "usable": 16,
+          "unique_new": 14,
+          "tamper": 0
         }
       ]
     },
@@ -316,13 +337,20 @@
       "required_runs": 3,
       "first_seen": "2026-11-10",
       "initial_nodes": 3952,
-      "runs": 4,
+      "runs": 5,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
         {
           "date": "2026-11-10",
           "count": 3952,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-11",
+          "count": 3962,
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
@@ -355,12 +383,19 @@
       "origin": "channel_web",
       "added": "2026-11-10",
       "first_seen": "2026-11-10",
-      "runs": 4,
+      "runs": 5,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
         {
           "date": "2026-11-10",
+          "count": 43,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-11",
           "count": 43,
           "usable": 0,
           "unique_new": 0,

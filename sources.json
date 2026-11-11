@@ -34,20 +34,6 @@
       "rehab_date": "2026-11-06"
     },
     {
-      "url": "https://raw.githubusercontent.com/anaer/Sub/main/clash.yaml",
-      "origin": "rehab",
-      "added": "2026-11-06",
-      "rehab_from": "zero_real_ok:4runs",
-      "rehab_date": "2026-11-06"
-    },
-    {
-      "url": "https://raw.githubusercontent.com/clashfreenodecom/clashfreenode.com/main/feed/clash-20261003.yaml",
-      "origin": "rehab",
-      "added": "2026-11-06",
-      "rehab_from": "cn_low_pass_rate:0/260",
-      "rehab_date": "2026-11-06"
-    },
-    {
       "url": "https://raw.githubusercontent.com/ermaozi/get_subscribe/main/subscribe/reachable/clash.yml",
       "origin": "rehab",
       "added": "2026-11-06",
@@ -66,13 +52,6 @@
       "origin": "rehab",
       "added": "2026-11-06",
       "rehab_from": "cn_low_pass_rate:0/23",
-      "rehab_date": "2026-11-06"
-    },
-    {
-      "url": "https://raw.githubusercontent.com/hamzawih0/zorVPN/main/clash.yaml",
-      "origin": "rehab",
-      "added": "2026-11-06",
-      "rehab_from": "cn_low_pass_rate:0/92",
       "rehab_date": "2026-11-06"
     },
     {
@@ -263,6 +242,24 @@
       "url": "https://raw.githubusercontent.com/chengaopan/AutoMergePublicNodes/master/snippets/nodes.meta.yml",
       "reason": "zero_unique_contribution:16runs",
       "date": "2026-11-10",
+      "mv": 2
+    },
+    {
+      "url": "https://raw.githubusercontent.com/clashfreenodecom/clashfreenode.com/main/feed/clash-20261003.yaml",
+      "reason": "cn_low_pass_rate:0/262",
+      "date": "2026-11-11",
+      "mv": 2
+    },
+    {
+      "url": "https://raw.githubusercontent.com/anaer/Sub/main/clash.yaml",
+      "reason": "cn_low_pass_rate:0/159",
+      "date": "2026-11-11",
+      "mv": 2
+    },
+    {
+      "url": "https://raw.githubusercontent.com/hamzawih0/zorVPN/main/clash.yaml",
+      "reason": "cn_low_pass_rate:0/34",
+      "date": "2026-11-11",
       "mv": 2
     }
   ],
