@@ -1,55 +1,54 @@
 # proxysub 健康报告
 
-更新时间：2026-11-12 12:52 UTC
+更新时间：2026-11-12 21:28 UTC
 运行模式：**mihomo**
 
 ## 概览
 
-- 最终节点：**150**（合规 114，高风险隔离 36）
-- 真实拨测通过率：**48.6%**（122/251）
-- TCP 存活：785 | 正式源 10 个 | 候选源 8 个
+- 最终节点：**150**（合规 120，高风险隔离 30）
+- 真实拨测通过率：**57.4%**（220/383）
+- TCP 存活：768 | 正式源 9 个 | 候选源 9 个
 
 ## 协议分布
 
 | 协议 | 数量 |
 |---|---|
-| Hysteria2 | 39 |
-| VLESS-Reality | 38 |
-| VLESS-TLS | 34 |
-| Ss | 15 |
-| Trojan | 13 |
+| Ss | 33 |
+| VLESS-TLS | 29 |
+| VLESS-Reality | 29 |
+| Trojan | 28 |
+| Hysteria2 | 22 |
 | Hysteria | 7 |
-| Anytls | 4 |
+| Anytls | 2 |
 
 ## 区域分布
 
 | 区域 | 数量 |
 |---|---|
-| 🌐 其他 | 82 |
-| 🇺🇸 美国 | 30 |
-| 🇯🇵 日本 | 17 |
-| 🇸🇬 新加坡 | 7 |
+| 🌐 其他 | 113 |
+| 🇺🇸 美国 | 20 |
+| 🇯🇵 日本 | 6 |
 | 🇬🇧 英国 | 6 |
-| 🇭🇰 香港 | 3 |
-| 🇹🇼 台湾 | 3 |
 | 🇰🇷 韩国 | 2 |
+| 🇭🇰 香港 | 1 |
+| 🇸🇬 新加坡 | 1 |
+| 🇹🇼 台湾 | 1 |
 
 ## 源贡献 Top 10（正式源）
 
 | 源 | 真实通过 | 独有存活 | 存活 |
 |---|---|---|---|
-| `https://git.io/emzclash` | 51 | 1 | 299 |
-| `peasoft/NoMoreWalls` | 35 | 0 | 234 |
-| `lanzm/MetaFetch` | 31 | 290 | 303 |
-| `ermaozi/get_subscribe` | 30 | 0 | 251 |
-| `mahdibland/ShadowsocksAggregator` | 26 | 113 | 169 |
-| `ermaozi01/free_clash_vpn` | 7 | 4 | 21 |
-| `ovmvo/FreeSub` | 5 | 15 | 23 |
-| `https://tt.vg/freeclash` | 2 | 3 | 13 |
-| `awesome-vpn/awesome-vpn` | 2 | 1 | 2 |
-| `zhangkaiitugithub/passcro` | 0 | 2 | 8 |
+| `ermaozi/get_subscribe` | 138 | 167 | 250 |
+| `mahdibland/ShadowsocksAggregator` | 80 | 113 | 170 |
+| `lanzm/MetaFetch` | 44 | 304 | 322 |
+| `ermaozi01/free_clash_vpn` | 17 | 6 | 17 |
+| `shaoyouvip/free` | 16 | 10 | 20 |
+| `ovmvo/FreeSub` | 11 | 15 | 23 |
+| `https://tt.vg/freeclash` | 9 | 2 | 12 |
+| `zhangkaiitugithub/passcro` | 4 | 2 | 8 |
+| `awesome-vpn/awesome-vpn` | 2 | 2 | 2 |
+| `Russ534/clash` | 0 | 1 | 1 |
 
 ## 警告
 
-- 淘汰源 `https://git.io/emzclash`：cn_low_pass_rate:0/89
-- 淘汰源 `https://raw.githubusercontent.com/peasoft/NoMoreWalls/master/list.meta.yml`：cn_low_pass_rate:0/51
+- 淘汰源 `https://raw.githubusercontent.com/mahdibland/ShadowsocksAggregator/master/Eternity.yml`：cn_low_pass_rate:0/98
