@@ -5,7 +5,7 @@
       "origin": "channel_web",
       "added": "2026-11-09",
       "first_seen": "2026-11-09",
-      "runs": 12,
+      "runs": 13,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -31,13 +31,6 @@
           "tamper": 0
         },
         {
-          "date": "2026-11-11",
-          "count": 30,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
           "date": "2026-11-12",
           "count": 30,
           "usable": 0,
@@ -53,6 +46,13 @@
         },
         {
           "date": "2026-11-12",
+          "count": 30,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-13",
           "count": 30,
           "usable": 0,
           "unique_new": 0,
@@ -68,77 +68,6 @@
       ],
       "required_runs": 3
     },
-    "https://raw.githubusercontent.com/zhuhaiuk/free-nodes/main/clash_config.yaml": {
-      "repo": "zhuhaiuk/free-nodes",
-      "stars": 419,
-      "repo_created": "2026-07-09T06:32:43Z",
-      "reputation": "ok",
-      "reputation_note": "stars=419,age=123d",
-      "required_runs": 3,
-      "first_seen": "2026-11-10",
-      "initial_nodes": 35,
-      "runs": 11,
-      "good_streak": 2,
-      "fail_streak": 0,
-      "history": [
-        {
-          "date": "2026-11-11",
-          "count": 36,
-          "usable": 2,
-          "unique_new": 2,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-11",
-          "count": 31,
-          "usable": 2,
-          "unique_new": 2,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-11",
-          "count": 35,
-          "usable": 2,
-          "unique_new": 2,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-11",
-          "count": 32,
-          "usable": 4,
-          "unique_new": 4,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-12",
-          "count": 36,
-          "usable": 4,
-          "unique_new": 4,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-12",
-          "count": 33,
-          "usable": 4,
-          "unique_new": 4,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-12",
-          "count": 33,
-          "usable": 6,
-          "unique_new": 6,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-13",
-          "count": 35,
-          "usable": 8,
-          "unique_new": 8,
-          "tamper": 0
-        }
-      ]
-    },
     "https://raw.githubusercontent.com/kooker/FreeSubsCheck/main/mihomo.yaml": {
       "repo": "kooker/FreeSubsCheck",
       "stars": 456,
@@ -148,17 +77,10 @@
       "required_runs": 3,
       "first_seen": "2026-11-10",
       "initial_nodes": 82,
-      "runs": 10,
+      "runs": 11,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-11-11",
-          "count": 7,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-11-11",
           "count": 10,
@@ -207,6 +129,13 @@
           "usable": 8,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-13",
+          "count": 3,
+          "usable": 1,
+          "unique_new": 1,
+          "tamper": 0
         }
       ]
     },
@@ -219,17 +148,10 @@
       "required_runs": 3,
       "first_seen": "2026-11-10",
       "initial_nodes": 3952,
-      "runs": 9,
+      "runs": 10,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-11-11",
-          "count": 3962,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-11-11",
           "count": 3962,
@@ -278,6 +200,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-13",
+          "count": 4012,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -286,7 +215,7 @@
       "origin": "channel_web",
       "added": "2026-11-10",
       "first_seen": "2026-11-10",
-      "runs": 9,
+      "runs": 10,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -312,13 +241,6 @@
           "tamper": 0
         },
         {
-          "date": "2026-11-11",
-          "count": 43,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
           "date": "2026-11-12",
           "count": 43,
           "usable": 0,
@@ -334,6 +256,13 @@
         },
         {
           "date": "2026-11-12",
+          "count": 43,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-13",
           "count": 43,
           "usable": 0,
           "unique_new": 0,
@@ -358,7 +287,7 @@
       "required_runs": 3,
       "first_seen": "2026-11-12",
       "initial_nodes": 27,
-      "runs": 3,
+      "runs": 4,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -382,6 +311,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-13",
+          "count": 37,
+          "usable": 4,
+          "unique_new": 3,
+          "tamper": 0
         }
       ]
     },
@@ -394,7 +330,7 @@
       "required_runs": 3,
       "first_seen": "2026-11-12",
       "initial_nodes": 47,
-      "runs": 2,
+      "runs": 3,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -410,6 +346,13 @@
           "count": 63,
           "usable": 37,
           "unique_new": 2,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-13",
+          "count": 64,
+          "usable": 32,
+          "unique_new": 0,
           "tamper": 0
         }
       ]
