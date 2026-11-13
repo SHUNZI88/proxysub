@@ -115,5 +115,14 @@
   "passed": 89,
   "at": "2026-11-12T11:14:42Z",
   "reason": "pass_rate=12.82% 健康、p90延迟 2675ms < 当前 2722ms -> 收紧提质"
+ },
+ {
+  "param": "US_LATENCY_CAP_MS",
+  "old": 2171.3,
+  "new": 2150.7,
+  "samples": 1012,
+  "passed": 118,
+  "at": "2026-11-13T02:14:44Z",
+  "reason": "pass_rate=11.66% 健康、p90延迟 2130ms < 当前 2171ms -> 收紧提质"
  }
 ]
