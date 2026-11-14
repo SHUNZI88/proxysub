@@ -1,144 +1,5 @@
 {
   "candidates": {
-    "https://raw.githubusercontent.com/asgharkapk/Sub-Config-Extractor/main/output_configs/mixed/ALIILAPRO/v2rayNG-Config/sub.txt.yaml": {
-      "repo": "asgharkapk/Sub-Config-Extractor",
-      "stars": 62,
-      "repo_created": "2025-09-29T12:32:34Z",
-      "reputation": "ok",
-      "reputation_note": "stars=62,age=407d",
-      "required_runs": 3,
-      "first_seen": "2026-11-10",
-      "initial_nodes": 3952,
-      "runs": 15,
-      "good_streak": 0,
-      "fail_streak": 0,
-      "history": [
-        {
-          "date": "2026-11-12",
-          "count": 4012,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-13",
-          "count": 4012,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-13",
-          "count": 4012,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-13",
-          "count": 4104,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-13",
-          "count": 4104,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-14",
-          "count": 4126,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-14",
-          "count": 4126,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-14",
-          "count": 4172,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        }
-      ]
-    },
-    "https://clashgithub.com/clashnode-20261111.html": {
-      "channel": "web:https://clashgithub.com/",
-      "origin": "channel_web",
-      "added": "2026-11-10",
-      "first_seen": "2026-11-10",
-      "runs": 15,
-      "good_streak": 0,
-      "fail_streak": 0,
-      "history": [
-        {
-          "date": "2026-11-12",
-          "count": 43,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-13",
-          "count": 43,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-13",
-          "count": 43,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-13",
-          "count": 43,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-13",
-          "count": 43,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-14",
-          "count": 43,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-14",
-          "count": 43,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-14",
-          "count": 43,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        }
-      ],
-      "required_runs": 3
-    },
     "https://raw.githubusercontent.com/marshall888666/free_clash_subscribe/main/source/clash-meta-2.yaml": {
       "repo": "marshall888666/free_clash_subscribe",
       "stars": 24,
@@ -148,17 +9,10 @@
       "required_runs": 3,
       "first_seen": "2026-11-12",
       "initial_nodes": 27,
-      "runs": 9,
+      "runs": 10,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-11-12",
-          "count": 6,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-11-13",
           "count": 6,
@@ -207,76 +61,12 @@
           "usable": 1,
           "unique_new": 0,
           "tamper": 0
-        }
-      ]
-    },
-    "https://raw.githubusercontent.com/snakem982/proxypool/main/source/clash-meta-2.yaml": {
-      "repo": "snakem982/proxypool",
-      "stars": 2264,
-      "repo_created": "2023-06-18T09:09:37Z",
-      "reputation": "ok",
-      "reputation_note": "stars=2264,age=1243d",
-      "required_runs": 3,
-      "first_seen": "2026-11-12",
-      "initial_nodes": 47,
-      "runs": 8,
-      "good_streak": 2,
-      "fail_streak": 0,
-      "history": [
-        {
-          "date": "2026-11-12",
-          "count": 47,
-          "usable": 26,
-          "unique_new": 10,
-          "tamper": 0
         },
         {
-          "date": "2026-11-13",
-          "count": 63,
-          "usable": 37,
-          "unique_new": 2,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-13",
-          "count": 64,
-          "usable": 32,
+          "date": "2026-11-14",
+          "count": 8,
+          "usable": 1,
           "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-13",
-          "count": 64,
-          "usable": 26,
-          "unique_new": 13,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-13",
-          "count": 64,
-          "usable": 18,
-          "unique_new": 7,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-14",
-          "count": 64,
-          "usable": 29,
-          "unique_new": 1,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-14",
-          "count": 62,
-          "usable": 33,
-          "unique_new": 16,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-14",
-          "count": 64,
-          "usable": 23,
-          "unique_new": 10,
           "tamper": 0
         }
       ]
@@ -290,7 +80,7 @@
       "required_runs": 3,
       "first_seen": "2026-11-14",
       "initial_nodes": 400,
-      "runs": 1,
+      "runs": 2,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -300,22 +90,15 @@
           "usable": 10,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-14",
+          "count": 250,
+          "usable": 10,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
-    },
-    "https://raw.githubusercontent.com/LalatinaHub/LatinaSub/main/result/clash.yaml": {
-      "repo": "LalatinaHub/LatinaSub",
-      "stars": 12,
-      "repo_created": "2023-01-09T23:30:45Z",
-      "reputation": "ok",
-      "reputation_note": "stars=12,age=1404d",
-      "required_runs": 3,
-      "first_seen": "2026-11-14",
-      "initial_nodes": 500,
-      "runs": 0,
-      "good_streak": 0,
-      "fail_streak": 0,
-      "history": []
     }
   },
   "rejected": {
@@ -520,6 +303,24 @@
       "reason": "no_stable_contribution",
       "date": "2026-11-14",
       "repo": "kooker/FreeSubsCheck",
+      "mv": 2
+    },
+    "https://raw.githubusercontent.com/asgharkapk/Sub-Config-Extractor/main/output_configs/mixed/ALIILAPRO/v2rayNG-Config/sub.txt.yaml": {
+      "reason": "no_stable_contribution",
+      "date": "2026-11-14",
+      "repo": "asgharkapk/Sub-Config-Extractor",
+      "mv": 2
+    },
+    "https://clashgithub.com/clashnode-20261111.html": {
+      "reason": "no_stable_contribution",
+      "date": "2026-11-14",
+      "repo": null,
+      "mv": 2
+    },
+    "https://raw.githubusercontent.com/LalatinaHub/LatinaSub/main/result/clash.yaml": {
+      "reason": "honeypot_structure:shared_cred:75/124",
+      "date": "2026-11-14",
+      "repo": "LalatinaHub/LatinaSub",
       "mv": 2
     }
   }
