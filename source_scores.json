@@ -21,7 +21,7 @@
   },
   "https://raw.githubusercontent.com/snakem982/proxypool/main/source/clash-meta-2.yaml": {
     "score": 100.0,
-    "runs": 7,
+    "runs": 8,
     "role": "candidate",
     "last": "2026-11-14"
   },
@@ -37,7 +37,7 @@
   },
   "https://raw.githubusercontent.com/Russ534/clash/cdf534db8f8c9306d61c630b840d0a1936d09dd2/bp.yaml": {
     "score": 100.0,
-    "runs": 137,
+    "runs": 138,
     "role": "official",
     "last": "2026-11-14",
     "cn_tested": 1,
@@ -47,7 +47,7 @@
   },
   "https://raw.githubusercontent.com/shaoyouvip/free/main/mihomo.yaml": {
     "score": 100.0,
-    "runs": 137,
+    "runs": 138,
     "role": "official",
     "last": "2026-11-14",
     "cn_tested": 12,
@@ -57,7 +57,7 @@
   },
   "https://raw.githubusercontent.com/zhangkaiitugithub/passcro/main/speednodes.yaml": {
     "score": 100.0,
-    "runs": 27,
+    "runs": 28,
     "role": "official",
     "last": "2026-11-14",
     "cn_tested": 10,
@@ -82,7 +82,7 @@
   },
   "https://raw.githubusercontent.com/lanzm/MetaFetch/master/list.meta.yml": {
     "score": 100.0,
-    "runs": 87,
+    "runs": 88,
     "role": "official",
     "last": "2026-11-14",
     "cn_tested": 47,
@@ -118,7 +118,7 @@
   },
   "https://raw.githubusercontent.com/awesome-vpn/awesome-vpn/master/clash.yaml": {
     "score": 100.0,
-    "runs": 137,
+    "runs": 138,
     "role": "official",
     "last": "2026-11-14",
     "cn_tested": 12,
@@ -149,7 +149,7 @@
   },
   "https://raw.githubusercontent.com/ovmvo/FreeSub/main/sub/permanent/mihomo.yaml": {
     "score": 100.0,
-    "runs": 91,
+    "runs": 92,
     "role": "official",
     "last": "2026-11-14",
     "cn_tested": 11,
@@ -351,7 +351,7 @@
   },
   "https://tt.vg/freeclash": {
     "score": 100.0,
-    "runs": 41,
+    "runs": 42,
     "role": "official",
     "last": "2026-11-14",
     "cn_tested": 3,
@@ -447,7 +447,7 @@
   },
   "https://raw.githubusercontent.com/kooker/FreeSubsCheck/main/mihomo.yaml": {
     "score": 100.0,
-    "runs": 30,
+    "runs": 31,
     "role": "candidate",
     "last": "2026-11-14"
   },
@@ -509,7 +509,7 @@
   },
   "https://raw.githubusercontent.com/ermaozi/get_subscribe/main/subscribe/reachable/clash.yml": {
     "score": 100.0,
-    "runs": 32,
+    "runs": 33,
     "role": "official",
     "last": "2026-11-14",
     "cn_tested": 49,
@@ -696,8 +696,8 @@
     "last": "2026-11-05"
   },
   "__channel_nodes__": {
-    "score": 99.86,
-    "runs": 36,
+    "score": 99.88,
+    "runs": 37,
     "role": "channel",
     "last": "2026-11-14"
   },
@@ -709,7 +709,7 @@
   },
   "https://raw.githubusercontent.com/ermaozi01/free_clash_vpn/main/subscribe/clash.yml": {
     "score": 100.0,
-    "runs": 32,
+    "runs": 33,
     "role": "official",
     "last": "2026-11-14",
     "cn_tested": 6,
@@ -727,7 +727,7 @@
     "cn_tested": 24,
     "cn_passed": 0,
     "cn_pass_rate": 0.0,
-    "cn_last": "2026-11-14T02:14:43Z",
+    "cn_last": "2026-11-14T11:14:42Z",
     "ai_tested": 1,
     "ai_reachable": 1,
     "ai_api": 1,
@@ -735,27 +735,27 @@
     "ai_last": "2026-11-07T18:14:42Z"
   },
   "shaoyouvip": {
-    "cn_tested": 6,
-    "cn_passed": 0,
-    "cn_pass_rate": 0.0,
-    "cn_last": "2026-11-14T02:14:43Z",
+    "cn_tested": 3,
+    "cn_passed": 1,
+    "cn_pass_rate": 0.3333,
+    "cn_last": "2026-11-14T11:14:42Z",
     "ai_tested": 1,
     "ai_reachable": 1,
-    "ai_api": 0,
-    "ai_api_rate": 0.0,
-    "ai_last": "2026-11-13T15:14:43Z"
+    "ai_api": 1,
+    "ai_api_rate": 1.0,
+    "ai_last": "2026-11-14T11:14:42Z"
   },
   "Russ534": {
     "cn_tested": 74,
     "cn_passed": 0,
     "cn_pass_rate": 0.0,
-    "cn_last": "2026-11-14T02:14:43Z"
+    "cn_last": "2026-11-14T11:14:42Z"
   },
   "ermaozi": {
-    "cn_tested": 78,
-    "cn_passed": 1,
-    "cn_pass_rate": 0.0128,
-    "cn_last": "2026-11-14T02:14:43Z",
+    "cn_tested": 91,
+    "cn_passed": 0,
+    "cn_pass_rate": 0.0,
+    "cn_last": "2026-11-14T11:14:42Z",
     "ai_tested": 1,
     "ai_reachable": 1,
     "ai_api": 1,
@@ -763,10 +763,10 @@
     "ai_last": "2026-11-14T02:14:43Z"
   },
   "lanzm": {
-    "cn_tested": 77,
+    "cn_tested": 91,
     "cn_passed": 0,
     "cn_pass_rate": 0.0,
-    "cn_last": "2026-11-14T02:14:43Z",
+    "cn_last": "2026-11-14T11:14:42Z",
     "ai_tested": 1,
     "ai_reachable": 1,
     "ai_api": 1,
@@ -774,27 +774,27 @@
     "ai_last": "2026-11-11T11:14:43Z"
   },
   "yy1588133": {
-    "cn_tested": 71,
-    "cn_passed": 0,
-    "cn_pass_rate": 0.0,
-    "cn_last": "2026-11-14T02:14:43Z",
+    "cn_tested": 91,
+    "cn_passed": 1,
+    "cn_pass_rate": 0.011,
+    "cn_last": "2026-11-14T11:14:42Z",
     "ai_tested": 1,
     "ai_reachable": 1,
-    "ai_api": 0,
-    "ai_api_rate": 0.0,
-    "ai_last": "2026-11-13T15:14:43Z"
+    "ai_api": 1,
+    "ai_api_rate": 1.0,
+    "ai_last": "2026-11-14T11:14:42Z"
   },
   "Au1rxx": {
-    "cn_tested": 77,
+    "cn_tested": 91,
     "cn_passed": 0,
     "cn_pass_rate": 0.0,
-    "cn_last": "2026-11-14T02:14:43Z"
+    "cn_last": "2026-11-14T11:14:42Z"
   },
   "anaer": {
-    "cn_tested": 77,
+    "cn_tested": 91,
     "cn_passed": 0,
     "cn_pass_rate": 0.0,
-    "cn_last": "2026-11-14T02:14:43Z"
+    "cn_last": "2026-11-14T11:14:42Z"
   },
   "tomjiu": {
     "cn_tested": 75,
@@ -808,33 +808,33 @@
     "ai_last": "2026-11-09T11:14:42Z"
   },
   "chengaopan": {
-    "cn_tested": 77,
+    "cn_tested": 69,
     "cn_passed": 2,
-    "cn_pass_rate": 0.026,
-    "cn_last": "2026-11-14T02:14:43Z",
+    "cn_pass_rate": 0.029,
+    "cn_last": "2026-11-14T11:14:42Z",
     "ai_tested": 2,
     "ai_reachable": 2,
-    "ai_api": 2,
-    "ai_api_rate": 1.0,
-    "ai_last": "2026-11-14T02:14:43Z"
+    "ai_api": 1,
+    "ai_api_rate": 0.5,
+    "ai_last": "2026-11-14T11:14:42Z"
   },
   "hamzawih0": {
-    "cn_tested": 47,
+    "cn_tested": 45,
     "cn_passed": 0,
     "cn_pass_rate": 0.0,
-    "cn_last": "2026-11-14T02:14:43Z"
+    "cn_last": "2026-11-14T11:14:42Z"
   },
   "awesome-vpn": {
-    "cn_tested": 35,
+    "cn_tested": 25,
     "cn_passed": 0,
     "cn_pass_rate": 0.0,
-    "cn_last": "2026-11-14T02:14:43Z"
+    "cn_last": "2026-11-14T11:14:42Z"
   },
   "zhangkaiitugithub": {
-    "cn_tested": 17,
+    "cn_tested": 18,
     "cn_passed": 0,
     "cn_pass_rate": 0.0,
-    "cn_last": "2026-11-14T02:14:43Z"
+    "cn_last": "2026-11-14T11:14:42Z"
   },
   "VPN-Subcription-Links": {
     "cn_tested": 95,
@@ -848,10 +848,10 @@
     "ai_last": "2026-11-07T06:54:40Z"
   },
   "mahdibland": {
-    "cn_tested": 77,
+    "cn_tested": 65,
     "cn_passed": 0,
     "cn_pass_rate": 0.0,
-    "cn_last": "2026-11-14T02:14:43Z",
+    "cn_last": "2026-11-14T11:14:42Z",
     "ai_tested": 1,
     "ai_reachable": 1,
     "ai_api": 1,
@@ -859,10 +859,10 @@
     "ai_last": "2026-11-13T15:14:43Z"
   },
   "peasoft": {
-    "cn_tested": 39,
+    "cn_tested": 41,
     "cn_passed": 0,
     "cn_pass_rate": 0.0,
-    "cn_last": "2026-11-14T02:14:43Z",
+    "cn_last": "2026-11-14T11:14:42Z",
     "ai_tested": 1,
     "ai_reachable": 1,
     "ai_api": 1,
@@ -892,10 +892,10 @@
     "cn_last": "2026-11-14T02:14:43Z"
   },
   "ermaozi01": {
-    "cn_tested": 1,
+    "cn_tested": 2,
     "cn_passed": 0,
     "cn_pass_rate": 0.0,
-    "cn_last": "2026-11-13T15:14:43Z"
+    "cn_last": "2026-11-14T11:14:42Z"
   },
   "https://clashgithub.com/clashnode-20261109.html": {
     "score": 96.29,
@@ -911,7 +911,7 @@
   },
   "https://raw.githubusercontent.com/zhuhaiuk/free-nodes/main/clash_config.yaml": {
     "score": 100.0,
-    "runs": 15,
+    "runs": 16,
     "role": "official",
     "last": "2026-11-14"
   },
@@ -928,20 +928,20 @@
     "last": "2026-11-10"
   },
   "https://raw.githubusercontent.com/asgharkapk/Sub-Config-Extractor/main/output_configs/mixed/ALIILAPRO/v2rayNG-Config/sub.txt.yaml": {
-    "score": 93.96,
-    "runs": 13,
+    "score": 94.87,
+    "runs": 14,
     "role": "candidate",
     "last": "2026-11-14"
   },
   "https://clashgithub.com/clashnode-20261111.html": {
-    "score": 93.96,
-    "runs": 13,
+    "score": 94.87,
+    "runs": 14,
     "role": "candidate",
     "last": "2026-11-14"
   },
   "https://raw.githubusercontent.com/marshall888666/free_clash_subscribe/main/source/clash-meta-2.yaml": {
     "score": 100.0,
-    "runs": 7,
+    "runs": 8,
     "role": "candidate",
     "last": "2026-11-14"
   }
