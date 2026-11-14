@@ -1,76 +1,5 @@
 {
   "candidates": {
-    "https://raw.githubusercontent.com/kooker/FreeSubsCheck/main/mihomo.yaml": {
-      "repo": "kooker/FreeSubsCheck",
-      "stars": 456,
-      "repo_created": "2026-04-07T08:10:32Z",
-      "reputation": "ok",
-      "reputation_note": "stars=456,age=217d",
-      "required_runs": 3,
-      "first_seen": "2026-11-10",
-      "initial_nodes": 82,
-      "runs": 15,
-      "good_streak": 0,
-      "fail_streak": 0,
-      "history": [
-        {
-          "date": "2026-11-12",
-          "count": 1,
-          "usable": 1,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-12",
-          "count": 22,
-          "usable": 8,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-13",
-          "count": 22,
-          "usable": 8,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-13",
-          "count": 3,
-          "usable": 1,
-          "unique_new": 1,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-13",
-          "count": 5,
-          "usable": 1,
-          "unique_new": 1,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-13",
-          "count": 55,
-          "usable": 10,
-          "unique_new": 3,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-14",
-          "count": 7,
-          "usable": 7,
-          "unique_new": 7,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-14",
-          "count": 10,
-          "usable": 2,
-          "unique_new": 1,
-          "tamper": 0
-        }
-      ]
-    },
     "https://raw.githubusercontent.com/asgharkapk/Sub-Config-Extractor/main/output_configs/mixed/ALIILAPRO/v2rayNG-Config/sub.txt.yaml": {
       "repo": "asgharkapk/Sub-Config-Extractor",
       "stars": 62,
@@ -80,7 +9,7 @@
       "required_runs": 3,
       "first_seen": "2026-11-10",
       "initial_nodes": 3952,
-      "runs": 14,
+      "runs": 15,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -92,13 +21,6 @@
           "tamper": 0
         },
         {
-          "date": "2026-11-12",
-          "count": 4012,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
           "date": "2026-11-13",
           "count": 4012,
           "usable": 0,
@@ -136,6 +58,13 @@
         {
           "date": "2026-11-14",
           "count": 4126,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-14",
+          "count": 4172,
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
@@ -147,7 +76,7 @@
       "origin": "channel_web",
       "added": "2026-11-10",
       "first_seen": "2026-11-10",
-      "runs": 14,
+      "runs": 15,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -159,13 +88,6 @@
           "tamper": 0
         },
         {
-          "date": "2026-11-12",
-          "count": 43,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
           "date": "2026-11-13",
           "count": 43,
           "usable": 0,
@@ -188,6 +110,13 @@
         },
         {
           "date": "2026-11-13",
+          "count": 43,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-14",
           "count": 43,
           "usable": 0,
           "unique_new": 0,
@@ -219,17 +148,10 @@
       "required_runs": 3,
       "first_seen": "2026-11-12",
       "initial_nodes": 27,
-      "runs": 8,
+      "runs": 9,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-11-12",
-          "count": 6,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-11-12",
           "count": 6,
@@ -278,6 +200,13 @@
           "usable": 5,
           "unique_new": 3,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-14",
+          "count": 8,
+          "usable": 1,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -290,8 +219,8 @@
       "required_runs": 3,
       "first_seen": "2026-11-12",
       "initial_nodes": 47,
-      "runs": 7,
-      "good_streak": 1,
+      "runs": 8,
+      "good_streak": 2,
       "fail_streak": 0,
       "history": [
         {
@@ -342,6 +271,13 @@
           "usable": 33,
           "unique_new": 16,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-14",
+          "count": 64,
+          "usable": 23,
+          "unique_new": 10,
+          "tamper": 0
         }
       ]
     },
@@ -354,6 +290,28 @@
       "required_runs": 3,
       "first_seen": "2026-11-14",
       "initial_nodes": 400,
+      "runs": 1,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": [
+        {
+          "date": "2026-11-14",
+          "count": 250,
+          "usable": 10,
+          "unique_new": 0,
+          "tamper": 0
+        }
+      ]
+    },
+    "https://raw.githubusercontent.com/LalatinaHub/LatinaSub/main/result/clash.yaml": {
+      "repo": "LalatinaHub/LatinaSub",
+      "stars": 12,
+      "repo_created": "2023-01-09T23:30:45Z",
+      "reputation": "ok",
+      "reputation_note": "stars=12,age=1404d",
+      "required_runs": 3,
+      "first_seen": "2026-11-14",
+      "initial_nodes": 500,
       "runs": 0,
       "good_streak": 0,
       "fail_streak": 0,
@@ -556,6 +514,12 @@
       "reason": "no_stable_contribution",
       "date": "2026-11-14",
       "repo": null,
+      "mv": 2
+    },
+    "https://raw.githubusercontent.com/kooker/FreeSubsCheck/main/mihomo.yaml": {
+      "reason": "no_stable_contribution",
+      "date": "2026-11-14",
+      "repo": "kooker/FreeSubsCheck",
       "mv": 2
     }
   }
