@@ -9,17 +9,10 @@
       "required_runs": 3,
       "first_seen": "2026-11-12",
       "initial_nodes": 27,
-      "runs": 10,
+      "runs": 11,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-11-13",
-          "count": 6,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-11-13",
           "count": 37,
@@ -68,6 +61,13 @@
           "usable": 1,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-15",
+          "count": 7,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -80,7 +80,7 @@
       "required_runs": 3,
       "first_seen": "2026-11-14",
       "initial_nodes": 400,
-      "runs": 2,
+      "runs": 3,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -97,26 +97,18 @@
           "usable": 10,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-15",
+          "count": 316,
+          "usable": 10,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     }
   },
   "rejected": {
-    "https://raw.githubusercontent.com/Nexuspt753/GitHub-Sub-Scanner/main/subs/isp/node-host-limited.yaml": {
-      "reason": "honeypot_structure:cluster_24:144.31.215.0/24",
-      "date": "2026-10-15",
-      "repo": "Nexuspt753/GitHub-Sub-Scanner"
-    },
-    "https://pai.yt/clash": {
-      "reason": "fetch_failures",
-      "date": "2026-10-15",
-      "repo": null
-    },
-    "https://raw.githubusercontent.com/LancelotRar/free-subs/main/src/clash-lancelot.yaml": {
-      "reason": "honeypot_structure:cluster_24:162.159.130.0/24;template_cluster:9109c61a:162.159.130.0/24(544/544);template_cluster:c79df4a4:162.159.130.0/24(107/107)",
-      "date": "2026-10-15",
-      "repo": "LancelotRar/free-subs"
-    },
     "https://raw.githubusercontent.com/go4sharing/sub/main/sub.yaml": {
       "reason": "cf_blocked:2/8",
       "date": "2026-10-18",
