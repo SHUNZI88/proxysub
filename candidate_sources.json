@@ -9,17 +9,10 @@
       "required_runs": 3,
       "first_seen": "2026-11-12",
       "initial_nodes": 27,
-      "runs": 13,
+      "runs": 14,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-11-13",
-          "count": 7,
-          "usable": 1,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-11-14",
           "count": 19,
@@ -60,6 +53,13 @@
           "count": 31,
           "usable": 5,
           "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-15",
+          "count": 25,
+          "usable": 7,
+          "unique_new": 3,
           "tamper": 0
         },
         {
