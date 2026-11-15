@@ -9,17 +9,10 @@
       "required_runs": 3,
       "first_seen": "2026-11-12",
       "initial_nodes": 27,
-      "runs": 12,
+      "runs": 13,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-11-13",
-          "count": 7,
-          "usable": 1,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-11-13",
           "count": 7,
@@ -68,48 +61,12 @@
           "usable": 5,
           "unique_new": 0,
           "tamper": 0
-        }
-      ]
-    },
-    "https://raw.githubusercontent.com/share-daily/node/main/clash.yaml": {
-      "repo": "share-daily/node",
-      "stars": 20,
-      "repo_created": "2026-08-17T06:00:42Z",
-      "reputation": "ok",
-      "reputation_note": "stars=20,age=89d",
-      "required_runs": 3,
-      "first_seen": "2026-11-14",
-      "initial_nodes": 400,
-      "runs": 4,
-      "good_streak": 0,
-      "fail_streak": 0,
-      "history": [
-        {
-          "date": "2026-11-14",
-          "count": 250,
-          "usable": 10,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-14",
-          "count": 250,
-          "usable": 10,
-          "unique_new": 0,
-          "tamper": 0
         },
         {
           "date": "2026-11-15",
-          "count": 316,
-          "usable": 10,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-15",
-          "count": 238,
-          "usable": 8,
-          "unique_new": 0,
+          "count": 25,
+          "usable": 7,
+          "unique_new": 3,
           "tamper": 0
         }
       ]
@@ -320,6 +277,12 @@
       "reason": "honeypot_structure:shared_cred:75/124",
       "date": "2026-11-14",
       "repo": "LalatinaHub/LatinaSub",
+      "mv": 2
+    },
+    "https://raw.githubusercontent.com/share-daily/node/main/clash.yaml": {
+      "reason": "honeypot_structure:cluster_24:202.50.253.0/24;template_cluster:e67f6d48:202.50.253.0/24(19/20)",
+      "date": "2026-11-15",
+      "repo": "share-daily/node",
       "mv": 2
     }
   }
