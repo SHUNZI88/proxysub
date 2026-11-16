@@ -1,85 +1,22 @@
 {
   "candidates": {
-    "https://raw.githubusercontent.com/marshall888666/free_clash_subscribe/main/source/clash-meta-2.yaml": {
-      "repo": "marshall888666/free_clash_subscribe",
-      "stars": 24,
-      "repo_created": "2025-12-02T10:36:15Z",
-      "reputation": "ok",
-      "reputation_note": "stars=24,age=345d",
-      "required_runs": 3,
-      "first_seen": "2026-11-12",
-      "initial_nodes": 27,
-      "runs": 15,
-      "good_streak": 0,
-      "fail_streak": 0,
-      "history": [
-        {
-          "date": "2026-11-14",
-          "count": 30,
-          "usable": 5,
-          "unique_new": 3,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-14",
-          "count": 8,
-          "usable": 1,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-14",
-          "count": 8,
-          "usable": 1,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-15",
-          "count": 7,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-15",
-          "count": 31,
-          "usable": 5,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-15",
-          "count": 25,
-          "usable": 7,
-          "unique_new": 3,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-15",
-          "count": 25,
-          "usable": 7,
-          "unique_new": 3,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-16",
-          "count": 10,
-          "usable": 1,
-          "unique_new": 0,
-          "tamper": 0
-        }
-      ]
-    },
     "https://pai.yt/clash": {
       "channel": "web:https://clashsub.net/free-subscribe/",
       "origin": "channel_web",
       "added": "2026-11-16",
       "first_seen": "2026-11-16",
-      "runs": 0,
+      "runs": 1,
       "good_streak": 0,
-      "fail_streak": 0,
-      "history": [],
+      "fail_streak": 1,
+      "history": [
+        {
+          "date": "2026-11-16",
+          "count": 0,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        }
+      ],
       "required_runs": 3
     }
   },
@@ -294,6 +231,12 @@
       "reason": "honeypot_structure:cluster_24:202.50.253.0/24;template_cluster:e67f6d48:202.50.253.0/24(19/20)",
       "date": "2026-11-15",
       "repo": "share-daily/node",
+      "mv": 2
+    },
+    "https://raw.githubusercontent.com/marshall888666/free_clash_subscribe/main/source/clash-meta-2.yaml": {
+      "reason": "no_stable_contribution",
+      "date": "2026-11-16",
+      "repo": "marshall888666/free_clash_subscribe",
       "mv": 2
     }
   }

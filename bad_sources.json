@@ -2,7 +2,7 @@
   "https://raw.githubusercontent.com/shaoyouvip/free/main/mihomo.yaml": {
     "fail_streak": 0,
     "last_error": null,
-    "last_count": 100
+    "last_count": 12
   },
   "https://raw.githubusercontent.com/Russ534/clash/cdf534db8f8c9306d61c630b840d0a1936d09dd2/bp.yaml": {
     "fail_streak": 0,
@@ -12,7 +12,7 @@
   "https://raw.githubusercontent.com/awesome-vpn/awesome-vpn/master/clash.yaml": {
     "fail_streak": 0,
     "last_error": null,
-    "last_count": 25
+    "last_count": 23
   },
   "__channel_nodes__": {
     "fail_streak": 0,
@@ -22,7 +22,7 @@
   "https://raw.githubusercontent.com/ermaozi01/free_clash_vpn/main/subscribe/clash.yml": {
     "fail_streak": 0,
     "last_error": null,
-    "last_count": 29
+    "last_count": 27
   },
   "https://raw.githubusercontent.com/zhangkaiitugithub/passcro/main/speednodes.yaml": {
     "fail_streak": 0,
@@ -32,7 +32,7 @@
   "https://raw.githubusercontent.com/ermaozi/get_subscribe/main/subscribe/reachable/clash.yml": {
     "fail_streak": 0,
     "last_error": null,
-    "last_count": 315
+    "last_count": 285
   },
   "https://raw.githubusercontent.com/ovmvo/FreeSub/main/sub/permanent/mihomo.yaml": {
     "fail_streak": 0,
@@ -42,7 +42,7 @@
   "https://raw.githubusercontent.com/lanzm/MetaFetch/master/list.meta.yml": {
     "fail_streak": 0,
     "last_error": null,
-    "last_count": 397
+    "last_count": 385
   },
   "https://tt.vg/freeclash": {
     "fail_streak": 0,
@@ -52,7 +52,7 @@
   "https://raw.githubusercontent.com/zhuhaiuk/free-nodes/main/clash_config.yaml": {
     "fail_streak": 0,
     "last_error": null,
-    "last_count": 33
+    "last_count": 34
   },
   "https://raw.githubusercontent.com/marshall888666/free_clash_subscribe/main/source/clash-meta-2.yaml": {
     "fail_streak": 0,
@@ -62,11 +62,16 @@
   "https://raw.githubusercontent.com/snakem982/proxypool/main/source/clash-meta-2.yaml": {
     "fail_streak": 0,
     "last_error": null,
-    "last_count": 63
+    "last_count": 64
   },
   "https://raw.githubusercontent.com/mahdibland/V2RayAggregator/master/Eternity.yml": {
     "fail_streak": 0,
     "last_error": null,
     "last_count": 201
+  },
+  "https://pai.yt/clash": {
+    "fail_streak": 1,
+    "last_error": "522 Server Error: <none> for url: https://sub.pai.yt/clash",
+    "last_count": 0
   }
 }
