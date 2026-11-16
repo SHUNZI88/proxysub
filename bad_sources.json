@@ -2,7 +2,7 @@
   "https://raw.githubusercontent.com/shaoyouvip/free/main/mihomo.yaml": {
     "fail_streak": 0,
     "last_error": null,
-    "last_count": 12
+    "last_count": 101
   },
   "https://raw.githubusercontent.com/Russ534/clash/cdf534db8f8c9306d61c630b840d0a1936d09dd2/bp.yaml": {
     "fail_streak": 0,
@@ -42,7 +42,7 @@
   "https://raw.githubusercontent.com/lanzm/MetaFetch/master/list.meta.yml": {
     "fail_streak": 0,
     "last_error": null,
-    "last_count": 385
+    "last_count": 378
   },
   "https://tt.vg/freeclash": {
     "fail_streak": 0,
@@ -52,17 +52,12 @@
   "https://raw.githubusercontent.com/zhuhaiuk/free-nodes/main/clash_config.yaml": {
     "fail_streak": 0,
     "last_error": null,
-    "last_count": 34
-  },
-  "https://raw.githubusercontent.com/marshall888666/free_clash_subscribe/main/source/clash-meta-2.yaml": {
-    "fail_streak": 0,
-    "last_error": null,
-    "last_count": 10
+    "last_count": 30
   },
   "https://raw.githubusercontent.com/snakem982/proxypool/main/source/clash-meta-2.yaml": {
     "fail_streak": 0,
     "last_error": null,
-    "last_count": 64
+    "last_count": 62
   },
   "https://raw.githubusercontent.com/mahdibland/V2RayAggregator/master/Eternity.yml": {
     "fail_streak": 0,
@@ -70,8 +65,8 @@
     "last_count": 201
   },
   "https://pai.yt/clash": {
-    "fail_streak": 1,
-    "last_error": "522 Server Error: <none> for url: https://sub.pai.yt/clash",
+    "fail_streak": 2,
+    "last_error": "HTTPSConnectionPool(host='sub.pai.yt', port=443): Read timed out. (read timeout=25)",
     "last_count": 0
   }
 }
