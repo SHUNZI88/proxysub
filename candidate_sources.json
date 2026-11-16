@@ -9,17 +9,10 @@
       "required_runs": 3,
       "first_seen": "2026-11-12",
       "initial_nodes": 27,
-      "runs": 14,
+      "runs": 15,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-11-14",
-          "count": 19,
-          "usable": 4,
-          "unique_new": 4,
-          "tamper": 0
-        },
         {
           "date": "2026-11-14",
           "count": 30,
@@ -68,8 +61,26 @@
           "usable": 7,
           "unique_new": 3,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-16",
+          "count": 10,
+          "usable": 1,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
+    },
+    "https://pai.yt/clash": {
+      "channel": "web:https://clashsub.net/free-subscribe/",
+      "origin": "channel_web",
+      "added": "2026-11-16",
+      "first_seen": "2026-11-16",
+      "runs": 0,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": [],
+      "required_runs": 3
     }
   },
   "rejected": {
