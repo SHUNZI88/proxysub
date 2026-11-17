@@ -1,32 +1,5 @@
 {
-  "candidates": {
-    "https://pai.yt/clash": {
-      "channel": "web:https://clashsub.net/free-subscribe/",
-      "origin": "channel_web",
-      "added": "2026-11-16",
-      "first_seen": "2026-11-16",
-      "runs": 2,
-      "good_streak": 0,
-      "fail_streak": 2,
-      "history": [
-        {
-          "date": "2026-11-16",
-          "count": 0,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-16",
-          "count": 0,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        }
-      ],
-      "required_runs": 3
-    }
-  },
+  "candidates": {},
   "rejected": {
     "https://raw.githubusercontent.com/go4sharing/sub/main/sub.yaml": {
       "reason": "cf_blocked:2/8",
@@ -244,6 +217,12 @@
       "reason": "no_stable_contribution",
       "date": "2026-11-16",
       "repo": "marshall888666/free_clash_subscribe",
+      "mv": 2
+    },
+    "https://pai.yt/clash": {
+      "reason": "fetch_failures",
+      "date": "2026-11-17",
+      "repo": null,
       "mv": 2
     }
   }
