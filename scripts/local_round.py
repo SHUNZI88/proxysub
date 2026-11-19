@@ -33,7 +33,10 @@ import subprocess
 import sys
 import time
 
+import yaml
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import cn_probe  # noqa: E402  - 健康抽查复用其探测/端口/mihomo 逻辑
 import round_guard  # noqa: E402
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -52,6 +55,11 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--force", action="store_true",
                     help="无视决策强制跑一轮（排障用；仍受单实例锁保护）")
     ap.add_argument("--verbose", action="store_true", help="打印决策原因")
+    ap.add_argument("--health-check", dest="health_check", action="store_true",
+                    default=True, help="资产未超龄时抽查已发布节点，腐烂则提前重发")
+    ap.add_argument("--no-health-check", dest="health_check", action="store_false")
+    ap.add_argument("--health-min-age-h", type=float, default=2.0,
+                    help="资产龄期达到该值才做健康抽查（默认 2h，避免频繁起 mihomo）")
     ap.add_argument("--reset-pool", action="store_true",
                     help="清空库存（节点库/用户池/检查点）后再跑，从订阅源候选重建；"
                          "原文件移到 <workdir>/reset_backup_<时间>/")
@@ -59,6 +67,75 @@ def build_parser() -> argparse.ArgumentParser:
                     help="追加日志文件（默认 <workdir>/local_round.log）；"
                          "任务计划程序不保存 stdout，本机排障全靠它")
     return ap
+
+
+def quick_health(workdir: str, sample: int = 6, ttfb_max: int | None = None,
+                timeout: float = 3.0) -> dict:
+    """抽查已发布集合的前 N 个节点，判断列表是否已经「腐烂」（任务#137）。
+
+    为什么需要它：静态发布 + 12 小时周期，实测 20 个节点 8 小时后只剩 35%
+    可用（意大利 ss 存活最好，美国/荷兰/瑞典 vless 全灭）。光靠「资产龄期」
+    判断该不该跑，会让用户在最后几个小时里对着一份几乎全死的名单。
+
+    判据：TTFB ≤ 阈值且状态 2xx/3xx 算可用；可用数 ≤ max(1, sample//3) 判腐坏。
+    只抽前 N 个（列表按实测速率排序，前面的就是用户最可能点的）。
+    """
+    lim = int(ttfb_max or getattr(cn_probe.config, "TARGET_TTFB_MAX_MS", 2000))
+    path = os.path.join(workdir, "verified_clash.yaml")
+    if not os.path.exists(path):
+        return {"checked": 0, "usable": 0, "degraded": False, "why": "无本地发布集"}
+    try:
+        cfg = yaml.safe_load(open(path, encoding="utf-8")) or {}
+    except Exception as e:
+        return {"checked": 0, "usable": 0, "degraded": False, "why": f"读取失败 {e}"}
+    proxies = (cfg.get("proxies") or [])[:max(1, sample)]
+    if not proxies:
+        return {"checked": 0, "usable": 0, "degraded": False, "why": "发布集为空"}
+
+    test_cfg = {
+        "mixed-port": cn_probe.alloc_port(26890, set()),
+        "allow-lan": False, "mode": "rule", "log-level": "silent",
+        "external-controller": f"127.0.0.1:{cn_probe.alloc_port(26990, set())}",
+        "proxies": proxies,
+        "proxy-groups": [{"name": "PROBE", "type": "select",
+                          "proxies": [p["name"] for p in proxies]}],
+        "rules": ["MATCH,PROBE"],     # 去掉 GEOIP：本机无 geoip 库，且与节点无关
+    }
+    tmp = os.path.join(workdir, "_health_cfg.yaml")
+    with open(tmp, "w", encoding="utf-8") as f:
+        yaml.dump(test_cfg, f, allow_unicode=True, sort_keys=False)
+    exe = cn_probe.ensure_mihomo(workdir)
+    if not exe:
+        return {"checked": 0, "usable": 0, "degraded": False, "why": "mihomo 不可用"}
+    api = test_cfg["external-controller"].split(":")[-1]
+    mixed = test_cfg["mixed-port"]
+    proc = subprocess.Popen([exe, "-d", workdir, "-f", tmp],
+                            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    usable, ttfbs = 0, []
+    try:
+        if not cn_probe.wait_controller(int(api), timeout=30):
+            return {"checked": 0, "usable": 0, "degraded": False, "why": "mihomo 未就绪"}
+        proxy = f"http://127.0.0.1:{mixed}"
+        for pr in proxies:
+            if not cn_probe.api_put(int(api), "/proxies/PROBE", {"name": pr["name"]}):
+                continue
+            code, ms = cn_probe._http_probe_via_proxy(
+                "https://www.gstatic.com/generate_204", proxy, timeout)
+            if code and 200 <= int(code) < 400 and ms is not None and ms <= lim:
+                usable += 1
+                ttfbs.append(ms)
+    finally:
+        proc.terminate()
+        try:
+            proc.wait(timeout=8)
+        except Exception:
+            proc.kill()
+    checked = len(proxies)
+    bad_line = max(1, checked // 3)
+    return {"checked": checked, "usable": usable,
+            "median": sorted(ttfbs)[len(ttfbs) // 2] if ttfbs else None,
+            "degraded": usable <= bad_line,
+            "why": f"抽查 {checked} 个，可用 {usable}（阈值 >{bad_line}）"}
 
 
 def _make_logger(path: str | None):
@@ -80,7 +157,6 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
 
     # 延迟导入：cn_probe 会初始化模块级常量（含 tag/路径），只在真要跑时付这个成本
-    import cn_probe  # noqa: PLC0415
 
     workdir = args.workdir or cn_probe.default_workdir()
     os.makedirs(workdir, exist_ok=True)
@@ -113,9 +189,28 @@ def main(argv: list[str] | None = None) -> int:
     if not args.force:
         ok, why = round_guard.decide(workdir, stale_h=args.stale_h)
         if not ok:
-            log(f"不跑：{why}")
-            return 0
-        log(f"决策：补跑（{why}）")
+            # 健康度兜底（任务#137）：资产还算"新鲜"，但列表可能已经腐烂。
+            # 12 小时固定周期的代价是「后半段全死」，只有抽查才能发现。
+            if args.health_check:
+                age = round_guard.asset_age_h(workdir)
+                if age is not None and age >= args.health_min_age_h:
+                    h = quick_health(workdir)
+                    log(f"健康抽查：{h['why']}")
+                    if h["degraded"]:
+                        log("决策：提前重发（已发布列表已大面积失效）")
+                        ok = True
+                    else:
+                        log(f"不跑：{why}；健康度尚可（{h['why']}）")
+                        return 0
+                else:
+                    log(f"不跑：{why}（资产龄期 {age if age is not None else '?'}h，"
+                        f"未到健康抽查线 {args.health_min_age_h}h）")
+                    return 0
+            else:
+                log(f"不跑：{why}")
+                return 0
+        if ok:
+            log(f"决策：补跑（{why}）")
 
     round_guard.note_attempt(workdir)
     env = dict(os.environ)

@@ -1454,7 +1454,8 @@ def test_user_pool_nodes_are_rankable(tmp_path, monkeypatch):
     n = cn_probe.load_user_pool(str(tmp_path), "sub", {"user": {}})[0]
     key = cn_probe.verified_rank(n, {}, {"survival": {}, "cn_hist": {},
                                          "user": {}})
-    assert isinstance(key, tuple) and len(key) == 7
+    # 只约束「可比且不含 None」（元组长度随判据迭代会变，写死长度会假红）
+    assert isinstance(key, tuple) and key and all(x is not None for x in key)
 
 
 def test_build_verified_config_user_pool_group_is_on_top():
@@ -1919,16 +1920,25 @@ def test_run_sharded_empty_inputs():
     assert cn_probe.run_sharded([{"api": 1}], [], lambda s, i: i) == {}
 
 
-def test_run_target_phase_requires_two_consecutive_passes(monkeypatch):
-    """复测确认：第一轮通过、第二轮失败 → 不发布（偶发可用的节点必须被拦下）。"""
+def test_run_target_phase_requires_two_passes_within_attempts(monkeypatch):
+    """「3 次里累计通过 2 次」而非「连续 2 次都过」（任务#137）。
+
+    夜间实测 16 个首轮通过者只有 4 个能连续通过，而失败多为间歇性丢包——
+    连续制会把间歇抖动的可用节点全判死；但只灵一次仍必须拦住。
+    """
     nodes = [{"probe_name": "a", "proxy": {"name": "a", "type": "ss", "server": "x", "port": 1}},
-             {"probe_name": "b", "proxy": {"name": "b", "type": "ss", "server": "y", "port": 2}}]
-    calls = {"a": 0, "b": 0}
+             {"probe_name": "b", "proxy": {"name": "b", "type": "ss", "server": "y", "port": 2}},
+             {"probe_name": "c", "proxy": {"name": "c", "type": "ss", "server": "z", "port": 3}}]
+    calls = {"a": 0, "b": 0, "c": 0}
 
     def fake_target(api, mixed, nm):
         calls[nm] += 1
-        # a 两次都过；b 只在第一轮过（典型「偶发可用」）
-        ok = True if nm == "a" else calls[nm] == 1
+        if nm == "a":
+            ok = True                       # 稳
+        elif nm == "b":
+            ok = calls[nm] == 1             # 只灵一次 → 必须拦住
+        else:
+            ok = calls[nm] in (1, 3)        # 抖动但 3 次里过 2 次 → 放行
         return {"ok": ok, "targets": {"youtube": 200}, "ai_ok": False}
 
     monkeypatch.setattr(cn_probe, "start_shards",
@@ -1937,10 +1947,13 @@ def test_run_target_phase_requires_two_consecutive_passes(monkeypatch):
     monkeypatch.setattr(cn_probe, "target_test", fake_target)
     monkeypatch.setattr(cn_probe, "delay_once",
                         lambda port, nm, ms=None: {"ok": True, "latency_ms": 500})
+    monkeypatch.setattr(cn_probe, "measure_throughput", lambda *a, **k: 500.0)
     out = cn_probe.run_target_phase(nodes, ".", 0, 0, log=lambda *_: None)
     assert out["a"]["ok"] is True
-    assert out["b"]["ok"] is False          # 第二轮没过，最终判不通过
-    assert calls == {"a": 2, "b": 2}
+    assert out["b"]["ok"] is False          # 只灵一次
+    assert out["c"]["ok"] is True           # 3 次里过 2 次
+    assert calls["a"] == 2                  # 达标即退出，不再空测
+    assert calls["b"] == 3
 
 
 def test_synth_ai_from_targets_maps_codes():
@@ -2003,3 +2016,48 @@ def test_select_thin_nodes_threshold_is_config_driven(monkeypatch):
     assert cn_probe.select_thin_nodes(nodes, results) == []
     monkeypatch.setattr(cn_probe.config, "MIN_PUBLISH_KBPS", 128)
     assert [n["name"] for n in cn_probe.select_thin_nodes(nodes, results)] == ["a"]
+
+
+# ------------------------------------- 直测双判据：状态 + TTFB（任务#137）
+def _mock_target(monkeypatch, table):
+    def fake(url, proxy, timeout):
+        return table[url]
+    monkeypatch.setattr(cn_probe, "_http_probe_via_proxy", fake)
+    monkeypatch.setattr(cn_probe, "api_put", lambda *a, **k: True)
+
+
+def test_target_test_accepts_fast_hit(monkeypatch):
+    _mock_target(monkeypatch, {
+        "https://chatgpt.com/": (200, 800),
+        "https://claude.ai/": (403, 700),
+        "https://www.youtube.com/": (200, 1100),
+    })
+    r = cn_probe.target_test(1, 2, "n")
+    assert r["ok"] is True and r["ai_ok"] is True
+    assert r["ttfb"]["chatgpt"] == 800
+
+
+def test_target_test_rejects_slow_but_successful_response(monkeypatch):
+    """8 秒才返回 204 也判合格，是这次事故的根源：客户端里一直转圈。
+    双判据要求 2xx/3xx **且** TTFB ≤ 上限。"""
+    _mock_target(monkeypatch, {
+        "https://chatgpt.com/": (204, 7500),
+        "https://claude.ai/": (None, None),
+        "https://www.youtube.com/": (204, 6900),
+    })
+    r = cn_probe.target_test(1, 2, "n")
+    assert r["ok"] is False
+    assert r["targets"]["chatgpt"] == 204      # 状态是好的，慢
+    assert r["ttfb"]["chatgpt"] == 7500
+
+
+def test_target_test_ttfb_threshold_is_config_driven(monkeypatch):
+    monkeypatch.setattr(cn_probe.config, "TARGET_TTFB_MAX_MS", 3000)
+    _mock_target(monkeypatch, {
+        "https://chatgpt.com/": (200, 2500),
+        "https://claude.ai/": (None, None),
+        "https://www.youtube.com/": (None, None),
+    })
+    assert cn_probe.target_test(1, 2, "n")["ok"] is True
+    monkeypatch.setattr(cn_probe.config, "TARGET_TTFB_MAX_MS", 2000)
+    assert cn_probe.target_test(1, 2, "n")["ok"] is False

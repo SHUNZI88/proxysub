@@ -594,6 +594,16 @@ def auth_selfcheck(required: bool = True) -> bool:
     # 否则本机连「token 是否可用」都无法自检。
     ok, detail = gh_compat.auth_ok()
     if not ok:
+        # 重试一次再判失败（任务#137）：本机夜间到 api.github.com 会偶发
+        # TLS 握手超时，而 gh 把网络错误统一报成「Timeout trying to log in」。
+        # 一次抖动就中止整轮，等于当天少一轮发布——成本远大于多等 4 秒。
+        time.sleep(4)
+        ok2, detail2 = gh_compat.auth_ok()
+        if ok2:
+            log(f"提示: 鉴权首次失败（{detail}），重试通过——判定为网络抖动")
+            return True
+        detail = f"{detail}；重试仍失败: {detail2}"
+    if not ok:
         log(
             f"熔断: 鉴权失败（{detail}）——中止。\n"
             f"  【给 AI 协作者】token 可能已失效/轮换，请核对 "
@@ -1709,6 +1719,33 @@ def _hard_timeout_call(fn, timeout: float):
     return None if t.is_alive() else box.get("r")
 
 
+def _http_probe_via_proxy(url: str, proxy: str,
+                         timeout: float) -> tuple[int | None, int | None]:
+    """经代理请求，返回 (状态码, TTFB 毫秒)（任务#137）。
+
+    为什么必须要 TTFB：只判「有没有响应」，会把「8 秒才返回一个 204」算作合格
+    ——客户端里那就是一直转圈。2026-11-19 实测：按状态码判 20 个节点 7 个合格，
+    但同一批的 TTFB 中位 3~8 秒，实际几无可用的。
+    """
+    t0 = time.time()
+    opener = urllib.request.build_opener(
+        urllib.request.ProxyHandler({"http": proxy, "https": proxy}))
+
+    def _req():
+        req = urllib.request.Request(url, headers={
+            "User-Agent": "Mozilla/5.0", "Accept": "*/*", "Connection": "close"})
+        try:
+            with opener.open(req, timeout=timeout) as r:
+                r.read(512)
+                return int(r.status), int((time.time() - t0) * 1000)
+        except urllib.error.HTTPError as e:
+            return int(e.code), int((time.time() - t0) * 1000)
+        except Exception:
+            return None, None
+
+    return _hard_timeout_call(_req, timeout + 3)
+
+
 def _http_status_via_proxy(url: str, proxy: str, timeout: int) -> int | None:
     """经代理取 URL 的 HTTP 状态码；任何响应（含 4xx/5xx）都算「有响应」。
 
@@ -1824,20 +1861,28 @@ def target_test(api_port: int, mixed_port: int, name: str) -> dict:
         return {"ok": False, "targets": {}, "ai_ok": False}
     proxy = f"http://127.0.0.1:{mixed_port}"
     sites = getattr(config, "TARGET_SITES", {}) or {}
+    timeout = float(getattr(config, "TARGET_TIMEOUT_S", 3))
+    ttfbs: dict[str, int | None] = {}
     codes: dict[str, int | None] = {}
     with ThreadPoolExecutor(max_workers=max(1, len(sites))) as ex:
-        futs = {k: ex.submit(_http_status_via_proxy, u, proxy,
-                             getattr(config, "TARGET_TIMEOUT_S", 10))
+        futs = {k: ex.submit(_http_probe_via_proxy, u, proxy, timeout)
                 for k, u in sites.items()}
         for k, f in futs.items():
             try:
-                codes[k] = f.result()
+                code, ms = f.result()
             except Exception:
-                codes[k] = None
-    good = [k for k, v in codes.items() if v and 200 <= int(v) < 400]
-    ai_ok = any(codes.get(k) and 200 <= int(codes[k]) < 400 for k in ("chatgpt", "claude"))
+                code, ms = None, None
+            codes[k] = code
+            ttfbs[k] = ms
+    # 双判据（任务#137）：状态 2xx/3xx **且** TTFB 在限内。
+    # 只判状态会把「8 秒返回 204」算合格——客户端里就是一直转圈。
+    lim = int(getattr(config, "TARGET_TTFB_MAX_MS", 2000))
+    good = [k for k, v in codes.items()
+            if v and 200 <= int(v) < 400 and (ttfbs.get(k) or 10 ** 9) <= lim]
+    ai_ok = any(k in good for k in ("chatgpt", "claude"))
     need = int(getattr(config, "TARGET_MIN_HITS", 1))
-    return {"ok": len(good) >= need, "targets": codes, "hits": good, "ai_ok": ai_ok}
+    return {"ok": len(good) >= need, "targets": codes, "ttfb": ttfbs,
+            "hits": good, "ai_ok": ai_ok}
 
 
 def alloc_port(start: int, used: set[int]) -> int:
@@ -2010,16 +2055,31 @@ def run_target_phase(nodes: list[dict], workdir: str, api_port: int,
     try:
         alive = [n["probe_name"] for n in nodes]
         tot = len(alive)
-        for rnd in range(1, passes + 1):
-            res = run_sharded(shards, alive,
+        # 「累计通过 passes 次」而非「连续 passes 次都过」（任务#137）：
+        # 夜间抖动实测 16 个首轮通过者只有 4 个能连续通过，而免费节点的失败
+        # 多为间歇性（丢包/上游限速），不是节点已死。最多尝试 attempts 次，
+        # 累计达标即算稳定——既拦住「只灵一次」的，也不把间歇抖动的判死。
+        attempts = max(passes, int(getattr(config, "TARGET_CONFIRM_ATTEMPTS", 3)))
+        cnt = {nm: 0 for nm in alive}
+        pending = list(alive)
+        for rnd in range(1, attempts + 1):
+            if not pending:
+                break
+            res = run_sharded(shards, pending,
                               lambda sh, nm: target_test(sh["api"], sh["mixed"], nm))
-            for nm in alive:
+            for nm in pending:
                 r = res.get(nm) or {"ok": False, "targets": {}}
                 out[nm] = r
-            alive = [nm for nm in alive if (out.get(nm) or {}).get("ok")]
-            log(f"目标直测第 {rnd}/{passes} 轮: 通过 {len(alive)}/{tot if rnd == 1 else '上一轮'}")
-            if not alive:
-                break
+                if r.get("ok"):
+                    cnt[nm] += 1
+            done = [nm for nm in pending if cnt[nm] >= passes]
+            pending = [nm for nm in pending if nm not in done]
+            log(f"目标直测第 {rnd}/{attempts} 轮: 累计达标 "
+                f"{sum(1 for nm in cnt if cnt[nm] >= passes)}/{tot}")
+        for nm in pending:
+            if out.get(nm) is not None:
+                out[nm] = dict(out[nm], ok=False)
+        alive = [nm for nm in cnt if cnt[nm] >= passes]
         if alive:
             lat = run_sharded(shards, alive,
                               lambda sh, nm: delay_once(
@@ -2538,6 +2598,16 @@ def verified_rank(n: dict, results: dict, learning: dict | None = None) -> tuple
     _kbps = r.get("kbps")
     _speed_key = (int(float(_kbps) * 1024) if _kbps is not None
                   else int(r.get("real_traffic", {}).get("bytes") or 0))
+    # TTFB 优先于吞吐（任务#137）：用户点开时的第一感受是「多久有反应」。
+    # 实测同一批节点里存在「吞吐还行但 TTFB 7 秒」的，那类排后面没有意义。
+    _ttfb_map = (r.get("real_traffic") or {}).get("ttfb") or {}
+    _ttfbs = [v for v in _ttfb_map.values() if v]
+    _ttfb = min(_ttfbs) if _ttfbs else 10 ** 6
+    # TTFB 优先于吞吐（任务#137）：用户点开时的第一感受是「多久有反应」。
+    # 实测同一批节点里存在「吞吐还行但 TTFB 7 秒」的，那类排后面没有意义。
+    _ttfb_map = (r.get("real_traffic") or {}).get("ttfb") or {}
+    _ttfbs = [v for v in _ttfb_map.values() if v]
+    _ttfb = min(_ttfbs) if _ttfbs else 10 ** 6
     return (ai_tier,
             lon,
             uv_tier,
@@ -2546,6 +2616,8 @@ def verified_rank(n: dict, results: dict, learning: dict | None = None) -> tuple
             # 注意 final 此时已被 main() 在通过后统一置 True，不再区分。
             0 if (n["us_ok"] and n["final"])
             else (1 if n.get("origin") == "carryover" else 2),
+            _ttfb,
+            _ttfb,
             speed_pen,
             # 同档位内以实测速度降序（任务#136：有本机 kbps 就用它，否则退回字节数）
             -_speed_key,
