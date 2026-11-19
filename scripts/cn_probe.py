@@ -3484,7 +3484,12 @@ def main() -> int:
         m = ASSET_RE.match(a.get("name", ""))
         if m:
             asset_by_fmt[ASSET_FORMAT[m.group(1)]] = a["name"]
-            asset_prefix = asset_prefix or m.group(1)
+            # 前缀是 `p_<hex>`，不是 ASSET_RE 的分组（分组是格式代码 c/p/s/v）。
+            # 取错分组会把慢档资产命名成 `c_d.yaml`——2026-11-19 实测发生过，
+            # 于是订阅里多出一个无意义的垃圾资产。
+            _pm = re.match(r"^(p_[0-9a-f]+)_", a.get("name", ""))
+            if _pm:
+                asset_prefix = asset_prefix or _pm.group(1)
     # 缺的格式按前缀补齐（任务#135）：这是「主资产消失后能自愈」的关键。
     asset_prefix = asset_prefix or ASSET_PREFIX_FALLBACK
     for _fmt, (_code, _ext) in FMT_ASSET.items():
