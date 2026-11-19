@@ -1,53 +1,52 @@
 # proxysub 健康报告
 
-更新时间：2026-11-18 23:07 UTC
+更新时间：2026-11-19 13:22 UTC
 运行模式：**mihomo**
 
 ## 概览
 
-- 最终节点：**150**（合规 129，高风险隔离 21）
-- 真实拨测通过率：**76.9%**（402/523）
-- TCP 存活：527 | 正式源 12 个 | 候选源 0 个
+- 最终节点：**150**（合规 132，高风险隔离 18）
+- 真实拨测通过率：**76.7%**（406/529）
+- TCP 存活：529 | 正式源 12 个 | 候选源 0 个
 
 ## 协议分布
 
 | 协议 | 数量 |
 |---|---|
-| VLESS-Reality | 60 |
-| Ss | 34 |
+| VLESS-Reality | 58 |
+| VLESS-TLS | 34 |
+| Ss | 32 |
 | Trojan | 22 |
-| VLESS-TLS | 19 |
-| Hysteria2 | 8 |
-| Hysteria | 4 |
-| Anytls | 3 |
+| Hysteria2 | 2 |
+| Hysteria | 2 |
 
 ## 区域分布
 
 | 区域 | 数量 |
 |---|---|
-| 🌐 其他 | 86 |
+| 🌐 其他 | 84 |
 | 🇺🇸 美国 | 30 |
-| 🇯🇵 日本 | 15 |
-| 🇸🇬 新加坡 | 10 |
-| 🇹🇼 台湾 | 3 |
-| 🇭🇰 香港 | 2 |
-| 🇰🇷 韩国 | 2 |
-| 🇬🇧 英国 | 2 |
+| 🇸🇬 新加坡 | 15 |
+| 🇯🇵 日本 | 13 |
+| 🇰🇷 韩国 | 3 |
+| 🇬🇧 英国 | 3 |
+| 🇭🇰 香港 | 1 |
+| 🇹🇼 台湾 | 1 |
 
 ## 源贡献 Top 10（正式源）
 
 | 源 | 真实通过 | 独有存活 | 存活 |
 |---|---|---|---|
-| `mahdibland/V2RayAggregator` | 162 | 108 | 164 |
-| `lanzm/MetaFetch` | 152 | 169 | 182 |
-| `ermaozi/get_subscribe` | 107 | 79 | 176 |
-| `https://tt.vg/freeclash` | 23 | 14 | 25 |
-| `snakem982/proxypool` | 19 | 13 | 29 |
-| `shaoyouvip/free` | 14 | 14 | 18 |
-| `ovmvo/FreeSub` | 13 | 15 | 23 |
-| `ermaozi01/free_clash_vpn` | 9 | 3 | 25 |
-| `zhuhaiuk/free-nodes` | 5 | 4 | 5 |
-| `awesome-vpn/awesome-vpn` | 4 | 5 | 5 |
+| `mahdibland/V2RayAggregator` | 162 | 95 | 164 |
+| `lanzm/MetaFetch` | 154 | 169 | 183 |
+| `ermaozi/get_subscribe` | 136 | 77 | 209 |
+| `snakem982/proxypool` | 31 | 2 | 39 |
+| `https://tt.vg/freeclash` | 18 | 9 | 20 |
+| `awesome-vpn/awesome-vpn` | 13 | 13 | 17 |
+| `ovmvo/FreeSub` | 12 | 14 | 21 |
+| `zhuhaiuk/free-nodes` | 7 | 5 | 7 |
+| `ermaozi01/free_clash_vpn` | 5 | 2 | 26 |
+| `zhangkaiitugithub/passcro` | 4 | 2 | 8 |
 
 ## 警告
 
