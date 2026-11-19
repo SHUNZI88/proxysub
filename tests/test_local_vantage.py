@@ -86,8 +86,12 @@ def test_workdir_default_per_platform(monkeypatch):
     monkeypatch.delenv("CN_PROBE_WORKDIR", raising=False)
     wd = cn_probe.default_workdir()
     if os.name == "nt":
-        assert wd.replace("\\", "/").endswith("cn_probe")
+        # 任务#135：默认目录必须**持久**，不能落在 %TEMP%（会被系统清理，
+        # 导致 mihomo 重下、报告丢失、守护判龄期 999h）。
         assert not wd.startswith("/tmp")
+        temp_root = os.path.abspath(os.environ.get("TEMP") or "")
+        assert not (temp_root and wd.startswith(temp_root)), wd
+        assert wd.replace("\\", "/").endswith("proxysub")
     else:
         assert wd == "/tmp/cn_probe"
 

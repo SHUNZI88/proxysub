@@ -84,6 +84,9 @@ def main(argv: list[str] | None = None) -> int:
 
     workdir = args.workdir or cn_probe.default_workdir()
     os.makedirs(workdir, exist_ok=True)
+    _moved = cn_probe.migrate_legacy_workdir(workdir)
+    if _moved:
+        print(f"[local-round] 工作目录迁移：从旧 %TEMP% 复制 {len(_moved)} 个文件 → {workdir}")
     log = _make_logger(args.log or os.path.join(workdir, "local_round.log"))
 
     if args.reset_pool:

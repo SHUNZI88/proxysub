@@ -1,414 +1,1014 @@
 {
  "vless": {
-  "rounds": 12,
-  "tested": 3307,
-  "passed": 60,
-  "last_round": "20261107T1125Z",
-  "last_ts": "2026-11-07T17:08:31Z",
+  "rounds": 42,
+  "tested": 15666,
+  "passed": 640,
+  "last_round": "20261117T2342Z",
+  "last_ts": "2026-11-18T01:14:44Z",
   "recent": [
    {
-    "round": "20261014T2139Z",
-    "tested": 820,
-    "passed": 23
+    "round": "20261107T2139Z",
+    "tested": 583,
+    "passed": 17
    },
    {
-    "round": "20261104T1217Z",
-    "tested": 169,
-    "passed": 1
+    "round": "20261108T0148Z",
+    "tested": 576,
+    "passed": 22
    },
    {
-    "round": "20261105T0237Z",
-    "tested": 184,
-    "passed": 5
+    "round": "20261108T1139Z",
+    "tested": 449,
+    "passed": 18
    },
    {
-    "round": "20261105T0944Z",
-    "tested": 156,
-    "passed": 4
+    "round": "20261108T2139Z",
+    "tested": 441,
+    "passed": 18
    },
    {
-    "round": "20261105T1231Z",
-    "tested": 173,
-    "passed": 2
+    "round": "20261109T0205Z",
+    "tested": 497,
+    "passed": 15
    },
    {
-    "round": "20261105T2206Z",
-    "tested": 145,
-    "passed": 2
+    "round": "20261109T1317Z",
+    "tested": 540,
+    "passed": 21
    },
    {
-    "round": "20261106T0213Z",
-    "tested": 204,
-    "passed": 1
+    "round": "20261109T2143Z",
+    "tested": 416,
+    "passed": 36
    },
    {
-    "round": "20261106T0249Z",
-    "tested": 206,
-    "passed": 2
+    "round": "20261110T0037Z",
+    "tested": 494,
+    "passed": 31
    },
    {
-    "round": "20261106T1226Z",
-    "tested": 201,
-    "passed": 1
+    "round": "20261110T1304Z",
+    "tested": 506,
+    "passed": 14
    },
    {
-    "round": "20261106T2200Z",
-    "tested": 211,
-    "passed": 4
+    "round": "20261110T2212Z",
+    "tested": 624,
+    "passed": 24
    },
    {
-    "round": "20261107T0216Z",
-    "tested": 210,
-    "passed": 3
+    "round": "20261111T0216Z",
+    "tested": 587,
+    "passed": 34
    },
    {
-    "round": "20261107T1125Z",
-    "tested": 628,
-    "passed": 12
+    "round": "20261111T1215Z",
+    "tested": 574,
+    "passed": 16
+   },
+   {
+    "round": "20261111T2254Z",
+    "tested": 555,
+    "passed": 25
+   },
+   {
+    "round": "20261112T2224Z",
+    "tested": 136,
+    "passed": 20
+   },
+   {
+    "round": "20261113T0249Z",
+    "tested": 266,
+    "passed": 27
+   },
+   {
+    "round": "20261113T1223Z",
+    "tested": 113,
+    "passed": 15
+   },
+   {
+    "round": "20261113T2208Z",
+    "tested": 125,
+    "passed": 10
+   },
+   {
+    "round": "20261114T0236Z",
+    "tested": 272,
+    "passed": 18
+   },
+   {
+    "round": "20261114T1142Z",
+    "tested": 530,
+    "passed": 7
+   },
+   {
+    "round": "20261114T2131Z",
+    "tested": 112,
+    "passed": 22
+   },
+   {
+    "round": "20261115T0210Z",
+    "tested": 561,
+    "passed": 29
+   },
+   {
+    "round": "20261115T1210Z",
+    "tested": 430,
+    "passed": 10
+   },
+   {
+    "round": "20261115T2131Z",
+    "tested": 556,
+    "passed": 22
+   },
+   {
+    "round": "20261116T0225Z",
+    "tested": 130,
+    "passed": 11
+   },
+   {
+    "round": "20261116T1301Z",
+    "tested": 374,
+    "passed": 13
+   },
+   {
+    "round": "20261116T2132Z",
+    "tested": 295,
+    "passed": 15
+   },
+   {
+    "round": "20261117T0030Z",
+    "tested": 283,
+    "passed": 16
+   },
+   {
+    "round": "20261117T1341Z",
+    "tested": 495,
+    "passed": 10
+   },
+   {
+    "round": "20261117T2129Z",
+    "tested": 542,
+    "passed": 22
+   },
+   {
+    "round": "20261117T2342Z",
+    "tested": 297,
+    "passed": 22
    }
   ]
  },
  "hysteria2": {
-  "rounds": 12,
-  "tested": 491,
-  "passed": 18,
-  "last_round": "20261107T1125Z",
-  "last_ts": "2026-11-07T17:08:31Z",
+  "rounds": 42,
+  "tested": 1699,
+  "passed": 51,
+  "last_round": "20261117T2342Z",
+  "last_ts": "2026-11-18T01:14:44Z",
   "recent": [
    {
-    "round": "20261014T2139Z",
-    "tested": 166,
-    "passed": 9
+    "round": "20261107T2139Z",
+    "tested": 79,
+    "passed": 6
    },
    {
-    "round": "20261104T1217Z",
-    "tested": 50,
-    "passed": 1
+    "round": "20261108T0148Z",
+    "tested": 65,
+    "passed": 6
    },
    {
-    "round": "20261105T0237Z",
+    "round": "20261108T1139Z",
     "tested": 64,
-    "passed": 2
-   },
-   {
-    "round": "20261105T0944Z",
-    "tested": 11,
-    "passed": 2
-   },
-   {
-    "round": "20261105T1231Z",
-    "tested": 11,
     "passed": 0
    },
    {
-    "round": "20261105T2206Z",
-    "tested": 8,
-    "passed": 0
-   },
-   {
-    "round": "20261106T0213Z",
-    "tested": 16,
-    "passed": 1
-   },
-   {
-    "round": "20261106T0249Z",
-    "tested": 16,
-    "passed": 0
-   },
-   {
-    "round": "20261106T1226Z",
-    "tested": 17,
-    "passed": 0
-   },
-   {
-    "round": "20261106T2200Z",
-    "tested": 21,
-    "passed": 0
-   },
-   {
-    "round": "20261107T0216Z",
-    "tested": 23,
-    "passed": 0
-   },
-   {
-    "round": "20261107T1125Z",
-    "tested": 88,
-    "passed": 3
-   }
-  ]
- },
- "anytls": {
-  "rounds": 12,
-  "tested": 79,
-  "passed": 20,
-  "last_round": "20261107T1125Z",
-  "last_ts": "2026-11-07T17:08:31Z",
-  "recent": [
-   {
-    "round": "20261014T2139Z",
-    "tested": 8,
-    "passed": 7
-   },
-   {
-    "round": "20261104T1217Z",
-    "tested": 7,
-    "passed": 2
-   },
-   {
-    "round": "20261105T0237Z",
-    "tested": 5,
+    "round": "20261108T2139Z",
+    "tested": 78,
     "passed": 3
    },
    {
-    "round": "20261105T0944Z",
-    "tested": 5,
+    "round": "20261109T0205Z",
+    "tested": 68,
+    "passed": 3
+   },
+   {
+    "round": "20261109T1317Z",
+    "tested": 55,
+    "passed": 0
+   },
+   {
+    "round": "20261109T2143Z",
+    "tested": 43,
     "passed": 4
    },
    {
-    "round": "20261105T1231Z",
-    "tested": 5,
+    "round": "20261110T0037Z",
+    "tested": 41,
+    "passed": 2
+   },
+   {
+    "round": "20261110T1304Z",
+    "tested": 53,
+    "passed": 2
+   },
+   {
+    "round": "20261110T2212Z",
+    "tested": 45,
     "passed": 0
    },
    {
-    "round": "20261105T2206Z",
+    "round": "20261111T0216Z",
+    "tested": 41,
+    "passed": 0
+   },
+   {
+    "round": "20261111T1215Z",
+    "tested": 46,
+    "passed": 0
+   },
+   {
+    "round": "20261111T2254Z",
+    "tested": 38,
+    "passed": 0
+   },
+   {
+    "round": "20261112T2224Z",
+    "tested": 3,
+    "passed": 0
+   },
+   {
+    "round": "20261113T0249Z",
     "tested": 6,
     "passed": 1
    },
    {
-    "round": "20261106T0213Z",
-    "tested": 5,
-    "passed": 0
-   },
-   {
-    "round": "20261106T0249Z",
-    "tested": 5,
-    "passed": 0
-   },
-   {
-    "round": "20261106T1226Z",
-    "tested": 5,
-    "passed": 0
-   },
-   {
-    "round": "20261106T2200Z",
-    "tested": 7,
-    "passed": 1
-   },
-   {
-    "round": "20261107T0216Z",
+    "round": "20261113T1223Z",
     "tested": 4,
+    "passed": 0
+   },
+   {
+    "round": "20261113T2208Z",
+    "tested": 4,
+    "passed": 0
+   },
+   {
+    "round": "20261114T0236Z",
+    "tested": 6,
+    "passed": 0
+   },
+   {
+    "round": "20261114T1142Z",
+    "tested": 45,
+    "passed": 0
+   },
+   {
+    "round": "20261114T2131Z",
+    "tested": 3,
+    "passed": 0
+   },
+   {
+    "round": "20261115T0210Z",
+    "tested": 42,
+    "passed": 0
+   },
+   {
+    "round": "20261115T1210Z",
+    "tested": 61,
+    "passed": 0
+   },
+   {
+    "round": "20261115T2131Z",
+    "tested": 53,
+    "passed": 2
+   },
+   {
+    "round": "20261116T0225Z",
+    "tested": 4,
+    "passed": 0
+   },
+   {
+    "round": "20261116T1301Z",
+    "tested": 54,
     "passed": 1
    },
    {
-    "round": "20261107T1125Z",
+    "round": "20261116T2132Z",
+    "tested": 41,
+    "passed": 0
+   },
+   {
+    "round": "20261117T0030Z",
+    "tested": 36,
+    "passed": 1
+   },
+   {
+    "round": "20261117T1341Z",
+    "tested": 44,
+    "passed": 0
+   },
+   {
+    "round": "20261117T2129Z",
+    "tested": 50,
+    "passed": 2
+   },
+   {
+    "round": "20261117T2342Z",
+    "tested": 36,
+    "passed": 0
+   }
+  ]
+ },
+ "anytls": {
+  "rounds": 42,
+  "tested": 515,
+  "passed": 104,
+  "last_round": "20261117T2342Z",
+  "last_ts": "2026-11-18T01:14:44Z",
+  "recent": [
+   {
+    "round": "20261107T2139Z",
+    "tested": 15,
+    "passed": 3
+   },
+   {
+    "round": "20261108T0148Z",
+    "tested": 12,
+    "passed": 3
+   },
+   {
+    "round": "20261108T1139Z",
+    "tested": 12,
+    "passed": 3
+   },
+   {
+    "round": "20261108T2139Z",
+    "tested": 13,
+    "passed": 2
+   },
+   {
+    "round": "20261109T0205Z",
+    "tested": 11,
+    "passed": 1
+   },
+   {
+    "round": "20261109T1317Z",
+    "tested": 11,
+    "passed": 2
+   },
+   {
+    "round": "20261109T2143Z",
+    "tested": 12,
+    "passed": 2
+   },
+   {
+    "round": "20261110T0037Z",
+    "tested": 10,
+    "passed": 2
+   },
+   {
+    "round": "20261110T1304Z",
+    "tested": 15,
+    "passed": 0
+   },
+   {
+    "round": "20261110T2212Z",
+    "tested": 14,
+    "passed": 2
+   },
+   {
+    "round": "20261111T0216Z",
+    "tested": 15,
+    "passed": 3
+   },
+   {
+    "round": "20261111T1215Z",
+    "tested": 16,
+    "passed": 1
+   },
+   {
+    "round": "20261111T2254Z",
+    "tested": 15,
+    "passed": 4
+   },
+   {
+    "round": "20261112T2224Z",
+    "tested": 12,
+    "passed": 3
+   },
+   {
+    "round": "20261113T0249Z",
+    "tested": 12,
+    "passed": 4
+   },
+   {
+    "round": "20261113T1223Z",
+    "tested": 11,
+    "passed": 0
+   },
+   {
+    "round": "20261113T2208Z",
+    "tested": 14,
+    "passed": 3
+   },
+   {
+    "round": "20261114T0236Z",
+    "tested": 19,
+    "passed": 5
+   },
+   {
+    "round": "20261114T1142Z",
+    "tested": 30,
+    "passed": 4
+   },
+   {
+    "round": "20261114T2131Z",
+    "tested": 15,
+    "passed": 6
+   },
+   {
+    "round": "20261115T0210Z",
+    "tested": 21,
+    "passed": 7
+   },
+   {
+    "round": "20261115T1210Z",
     "tested": 17,
+    "passed": 4
+   },
+   {
+    "round": "20261115T2131Z",
+    "tested": 20,
+    "passed": 6
+   },
+   {
+    "round": "20261116T0225Z",
+    "tested": 19,
+    "passed": 0
+   },
+   {
+    "round": "20261116T1301Z",
+    "tested": 13,
+    "passed": 2
+   },
+   {
+    "round": "20261116T2132Z",
+    "tested": 14,
+    "passed": 3
+   },
+   {
+    "round": "20261117T0030Z",
+    "tested": 13,
+    "passed": 3
+   },
+   {
+    "round": "20261117T1341Z",
+    "tested": 13,
+    "passed": 2
+   },
+   {
+    "round": "20261117T2129Z",
+    "tested": 11,
+    "passed": 3
+   },
+   {
+    "round": "20261117T2342Z",
+    "tested": 11,
     "passed": 1
    }
   ]
  },
  "trojan": {
-  "rounds": 12,
-  "tested": 1011,
-  "passed": 18,
-  "last_round": "20261107T1125Z",
-  "last_ts": "2026-11-07T17:08:31Z",
+  "rounds": 42,
+  "tested": 5213,
+  "passed": 72,
+  "last_round": "20261117T2342Z",
+  "last_ts": "2026-11-18T01:14:44Z",
   "recent": [
    {
-    "round": "20261014T2139Z",
-    "tested": 202,
+    "round": "20261107T2139Z",
+    "tested": 150,
+    "passed": 0
+   },
+   {
+    "round": "20261108T0148Z",
+    "tested": 208,
+    "passed": 3
+   },
+   {
+    "round": "20261108T1139Z",
+    "tested": 165,
+    "passed": 0
+   },
+   {
+    "round": "20261108T2139Z",
+    "tested": 128,
+    "passed": 1
+   },
+   {
+    "round": "20261109T0205Z",
+    "tested": 142,
+    "passed": 4
+   },
+   {
+    "round": "20261109T1317Z",
+    "tested": 190,
+    "passed": 0
+   },
+   {
+    "round": "20261109T2143Z",
+    "tested": 118,
+    "passed": 3
+   },
+   {
+    "round": "20261110T0037Z",
+    "tested": 163,
+    "passed": 2
+   },
+   {
+    "round": "20261110T1304Z",
+    "tested": 169,
+    "passed": 0
+   },
+   {
+    "round": "20261110T2212Z",
+    "tested": 197,
+    "passed": 2
+   },
+   {
+    "round": "20261111T0216Z",
+    "tested": 181,
+    "passed": 2
+   },
+   {
+    "round": "20261111T1215Z",
+    "tested": 225,
+    "passed": 3
+   },
+   {
+    "round": "20261111T2254Z",
+    "tested": 231,
+    "passed": 4
+   },
+   {
+    "round": "20261112T2224Z",
+    "tested": 79,
+    "passed": 0
+   },
+   {
+    "round": "20261113T0249Z",
+    "tested": 136,
+    "passed": 1
+   },
+   {
+    "round": "20261113T1223Z",
+    "tested": 90,
+    "passed": 0
+   },
+   {
+    "round": "20261113T2208Z",
+    "tested": 83,
+    "passed": 1
+   },
+   {
+    "round": "20261114T0236Z",
+    "tested": 122,
+    "passed": 1
+   },
+   {
+    "round": "20261114T1142Z",
+    "tested": 190,
+    "passed": 2
+   },
+   {
+    "round": "20261114T2131Z",
+    "tested": 11,
     "passed": 5
    },
    {
-    "round": "20261104T1217Z",
-    "tested": 82,
+    "round": "20261115T0210Z",
+    "tested": 198,
+    "passed": 3
+   },
+   {
+    "round": "20261115T1210Z",
+    "tested": 177,
+    "passed": 3
+   },
+   {
+    "round": "20261115T2131Z",
+    "tested": 178,
+    "passed": 8
+   },
+   {
+    "round": "20261116T0225Z",
+    "tested": 11,
     "passed": 0
    },
    {
-    "round": "20261105T0237Z",
-    "tested": 42,
-    "passed": 1
-   },
-   {
-    "round": "20261105T0944Z",
-    "tested": 36,
+    "round": "20261116T1301Z",
+    "tested": 122,
     "passed": 0
    },
    {
-    "round": "20261105T1231Z",
-    "tested": 35,
+    "round": "20261116T2132Z",
+    "tested": 84,
     "passed": 2
    },
    {
-    "round": "20261105T2206Z",
-    "tested": 33,
-    "passed": 2
+    "round": "20261117T0030Z",
+    "tested": 78,
+    "passed": 0
    },
    {
-    "round": "20261106T0213Z",
-    "tested": 69,
-    "passed": 2
+    "round": "20261117T1341Z",
+    "tested": 147,
+    "passed": 0
    },
    {
-    "round": "20261106T0249Z",
-    "tested": 64,
-    "passed": 2
+    "round": "20261117T2129Z",
+    "tested": 154,
+    "passed": 4
    },
    {
-    "round": "20261106T1226Z",
-    "tested": 69,
-    "passed": 1
-   },
-   {
-    "round": "20261106T2200Z",
-    "tested": 46,
-    "passed": 2
-   },
-   {
-    "round": "20261107T0216Z",
-    "tested": 49,
-    "passed": 1
-   },
-   {
-    "round": "20261107T1125Z",
-    "tested": 284,
+    "round": "20261117T2342Z",
+    "tested": 75,
     "passed": 0
    }
   ]
  },
  "hysteria": {
-  "rounds": 12,
-  "tested": 125,
-  "passed": 59,
-  "last_round": "20261107T1125Z",
-  "last_ts": "2026-11-07T17:08:31Z",
+  "rounds": 42,
+  "tested": 911,
+  "passed": 439,
+  "last_round": "20261117T2342Z",
+  "last_ts": "2026-11-18T01:14:44Z",
   "recent": [
    {
-    "round": "20261014T2139Z",
-    "tested": 4,
-    "passed": 2
-   },
-   {
-    "round": "20261104T1217Z",
-    "tested": 3,
-    "passed": 0
-   },
-   {
-    "round": "20261105T0237Z",
-    "tested": 15,
-    "passed": 4
-   },
-   {
-    "round": "20261105T0944Z",
-    "tested": 11,
-    "passed": 8
-   },
-   {
-    "round": "20261105T1231Z",
+    "round": "20261107T2139Z",
     "tested": 12,
-    "passed": 8
-   },
-   {
-    "round": "20261105T2206Z",
-    "tested": 11,
     "passed": 10
    },
    {
-    "round": "20261106T0213Z",
-    "tested": 11,
-    "passed": 4
+    "round": "20261108T0148Z",
+    "tested": 12,
+    "passed": 10
    },
    {
-    "round": "20261106T0249Z",
-    "tested": 11,
+    "round": "20261108T1139Z",
+    "tested": 13,
     "passed": 5
    },
    {
-    "round": "20261106T1226Z",
-    "tested": 11,
-    "passed": 1
+    "round": "20261108T2139Z",
+    "tested": 13,
+    "passed": 10
    },
    {
-    "round": "20261106T2200Z",
-    "tested": 11,
-    "passed": 3
+    "round": "20261109T0205Z",
+    "tested": 12,
+    "passed": 10
    },
    {
-    "round": "20261107T0216Z",
-    "tested": 9,
-    "passed": 4
+    "round": "20261109T1317Z",
+    "tested": 13,
+    "passed": 8
    },
    {
-    "round": "20261107T1125Z",
+    "round": "20261109T2143Z",
     "tested": 16,
     "passed": 10
+   },
+   {
+    "round": "20261110T0037Z",
+    "tested": 18,
+    "passed": 12
+   },
+   {
+    "round": "20261110T1304Z",
+    "tested": 19,
+    "passed": 13
+   },
+   {
+    "round": "20261110T2212Z",
+    "tested": 19,
+    "passed": 14
+   },
+   {
+    "round": "20261111T0216Z",
+    "tested": 19,
+    "passed": 14
+   },
+   {
+    "round": "20261111T1215Z",
+    "tested": 20,
+    "passed": 12
+   },
+   {
+    "round": "20261111T2254Z",
+    "tested": 27,
+    "passed": 14
+   },
+   {
+    "round": "20261112T2224Z",
+    "tested": 29,
+    "passed": 15
+   },
+   {
+    "round": "20261113T0249Z",
+    "tested": 35,
+    "passed": 15
+   },
+   {
+    "round": "20261113T1223Z",
+    "tested": 26,
+    "passed": 16
+   },
+   {
+    "round": "20261113T2208Z",
+    "tested": 27,
+    "passed": 15
+   },
+   {
+    "round": "20261114T0236Z",
+    "tested": 35,
+    "passed": 17
+   },
+   {
+    "round": "20261114T1142Z",
+    "tested": 33,
+    "passed": 19
+   },
+   {
+    "round": "20261114T2131Z",
+    "tested": 35,
+    "passed": 14
+   },
+   {
+    "round": "20261115T0210Z",
+    "tested": 32,
+    "passed": 18
+   },
+   {
+    "round": "20261115T1210Z",
+    "tested": 35,
+    "passed": 18
+   },
+   {
+    "round": "20261115T2131Z",
+    "tested": 40,
+    "passed": 15
+   },
+   {
+    "round": "20261116T0225Z",
+    "tested": 33,
+    "passed": 16
+   },
+   {
+    "round": "20261116T1301Z",
+    "tested": 38,
+    "passed": 15
+   },
+   {
+    "round": "20261116T2132Z",
+    "tested": 37,
+    "passed": 16
+   },
+   {
+    "round": "20261117T0030Z",
+    "tested": 37,
+    "passed": 12
+   },
+   {
+    "round": "20261117T1341Z",
+    "tested": 33,
+    "passed": 7
+   },
+   {
+    "round": "20261117T2129Z",
+    "tested": 33,
+    "passed": 5
+   },
+   {
+    "round": "20261117T2342Z",
+    "tested": 35,
+    "passed": 5
    }
   ]
  },
  "tuic": {
-  "rounds": 1,
-  "tested": 7,
+  "rounds": 10,
+  "tested": 52,
   "passed": 0,
-  "last_round": "20261014T2139Z",
-  "last_ts": "2026-10-14T23:06:33Z",
+  "last_round": "20261112T2224Z",
+  "last_ts": "2026-11-12T23:34:44Z",
   "recent": [
    {
     "round": "20261014T2139Z",
     "tested": 7,
     "passed": 0
+   },
+   {
+    "round": "20261108T2139Z",
+    "tested": 5,
+    "passed": 0
+   },
+   {
+    "round": "20261109T0205Z",
+    "tested": 5,
+    "passed": 0
+   },
+   {
+    "round": "20261109T2143Z",
+    "tested": 5,
+    "passed": 0
+   },
+   {
+    "round": "20261110T0037Z",
+    "tested": 5,
+    "passed": 0
+   },
+   {
+    "round": "20261110T2212Z",
+    "tested": 5,
+    "passed": 0
+   },
+   {
+    "round": "20261111T0216Z",
+    "tested": 5,
+    "passed": 0
+   },
+   {
+    "round": "20261111T1215Z",
+    "tested": 5,
+    "passed": 0
+   },
+   {
+    "round": "20261111T2254Z",
+    "tested": 5,
+    "passed": 0
+   },
+   {
+    "round": "20261112T2224Z",
+    "tested": 5,
+    "passed": 0
    }
   ]
  },
  "ss": {
-  "rounds": 9,
-  "tested": 772,
-  "passed": 179,
-  "last_round": "20261107T1125Z",
-  "last_ts": "2026-11-07T17:08:31Z",
+  "rounds": 39,
+  "tested": 7683,
+  "passed": 529,
+  "last_round": "20261117T2342Z",
+  "last_ts": "2026-11-18T01:14:44Z",
   "recent": [
    {
-    "round": "20261105T0944Z",
-    "tested": 64,
-    "passed": 18
+    "round": "20261107T2139Z",
+    "tested": 243,
+    "passed": 14
    },
    {
-    "round": "20261105T1231Z",
-    "tested": 39,
-    "passed": 16
+    "round": "20261108T0148Z",
+    "tested": 343,
+    "passed": 14
    },
    {
-    "round": "20261105T2206Z",
-    "tested": 35,
-    "passed": 22
+    "round": "20261108T1139Z",
+    "tested": 331,
+    "passed": 17
    },
    {
-    "round": "20261106T0213Z",
-    "tested": 45,
-    "passed": 23
+    "round": "20261108T2139Z",
+    "tested": 247,
+    "passed": 11
    },
    {
-    "round": "20261106T0249Z",
-    "tested": 48,
-    "passed": 21
+    "round": "20261109T0205Z",
+    "tested": 194,
+    "passed": 11
    },
    {
-    "round": "20261106T1226Z",
+    "round": "20261109T1317Z",
+    "tested": 329,
+    "passed": 12
+   },
+   {
+    "round": "20261109T2143Z",
+    "tested": 178,
+    "passed": 11
+   },
+   {
+    "round": "20261110T0037Z",
+    "tested": 293,
+    "passed": 10
+   },
+   {
+    "round": "20261110T1304Z",
+    "tested": 305,
+    "passed": 10
+   },
+   {
+    "round": "20261110T2212Z",
+    "tested": 325,
+    "passed": 11
+   },
+   {
+    "round": "20261111T0216Z",
+    "tested": 294,
+    "passed": 11
+   },
+   {
+    "round": "20261111T1215Z",
+    "tested": 274,
+    "passed": 10
+   },
+   {
+    "round": "20261111T2254Z",
+    "tested": 298,
+    "passed": 11
+   },
+   {
+    "round": "20261112T2224Z",
+    "tested": 63,
+    "passed": 11
+   },
+   {
+    "round": "20261113T0249Z",
+    "tested": 134,
+    "passed": 10
+   },
+   {
+    "round": "20261113T1223Z",
+    "tested": 66,
+    "passed": 12
+   },
+   {
+    "round": "20261113T2208Z",
+    "tested": 51,
+    "passed": 10
+   },
+   {
+    "round": "20261114T0236Z",
+    "tested": 137,
+    "passed": 11
+   },
+   {
+    "round": "20261114T1142Z",
+    "tested": 302,
+    "passed": 10
+   },
+   {
+    "round": "20261114T2131Z",
+    "tested": 61,
+    "passed": 12
+   },
+   {
+    "round": "20261115T0210Z",
+    "tested": 332,
+    "passed": 13
+   },
+   {
+    "round": "20261115T1210Z",
+    "tested": 324,
+    "passed": 12
+   },
+   {
+    "round": "20261115T2131Z",
+    "tested": 332,
+    "passed": 13
+   },
+   {
+    "round": "20261116T0225Z",
     "tested": 47,
-    "passed": 18
+    "passed": 12
    },
    {
-    "round": "20261106T2200Z",
-    "tested": 54,
-    "passed": 23
+    "round": "20261116T1301Z",
+    "tested": 246,
+    "passed": 13
    },
    {
-    "round": "20261107T0216Z",
-    "tested": 55,
-    "passed": 23
-   },
-   {
-    "round": "20261107T1125Z",
-    "tested": 385,
+    "round": "20261116T2132Z",
+    "tested": 177,
     "passed": 15
+   },
+   {
+    "round": "20261117T0030Z",
+    "tested": 100,
+    "passed": 11
+   },
+   {
+    "round": "20261117T1341Z",
+    "tested": 321,
+    "passed": 10
+   },
+   {
+    "round": "20261117T2129Z",
+    "tested": 316,
+    "passed": 10
+   },
+   {
+    "round": "20261117T2342Z",
+    "tested": 248,
+    "passed": 12
    }
   ]
  }

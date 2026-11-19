@@ -72,84 +72,120 @@
   "reason": "pass_rate=13.38% 健康、p90延迟 2813ms < 当前 3297ms -> 收紧提质"
  },
  {
+  "param": "CN_LATENCY_CAP_MS",
+  "old": 3055.2,
+  "new": 3053.6,
+  "samples": 729,
+  "passed": 88,
+  "at": "2026-11-08T04:14:44Z",
+  "reason": "pass_rate=12.07% 健康、p90延迟 3052ms < 当前 3055ms -> 收紧提质"
+ },
+ {
+  "param": "CN_LATENCY_CAP_MS",
+  "old": 3053.6,
+  "new": 2872.8,
+  "samples": 584,
+  "passed": 73,
+  "at": "2026-11-08T06:14:42Z",
+  "reason": "pass_rate=12.50% 健康、p90延迟 2692ms < 当前 3054ms -> 收紧提质"
+ },
+ {
+  "param": "CN_LATENCY_CAP_MS",
+  "old": 2872.8,
+  "new": 2721.9,
+  "samples": 1030,
+  "passed": 117,
+  "at": "2026-11-10T04:14:45Z",
+  "reason": "pass_rate=11.36% 健康、p90延迟 2571ms < 当前 2873ms -> 收紧提质"
+ },
+ {
   "param": "US_LATENCY_CAP_MS",
   "old": 2431.7,
-  "new": 2171.3,
+  "new": 2207.3,
+  "samples": 371,
+  "passed": 86,
+  "at": "2026-11-10T10:14:43Z",
+  "reason": "pass_rate=23.18% 健康、p90延迟 1983ms < 当前 2432ms -> 收紧提质"
+ },
+ {
+  "param": "US_LATENCY_CAP_MS",
+  "old": 2207.3,
+  "new": 2059.2,
   "samples": 304,
   "passed": 96,
   "at": "2026-11-11T01:14:44Z",
-  "reason": "pass_rate=31.58% 健康、p90延迟 1911ms < 当前 2432ms -> 收紧提质"
+  "reason": "pass_rate=31.58% 健康、p90延迟 1911ms < 当前 2207ms -> 收紧提质"
  },
  {
   "param": "CN_LATENCY_CAP_MS",
-  "old": 3055.2,
-  "new": 2864.6,
-  "samples": 925,
-  "passed": 94,
-  "at": "2026-11-11T11:14:43Z",
-  "reason": "pass_rate=10.16% 健康、p90延迟 2674ms < 当前 3055ms -> 收紧提质"
+  "old": 2721.9,
+  "new": 2655.4,
+  "samples": 1027,
+  "passed": 110,
+  "at": "2026-11-11T05:14:43Z",
+  "reason": "pass_rate=10.71% 健康、p90延迟 2589ms < 当前 2722ms -> 收紧提质"
  },
  {
   "param": "CN_LATENCY_CAP_MS",
-  "old": 2864.6,
-  "new": 2769.8,
-  "samples": 694,
-  "passed": 89,
-  "at": "2026-11-12T11:14:42Z",
-  "reason": "pass_rate=12.82% 健康、p90延迟 2675ms < 当前 2865ms -> 收紧提质"
- },
- {
-  "param": "CN_LATENCY_CAP_MS",
-  "old": 2769.8,
-  "new": 2722.4,
-  "samples": 694,
-  "passed": 89,
-  "at": "2026-11-12T11:14:42Z",
-  "reason": "pass_rate=12.82% 健康、p90延迟 2675ms < 当前 2770ms -> 收紧提质"
- },
- {
-  "param": "CN_LATENCY_CAP_MS",
-  "old": 2722.4,
-  "new": 2698.7,
-  "samples": 694,
-  "passed": 89,
-  "at": "2026-11-12T11:14:42Z",
-  "reason": "pass_rate=12.82% 健康、p90延迟 2675ms < 当前 2722ms -> 收紧提质"
+  "old": 2655.4,
+  "new": 2608.2,
+  "samples": 326,
+  "passed": 92,
+  "at": "2026-11-11T09:14:43Z",
+  "reason": "pass_rate=28.22% 健康、p90延迟 2561ms < 当前 2655ms -> 收紧提质"
  },
  {
   "param": "US_LATENCY_CAP_MS",
-  "old": 2171.3,
-  "new": 2150.7,
-  "samples": 1012,
-  "passed": 118,
-  "at": "2026-11-13T02:14:44Z",
-  "reason": "pass_rate=11.66% 健康、p90延迟 2130ms < 当前 2171ms -> 收紧提质"
+  "old": 2059.2,
+  "new": 1932.1,
+  "samples": 965,
+  "passed": 99,
+  "at": "2026-11-12T01:14:42Z",
+  "reason": "pass_rate=10.26% 健康、p90延迟 1805ms < 当前 2059ms -> 收紧提质"
+ },
+ {
+  "param": "CN_LATENCY_CAP_MS",
+  "old": 2608.2,
+  "new": 2567.6,
+  "samples": 376,
+  "passed": 88,
+  "at": "2026-11-12T04:14:42Z",
+  "reason": "pass_rate=23.40% 健康、p90延迟 2527ms < 当前 2608ms -> 收紧提质"
  },
  {
   "param": "US_LATENCY_CAP_MS",
-  "old": 2150.7,
-  "new": 2020.3,
+  "old": 1932.1,
+  "new": 1902.5,
+  "samples": 327,
+  "passed": 93,
+  "at": "2026-11-12T23:34:44Z",
+  "reason": "pass_rate=28.44% 健康、p90延迟 1873ms < 当前 1932ms -> 收紧提质"
+ },
+ {
+  "param": "CN_LATENCY_CAP_MS",
+  "old": 2567.6,
+  "new": 2556.8,
+  "samples": 589,
+  "passed": 117,
+  "at": "2026-11-13T04:14:43Z",
+  "reason": "pass_rate=19.86% 健康、p90延迟 2546ms < 当前 2568ms -> 收紧提质"
+ },
+ {
+  "param": "US_LATENCY_CAP_MS",
+  "old": 1902.5,
+  "new": 1896.2,
   "samples": 1071,
   "passed": 145,
   "at": "2026-11-15T01:14:42Z",
-  "reason": "pass_rate=13.54% 健康、p90延迟 1890ms < 当前 2151ms -> 收紧提质"
- },
- {
-  "param": "CN_LATENCY_CAP_MS",
-  "old": 2698.7,
-  "new": 2696.3,
-  "samples": 1034,
-  "passed": 119,
-  "at": "2026-11-15T10:14:42Z",
-  "reason": "pass_rate=11.51% 健康、p90延迟 2694ms < 当前 2699ms -> 收紧提质"
+  "reason": "pass_rate=13.54% 健康、p90延迟 1890ms < 当前 1902ms -> 收紧提质"
  },
  {
   "param": "US_LATENCY_CAP_MS",
-  "old": 2020.3,
-  "new": 1980.2,
-  "samples": 1179,
-  "passed": 128,
-  "at": "2026-11-15T23:36:50Z",
-  "reason": "pass_rate=10.86% 健康、p90延迟 1940ms < 当前 2020ms -> 收紧提质"
+  "old": 1896.2,
+  "new": 1894.6,
+  "samples": 547,
+  "passed": 95,
+  "at": "2026-11-17T02:14:44Z",
+  "reason": "pass_rate=17.37% 健康、p90延迟 1893ms < 当前 1896ms -> 收紧提质"
  }
 ]

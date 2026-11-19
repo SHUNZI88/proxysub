@@ -43,7 +43,6 @@ import datetime
 import json
 import os
 import sys
-import tempfile
 import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -68,7 +67,10 @@ def default_workdir() -> str:
     if env:
         return env
     if os.name == "nt":
-        return os.path.join(tempfile.gettempdir(), "cn_probe")
+        # 与 cn_probe.default_workdir() 必须同源（任务#135）：
+        # %TEMP% 会被系统清理，导致「资产龄期恒 999h → 永远该跑」的错觉。
+        base = os.environ.get("LOCALAPPDATA") or os.path.expanduser("~")
+        return os.path.join(base, "proxysub")
     return "/tmp/cn_probe"
 
 

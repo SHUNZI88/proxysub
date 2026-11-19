@@ -27,6 +27,7 @@ from __future__ import annotations
 import json
 import os
 import socket
+import time
 import shutil
 import subprocess
 import urllib.error
@@ -142,7 +143,7 @@ def _curl_download(url: str, dest: str, *, max_time: int = 300) -> bool:
         if effective_proxy():
             cmd[-1:-1] = ["--proxy", effective_proxy()]
         try:
-            r = subprocess.run(cmd, capture_output=True, text=True, timeout=max_time + 15)
+            r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=max_time + 15)
             if r.returncode == 0 and os.path.exists(dest) and os.path.getsize(dest) > 0:
                 return True
         except (subprocess.SubprocessError, OSError):
@@ -292,7 +293,7 @@ def auth_ok() -> tuple[bool, str]:
     if not token():
         return False, "无 token（环境变量与持久化文件均缺失）"
     if has_gh():
-        r = subprocess.run([gh_bin(), "auth", "status"], capture_output=True, text=True,
+        r = subprocess.run([gh_bin(), "auth", "status"], capture_output=True, text=True, encoding="utf-8", errors="replace",
                            timeout=60, env=_gh_env())
         if r.returncode == 0:
             return True, "gh auth status OK"
@@ -315,7 +316,7 @@ def release_assets(tag: str) -> list[dict]:
     if has_gh():
         try:
             r = subprocess.run([gh_bin(), "release", "view", tag, "--json", "assets"],
-                               capture_output=True, text=True, timeout=60,
+                               capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=60,
                                env=_gh_env())
             if r.returncode == 0:
                 return json.loads(r.stdout).get("assets", []) or []
@@ -339,7 +340,7 @@ def download_asset(tag: str, name: str, dest: str, *, timeout: int = 60) -> bool
             r = subprocess.run(
                 [gh_bin(), "release", "download", tag, "-p", name, "-O", dest,
                  "--clobber"],
-                capture_output=True, text=True, timeout=timeout, env=_gh_env())
+                capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=timeout, env=_gh_env())
             if r.returncode == 0 and os.path.exists(dest) and os.path.getsize(dest) > 0:
                 return True
         except subprocess.SubprocessError:
@@ -362,22 +363,101 @@ def upload_asset(tag: str, path: str, *, name: str | None = None,
     if not token():
         return False, "上传需要 token（GH_TOKEN / GITHUB_TOKEN / 持久化 PAT）"
 
+    return upload_asset_safe(tag, path, asset_name, timeout=timeout)
+
+
+def _upload_once(tag: str, path: str, asset_name: str, timeout: int) -> tuple[bool, str]:
+    """单次上传（会覆盖同名资产）。成功返回 (True, "")。"""
     if has_gh():
-        # gh 用 `文件名#资产名` 语法指定上传后的资产名
         arg = path if asset_name == os.path.basename(path) else f"{path}#{asset_name}"
         try:
             r = subprocess.run([gh_bin(), "release", "upload", tag, "--clobber", arg],
-                               capture_output=True, text=True, timeout=timeout,
-                               env=_gh_env())
+                               capture_output=True, text=True, encoding="utf-8",
+                               errors="replace", timeout=timeout, env=_gh_env())
             if r.returncode == 0:
                 return True, ""
             gh_err = (r.stderr or r.stdout or "").strip()[:200]
         except subprocess.SubprocessError as e:
             gh_err = f"gh 异常: {type(e).__name__}"
-        # gh 失败不再直接返回：落到 REST 重试一次（上传偶发 5xx 属常态）
         ok, err = _upload_rest(tag, path, asset_name, timeout)
         return (True, "") if ok else (False, f"gh: {gh_err} | rest: {err}")
     return _upload_rest(tag, path, asset_name, timeout)
+
+
+def _asset_size(tag: str, name: str) -> int | None:
+    """现网资产大小（不存在返回 None）。只用列表接口，不做下载。"""
+    for a in release_assets(tag) or []:
+        if a.get("name") == name:
+            try:
+                return int(a.get("size") or 0)
+            except (TypeError, ValueError):
+                return 0
+    return None
+
+
+def upload_asset_safe(tag: str, path: str, asset_name: str, *,
+                      timeout: int = 180, attempts: int = 3) -> tuple[bool, str]:
+    """**非破坏性**上传：先暂存并校验，再替换正式名（任务#135）。
+
+    事故（2026-11-19）：客户端刷新订阅报「无内容」——线上主资产
+    `p_*_c.yaml` 整个消失，只剩 `_d/_p/_s/_v`。根因是 `--clobber` 的语义
+    「先 DELETE 旧资产、再 POST 新的」：那次 POST 失败后，旧文件已被删除，
+    于是**订阅地址 404**，而轮次仍按「已刷新 3/4」报成功。
+
+    新顺序把内容先送上服务器，再动现网名字：
+      1) 传 `<name>.staging`（同名先清，不影响订阅地址）；
+      2) 校验 staging 大小 == 本地大小；
+      3) 删正式名并上传（失败重试 attempts 次）；
+      4) 校验正式名大小。
+    staging 上传失败时**绝不触碰**正式名——宁可不更新，也不能把线上打空。
+    """
+    if not os.path.exists(path):
+        return False, f"文件不存在: {path}"
+    try:
+        local_size = os.path.getsize(path)
+    except OSError as e:
+        return False, f"读取失败: {e}"
+    if local_size <= 0:
+        return False, "本地文件为空，拒绝上传"
+
+    staging = f"{asset_name}.staging"
+    ok, err = _upload_once(tag, path, staging, timeout)
+    if not ok:
+        return False, f"暂存失败（现网资产未受影响）: {err}"
+    got = _asset_size(tag, staging)
+    if got is not None and got != local_size:
+        return False, f"暂存校验不符（远端 {got}B ≠ 本地 {local_size}B）"
+
+    last = ""
+    for i in range(max(1, attempts)):
+        ok, err = _upload_once(tag, path, asset_name, timeout)
+        if ok:
+            got = _asset_size(tag, asset_name)
+            if got is None or got == local_size:
+                try:
+                    _delete_asset(tag, staging)
+                except Exception:
+                    pass
+                return True, ""
+            last = f"正式名校验不符（远端 {got}B ≠ 本地 {local_size}B）"
+        else:
+            last = err
+        time.sleep(2 * (i + 1))
+    return False, (f"替换正式名失败（内容已安全暂存在 {staging}，"
+                   f"可用 gh release upload 手工恢复）: {last}")
+
+
+def _delete_asset(tag: str, name: str) -> bool:
+    """删除指定资产（不存在视为成功）。REST 需要资产 id，故先列一遍。"""
+    for a in release_assets(tag) or []:
+        if a.get("name") == name and a.get("id"):
+            try:
+                _req(f"{API}/repos/{repo()}/releases/assets/{a['id']}",
+                     method="DELETE", timeout=30).close()
+                return True
+            except (urllib.error.URLError, OSError):
+                return False
+    return True
 
 
 def _release_id(tag: str, timeout: int = 60) -> int | None:

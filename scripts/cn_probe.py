@@ -251,6 +251,16 @@ GEO_MAX_NODES = 120
 GEO_TIMEOUT_S = 5
 SELFCHECK_URLS = ["https://www.baidu.com", "https://api.github.com"]
 ASSET_RE = re.compile(r"^p_[0-9a-f]+_([cpsvd])\.(yaml|json|txt)$")
+# 资产名是**确定性**的（任务#135）：格式 → (代码, 扩展名)。
+# 之前资产名靠遍历现网资产反推，主 clash 文件一旦丢失就再也补不回来
+# （2026-11-19 实测：_c.yaml 消失后，每轮都打「未找到 clash 对应的主资产名，
+#  跳过」，订阅永久 404）。名字必须能算出来，不能只能"发现"。
+FMT_ASSET = {"clash": ("c", "yaml"), "proxies_only": ("p", "yaml"),
+             "singbox": ("s", "json"), "v2ray": ("v", "txt")}
+
+# 极端兜底：一个 p_* 资产都不存在时使用的固定前缀（订阅永久地址依赖它）
+ASSET_PREFIX_FALLBACK = "p_58dd290962"
+
 ASSET_FORMAT = {"c": "clash", "p": "proxies_only", "s": "singbox", "v": "v2ray",
                 "d": "degraded"}
 VERIFIED_FILE = {
@@ -2573,6 +2583,34 @@ def write_verified_outputs(nodes: list[dict], workdir: str,
 
 
 # ---------------------------------------------------------------- 主流程
+def migrate_legacy_workdir(workdir: str) -> list[str]:
+    """把旧临时目录里的可用状态搬到新的持久工作目录（任务#135）。
+
+    只**复制**不移动：旧目录可能还被运行中的轮次占用。已存在的目标文件不覆盖
+    （新目录的结论比旧目录新）。
+    """
+    legacy = os.path.join(tempfile.gettempdir(), "cn_probe")
+    if os.path.abspath(workdir) == os.path.abspath(legacy):
+        return []
+    if not os.path.isdir(legacy):
+        return []
+    moved: list[str] = []
+    for name in ("mihomo.exe", "mihomo", "node_library.json",
+                 "user_verified_pool.json", "verification_report.json",
+                 "prev_verification_report.json", "round_guard.json",
+                 "local_round.log", "pending_live.json"):
+        src = os.path.join(legacy, name)
+        dst = os.path.join(workdir, name)
+        if not os.path.exists(src) or os.path.exists(dst):
+            continue
+        try:
+            shutil.copy2(src, dst)
+            moved.append(name)
+        except OSError:
+            continue
+    return moved
+
+
 def default_workdir() -> str:
     """工作目录默认值（任务#121 跨平台）。
 
@@ -2584,7 +2622,11 @@ def default_workdir() -> str:
     if env:
         return env
     if os.name == "nt":
-        return os.path.join(tempfile.gettempdir(), "cn_probe")
+        # 不能放 %TEMP%（任务#135）：Windows 磁盘清理/存储感知会整目录删掉，
+        # 后果是 mihomo 二进制要重下（约 10 分钟）、报告丢失（守护判龄期
+        # 999h）、历史日志归零。实测 2026-11-19 就是这么把订阅停更的。
+        base = os.environ.get("LOCALAPPDATA") or os.path.expanduser("~")
+        return os.path.join(base, "proxysub")
     return "/tmp/cn_probe"
 
 
@@ -3437,10 +3479,19 @@ def main() -> int:
     # 8) 发布验证集到主资产（p_* 随机名，订阅永久地址不变）
     paths = write_verified_outputs(verified, workdir, results)
     asset_by_fmt = {}
+    asset_prefix = ""
     for a in assets:
         m = ASSET_RE.match(a.get("name", ""))
         if m:
             asset_by_fmt[ASSET_FORMAT[m.group(1)]] = a["name"]
+            asset_prefix = asset_prefix or m.group(1)
+    # 缺的格式按前缀补齐（任务#135）：这是「主资产消失后能自愈」的关键。
+    asset_prefix = asset_prefix or ASSET_PREFIX_FALLBACK
+    for _fmt, (_code, _ext) in FMT_ASSET.items():
+        if _fmt not in asset_by_fmt:
+            asset_by_fmt[_fmt] = f"{asset_prefix}_{_code}.{_ext}"
+            log(f"提示: {_fmt} 资产在现网缺失，将按确定性名字 "
+                f"{asset_by_fmt[_fmt]} 补传")
     log("验证集输出: " + ", ".join(f"{k}={os.path.basename(v)}"
                                     for k, v in paths.items()))
     if args.dry_run:
@@ -3455,7 +3506,8 @@ def main() -> int:
         # gh release upload 的资产名只能取文件基名（'#' 后缀是显示标签而非
         # 改名），故先复制成目标资产名再传，保证永久订阅地址内容被原地刷新。
         staged = os.path.join(workdir, target)
-        shutil.copyfile(path, staged)
+        if os.path.abspath(path) != os.path.abspath(staged):
+            shutil.copyfile(path, staged)
         ok, err = upload_asset_with_retry(tag, staged)
         if ok:
             uploaded.append(target)
@@ -3476,11 +3528,10 @@ def main() -> int:
                 "verified_clash", "verified_degraded_clash"))
         with open(deg_path, "w", encoding="utf-8") as f:
             yaml.dump(deg_cfg, f, allow_unicode=True, sort_keys=False)
-        m_main = asset_by_fmt.get("clash")
-        mm = re.match(r"^(p_[0-9a-f]+)_", m_main) if m_main else None
-        deg_name = (mm.group(1) + "_d.yaml") if mm else "verified_degraded_clash.yaml"
+        deg_name = f"{asset_prefix}_d.yaml"
         staged = os.path.join(workdir, deg_name)
-        shutil.copyfile(deg_path, staged)
+        if os.path.abspath(deg_path) != os.path.abspath(staged):
+            shutil.copyfile(deg_path, staged)
         ok, err = upload_asset_with_retry(tag, staged)
         if ok:
             log(f"第二资产已发布: {deg_name}（慢档 {len(deg_sorted)} 个）")
@@ -3556,12 +3607,53 @@ def main() -> int:
     # 注意用「发布集内沙箱来源数」而非 len(passed)：后者是本轮拨测通过数，
     # 其中若干已因高延迟/稳定性降级到第二资产，与保活数相加会超过发布集
     # 总数（本轮实证 6+6≠11），又是一个假数字。
+    # 8.8) 发布后自校验与自愈（任务#135）
+    # 事故：2026-11-19 客户端刷新订阅报「无内容」——线上主资产 p_*_c.yaml
+    # 整个消失（只剩 _d/_p/_s/_v）。根因是覆盖上传「先删旧、再传新」，
+    # 一次 POST 失败就把线上文件打空，而轮次仍按「已刷新 3/4」报成功。
+    # 这里做最后一公里校验：四个格式 + 报告都必须在线且非空，缺了就补传；
+    # 主 clash 资产仍缺失则判本轮失败（让守护按失败重试，而不是静默 404）。
+    _expect: dict[str, str] = {}
+    for _fmt, _target in asset_by_fmt.items():
+        if _fmt in paths:
+            _expect[_target] = paths[_fmt]
+    _expect[config.VERIFICATION_REPORT_FILE] = os.path.join(
+        workdir, config.VERIFICATION_REPORT_FILE)
+    _main_target = asset_by_fmt.get("clash")
+    _missing: list[str] = []
+    for _attempt in range(1, 4):
+        _srv = {a.get("name"): int(a.get("size") or 0)
+                for a in (gh_compat.release_assets(tag) or [])}
+        _missing = [n for n in _expect if _srv.get(n, 0) <= 0]
+        if not _missing:
+            break
+        log(f"发布自校验: 第 {_attempt} 次发现 {len(_missing)} 个资产缺失/为空"
+            f"（{', '.join(_missing)}），补传…")
+        for _name in _missing:
+            _src = _expect[_name]
+            if not os.path.exists(_src):
+                log(f"警告: 本地无 {os.path.basename(_src)}，无法补传 {_name}")
+                continue
+            _staged = os.path.join(workdir, _name)
+            if os.path.abspath(_src) != os.path.abspath(_staged):
+                shutil.copyfile(_src, _staged)
+            _ok, _err = upload_asset_with_retry(tag, _staged, attempts=2)
+            if not _ok:
+                log(f"警告: 补传 {_name} 失败: {_err}")
+        time.sleep(3 * _attempt)
+    if _missing:
+        log(f"严重: 发布自校验未通过，仍缺 {', '.join(_missing)}"
+            f"——客户端会拿不到订阅" +
+            ("（主资产缺失，本轮判失败以便重试）" if _main_target in _missing else ""))
+
     # 断点续跑检查点清理（任务#120）：本轮已走完发布流程，检查点使命结束。
     # 必须清掉——否则下一轮若测试集签名恰好相同（如纯 carryover 轮），
     # 就会复用上一轮的判定结论，而项目口径是「活性由实时拨测决定」。
     if ckpt is not None:
         ckpt.clear()
     _pub_sandbox = len(verified) - len(pool_add)
+    if _missing and _main_target in _missing:
+        return 5
     log(f"发布完成: {len(verified)} 个节点（发布集内沙箱来源 {_pub_sandbox} + "
         f"用户实测保活 {len(pool_add)}；本轮沙箱拨测通过 {len(passed)}），"
         f"已刷新 {len(uploaded)}/{len(paths)} 个格式资产 + "

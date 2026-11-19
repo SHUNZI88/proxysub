@@ -133,39 +133,49 @@ def test_upload_missing_file(tmp_path, monkeypatch):
     assert ok is False and "不存在" in err
 
 
-def test_upload_rest_deletes_then_posts(tmp_path, monkeypatch):
+def test_upload_asset_stages_before_replacing_live(tmp_path, monkeypatch):
+    """非破坏性上传（任务#135）：先传 <name>.staging，再替换正式名。
+
+    事故背景：`--clobber` 是「先删旧、再传新」，那次 POST 失败后线上主资产
+    直接消失，订阅地址 404，而轮次仍报「已刷新 3/4」。
+    """
     f = tmp_path / "a.yaml"
     f.write_text("payload", encoding="utf-8")
-    calls = []
-
+    order: list[str] = []
     monkeypatch.setattr(gc, "token", lambda: "t")
-    monkeypatch.setattr(gc, "has_gh", lambda: False)
-    monkeypatch.setattr(gc, "_release_id", lambda tag, timeout=60: 42)
-    monkeypatch.setattr(
-        gc, "_json",
-        lambda url, timeout=60: [{"name": "a.yaml", "id": 7},
-                                 {"name": "other", "id": 8}])
-
-    class _Resp:
-        status = 201
-
-        def __enter__(self):
-            return self
-
-        def __exit__(self, *a):
-            return False
-
-    def fake_req(url, *, method="GET", data=None, headers=None, timeout=60):
-        calls.append((method, url, data))
-        return _Resp()
-
-    monkeypatch.setattr(gc, "_req", fake_req)
+    monkeypatch.setattr(gc, "_upload_once",
+                        lambda tag, path, name, timeout: (order.append(name), (True, ""))[1])
+    monkeypatch.setattr(gc, "_asset_size", lambda tag, name: 7)
+    monkeypatch.setattr(gc, "_delete_asset", lambda tag, name: True)
     ok, err = gc.upload_asset("sub", str(f))
     assert ok is True, err
-    methods = [(m, u.rsplit("/", 1)[-1]) for m, u, _ in calls]
-    assert methods[0] == ("DELETE", "7")          # 先删同名旧资产
-    assert methods[1][0] == "POST"
-    assert calls[1][2] == b"payload"
+    assert order == ["a.yaml.staging", "a.yaml"]      # 顺序即契约
+
+
+def test_upload_asset_never_touches_live_when_staging_fails(tmp_path, monkeypatch):
+    """暂存失败时**绝不**触碰正式名：宁可不更新，也不能把线上打空。"""
+    f = tmp_path / "a.yaml"
+    f.write_text("payload", encoding="utf-8")
+    order: list[str] = []
+    monkeypatch.setattr(gc, "token", lambda: "t")
+
+    def fake_upload(tag, path, name, timeout):
+        order.append(name)
+        return (False, "HTTP 502")
+
+    monkeypatch.setattr(gc, "_upload_once", fake_upload)
+    ok, err = gc.upload_asset("sub", str(f))
+    assert ok is False and "502" in err
+    assert order == ["a.yaml.staging"]                # 只有暂存尝试
+
+
+def test_upload_asset_rejects_empty_or_missing_file(tmp_path, monkeypatch):
+    monkeypatch.setattr(gc, "token", lambda: "t")
+    assert gc.upload_asset("sub", str(tmp_path / "nope.yaml"))[0] is False
+    empty = tmp_path / "e.yaml"
+    empty.write_text("", encoding="utf-8")
+    ok, err = gc.upload_asset("sub", str(empty))
+    assert ok is False and "空" in err
 
 
 def test_upload_rest_http_error_is_reported(tmp_path, monkeypatch):
