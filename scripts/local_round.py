@@ -191,7 +191,10 @@ def main(argv: list[str] | None = None) -> int:
         if not ok:
             # 健康度兜底（任务#137）：资产还算"新鲜"，但列表可能已经腐烂。
             # 12 小时固定周期的代价是「后半段全死」，只有抽查才能发现。
-            if args.health_check:
+            # 只在「资产新鲜」这一种"不跑"原因下做健康抽查。
+            # 退避中（连续失败）不能走这里——否则健康抽查会把退避绕过，
+            # 失败轮次被每小时重试一次，白烧拨测预算。
+            if args.health_check and "新鲜" in why:
                 age = round_guard.asset_age_h(workdir)
                 if age is not None and age >= args.health_min_age_h:
                     h = quick_health(workdir)
