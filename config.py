@@ -616,6 +616,17 @@ LIVE_FETCH_ENABLED = True
 LIVE_PER_SOURCE = 120
 # 实时抓取总时限（秒）：一个源黑洞化不能拖死整轮。
 LIVE_FETCH_BUDGET_S = 90
+
+# ---- 质量闸门（任务#136，2026-11-19）--------------------------------------
+# 实测 32 个已发布节点（延迟 3 次采样 + 1MB 下载 + 三站点）：
+#   意大利 ss 10 个 → 9 个可用（延迟 554ms / 177KB/s）
+#   德国 vless 6 个 → 0 好用、2 个完全不通（1462ms / 60KB/s）
+#   英国 781ms 但仅 21KB/s、加拿大 1057ms 但 0KB/s —— 能连不能动
+# 结论：延迟与"能开网页"都测不出「通但不动」，必须实测吞吐。
+TARGET_LATENCY_MAX_MS = 1500   # 直测模式的延迟粗筛（原 3000，实测分界 1105ms）
+MIN_PUBLISH_KBPS = 64          # 主资产最低速率：够网页与文本 AI
+THROUGHPUT_BYTES = 1024 * 1024
+THROUGHPUT_TIMEOUT_S = 12
 MAX_NODES_PER_FAMILY = 5
 USER_PROBE_FILE = "user_probe.json"     # 用户本地实测回灌文件
 USER_PROBE_MAX_AGE_S = 48 * 3600        # 兼容旧字段（排序用，48h）；过期不参与

@@ -1979,3 +1979,27 @@ def test_even_sample_spreads_across_whole_list():
 def test_even_sample_keeps_all_when_small():
     assert cn_probe.even_sample([1, 2, 3], 10) == [1, 2, 3]
     assert cn_probe.even_sample([], 5) == []
+
+
+# ------------------------------------- 吞吐闸门（任务#136）
+def _tn(name, kbps):
+    return {"fp": name, "name": name, "probe_name": f"p_{name}"}
+
+
+def test_select_thin_nodes_drops_slow_but_keeps_unmeasured():
+    """「能连不能动」靠吞吐识别：实测英国 781ms/21KB/s、加拿大 1057ms/0KB/s
+    都能过延迟与目标站闸门，客户端却一直转圈。缺测的节点不动。"""
+    nodes = [_tn("fast", 200), _tn("edge", 64), _tn("slow", 21),
+             _tn("dead", 0), _tn("unknown", None)]
+    results = {"p_fast": {"kbps": 200}, "p_edge": {"kbps": 64},
+               "p_slow": {"kbps": 21}, "p_dead": {"kbps": 0}, "p_unknown": {}}
+    got = [n["name"] for n in cn_probe.select_thin_nodes(nodes, results, 64)]
+    assert got == ["slow", "dead"]
+
+
+def test_select_thin_nodes_threshold_is_config_driven(monkeypatch):
+    nodes = [_tn("a", 100)]
+    results = {"p_a": {"kbps": 100}}
+    assert cn_probe.select_thin_nodes(nodes, results) == []
+    monkeypatch.setattr(cn_probe.config, "MIN_PUBLISH_KBPS", 128)
+    assert [n["name"] for n in cn_probe.select_thin_nodes(nodes, results)] == ["a"]

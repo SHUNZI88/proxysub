@@ -50,6 +50,7 @@ import platform
 import re
 import shutil
 import socket
+import ssl
 import subprocess
 import sys
 import tempfile
@@ -1939,6 +1940,49 @@ def run_sharded(shards: list[dict], items: list, fn):
     return out
 
 
+THROUGHPUT_URL = "https://speed.cloudflare.com/__down?bytes={n}"
+
+
+def measure_throughput(api_port: int, mixed_port: int, name: str,
+                       bytes_target: int | None = None,
+                       timeout: float | None = None) -> float:
+    """经节点下载一小段，返回 KB/s（失败返回 0.0，任务#136）。
+
+    为什么必须有这一项：延迟与「能不能开网页」都测不出**通但不动**。实测
+    （2026-11-19，32 个已发布节点）英国 781ms/21KB/s、加拿大 1057ms/0KB/s
+    这类节点在客户端表现就是「连上了但一直转圈」，而它们能过延迟闸门、
+    也能过目标站闸门（首包有响应）。
+    """
+    n = int(bytes_target or getattr(config, "THROUGHPUT_BYTES", 1024 * 1024))
+    tmo = float(timeout or getattr(config, "THROUGHPUT_TIMEOUT_S", 12))
+    if not api_put(api_port, "/proxies/PROBE", {"name": name}):
+        return 0.0
+    proxy = f"http://127.0.0.1:{mixed_port}"
+    opener = urllib.request.build_opener(
+        urllib.request.ProxyHandler({"http": proxy, "https": proxy}))
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+    opener.add_handler(urllib.request.HTTPSHandler(context=ctx))
+    t0 = time.time()
+    total = 0
+    try:
+        req = urllib.request.Request(THROUGHPUT_URL.format(n=n),
+                                     headers={"User-Agent": "curl/8"})
+        with opener.open(req, timeout=tmo) as r:
+            while True:
+                chunk = r.read(65536)
+                if not chunk:
+                    break
+                total += len(chunk)
+                if time.time() - t0 > tmo:
+                    break
+    except Exception:
+        pass
+    dt = max(time.time() - t0, 0.001)
+    return total / dt / 1024
+
+
 def run_target_phase(nodes: list[dict], workdir: str, api_port: int,
                      mixed_port: int, log=print) -> dict:
     """分片并行直测 + 复测确认，返回 {probe_name: rt}（任务#133）。
@@ -1984,6 +2028,16 @@ def run_target_phase(nodes: list[dict], workdir: str, api_port: int,
             for nm, r in lat.items():
                 if r and r.get("ok") and r.get("latency_ms"):
                     out[nm]["latency_ms"] = int(r["latency_ms"])
+            # 吞吐（任务#136）：只对最终通过者测，成本 ≈ 每节点 2s / 分片数。
+            thr = run_sharded(shards, alive,
+                              lambda sh, nm: measure_throughput(
+                                  sh["api"], sh["mixed"], nm))
+            for nm, kbps in thr.items():
+                if out.get(nm) is not None:
+                    out[nm]["kbps"] = round(float(kbps or 0), 1)
+            _slow = [nm for nm in alive if float((out.get(nm) or {}).get("kbps") or 0) <= 0]
+            if _slow:
+                log(f"吞吐测量: {len(alive)} 个，其中 {len(_slow)} 个下载量为 0")
     finally:
         stop_shards(shards)
     return out
@@ -2367,6 +2421,28 @@ def serial_latency_recheck(api_port: int, nodes: list[dict], results: dict,
     return {"fixed": fixed, "unstable": unstable, "checked": checked}
 
 
+def select_thin_nodes(nodes: list[dict], results: dict,
+                      min_kbps: float | None = None) -> list[dict]:
+    """实测速率不达标的节点（纯函数，任务#136）。
+
+    「缺测不判」：没有 kbps 记录的节点不在此列——不拿缺失当不合格，否则
+    任何测量漏项都会静默砍节点（项目里已犯过同类错误：证据缺失被当成"不满足"）。
+    """
+    lim = float(min_kbps if min_kbps is not None
+                else getattr(config, "MIN_PUBLISH_KBPS", 64))
+    out = []
+    for n in nodes:
+        kbps = (results.get(n["probe_name"]) or {}).get("kbps")
+        if kbps is None:
+            continue
+        try:
+            if float(kbps) < lim:
+                out.append(n)
+        except (TypeError, ValueError):
+            continue
+    return out
+
+
 def is_filler_node(node: dict, results: dict, *,
                    max_latency_ms: int | None = None,
                    max_bytes: int | None = None) -> bool:
@@ -2457,6 +2533,11 @@ def verified_rank(n: dict, results: dict, learning: dict | None = None) -> tuple
         speed_pen = int(min(1.0, (kbps - config.SPEED_PENALTY_START_KBPS) / span) * 100)
     else:
         speed_pen = 0
+    # 任务#136：目标直测模式没有 real_traffic.bytes，改用本机实测 kbps 排序，
+    # 让订阅列表开头就是**实测最快**的节点（此前同档位内近似随机）。
+    _kbps = r.get("kbps")
+    _speed_key = (int(float(_kbps) * 1024) if _kbps is not None
+                  else int(r.get("real_traffic", {}).get("bytes") or 0))
     return (ai_tier,
             lon,
             uv_tier,
@@ -2466,8 +2547,8 @@ def verified_rank(n: dict, results: dict, learning: dict | None = None) -> tuple
             0 if (n["us_ok"] and n["final"])
             else (1 if n.get("origin") == "carryover" else 2),
             speed_pen,
-            # 同档位内仍以实测速度降序（用户反馈缺失时的次优代理）：
-            -(r.get("real_traffic", {}).get("bytes") or 0),
+            # 同档位内以实测速度降序（任务#136：有本机 kbps 就用它，否则退回字节数）
+            -_speed_key,
             r.get("latency_ms") if r.get("latency_ms") is not None else 99999)
 
 
@@ -2956,6 +3037,8 @@ def main() -> int:
                         results.setdefault(_nm, {})
                         if _rt.get("latency_ms"):
                             results[_nm]["latency_ms"] = _rt["latency_ms"]
+                        if _rt.get("kbps") is not None:
+                            results[_nm]["kbps"] = _rt["kbps"]
                         if not _rt.get("ok"):
                             results[_nm]["ok"] = False
                         results[_nm]["real_traffic"] = _rt
@@ -3117,7 +3200,8 @@ def main() -> int:
     # 早于波动带判定（降级者计入缺口）与 AI 慢档提级（AI 可达者仍可回升）。
     # 任务#132：直测模式下延迟不再是判据（目标站能开就是能用），只保留一个
     # 很宽的粗筛，避免把「能开 ChatGPT 但 RTT 2s」的节点误降级。
-    _lat_cap = (3000 if getattr(config, "TARGET_TEST_ENABLED", False)
+    _lat_cap = (int(getattr(config, "TARGET_LATENCY_MAX_MS", 1500))
+                if getattr(config, "TARGET_TEST_ENABLED", False)
                 else CN_MAX_PUBLISH_LATENCY_MS)
     _slow = [n for n in verified
              if (results.get(n["probe_name"], {}).get("latency_ms") or 99999)
@@ -3185,6 +3269,18 @@ def main() -> int:
             f"（名字带 {USABLE_NAME_SUFFIX} 后缀；门槛 "
             f"≥{config.USABLE_MIN_BYTES // 1024}KB 且 ≥{config.USABLE_MIN_BPS // 1024}KB/s，"
             f"延迟 ≤{getattr(config, 'USABLE_MAX_LATENCY_MS', CN_MAX_PUBLISH_LATENCY_MS)}ms）")
+
+    # 6.67) 吞吐闸门（任务#136，2026-11-19）：能连但不动 = 不可用。
+    # 实测 32 个已发布节点：英国 781ms/21KB/s、加拿大 1057ms/0KB/s 这类节点
+    # 能过延迟与目标站两道闸（首包有响应），客户端体验却是"一直转圈"。
+    # 门槛 64KB/s：够网页与文本 AI，不够视频——不够的退回第二资产（不删）。
+    _min_kbps = float(getattr(config, "MIN_PUBLISH_KBPS", 64))
+    _thin = select_thin_nodes(verified, results, _min_kbps)
+    if _thin:
+        verified = [n for n in verified if n not in _thin]
+        degraded = degraded + _thin
+        log(f"吞吐闸门: {len(_thin)} 个节点实测速率 <{_min_kbps:.0f}KB/s"
+            f"（能连但几乎不动），退回第二资产")
 
     # 6.68) 填充节点剔除（任务#126，2026-11-05）：所有提级动作之后的终审。
     # 放在这里而不是各个提级函数里，是因为 6.6 / 6.65 都会把慢档拉进主资产，
