@@ -696,7 +696,14 @@ LIVE_FETCH_BUDGET_S = 150
 # 并且必须显式打警告——降级是应急，不能悄悄变成常态。
 POOL_RELEASE_TAG = "pool"
 POOL_FILE = "pool.json"
-POOL_MAX_AGE_H = 4.0        # 超过这个龄期视同不可用（CI 每 20~30 分钟重建）
+POOL_MAX_AGE_H = 4.0        # 超过这个龄期视同不可用（CI 本应每 20 分钟重建）
+# 池子超过这个龄期就由本机主动触发一次 CI 重建（2026-11-20）。
+# 背景：pool-refresh.yml 的 schedule 在本仓库**一次都没触发过**（gh run list 里
+# 全部是 workflow_dispatch），GitHub 的计划任务在高频 cron 下会被大量丢弃。
+# 把新鲜度全押在它身上，等于把架构建在不会响的闹钟上。本机自愈：不等待，
+# 只用它保证下一轮有新鲜池子。0.75h 比 4h 的失效闸门严格得多，留足提前量。
+POOL_TRIGGER_AGE_H = 0.75
+POOL_WORKFLOW = "pool-refresh.yml"
 POOL_SAMPLE_N = 2600        # 单轮从池子里取样多少个进测试集
 # 2026-11-20：原为 1400。实测 837 个测试集只用掉 712s/1500s 预算，delay 初筛
 # 通过率 12%、其中 70% 能过目标站——产出被「候选量」卡住而不是被判据卡住，

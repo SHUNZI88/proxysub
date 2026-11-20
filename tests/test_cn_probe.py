@@ -2311,3 +2311,42 @@ def test_diversity_cap_reserve_leaves_unused_slots_to_old_nodes():
                                            per_family=99, region_share=1.0,
                                            reserve_fresh=2)
     assert len(kept) == 3
+
+
+def test_load_ci_pool_self_heals_stale_pool(monkeypatch, tmp_path):
+    """池子偏旧时自己拍一下 CI，但绝不等它——本轮照用现有池子。
+
+    背景：pool-refresh.yml 的 schedule 在本仓库一次都没触发过（全部是手动
+    dispatch），GitHub 高频 cron 会被丢弃。新鲜度不能只押在 GitHub 的闹钟上。
+    """
+    mid = (datetime.datetime.now(datetime.timezone.utc)
+           - datetime.timedelta(hours=1.5)).isoformat().replace("+00:00", "Z")
+    src = _pool_gz(tmp_path, [{"proxy": {"name": "x", "type": "ss",
+                                         "server": "1.2.3.4", "port": 8388,
+                                         "cipher": "aes-256-gcm",
+                                         "password": "abc"}}], mid)
+    monkeypatch.setattr(cn_probe, "gh_download",
+                        lambda tag, name, dest, retries=1: (shutil.copyfile(src, dest), True)[1])
+    seen = {}
+    monkeypatch.setattr(cn_probe.gh_compat, "dispatch_workflow",
+                        lambda wf, ref="main": (seen.update(wf=wf), (True, "已触发"))[1])
+    monkeypatch.setattr(cn_probe.config, "POOL_TRIGGER_AGE_H", 0.75)
+    monkeypatch.setattr(cn_probe.config, "POOL_MAX_AGE_H", 4.0)
+    nodes = cn_probe.load_ci_pool(str(tmp_path), "pool")
+    assert len(nodes) == 1
+    assert seen.get("wf") == "pool-refresh.yml"
+
+
+def test_load_ci_pool_does_not_trigger_when_fresh(monkeypatch, tmp_path):
+    now = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
+    src = _pool_gz(tmp_path, [{"proxy": {"name": "x", "type": "ss",
+                                         "server": "1.2.3.4", "port": 8388,
+                                         "cipher": "aes-256-gcm",
+                                         "password": "abc"}}], now)
+    monkeypatch.setattr(cn_probe, "gh_download",
+                        lambda tag, name, dest, retries=1: (shutil.copyfile(src, dest), True)[1])
+    called = []
+    monkeypatch.setattr(cn_probe.gh_compat, "dispatch_workflow",
+                        lambda wf, ref="main": (called.append(wf), (True, "ok"))[1])
+    cn_probe.load_ci_pool(str(tmp_path), "pool")
+    assert called == []

@@ -537,3 +537,26 @@ def test_curl_download_rejects_partial_file(monkeypatch, tmp_path):
     monkeypatch.setattr(gc.urllib.request, "urlopen",
                         lambda *a, **k: (_ for _ in ()).throw(OSError("no net")))
     assert gc._curl_download("https://example.invalid/x.gz", dest) is False
+
+
+def test_dispatch_workflow_requires_token(monkeypatch):
+    """没有 token 时不许空转调用 gh——直接给出可读原因。"""
+    monkeypatch.setattr(gc, "token", lambda: "")
+    ok, why = gc.dispatch_workflow("pool-refresh.yml")
+    assert ok is False and "token" in why
+
+
+def test_dispatch_workflow_reports_failure_without_raising(monkeypatch):
+    monkeypatch.setattr(gc, "token", lambda: "x" * 40)
+    monkeypatch.setattr(gc, "has_gh", lambda: True)
+    monkeypatch.setattr(gc, "gh_bin", lambda: "gh")
+    monkeypatch.setattr(gc, "_gh_env", lambda: {})
+
+    class R:
+        returncode = 1
+        stdout = ""
+        stderr = "HTTP 422: Workflow does not have 'workflow_dispatch' trigger"
+
+    monkeypatch.setattr(gc.subprocess, "run", lambda *a, **k: R())
+    ok, why = gc.dispatch_workflow("pool-refresh.yml")
+    assert ok is False and "workflow_dispatch" in why

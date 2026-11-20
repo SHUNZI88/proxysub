@@ -402,6 +402,31 @@ def auth_ok() -> tuple[bool, str]:
 
 
 # ------------------------------------------------------------------ 读
+def dispatch_workflow(workflow: str, ref: str = "main", timeout: int = 25) -> tuple[bool, str]:
+    """触发一次 workflow_dispatch（用于补跑 CI 的计划任务）。不抛异常。
+
+    背景（2026-11-20）：`pool-refresh.yml` 的 `schedule: 8,28,48 * * * *` 在本
+    仓库**一次都没触发过**——`gh run list` 里全部记录都是 workflow_dispatch，
+    连原有的定时工作流也一样。GitHub 的计划任务在高频 cron 下会被大量丢弃，
+    把「池子新鲜度」全押在它身上，等于把架构建在不会响的闹钟上。
+    所以本机侧自愈：池子龄期超阈值时自己拍一下 dispatch，下一轮就有新池子。
+    """
+    if not token():
+        return False, "无 token，无法触发"
+    if not has_gh():
+        return False, "gh 不可用"
+    try:
+        r = subprocess.run([gh_bin(), "workflow", "run", workflow, "--ref", ref],
+                           capture_output=True, text=True, encoding="utf-8",
+                           errors="replace", timeout=timeout, env=_gh_env())
+        if r.returncode == 0:
+            return True, "已触发"
+        tail = ((r.stderr or r.stdout) or "").strip().splitlines()
+        return False, (tail[-1][:160] if tail else f"rc={r.returncode}")
+    except (subprocess.SubprocessError, OSError) as e:
+        return False, type(e).__name__
+
+
 def release_assets(tag: str) -> list[dict]:
     """列出某 tag 的资产（`[{"name":..., "size":..., "id":...}]`）。"""
     if has_gh():

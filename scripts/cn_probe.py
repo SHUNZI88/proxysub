@@ -1372,6 +1372,18 @@ def load_ci_pool(workdir: str, tag: str | None = None, max_age_h: float | None =
     srcs = {n["src"] for n in nodes}
     age_txt = f"{age_h:.1f}h" if age_h is not None else "龄期未知"
     log(f"CI 候选池: {len(nodes)} 个 / {len(srcs)} 个源（{age_txt} 前构建，海外抓取）")
+    # 自愈：池子偏旧就自己拍一下 CI（GitHub 的 schedule 在本仓库从未触发过，
+    # 见 gh_compat.dispatch_workflow 的说明）。只触发不等待——本轮用现有的，
+    # 下一轮就有新的。失败只记一行，绝不影响本轮。
+    try:
+        _trigger_h = float(getattr(config, "POOL_TRIGGER_AGE_H", 0.75))
+        if age_h is not None and age_h > _trigger_h:
+            _ok, _why = gh_compat.dispatch_workflow(
+                getattr(config, "POOL_WORKFLOW", "pool-refresh.yml"))
+            log(f"CI 候选池已旧（{age_h:.1f}h > {_trigger_h:.2f}h），"
+                f"已请求 CI 重建：{_why}")
+    except Exception as e:  # noqa: BLE001 - 自愈失败绝不能拖垮整轮
+        log(f"提示: 请求 CI 重建失败（{type(e).__name__}），本轮照用现有池子")
     return nodes
 
 
