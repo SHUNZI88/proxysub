@@ -1,54 +1,53 @@
 # proxysub 健康报告
 
-更新时间：2026-11-19 23:14 UTC
+更新时间：2026-11-20 13:14 UTC
 运行模式：**mihomo**
 
 ## 概览
 
-- 最终节点：**150**（合规 126，高风险隔离 24）
-- 真实拨测通过率：**78.0%**（444/569）
-- TCP 存活：569 | 正式源 12 个 | 候选源 0 个
+- 最终节点：**186**（合规 144，高风险隔离 42）
+- 真实拨测通过率：**33.9%**（332/980）
+- TCP 存活：2469 | 正式源 24 个 | 候选源 0 个
 
 ## 协议分布
 
 | 协议 | 数量 |
 |---|---|
-| VLESS-Reality | 68 |
-| Ss | 35 |
-| Trojan | 19 |
+| VLESS-Reality | 95 |
+| Hysteria2 | 50 |
 | VLESS-TLS | 17 |
-| Hysteria | 5 |
-| Hysteria2 | 4 |
-| Tuic | 1 |
-| Anytls | 1 |
+| Ss | 14 |
+| Trojan | 10 |
 
 ## 区域分布
 
 | 区域 | 数量 |
 |---|---|
-| 🌐 其他 | 84 |
+| 🌐 其他 | 60 |
+| 🇯🇵 日本 | 35 |
 | 🇺🇸 美国 | 30 |
-| 🇯🇵 日本 | 13 |
-| 🇸🇬 新加坡 | 10 |
-| 🇭🇰 香港 | 6 |
-| 🇬🇧 英国 | 5 |
-| 🇰🇷 韩国 | 2 |
+| 🇸🇬 新加坡 | 21 |
+| 🇭🇰 香港 | 20 |
+| 🇬🇧 英国 | 8 |
+| 🇹🇼 台湾 | 7 |
+| 🇰🇷 韩国 | 5 |
 
 ## 源贡献 Top 10（正式源）
 
 | 源 | 真实通过 | 独有存活 | 存活 |
 |---|---|---|---|
-| `mahdibland/V2RayAggregator` | 170 | 102 | 171 |
-| `lanzm/MetaFetch` | 166 | 175 | 191 |
-| `ermaozi/get_subscribe` | 133 | 93 | 205 |
-| `snakem982/proxypool` | 25 | 20 | 34 |
-| `https://tt.vg/freeclash` | 24 | 12 | 26 |
-| `awesome-vpn/awesome-vpn` | 14 | 14 | 17 |
-| `ovmvo/FreeSub` | 12 | 14 | 21 |
-| `shaoyouvip/free` | 12 | 8 | 13 |
-| `zhuhaiuk/free-nodes` | 9 | 7 | 9 |
-| `ermaozi01/free_clash_vpn` | 5 | 2 | 26 |
+| `Au1rxx/free-vpn-subscriptions` | 81 | 841 | 906 |
+| `FlyingDashie/Free-node-autotest` | 77 | 91 | 175 |
+| `yy1588133/proxy-pool` | 67 | 63 | 501 |
+| `bily1258-design/beimi` | 45 | 331 | 360 |
+| `free18/v2ray` | 42 | 75 | 310 |
+| `chengaopan/AutoMergePublicNodes` | 40 | 9 | 210 |
+| `kooker/FreeSubsCheck` | 36 | 170 | 281 |
+| `ermaozi/get_subscribe` | 34 | 0 | 196 |
+| `mahdibland/V2RayAggregator` | 16 | 79 | 168 |
+| `snakem982/proxypool` | 16 | 2 | 46 |
 
 ## 警告
 
 - 本轮无源被淘汰
+- 可疑源结构：mfuu: template_cluster:e67f6d48:202.50.253.0/24(16/20); bily1258-design: template_cluster:786c671e:104.16.10.0/24(11/22); Au1rxx: template_cluster:fbc280a6:118.253.167.0/24(27/27),template_cluster:5482e58f:42.51.25.0/24(22/22)
