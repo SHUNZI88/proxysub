@@ -79,6 +79,20 @@
       "url": "https://raw.githubusercontent.com/mahdibland/V2RayAggregator/master/Eternity.yml",
       "origin": "static_channel",
       "added": "2026-11-15"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/FlyingDashie/Free-node-autotest/main/clash.yaml",
+      "origin": "manual",
+      "added": "2026-11-20",
+      "repo": "FlyingDashie/Free-node-autotest",
+      "note": "任务#138：目标站实测 7/12 可达（chatgpt 200、youtube 6/12），隧道 12/12；协议/端口多样（vless/trojan/ss，443/8443/20103/47396）。"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/bily1258-design/beimi/main/output/clash.yaml",
+      "origin": "manual",
+      "added": "2026-11-20",
+      "repo": "bily1258-design/beimi",
+      "note": "任务#138：目标站实测 4/12 可达（chatgpt 200×4、youtube 3/12），隧道 12/12；边际新增 557 个唯一 host:port。"
     }
   ],
   "removed": [

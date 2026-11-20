@@ -235,9 +235,27 @@ def repo() -> str:
 
 
 def _gh_env() -> dict:
-    """gh 子进程环境：叠加代理设置（其余继承）。"""
+    """gh 子进程环境：叠加代理设置（其余继承）。
+
+    任务#138（2026-11-20）：`gh_proxy()` 刻意只认显式配置，但这里
+    `dict(os.environ)` 会把系统里的 HTTP(S)_PROXY **隐式**带进去——本机恰好
+    有 `HTTPS_PROXY=127.0.0.1:44386`（客户端混合端口），于是发布流量走了
+    一批不稳定的免费节点，表现为
+    `Post "https://api.github.com/graphql": unexpected EOF` 与
+    `net/http: TLS handshake timeout`，四个格式资产连续两轮传不上去。
+    而同一时刻直连 curl api.github.com 是 200/0.4s。
+
+    结论：未显式配置 GitHub 代理时，**主动剥离**代理变量，让发布走直连；
+    需要代理时用 PROXYSUB_GH_PROXY 显式给出，行为可预期。
+    """
     env = dict(os.environ)
-    env.update(_proxy_env())
+    p = gh_proxy()
+    if p:
+        env.update(_proxy_env())
+    else:
+        for k in ("HTTP_PROXY", "HTTPS_PROXY", "http_proxy", "https_proxy",
+                  "ALL_PROXY", "all_proxy"):
+            env.pop(k, None)
     return env
 
 
@@ -395,6 +413,26 @@ def _asset_size(tag: str, name: str) -> int | None:
     return None
 
 
+def _asset_size_settled(tag: str, name: str, want: int,
+                        tries: int = 4, wait: float = 2.0) -> int | None:
+    """轮询资产大小直到等于期望值（失败则返回最后一次读数）。
+
+    为什么必须轮询（任务#138，2026-11-20）：GitHub 的 release assets 列表在
+    上传成功后并不立即可见，实测刚传完就查会读到**上一次的大小**，于是
+    upload_asset_safe 判「暂存校验不符」并放弃——本轮 4 个格式资产全部因此
+    未更新（远端仍是 7 小时前的 9049B），而代码报告「已刷新 0/4」。
+    上传本身是成功的，坏在校验读到了陈旧快照。
+    """
+    got = None
+    for i in range(max(1, tries)):
+        got = _asset_size(tag, name)
+        if got == want:
+            return got
+        if i < tries - 1:
+            time.sleep(wait * (i + 1))
+    return got
+
+
 def upload_asset_safe(tag: str, path: str, asset_name: str, *,
                       timeout: int = 180, attempts: int = 3) -> tuple[bool, str]:
     """**非破坏性**上传：先暂存并校验，再替换正式名（任务#135）。
@@ -421,10 +459,31 @@ def upload_asset_safe(tag: str, path: str, asset_name: str, *,
         return False, "本地文件为空，拒绝上传"
 
     staging = f"{asset_name}.staging"
-    ok, err = _upload_once(tag, path, staging, timeout)
-    if not ok:
-        return False, f"暂存失败（现网资产未受影响）: {err}"
-    got = _asset_size(tag, staging)
+    # 显式删除旧的 staging（任务#138）：docstring 写了「同名先清」，但代码一直
+    # 依赖 `gh release upload --clobber` 的隐式覆盖。实测该覆盖对**上一轮遗留
+    # 的 staging 资产**不生效——gh 退出码 0、远端内容却是旧文件，于是
+    # `_asset_size_settled` 读到旧的 15435B 并判「暂存校验不符」，四个格式资产
+    # 连续两轮发不出去。删一次再传，语义就明确了。
+    try:
+        if _asset_size(tag, staging) is not None:
+            _delete_asset(tag, staging)
+    except Exception:
+        pass
+    # staging 上传本身要重试（任务#138）：实测 api.github.com 会返回
+    # `Post "https://api.github.com/graphql": unexpected EOF`，与 raw 通道
+    # 同源——家宽到 GitHub 的连接整体不稳。单次失败就放弃，等于整轮白跑。
+    st_err = ""
+    for i in range(max(1, attempts)):
+        ok, err = _upload_once(tag, path, staging, timeout)
+        if ok:
+            st_err = ""
+            break
+        st_err = err
+        if i < attempts - 1:
+            time.sleep(3 * (i + 1))
+    if st_err:
+        return False, f"暂存失败（现网资产未受影响）: {st_err}"
+    got = _asset_size_settled(tag, staging, local_size)
     if got is not None and got != local_size:
         return False, f"暂存校验不符（远端 {got}B ≠ 本地 {local_size}B）"
 
@@ -432,7 +491,7 @@ def upload_asset_safe(tag: str, path: str, asset_name: str, *,
     for i in range(max(1, attempts)):
         ok, err = _upload_once(tag, path, asset_name, timeout)
         if ok:
-            got = _asset_size(tag, asset_name)
+            got = _asset_size_settled(tag, asset_name, local_size)
             if got is None or got == local_size:
                 try:
                     _delete_asset(tag, staging)

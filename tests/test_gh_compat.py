@@ -166,7 +166,9 @@ def test_upload_asset_never_touches_live_when_staging_fails(tmp_path, monkeypatc
     monkeypatch.setattr(gc, "_upload_once", fake_upload)
     ok, err = gc.upload_asset("sub", str(f))
     assert ok is False and "502" in err
-    assert order == ["a.yaml.staging"]                # 只有暂存尝试
+    # 暂存会重试（任务#138：api.github.com 会 unexpected EOF），但**正式名一次都不能碰**
+    assert set(order) == {"a.yaml.staging"}
+    assert "a.yaml" not in order
 
 
 def test_upload_asset_rejects_empty_or_missing_file(tmp_path, monkeypatch):
@@ -387,3 +389,21 @@ def test_alive_proxy_is_used(monkeypatch):
     monkeypatch.setenv(gc.PROXY_ENV, "http://127.0.0.1:65002")
     monkeypatch.setattr(gc, "_proxy_reachable", lambda p, timeout=0.6: True)
     assert gc.effective_proxy() == "http://127.0.0.1:65002"
+
+
+def test_asset_size_settled_polls_until_match(monkeypatch):
+    """上传刚完成时 assets 列表可能是旧快照，必须轮询到期望值（任务#138）。
+
+    事故：4 个格式资产上传成功，但校验立刻读到上一次的 4553B，判「暂存校验
+    不符」→ 整轮不发布，远端仍是 7 小时前的文件。
+    """
+    seq = iter([4553, 4553, 7])
+    monkeypatch.setattr(gc, "_asset_size", lambda tag, name: next(seq, 7))
+    monkeypatch.setattr(gc.time, "sleep", lambda s: None)
+    assert gc._asset_size_settled("sub", "a.yaml", 7) == 7
+
+
+def test_asset_size_settled_returns_last_reading_on_persistent_mismatch(monkeypatch):
+    monkeypatch.setattr(gc, "_asset_size", lambda tag, name: 4553)
+    monkeypatch.setattr(gc.time, "sleep", lambda s: None)
+    assert gc._asset_size_settled("sub", "a.yaml", 7) == 4553

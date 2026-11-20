@@ -51,9 +51,20 @@ import xlock  # noqa: E402 - 跨平台文件锁（POSIX flock / Windows msvcrt�
 STALE_H_DEFAULT = 3
 DEBOUNCE_MIN_DEFAULT = 10
 BACKOFF_MAX_MIN_DEFAULT = 120
+# 晚高峰避让（任务#138）：见 decide() 注释。22:00–01:00 之间若资产尚未超过
+# stale+8h，就不烧这一轮预算；超过则照跑，避免长期不更新。
+PEAK_HOUR_START = 22
+PEAK_HOUR_END = 1
+PEAK_DEFER_EXTRA_H = 8
 STATE_FILE = "round_guard.json"
 REPORT_FILE = "verification_report.json"
 LOCK_FILE = "cn_probe.lock"
+
+
+def _in_peak_hours(ts: float) -> bool:
+    """是否处于晚高峰避让时段（本地时间 22:00–01:00，跨零点）。"""
+    h = datetime.datetime.fromtimestamp(ts).hour
+    return h >= PEAK_HOUR_START or h < PEAK_HOUR_END
 
 
 def default_workdir() -> str:
@@ -222,6 +233,15 @@ def decide(workdir: str, *, stale_h: int | None = None,
     age = asset_age_h(workdir, now_ts)
     if age < stale:
         return False, f"资产新鲜（{age:.1f}h < {stale}h），无需补跑"
+
+    # 晚高峰避让（任务#138，2026-11-20）
+    # 实测同一批 12 个源、同一套判据：23:30 那一轮 73 个探活 → 10 个达标
+    # （13.5%），07:36 那一轮 107 个探活 → 54 个达标（50.5%），差 3.7 倍。
+    # 晚高峰跑一轮等于烧掉 1800s 预算换来个位数产出，还推高退避计数。
+    # 仅当资产「还不算太旧」时延后；超过 stale+8h 一律照跑，避免把自己饿死。
+    if _in_peak_hours(now_ts) and age < stale + PEAK_DEFER_EXTRA_H:
+        return False, (f"晚高峰避让（资产 {age:.1f}h < {stale + PEAK_DEFER_EXTRA_H}h；"
+                       f"实测该时段达标率约为低峰的三分之一）")
 
     state = load_state(workdir)
     last = state.get("last_attempt_ts")

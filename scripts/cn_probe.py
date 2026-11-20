@@ -722,6 +722,113 @@ def interleave_by_source(bucket: list[dict]) -> list[dict]:
     return out
 
 
+def dedupe_physical(nodes: list[dict],
+                    per_server: int | None = None,
+                    per_c24: int | None = None) -> tuple[list[dict], dict]:
+    """初筛物理多样性去重（纯函数，任务#138）。
+
+    与 `apply_server_quota`（发布侧）的区别：这里发生在**进测试集之前**，
+    目的是不把测试预算花在同一台机器的重复身份上。
+
+    事故现场：发布 36 个节点只有 17 台唯一服务器、22 个意大利、25 个 ss:19999。
+    机制是多个聚合源复读同一批公共扫描池机器，并给每台机器起随机 host 名，
+    导致 fingerprint（含 host）各不相同、去重完全失效。用户在 FlClash 里看到
+    一屏「不同名字的意大利节点」，实际带宽全挤在同一批机器上，一连就超时。
+
+    两级约束：
+      - server：完全相同的主机名/地址只放行 per_server 个（冗余备份足够）；
+      - /24   ：同一 IPv4 /24 最多 per_c24 个（防单机房刷量）。
+    域名不做 /24 归并（无法解析时退化为按域名本身计），宁可漏限不可误伤。
+
+    返回 (保留集, 统计)。统计用于日志留痕，不做决策。
+    """
+    ps = int(per_server if per_server is not None
+             else getattr(config, "PRESELECT_PER_SERVER", 2))
+    pc = int(per_c24 if per_c24 is not None
+             else getattr(config, "PRESELECT_PER_C24", 3))
+    kept: list[dict] = []
+    by_srv: dict[str, int] = {}
+    by_net: dict[str, int] = {}
+    drop_srv = drop_net = 0
+    for n in nodes:
+        p = n.get("proxy") or {}
+        srv = str(p.get("server") or "?").strip().lower()
+        net = _c24_of(srv)
+        if by_srv.get(srv, 0) >= ps:
+            drop_srv += 1
+            continue
+        if net and by_net.get(net, 0) >= pc:
+            drop_net += 1
+            continue
+        by_srv[srv] = by_srv.get(srv, 0) + 1
+        if net:
+            by_net[net] = by_net.get(net, 0) + 1
+        kept.append(n)
+    stat = {"in": len(nodes), "kept": len(kept),
+            "drop_server": drop_srv, "drop_c24": drop_net,
+            "uniq_server": len(by_srv), "uniq_c24": len(by_net)}
+    return kept, stat
+
+
+def _c24_of(host: str) -> str:
+    """IPv4 取前三段；非 IPv4（域名）返回空串，表示不参与 /24 归并。"""
+    parts = host.split(".")
+    if len(parts) == 4 and all(x.isdigit() and 0 <= int(x) <= 255 for x in parts):
+        return ".".join(parts[:3])
+    return ""
+
+
+def prune_invalid_cfg(mihomo: str, workdir: str, cfg: dict, cfg_path: str,
+                      max_rounds: int = 15) -> list[str]:
+    """用 `mihomo -t` 找出会让整份配置加载失败的节点并剔除（任务#138）。
+
+    事故（2026-11-20）：新并入的源带来一个 vless 节点，REALITY short-id 只有
+    1 字节（长度 2 的 hex），mihomo 直接
+    `level=fatal Parse config error: proxy 635: invalid REALITY short ID`，
+    **整份 817 个节点的配置加载失败**，整轮熔断、资产不更新。
+
+    静态闸门（common.protocol_gate_reason）只能覆盖已知规则，永远追不上
+    mihomo 的全部校验。所以启动前必须实跑一次 `-t`：让 mihomo 自己指出
+    哪个节点非法，剔掉再验，直到配置能加载。宁可少测一个节点，不能整轮归零。
+
+    返回被剔除节点的说明（空 = 配置健康）。cfg 会被就地修改。
+    """
+    dropped: list[str] = []
+    proxies = cfg.get("proxies") or []
+    groups = cfg.get("proxy-groups") or []
+    for _ in range(max_rounds):
+        try:
+            with open(cfg_path, "w", encoding="utf-8") as f:
+                yaml.dump(cfg, f, allow_unicode=True, sort_keys=False)
+        except OSError:
+            return dropped
+        try:
+            r = subprocess.run([mihomo, "-t", "-d", workdir, "-f", cfg_path],
+                               capture_output=True, text=True, encoding="utf-8",
+                               errors="replace", timeout=120)
+        except (subprocess.SubprocessError, OSError):
+            return dropped
+        if r.returncode == 0:
+            return dropped
+        out = (r.stderr or "") + (r.stdout or "")
+        m = re.search(r"proxy (\d+):\s*(.+)", out)
+        if not m:
+            log(f"配置预检失败但无法定位节点（前 200 字）：{out.strip()[:200]}")
+            return dropped
+        idx = int(m.group(1))
+        why = m.group(2).strip().splitlines()[0].rstrip('"').strip()[:80]
+        if idx >= len(proxies):
+            log(f"配置预检: 报错索引 {idx} 超出范围（共 {len(proxies)}），放弃自动剔除")
+            return dropped
+        victim = proxies.pop(idx)
+        nm = str(victim.get("name"))
+        for g in groups:
+            g["proxies"] = [x for x in (g.get("proxies") or []) if x != nm]
+        dropped.append(f"{nm}（{why}）")
+        log(f"配置预检: 剔除会拖垮整轮的节点 {nm} —— {why}")
+    return dropped
+
+
 def cap_test_set(nodes: list[dict], budget_s: float,
                  per_node_s: float = PER_NODE_S) -> tuple[list[dict], int]:
     """按剩余时间预算裁剪测试集，返回 (保留集, 裁剪数)。
@@ -889,6 +996,29 @@ def even_sample(items: list, n: int) -> list:
     return [items[int(i * step)] for i in range(n)]
 
 
+def source_mirrors(url: str) -> list[str]:
+    """同一份订阅文件的多个可达通道（纯函数，任务#138）。
+
+    实测（2026-11-20 09:20，家宽）：raw.githubusercontent.com 已经极不稳定——
+    同一 URL 连测 3 次只有 1 次 200，另两次卡满 19 秒后 code=000；同一时刻
+    14 个源里 13 个抓取失败、只剩非 GitHub 域名的 tt.vg 有产出。这一轮因此
+    只抓到 26 个节点、新血通过 0 个。
+    而 jsDelivr 的两个节点都稳定 200：gcore 2.1s、cdn 7.5s（同一文件 183KB）。
+
+    所以抓取必须多通道，且**不能把 raw 的失败当成源失效**——这是两件事。
+    非 GitHub 地址原样返回，不做改写。
+    """
+    m = re.match(r"^https://raw\.githubusercontent\.com/([^/]+)/([^/]+)/([^/]+)/(.+)$", url)
+    if not m:
+        return [url]
+    owner, repo, branch, path = m.groups()
+    return [
+        url,                                                     # 原站（通畅时最快）
+        f"https://gcore.jsdelivr.net/gh/{owner}/{repo}@{branch}/{path}",
+        f"https://cdn.jsdelivr.net/gh/{owner}/{repo}@{branch}/{path}",
+    ]
+
+
 def fetch_live_pool(workdir: str, per_source: int | None = None,
                     timeout: int = 20) -> list[dict]:
     """实时抓取官方源，产出与 pending 同形的待测节点（任务#133）。
@@ -918,11 +1048,21 @@ def fetch_live_pool(workdir: str, per_source: int | None = None,
         return []
 
     def _one(url: str) -> list[dict]:
-        try:
-            req = urllib.request.Request(url, headers={"User-Agent": "curl/8"})
-            with urllib.request.urlopen(req, timeout=timeout) as r:
-                txt = r.read().decode("utf-8", "ignore")
-        except Exception:
+        txt = None
+        # 多通道回退（任务#138）：raw.githubusercontent 现在一半以上的请求会
+        # 卡满超时（实测 3 次只有 1 次成功），jsDelivr 的同文件则稳定 200。
+        # 每个通道各给 12s，失败就换下一个，不让单通道抖动判死整个源。
+        for _chan in source_mirrors(url):
+            try:
+                req = urllib.request.Request(_chan, headers={"User-Agent": "curl/8"})
+                with urllib.request.urlopen(req, timeout=max(8, min(timeout, 15))) as r:
+                    txt = r.read().decode("utf-8", "ignore")
+                if txt:
+                    break
+            except Exception:
+                txt = None
+                continue
+        if not txt:
             return []
         try:
             doc = yaml.safe_load(txt)
@@ -965,8 +1105,10 @@ def fetch_live_pool(workdir: str, per_source: int | None = None,
         ex.shutdown(wait=False)
 
     seen: set[str] = set()
+    seen_hp: set[str] = set()      # 任务#138：同 server:port 只留一个身份
     nodes: list[dict] = []
     per_src: dict[str, int] = {}
+    dup_hp = 0
     for url, proxies in fetched.items():
         if not proxies:
             continue
@@ -975,7 +1117,15 @@ def fetch_live_pool(workdir: str, per_source: int | None = None,
             fp = common.fingerprint(proxy)
             if fp in seen:
                 continue
+            # 同一入口（server:port）换了凭据仍是同一台机器的同一入口，
+            # 多留一份只会在测试集里重复消耗名额、并在发布后让用户看到
+            # 「多个不同名字的节点其实是同一个」。
+            hp = f"{str(proxy.get('server') or '').strip().lower()}:{proxy.get('port')}"
+            if hp in seen_hp:
+                dup_hp += 1
+                continue
             seen.add(fp)
+            seen_hp.add(hp)
             per_src[short] = per_src.get(short, 0) + 1
             nodes.append({
                 "fp": fp,
@@ -990,7 +1140,8 @@ def fetch_live_pool(workdir: str, per_source: int | None = None,
     if nodes:
         dead = sum(1 for p in fetched.values() if not p)
         log(f"实时抓取: {len(nodes)} 个节点 / {len(urls)} 个源"
-            f"（{len(per_src)} 个源有产出，{dead} 个源抓取失败或为空）")
+            f"（{len(per_src)} 个源有产出，{dead} 个源抓取失败或为空）"
+            + (f"；同入口去重 {dup_hp} 个" if dup_hp else ""))
         try:
             doc_path = os.path.join(workdir, "pending_live.json")
             with open(doc_path, "w", encoding="utf-8") as f:
@@ -2974,6 +3125,19 @@ def main() -> int:
     if not nodes:
         log("无任何可测节点（无待测文档且主资产为空），退出")
         return 4
+    # 3.4) 初筛物理多样性去重（任务#138）：只作用于 pending。
+    # carryover/user_pool 是订阅生命线与地面真相，必须原样进测试集；
+    # pending 是新血，重复身份（同机器/同机房）不该占测试名额。
+    # 事故：发布 36 个只有 17 台唯一服务器、22 个意大利、25 个 ss:19999。
+    _pend = [n for n in nodes if n.get("origin") == "pending"]
+    if _pend:
+        _others = [n for n in nodes if n.get("origin") != "pending"]
+        _kept, _st = dedupe_physical(_pend)
+        if _st["kept"] < _st["in"]:
+            log(f"初筛物理去重: pending {_st['in']} → {_st['kept']}"
+                f"（同机超限 {_st['drop_server']}，同/24超限 {_st['drop_c24']}；"
+                f"剩 {_st['uniq_server']} 个主机 / {_st['uniq_c24']} 个网段）")
+        nodes = _others + _kept
     # 3.5) 截止时间感知上限：轮询等待已耗时，按剩余预算裁剪，
     # 保证 TASK_BUDGET_S 内完成发布（裁剪序：rescue→pending，
     # carryover 不裁；未测节点由 CI 下轮文档自然再现，不丢失）。
@@ -3010,8 +3174,19 @@ def main() -> int:
         "rules": ["MATCH,PROBE"],
     }
     cfg_path = os.path.join(workdir, "probe_config.yaml")
-    with open(cfg_path, "w", encoding="utf-8") as f:
-        yaml.dump(cfg, f, allow_unicode=True, sort_keys=False)
+    # 启动前实跑 `mihomo -t`：一个格式非法的节点会让整份配置加载失败、
+    # 整轮熔断（任务#138 实测：817 个节点因 1 个 short-id 全废）。
+    _pruned = prune_invalid_cfg(mihomo, workdir, cfg, cfg_path)
+    if _pruned:
+        _bad_names = {s.split("（")[0] for s in _pruned}
+        _before = len(nodes)
+        nodes = [n for n in nodes if n["probe_name"] not in _bad_names]
+        probe_names = [n["probe_name"] for n in nodes]
+        log(f"配置预检: 剔除 {len(_pruned)} 个非法节点，"
+            f"测试集 {_before} → {len(nodes)}（剔除的不计入通过率分母）")
+        if not nodes:
+            log("熔断: 配置预检后无可用节点，不发布")
+            return 3
     # mihomo 日志落盘（不再吞 stderr）：控制器未就绪时可读尾部定位真正原因
     # （常见为配置非法，如节点名重复），而不是黑盒"控制器未就绪"。
     mihomo_log = os.path.join(workdir, "mihomo.log")

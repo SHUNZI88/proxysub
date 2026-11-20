@@ -2061,3 +2061,89 @@ def test_target_test_ttfb_threshold_is_config_driven(monkeypatch):
     assert cn_probe.target_test(1, 2, "n")["ok"] is True
     monkeypatch.setattr(cn_probe.config, "TARGET_TTFB_MAX_MS", 2000)
     assert cn_probe.target_test(1, 2, "n")["ok"] is False
+
+
+# ------------------------------------------------- 初筛物理去重（任务#138）
+def _node(server, port=443, src="s"):
+    return {"fp": f"{server}:{port}", "name": server, "src": src,
+            "proxy": {"server": server, "port": port, "type": "vless"},
+            "origin": "pending", "final": False, "us_ok": False}
+
+
+def test_dedupe_physical_caps_same_server():
+    """同一 server 名不同端口：只放行 PRESELECT_PER_SERVER 个。
+
+    事故形态：多个聚合源给同一台机器起不同随机 host 名，fingerprint 含 host
+    因而互不相同，去重失效——一台机器被算成十几个唯一节点。
+    """
+    nodes = [_node("a.example", p) for p in (443, 8443, 2053, 2083)]
+    kept, st = cn_probe.dedupe_physical(nodes, per_server=2, per_c24=99)
+    assert len(kept) == 2
+    assert st["drop_server"] == 2
+    assert st["uniq_server"] == 1
+
+
+def test_dedupe_physical_caps_same_c24():
+    """同 /24 的不同 IP 也要限流：防单个机房刷量。"""
+    nodes = [_node(f"203.0.113.{i}") for i in range(1, 9)]
+    kept, st = cn_probe.dedupe_physical(nodes, per_server=99, per_c24=3)
+    assert len(kept) == 3
+    assert st["drop_c24"] == 5
+    assert st["uniq_c24"] == 1
+
+
+def test_dedupe_physical_keeps_diverse_nodes():
+    """真正分散的节点一个都不该被砍（不误伤）。"""
+    nodes = [_node(f"198.51.{100 + i}.1") for i in range(5)]   # 5 个不同 /24
+    kept, st = cn_probe.dedupe_physical(nodes, per_server=1, per_c24=3)
+    assert len(kept) == 5
+    assert st["drop_server"] == 0 and st["drop_c24"] == 0
+
+
+def test_dedupe_physical_same_c24_keeps_three():
+    """同一 /24 内的 5 个地址：按 per_c24 只留 3 个（限流生效但不全灭）。"""
+    nodes = [_node(f"198.51.100.{i}") for i in range(1, 6)]
+    kept, st = cn_probe.dedupe_physical(nodes, per_server=1, per_c24=3)
+    assert len(kept) == 3
+    assert st["drop_c24"] == 2
+    assert st["uniq_c24"] == 1
+
+
+def test_dedupe_physical_domains_not_merged_by_c24():
+    """域名无法归并 /24 时不参与网段限流——宁可漏限，不可把不同机器误判同源。"""
+    nodes = [_node(f"n{i}.example") for i in range(6)]
+    kept, st = cn_probe.dedupe_physical(nodes, per_server=2, per_c24=1)
+    # 6 个不同域名：每个域名各留 1 个（per_server=2 未触顶），/24 不生效
+    assert len(kept) == 6
+    assert st["uniq_c24"] == 0
+
+
+def test_dedupe_physical_returns_stats():
+    nodes = [_node("x.example", 443), _node("x.example", 8443), _node("y.example", 443)]
+    kept, st = cn_probe.dedupe_physical(nodes, per_server=1, per_c24=3)
+    assert st["in"] == 3 and st["kept"] == 2
+    assert len(kept) == 2
+
+
+# ------------------------------------------------- 抓取多通道（任务#138）
+def test_source_mirrors_github_gets_jsdelivr_fallbacks():
+    """raw 通道不稳时必须能回退到 jsDelivr（实测 gcore 2.1s 稳定 200）。"""
+    m = cn_probe.source_mirrors(
+        "https://raw.githubusercontent.com/owner/repo/main/sub/clash.yaml")
+    assert m[0].startswith("https://raw.githubusercontent.com/")
+    assert any("gcore.jsdelivr.net/gh/owner/repo@main/sub/clash.yaml" in u for u in m)
+    assert any("cdn.jsdelivr.net/gh/owner/repo@main/sub/clash.yaml" in u for u in m)
+
+
+def test_source_mirrors_non_github_untouched():
+    """非 GitHub 地址不改写（tt.vg 这类直连源本来就是通的）。"""
+    assert cn_probe.source_mirrors("https://tt.vg/freeclash") == ["https://tt.vg/freeclash"]
+
+
+def test_source_mirrors_branch_with_slash():
+    """分支名带斜杠（refs/heads 风格）不得被误切。"""
+    m = cn_probe.source_mirrors(
+        "https://raw.githubusercontent.com/o/r/feature/x/clash.yaml")
+    assert m[0].startswith("https://raw.githubusercontent.com/o/r/feature/x/clash.yaml")
+    # owner/repo/branch=feature, path=x/clash.yaml 是唯一可行切法
+    assert any("gh/o/r@feature/x/clash.yaml" in u for u in m)

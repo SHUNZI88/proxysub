@@ -1,16 +1,11 @@
 {
  "vless": {
-  "rounds": 43,
-  "tested": 16270,
-  "passed": 655,
-  "last_round": "20261118T2307Z",
-  "last_ts": "2026-11-19T06:37:33Z",
+  "rounds": 44,
+  "tested": 16558,
+  "passed": 663,
+  "last_round": "20261119T2314Z",
+  "last_ts": "2026-11-19T23:33:36Z",
   "recent": [
-   {
-    "round": "20261108T0148Z",
-    "tested": 576,
-    "passed": 22
-   },
    {
     "round": "20261108T1139Z",
     "tested": 449,
@@ -155,21 +150,21 @@
     "round": "20261118T2307Z",
     "tested": 604,
     "passed": 15
+   },
+   {
+    "round": "20261119T2314Z",
+    "tested": 288,
+    "passed": 8
    }
   ]
  },
  "hysteria2": {
-  "rounds": 43,
-  "tested": 1744,
+  "rounds": 44,
+  "tested": 1752,
   "passed": 53,
-  "last_round": "20261118T2307Z",
-  "last_ts": "2026-11-19T06:37:33Z",
+  "last_round": "20261119T2314Z",
+  "last_ts": "2026-11-19T23:33:36Z",
   "recent": [
-   {
-    "round": "20261108T0148Z",
-    "tested": 65,
-    "passed": 6
-   },
    {
     "round": "20261108T1139Z",
     "tested": 64,
@@ -314,21 +309,21 @@
     "round": "20261118T2307Z",
     "tested": 45,
     "passed": 2
+   },
+   {
+    "round": "20261119T2314Z",
+    "tested": 8,
+    "passed": 0
    }
   ]
  },
  "anytls": {
-  "rounds": 43,
-  "tested": 526,
-  "passed": 106,
-  "last_round": "20261118T2307Z",
-  "last_ts": "2026-11-19T06:37:33Z",
+  "rounds": 44,
+  "tested": 538,
+  "passed": 108,
+  "last_round": "20261119T2314Z",
+  "last_ts": "2026-11-19T23:33:36Z",
   "recent": [
-   {
-    "round": "20261108T0148Z",
-    "tested": 12,
-    "passed": 3
-   },
    {
     "round": "20261108T1139Z",
     "tested": 12,
@@ -473,21 +468,21 @@
     "round": "20261118T2307Z",
     "tested": 11,
     "passed": 2
+   },
+   {
+    "round": "20261119T2314Z",
+    "tested": 12,
+    "passed": 2
    }
   ]
  },
  "trojan": {
-  "rounds": 43,
-  "tested": 5393,
+  "rounds": 44,
+  "tested": 5490,
   "passed": 73,
-  "last_round": "20261118T2307Z",
-  "last_ts": "2026-11-19T06:37:33Z",
+  "last_round": "20261119T2314Z",
+  "last_ts": "2026-11-19T23:33:36Z",
   "recent": [
-   {
-    "round": "20261108T0148Z",
-    "tested": 208,
-    "passed": 3
-   },
    {
     "round": "20261108T1139Z",
     "tested": 165,
@@ -632,21 +627,21 @@
     "round": "20261118T2307Z",
     "tested": 180,
     "passed": 1
+   },
+   {
+    "round": "20261119T2314Z",
+    "tested": 97,
+    "passed": 0
    }
   ]
  },
  "hysteria": {
-  "rounds": 43,
-  "tested": 943,
+  "rounds": 44,
+  "tested": 979,
   "passed": 440,
-  "last_round": "20261118T2307Z",
-  "last_ts": "2026-11-19T06:37:33Z",
+  "last_round": "20261119T2314Z",
+  "last_ts": "2026-11-19T23:33:36Z",
   "recent": [
-   {
-    "round": "20261108T0148Z",
-    "tested": 12,
-    "passed": 10
-   },
    {
     "round": "20261108T1139Z",
     "tested": 13,
@@ -791,15 +786,20 @@
     "round": "20261118T2307Z",
     "tested": 32,
     "passed": 1
+   },
+   {
+    "round": "20261119T2314Z",
+    "tested": 36,
+    "passed": 0
    }
   ]
  },
  "tuic": {
-  "rounds": 10,
-  "tested": 52,
+  "rounds": 11,
+  "tested": 53,
   "passed": 0,
-  "last_round": "20261112T2224Z",
-  "last_ts": "2026-11-12T23:34:44Z",
+  "last_round": "20261119T2314Z",
+  "last_ts": "2026-11-19T23:33:36Z",
   "recent": [
    {
     "round": "20261014T2139Z",
@@ -850,21 +850,21 @@
     "round": "20261112T2224Z",
     "tested": 5,
     "passed": 0
+   },
+   {
+    "round": "20261119T2314Z",
+    "tested": 1,
+    "passed": 0
    }
   ]
  },
  "ss": {
-  "rounds": 40,
-  "tested": 7962,
-  "passed": 540,
-  "last_round": "20261118T2307Z",
-  "last_ts": "2026-11-19T06:37:33Z",
+  "rounds": 41,
+  "tested": 8361,
+  "passed": 566,
+  "last_round": "20261119T2314Z",
+  "last_ts": "2026-11-19T23:33:36Z",
   "recent": [
-   {
-    "round": "20261108T0148Z",
-    "tested": 343,
-    "passed": 14
-   },
    {
     "round": "20261108T1139Z",
     "tested": 331,
@@ -1009,6 +1009,11 @@
     "round": "20261118T2307Z",
     "tested": 279,
     "passed": 11
+   },
+   {
+    "round": "20261119T2314Z",
+    "tested": 399,
+    "passed": 26
    }
   ]
  }
