@@ -1308,7 +1308,7 @@ def load_ci_pool(workdir: str, tag: str, max_age_h: float | None = None,
     龄期超过 POOL_MAX_AGE_H 视为不可用：免费节点寿命以小时计，池子越旧
     有效率衰减越快，本地实测预算不该花在已经凉了的名单上。
     """
-    name = getattr(config, "POOL_FILE", "pool.json")
+    name = getattr(config, "POOL_FILE", "pool.json") + ".gz"
     dest = os.path.join(workdir, name)
     try:
         if os.path.exists(dest):
@@ -1319,7 +1319,7 @@ def load_ci_pool(workdir: str, tag: str, max_age_h: float | None = None,
         log("CI 候选池: 下载失败（release 无该资产或网络不可用）")
         return []
     try:
-        with open(dest, encoding="utf-8") as f:
+        with gzip.open(dest, "rt", encoding="utf-8") as f:
             doc = json.load(f)
     except Exception as e:
         log(f"CI 候选池: 解析失败 {e}")
@@ -2456,9 +2456,15 @@ def run_target_phase(nodes: list[dict], workdir: str, api_port: int,
                 if r.get("ok"):
                     cnt[nm] += 1
             done = [nm for nm in pending if cnt[nm] >= passes]
+            # 诊断（任务#140）：把「一个响应都没有」与「有响应但超过 TTFB 上限」
+            # 分开报。实测第一轮 0/103 全是有响应但首包超限（冷启动），只报
+            # 「0 通过」会让人误判成节点全死。
+            _resp = sum(1 for nm in pending
+                        if any((out.get(nm) or {}).get("targets", {}).values()))
             pending = [nm for nm in pending if nm not in done]
             log(f"目标直测第 {rnd}/{attempts} 轮: 累计达标 "
-                f"{sum(1 for nm in cnt if cnt[nm] >= passes)}/{tot}")
+                f"{sum(1 for nm in cnt if cnt[nm] >= passes)}/{tot}"
+                f"（本轮有 HTTP 响应 {_resp}/{len(pending) + len(done)}）")
         for nm in pending:
             if out.get(nm) is not None:
                 out[nm] = dict(out[nm], ok=False)

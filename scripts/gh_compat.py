@@ -75,13 +75,19 @@ _PROXY_WARNED: set[str] = set()
 
 
 def _proxy_reachable(proxy: str, timeout: float = 0.6) -> bool:
-    """代理端口是否在监听（带缓存）。
+    """代理是否**真的能用**（TCP 通了还不算数，带缓存）。
 
     用途只有一个：**别把死代理当配置用**。实证 2026-11-07 19:14 起订阅停更
     10 小时——用户级环境变量 PROXYSUB_GH_PROXY 指向的本地代理已退出，而
     `gh auth status` 在代理连不通时会把网络错误报成
     「The token in keyring is invalid」，于是一轮轮全在鉴权处中止，
     看起来像 token 坏了，实际只是代理没了。
+
+    2026-11-20 又踩到同一坑的**变体**：端口在监听（TCP 可连），但经它访问
+    api.github.com 是 TLS 失败（实测 curl -x 返回 000/5s，直连 401/0.6s）。
+    此时 gh 依旧报「token 无效」。只做 TCP 探活救不了这种情况，所以改成
+    两段式：先 TCP（快、失败即返回），再做一次真正的 HTTPS 请求
+    （401/403 也算通——那说明 TLS 与 HTTP 往返都完成了，只是没带凭据）。
     """
     if proxy in _PROXY_ALIVE:
         return _PROXY_ALIVE[proxy]
@@ -94,8 +100,25 @@ def _proxy_reachable(proxy: str, timeout: float = 0.6) -> bool:
             ok = True
     except OSError:
         ok = False
+    if ok:
+        ok = _proxy_https_works(proxy)
     _PROXY_ALIVE[proxy] = ok
     return ok
+
+
+def _proxy_https_works(proxy: str, timeout: float = 5.0) -> bool:
+    """经代理访问一次 api.github.com，确认它不是「TCP 通但 TLS 不通」的残尸。"""
+    opener = urllib.request.build_opener(
+        urllib.request.ProxyHandler({"http": proxy, "https": proxy}))
+    req = urllib.request.Request("https://api.github.com/",
+                                 headers={"User-Agent": "proxysub-probe"})
+    try:
+        with opener.open(req, timeout=timeout) as r:
+            return 200 <= int(r.status) < 500
+    except urllib.error.HTTPError as e:
+        return 200 <= int(e.code) < 500
+    except Exception:      # noqa: BLE001  - 任何异常都等于「这个代理不通」
+        return False
 
 
 def effective_proxy() -> str:
@@ -107,8 +130,9 @@ def effective_proxy() -> str:
         return p
     if p not in _PROXY_WARNED:
         _PROXY_WARNED.add(p)
-        print(f"警告: 配置的 GitHub 代理 {p} 连不通，本轮改为直连"
-              f"（gh 在代理失效时会误报「token 无效」，不要据此判断凭据坏了）")
+        print(f"警告: 配置的 GitHub 代理 {p} 不可用（端口可能仍在监听，但经它"
+              f"访问 GitHub 失败），本轮改为直连——gh 在代理失效时会误报"
+              f"「token 无效」，不要据此判断凭据坏了")
     return ""
 
 
@@ -363,6 +387,28 @@ def download_asset(tag: str, name: str, dest: str, *, timeout: int = 60) -> bool
             if r.returncode == 0 and os.path.exists(dest) and os.path.getsize(dest) > 0:
                 return True
         except subprocess.SubprocessError:
+            pass
+        # 第二路：`gh release download` 会先访问 api.github.com 解析资产，再从
+        # objects.githubusercontent.com 拉实体——后者在国内经常被 RST，表现为
+        # 下载卡住或超时（实测 1.68MB 的 pool.json 手动下 22s，轮次内直接失败）。
+        # 改走**纯 api.github.com** 的资产接口：实测同一文件 1s 级完成。
+        try:
+            r = subprocess.run(
+                [gh_bin(), "api", f"repos/{repo()}/releases/tags/{tag}",
+                 "--jq", f'.assets[]|select(.name=="{name}").id'],
+                capture_output=True, text=True, encoding="utf-8", errors="replace",
+                timeout=20, env=_gh_env())
+            aid = (r.stdout or "").strip()
+            if aid.isdigit():
+                r2 = subprocess.run(
+                    [gh_bin(), "api", f"repos/{repo()}/releases/assets/{aid}",
+                     "-H", "Accept: application/octet-stream"],
+                    capture_output=True, timeout=max(timeout, 120), env=_gh_env())
+                if r2.returncode == 0 and r2.stdout:
+                    with open(dest, "wb") as f:
+                        f.write(r2.stdout)
+                    return True
+        except (subprocess.SubprocessError, OSError):
             pass
     # 直连 + 镜像回退（沙箱直连正常时第一枪即中，家宽则自动落到镜像）
     return download_url(url, dest, max_time=max(timeout, 60))

@@ -57,12 +57,14 @@ jobs:
         run: |
           set -euo pipefail
           tag="pool"
-          test -s pool.json
+          test -s pool.json.gz
           if ! gh release view "$tag" >/dev/null 2>&1; then
             gh release create "$tag" --title "candidate pool" \
               --notes "Auto-refreshed candidate pool (fetched + parsed + deduped on CI; NOT China-tested). Consumed by the local probe."
           fi
-          gh release upload "$tag" pool.json pool_stats.json --clobber
+          # 只发布 gzip 版：本机到 GitHub 对象存储实测 23~30KB/s，
+          # 1.68MB 原始 JSON 要 70~200s，gz 后 314KB / 约 14s。
+          gh release upload "$tag" pool.json.gz pool_stats.json --clobber
 
       - name: Summary
         if: always()

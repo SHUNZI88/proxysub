@@ -28,9 +28,11 @@ from __future__ import annotations
 
 import argparse
 import concurrent.futures as cf
+import gzip
 import hashlib
 import json
 import os
+import shutil
 import sys
 import time
 import urllib.request
@@ -204,6 +206,12 @@ def main() -> int:
     }
     with open(args.out, "w", encoding="utf-8") as f:
         json.dump(doc, f, ensure_ascii=False)
+    # 同时产出 gzip 版并**以它为发布资产**（任务#140）：本机到 GitHub 对象存储
+    # 实测只有 23~30KB/s，1.68MB 的原始 JSON 要 70~200s；gzip 后 322KB / 约 14s。
+    # 发布体积就是本机的等待时间，这一层压缩是必需项而不是优化项。
+    gz_path = args.out + ".gz"
+    with open(args.out, "rb") as fin, gzip.open(gz_path, "wb", 6) as fout:
+        shutil.copyfileobj(fin, fout)
     with open(args.stats, "w", encoding="utf-8") as f:
         json.dump({"generated_at": doc["generated_at"], "sources": doc["sources"],
                    "gate_hist": gate_hist},
@@ -211,8 +219,9 @@ def main() -> int:
 
     ok = sum(1 for s in stats.values() if s["ok"])
     print(f"\n协议闸门拒绝原因: {dict(sorted(gate_hist.items(), key=lambda x: -x[1]))}")
+    gz = os.path.getsize(args.out + ".gz") if os.path.exists(args.out + ".gz") else 0
     print(f"完成：{len(nodes)} 个候选 / {ok}/{len(urls)} 个源有产出，"
-          f"耗时 {int(time.time() - t0)}s → {args.out}")
+          f"耗时 {int(time.time() - t0)}s → {args.out}（gz {gz // 1024}KB）")
     return 0
 
 

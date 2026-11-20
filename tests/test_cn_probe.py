@@ -1942,6 +1942,9 @@ def test_run_target_phase_requires_two_passes_within_attempts(monkeypatch):
             ok = calls[nm] in (1, 3)        # 抖动但 3 次里过 2 次 → 放行
         return {"ok": ok, "targets": {"youtube": 200}, "ai_ok": False}
 
+    # 显式钉住尝试次数：本用例验证的是「累计通过 N 次」这一机制，
+    # 而不是配置里的默认值（任务#140 把默认值得 3 → 4）。
+    monkeypatch.setattr(cn_probe.config, "TARGET_CONFIRM_ATTEMPTS", 3)
     monkeypatch.setattr(cn_probe, "start_shards",
                         lambda proxies, workdir, k: [{"api": 1, "mixed": 2, "proc": None}])
     monkeypatch.setattr(cn_probe, "stop_shards", lambda shards: None)
