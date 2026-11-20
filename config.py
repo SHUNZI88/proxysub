@@ -684,7 +684,10 @@ LIVE_FETCH_BUDGET_S = 150
 POOL_RELEASE_TAG = "pool"
 POOL_FILE = "pool.json"
 POOL_MAX_AGE_H = 4.0        # 超过这个龄期视同不可用（CI 每 20~30 分钟重建）
-POOL_SAMPLE_N = 1400        # 单轮从池子里取样多少个进测试集
+POOL_SAMPLE_N = 2600        # 单轮从池子里取样多少个进测试集
+# 2026-11-20：原为 1400。实测 837 个测试集只用掉 712s/1500s 预算，delay 初筛
+# 通过率 12%、其中 70% 能过目标站——产出被「候选量」卡住而不是被判据卡住，
+# 故把 CI 池子放宽到 120/源、本机取样上限同步抬到 2600。
 POOL_MIN_PER_SRC = 20       # 小源保底名额：避免被大源按比例挤成 0 而永不验证
 # 逐源历史产出率（本机实测口径），用于把测试预算向真能出节点的源倾斜。
 SOURCE_YIELD_FILE = "source_yield.json"
