@@ -3707,6 +3707,22 @@ def main() -> int:
         f"rescue {by_origin['rescue']} / carryover {by_origin['carryover']} / "
         f"用户池 {by_origin['user_pool']}"
         f"（本轮复测通过 {len(_req_pass)} + 豁免直发 {len(pool_add)}））")
+    # 质量熔断（任务#140）：实测同一套代码在 1 小时内产出 12 个 → 6 个，
+    # 差别只在延迟降级从 5 个涨到 12 个（中午线路变差）。差轮覆盖好轮，
+    # 用户侧就是「刚刷到 12 个能用的，下一轮变 6 个」。
+    # 判据用绝对下限：本轮 < QUALITY_FLOOR_NODES 且上一轮更多 → 保留上一轮。
+    # 不用比例：上一轮可能是「数量多但质量差」的旧版本，按比例会挡住改进。
+    try:
+        _prev_path = os.path.join(workdir, "main_clash.yaml")
+        _prev_n = len(load_carryover(_prev_path)) if os.path.exists(_prev_path) else 0
+    except Exception:
+        _prev_n = 0
+    _floor = int(getattr(config, "QUALITY_FLOOR_NODES", 8))
+    if verified and _prev_n > len(verified) and len(verified) < _floor:
+        log(f"质量熔断: 本轮验证集 {len(verified)} 个 < 下限 {_floor}，"
+            f"而上一轮有 {_prev_n} 个；保留上一轮资产，本轮不覆盖")
+        return 0
+
     if ai_probed:
         log(f"AI 可达性: 探测 {len(ai_probed)} 个，任一可达 {len(ai_reach)}，"
             f"API 层可用 {len(ai_api_ok)}（分域名: "

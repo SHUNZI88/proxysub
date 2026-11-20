@@ -2158,16 +2158,17 @@ def _rnode(server, region_name):
 
 
 def test_region_cap_scales_with_publish_size():
-    """15 个节点的发布集里，单地区最多 6 个（40%），而不是固定 12 个。
+    """15 个节点的发布集里，单地区最多 9 个（60%），而不是固定 12 个。
 
-    事故：固定上限 12 在 15 个的发布集上等于不设限，实测意大利占 9 个（60%）。
+    事故：固定上限 12 在 15 个的发布集上等于不设限，实测意大利占 9 个。
+    占比取 0.6 而非更低：物理去重已保证「同 server≤2、同/24≤3」，
+    不同机器同国家不再是一损俱损，过度限额只会砍掉真实可用节点。
     """
     nodes = [_rnode(f"it{i}.example", f"🇮🇹IT_{i}") for i in range(12)]
     nodes += [_rnode(f"us{i}.example", f"🇺🇸US_{i}") for i in range(3)]
     kept, dropped = cn_probe.apply_diversity_cap(nodes, per_server=1, per_region=12)
     it = sum(1 for n in kept if "IT" in n["name"])
-    assert it <= 6, f"意大利 {it} 个，超过 15×0.4=6"
-    assert len(dropped) == 9 - 6 + 0 or it == 6
+    assert it == 9, f"意大利 {it} 个，应等于 ⌈15×0.6⌉=9"
 
 
 def test_region_cap_has_floor_of_three():

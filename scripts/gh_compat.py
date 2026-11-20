@@ -29,6 +29,7 @@ import os
 import socket
 import time
 import shutil
+import tempfile
 import subprocess
 import urllib.error
 import urllib.parse
@@ -385,11 +386,23 @@ def upload_asset(tag: str, path: str, *, name: str | None = None,
 
 
 def _upload_once(tag: str, path: str, asset_name: str, timeout: int) -> tuple[bool, str]:
-    """单次上传（会覆盖同名资产）。成功返回 (True, "")。"""
+    """单次上传（会覆盖同名资产）。成功返回 (True, "")。
+
+    任务#140：**不再用 `path#name` 语法**。实测在 Windows + 便携版 gh 上，
+    它会写错资产名——把内容写进别的 `p_*` 资产，导致订阅主资产
+    `p_58dd290962_c.yaml` 变成 3318B 的无效配置（本应 5594B）。
+    改为先把文件复制成目标文件名，再上传，让 gh 按文件名落资产。
+    """
     if has_gh():
-        arg = path if asset_name == os.path.basename(path) else f"{path}#{asset_name}"
+        tmpdir = None
         try:
-            r = subprocess.run([gh_bin(), "release", "upload", tag, "--clobber", arg],
+            if asset_name == os.path.basename(path):
+                target = path
+            else:
+                tmpdir = tempfile.mkdtemp(prefix="ghup_")
+                target = os.path.join(tmpdir, asset_name)
+                shutil.copyfile(path, target)
+            r = subprocess.run([gh_bin(), "release", "upload", tag, "--clobber", target],
                                capture_output=True, text=True, encoding="utf-8",
                                errors="replace", timeout=timeout, env=_gh_env())
             if r.returncode == 0:
@@ -397,6 +410,9 @@ def _upload_once(tag: str, path: str, asset_name: str, timeout: int) -> tuple[bo
             gh_err = (r.stderr or r.stdout or "").strip()[:200]
         except subprocess.SubprocessError as e:
             gh_err = f"gh 异常: {type(e).__name__}"
+        finally:
+            if tmpdir:
+                shutil.rmtree(tmpdir, ignore_errors=True)
         ok, err = _upload_rest(tag, path, asset_name, timeout)
         return (True, "") if ok else (False, f"gh: {gh_err} | rest: {err}")
     return _upload_rest(tag, path, asset_name, timeout)
@@ -507,9 +523,27 @@ def upload_asset_safe(tag: str, path: str, asset_name: str, *,
 
 
 def _delete_asset(tag: str, name: str) -> bool:
-    """删除指定资产（不存在视为成功）。REST 需要资产 id，故先列一遍。"""
+    """删除指定资产（不存在视为成功）。REST 需要资产 id，故先列一遍。
+
+    任务#140：优先走 gh api --method DELETE。实测自写的 REST DELETE
+    在这台机器上**静默失败**（返回 False，但无异常信息），导致遗留的
+    `.staging` 资产始终删不掉；而 `gh api --method DELETE` 一次就成功。
+    结果是 upload_asset_safe 每次都读到上一轮遗留的 staging 大小，
+    判「暂存校验不符」，四个格式资产连续多轮发不出去。
+    """
     for a in release_assets(tag) or []:
         if a.get("name") == name and a.get("id"):
+            if has_gh():
+                try:
+                    r = subprocess.run(
+                        [gh_bin(), "api", "--method", "DELETE",
+                         f"repos/{repo()}/releases/assets/{a['id']}"],
+                        capture_output=True, text=True, encoding="utf-8",
+                        errors="replace", timeout=60, env=_gh_env())
+                    if r.returncode == 0:
+                        return True
+                except subprocess.SubprocessError:
+                    pass
             try:
                 _req(f"{API}/repos/{repo()}/releases/assets/{a['id']}",
                      method="DELETE", timeout=30).close()
