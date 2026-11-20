@@ -77,6 +77,19 @@ jobs:
           # 1.68MB 原始 JSON 要 70~200s，gz 后 314KB / 约 14s。
           gh release upload "$tag" pool.json.gz pool_stats.json --clobber
 
+          # 【关键】把 latest 标记让回订阅 tag。GitHub 的 releases/latest 按 release
+          # 创建时间排序——本 job 新建/刷新 pool 会把 latest 从 sub 抢走，而客户端
+          # 订阅地址形如 .../releases/latest/download/p_<token>_c.yaml，一旦 latest
+          # 指向 pool 就会 404（2026-11-20 事故：pool 创建后订阅全量 404）。
+          # daily-update 虽有同样的复位，但其 schedule 曾连续多轮不触发，不能单独依赖。
+          # --clobber 只改资产不改创建时间，故仅首次 create 后需要复位；此处无条件
+          # 复位为幂等保险，代价是一次 API 调用。
+          sub_tag="$(python3 -c "import json; print(json.load(open('anti_crawl.json',encoding='utf-8')).get('release_tag') or 'sub')")"
+          if gh release view "$sub_tag" >/dev/null 2>&1; then
+            gh release edit "$sub_tag" --latest
+            echo "已把 latest 标记复位到订阅 release: $sub_tag"
+          fi
+
       - name: Summary
         if: always()
         run: |
