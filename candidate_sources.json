@@ -9,10 +9,18 @@
       "required_runs": 3,
       "first_seen": "2026-11-20",
       "initial_nodes": 276,
-      "runs": 0,
+      "runs": 1,
       "good_streak": 0,
       "fail_streak": 0,
-      "history": []
+      "history": [
+        {
+          "date": "2026-11-20",
+          "count": 276,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        }
+      ]
     }
   },
   "rejected": {

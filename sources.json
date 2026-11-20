@@ -8,13 +8,6 @@
       "added": "2026-10-10"
     },
     {
-      "url": "https://raw.githubusercontent.com/awesome-vpn/awesome-vpn/master/clash.yaml",
-      "origin": "discovered",
-      "added": "2026-10-10",
-      "repo": "awesome-vpn/awesome-vpn",
-      "probation_runs": 3
-    },
-    {
       "url": "https://raw.githubusercontent.com/ermaozi01/free_clash_vpn/main/subscribe/clash.yml",
       "origin": "discovered",
       "added": "2026-11-05",
@@ -43,13 +36,6 @@
       "rehab_date": "2026-11-06"
     },
     {
-      "url": "https://raw.githubusercontent.com/ovmvo/FreeSub/main/sub/permanent/mihomo.yaml",
-      "origin": "rehab",
-      "added": "2026-11-06",
-      "rehab_from": "cn_low_pass_rate:0/23",
-      "rehab_date": "2026-11-06"
-    },
-    {
       "url": "https://tt.vg/freeclash",
       "origin": "discovered",
       "added": "2026-11-08",
@@ -69,11 +55,6 @@
       "added": "2026-11-14",
       "repo": "snakem982/proxypool",
       "probation_runs": 9
-    },
-    {
-      "url": "https://raw.githubusercontent.com/mahdibland/V2RayAggregator/master/Eternity.yml",
-      "origin": "static_channel",
-      "added": "2026-11-15"
     },
     {
       "url": "https://raw.githubusercontent.com/FlyingDashie/Free-node-autotest/main/clash.yaml",
@@ -361,6 +342,24 @@
     {
       "url": "https://raw.githubusercontent.com/mfuu/v2ray/master/sub",
       "reason": "cn_low_pass_rate:0/21",
+      "date": "2026-11-20",
+      "mv": 2
+    },
+    {
+      "url": "https://raw.githubusercontent.com/awesome-vpn/awesome-vpn/master/clash.yaml",
+      "reason": "cn_low_pass_rate:0/30",
+      "date": "2026-11-20",
+      "mv": 2
+    },
+    {
+      "url": "https://raw.githubusercontent.com/mahdibland/V2RayAggregator/master/Eternity.yml",
+      "reason": "cn_low_pass_rate:0/30",
+      "date": "2026-11-20",
+      "mv": 2
+    },
+    {
+      "url": "https://raw.githubusercontent.com/ovmvo/FreeSub/main/sub/permanent/mihomo.yaml",
+      "reason": "cn_low_pass_rate:0/29",
       "date": "2026-11-20",
       "mv": 2
     }
