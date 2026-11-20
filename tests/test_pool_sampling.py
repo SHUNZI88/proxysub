@@ -45,7 +45,9 @@ def test_zero_yield_source_floor_shrinks_after_enough_evidence():
     pool = _pool({"dead": 500})
     yields = {"dead": {"tested": 200, "passed": 0}}
     got = cn_probe.pool_sample(pool, 100, yields, round_id="r1", min_per=20)
-    assert 0 < len(got) <= 5, "已证零产出只应留探针名额（探索不归零）"
+    # 2026-11-20：探针名额从 3~4 放宽到 min_per//2=10——旧值把零产源永久
+    # 钉死，订阅源换新节点后也无增量机会。惩罚保留（远小于保底 20），但不归零。
+    assert 5 <= len(got) <= 20, "已证零产出留缩减但仍可复活的探索名额"
 
 
 def test_no_source_exceeds_cap():
@@ -67,3 +69,34 @@ def test_different_round_rotates_sample():
 def test_empty_pool_and_zero_limit():
     assert cn_probe.pool_sample([], 100, {}) == []
     assert cn_probe.pool_sample(_pool({"a": 10}), 0, {}) == []
+
+
+def test_canon_src_merges_short_and_full_name():
+    """短名（本机自抓）与 owner/repo（CI 池）必须归一到同一把尺子。"""
+    assert cn_probe.canon_src("ermaozi") == "ermaozi"
+    assert cn_probe.canon_src("ermaozi/get_subscribe") == "ermaozi"
+    assert cn_probe.canon_src("https://tt.vg/freeclash") == "tt.vg"
+    assert cn_probe.canon_src("tt.vg") == "tt.vg"
+    assert cn_probe.canon_src(None) == "?"
+
+
+def test_pool_sample_groups_short_and_full_name_together():
+    """同一源的短名/全名节点应归入同一组，共享上限，不被拆成两份。"""
+    pool = [
+        {"src": "ermaozi", "fp": "a1"}, {"src": "ermaozi", "fp": "a2"},
+        {"src": "ermaozi/get_subscribe", "fp": "b1"},
+        {"src": "gold", "fp": "g1"},
+    ]
+    got = cn_probe.pool_sample(pool, 100, {}, round_id="r1", min_per=20)
+    assert len(got) == 4  # 全取；分组不因双键名重复计数名额
+    srcs = {cn_probe.canon_src(n["src"]) for n in got}
+    assert srcs == {"ermaozi", "gold"}
+
+
+def test_zero_yield_source_not_permanently_starved():
+    """已证零产出源保留可复活的探索面（>=5），不再钉死 3~4 个。"""
+    pool = _pool({"dead": 500})
+    yields = {"dead": {"tested": 200, "passed": 0}}
+    got = cn_probe.pool_sample(pool, 100, yields, round_id="r1", min_per=20)
+    assert len(got) >= 5, "零产源仍需保留有意义的探索名额"
+    assert len(got) <= 20, "但也不能超过正常保底，惩罚仍需体现"

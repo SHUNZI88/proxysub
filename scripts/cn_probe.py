@@ -1158,20 +1158,52 @@ def fetch_live_pool(workdir: str, per_source: int | None = None,
     return nodes
 
 
+def canon_src(src: str) -> str:
+    """把源标识归一到稳定短键：owner/repo → owner；URL → host；短名不变。
+
+    池子侧 `pool_build.src_tag` 产出 `owner/repo`（如 `ermaozi/get_subscribe`），
+    本机实时抓取 `fetch_live_pool` 产出短名（如 `ermaozi`），`source_yield.json`
+    因此累积两套键（实测 42 键中二者并存），产出率被割裂：采样器只查得到半套
+    历史、判死另半套。统一在此归一，两个抓取通道与统计口径共用同一把尺子。
+    """
+    s = str(src or "?").strip()
+    if not s or s == "?":
+        return "?"
+    if "://" in s:
+        s = s.split("://", 1)[1]
+    s = s.split("?", 1)[0].split("#", 1)[0]
+    parts = [p for p in s.split("/") if p]
+    return parts[0][:48] if parts else "?"
+
+
 def load_source_yield(workdir: str) -> dict[str, dict]:
     """逐源历史产出率（本机实测口径）：{src: {tested, passed}}。
 
     用途只有一个——把有限的拨测名额向**真能出节点**的源倾斜。此前 14 个源
     平均分配名额，实测结果是 311 个节点测下来 0 通过的大源吃掉 76% 预算
     （见 docs 第 21 节）。产出率是唯一值得优化的目标函数。
+
+    2026-11-20 修复：读取时把短名/全名两套键按 `canon_src` 合并。此前
+    `ermaozi`(t=321) 与 `ermaozi/get_subscribe`(t=62) 各记各的，采样器查
+    全名 src 时只看得到 62 的样本，历史被严重低估。
     """
     path = os.path.join(workdir, getattr(config, "SOURCE_YIELD_FILE", "source_yield.json"))
     try:
         with open(path, encoding="utf-8") as f:
             data = json.load(f)
-        return data if isinstance(data, dict) else {}
     except Exception:
         return {}
+    if not isinstance(data, dict):
+        return {}
+    out: dict[str, dict] = {}
+    for key, rec in data.items():
+        if not isinstance(rec, dict):
+            continue
+        ck = canon_src(key)
+        slot = out.setdefault(ck, {"tested": 0, "passed": 0, "rounds": 0})
+        for field in ("tested", "passed", "rounds"):
+            slot[field] = int(slot.get(field) or 0) + int(rec.get(field) or 0)
+    return out
 
 
 def note_source_yield(workdir: str, by_source: dict) -> dict:
@@ -1185,6 +1217,7 @@ def note_source_yield(workdir: str, by_source: dict) -> dict:
         passed = int(st.get("passed") or 0)
         if tested <= 0:
             continue
+        src = canon_src(src)  # 归一化后累加，避免短名/全名双键割裂
         rec = cur.get(src) or {"tested": 0, "passed": 0, "rounds": 0}
         # 历史按 0.7 衰减：让最近的实测更有话语权，同时不至于一轮定生死
         rec["tested"] = int(rec.get("tested", 0) * 0.7) + tested
@@ -1222,7 +1255,7 @@ def pool_sample(pool: list[dict], limit: int, yields: dict | None = None,
                   getattr(config, "POOL_MIN_PER_SRC", 20))
     by: dict[str, list[dict]] = {}
     for n in pool:
-        by.setdefault(str(n.get("src") or "?"), []).append(n)
+        by.setdefault(canon_src(n.get("src")), []).append(n)
 
     def rate(src: str) -> float:
         rec = yields.get(src) or {}
@@ -1236,6 +1269,11 @@ def pool_sample(pool: list[dict], limit: int, yields: dict | None = None,
         教训：官方的"每源保底 N"是探索预算，但一旦源数上到 20+，固定保底会
         把一半名额分给实证零产出的源（实测 14 源里 8 个连续多轮 0 通过）。
         探索要保留，但代价必须随证据递减。
+
+        2026-11-20 修复：`max(3, min_per//5)` 的"探针级"上限 4 个太狠——一旦
+        某源累计 60 测 0 通过就永久钉死，即便订阅源换了节点也再无增量机会。
+        放宽到 min_per//2（默认 10），保留惩罚但留出可复活的探索面；真正的
+        清空重来会把历史归零，这一步保证不清库时也不会一锤子买卖。
         """
         rec = yields.get(src) or {}
         t = int(rec.get("tested") or 0)
@@ -1243,7 +1281,7 @@ def pool_sample(pool: list[dict], limit: int, yields: dict | None = None,
         if t == 0:
             return min_per
         if p == 0 and t >= 60:
-            return max(3, min_per // 5)
+            return max(5, min_per // 2)
         return min_per
 
     def hard_cap(src: str) -> int:
@@ -3457,6 +3495,19 @@ def main() -> int:
         pend = _pool
         if _old:
             log(f"测试集来源: CI 候选池 {len(_pool)} 个（丢弃交接快照 {_old} 个）")
+        # 2026-11-20 修复：实时抓取与 CI 池**合并而非二选一**。
+        # 旧实现只要拿到 CI 池就 `pend = _pool`，本机实时抓取的 1198 个新节点
+        # （含今早新增的 Au1rxx/bily1258/yy1588133 等非欧源）整轮被丢弃——
+        # 池子按历史产出率取样又把这批新源饿死，于是"增量"永远进不了测试集。
+        # 合并后两个通道的节点一起参与取样，新源因 t=0 拿满 min_per 保底。
+        if getattr(config, "LIVE_MERGE_WITH_POOL", True):
+            _live = fetch_live_pool(workdir)
+            if _live:
+                _have = {n["fp"] for n in pend}
+                _added = [n for n in _live if n["fp"] not in _have]
+                pend = pend + _added
+                log(f"候选合并: CI 池 {len(_pool)} + 实时增量 {len(_added)}"
+                    f"（实时抓取 {len(_live)}，去重 {len(_live) - len(_added)}）")
         # 名额倾斜：各源本机产出率差两个数量级，均匀抽样等于把预算浪费在
         # 几乎不出节点的源上。产量数据来自 source_yield.json（本机实测口径）。
         _yields = load_source_yield(workdir)
@@ -3464,8 +3515,8 @@ def main() -> int:
         pend = pool_sample(pend, getattr(config, "POOL_SAMPLE_N", 1400),
                            _yields, round_id=time.strftime("%Y%m%dT%H"))
         if len(pend) < _n0:
-            log(f"点名取样: 池子 {_n0} → {len(pend)} 个"
-                f"（按逐源历史产出率分配名额，单源上限 45%）")
+            log(f"点名取样: 合并候选 {_n0} → {len(pend)} 个"
+                f"（按逐源历史产出率分配名额，单源上限 45%，新源有保底）")
     elif getattr(config, "LIVE_FETCH_ENABLED", True):
         log("警告: 未取得 CI 候选池，降级为本机自抓——此时候选受本机网络影响，"
             "本轮源可达性数据不可用于源评估")
