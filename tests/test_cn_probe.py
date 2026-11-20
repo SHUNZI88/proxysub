@@ -2258,3 +2258,56 @@ def test_load_ci_pool_rejects_stale_pool(monkeypatch, tmp_path):
                         lambda tag, name, dest, retries=1: (shutil.copyfile(src, dest), True)[1])
     monkeypatch.setattr(cn_probe.config, "POOL_MAX_AGE_H", 4.0)
     assert cn_probe.load_ci_pool(str(tmp_path), "pool") == []
+
+
+# ------------------------------------------------ 新鲜度预留（2026-11-20 用户决策）
+def _it(name, srv, origin):
+    return {"name": name, "origin": origin, "proxy": {"server": srv, "name": name}}
+
+
+def test_diversity_cap_reserves_slots_for_fresh_nodes():
+    """棘轮复现：carryover 排在前面时，同地区的新节点永远排不进去。
+
+    实测 round 20261120T0709Z：75 个达标里主资产只进得来 1 个 pending，
+    其余 19 个全是上轮老面孔——配额按顺序发 + carryover 整档排在前，两者
+    叠加把主资产锁死在旧集合上。预留名额后必须能换掉几个。
+    """
+    nodes = [_it(f"🇮🇹 意大利 0{i}", f"s{i}", "carryover") for i in range(5)] + \
+            [_it(f"🇮🇹 意大利 1{i}", f"n{i}", "pending") for i in range(2)]
+    without, _ = cn_probe.apply_diversity_cap(nodes, per_server=1, per_region=3,
+                                             per_family=99, region_share=1.0,
+                                             reserve_fresh=0)
+    with_r, _ = cn_probe.apply_diversity_cap(nodes, per_server=1, per_region=3,
+                                            per_family=99, region_share=1.0,
+                                            reserve_fresh=2)
+    assert len(without) == 3 and all(n["origin"] == "carryover" for n in without)
+    assert len(with_r) == 3
+    assert sum(1 for n in with_r if n["origin"] == "pending") == 2
+
+
+def test_diversity_cap_reserve_never_exceeds_region_cap():
+    nodes = [_it(f"🇮🇹 意大利 1{i}", f"n{i}", "pending") for i in range(5)]
+    kept, _ = cn_probe.apply_diversity_cap(nodes, per_server=9, per_region=2,
+                                           per_family=99, region_share=1.0,
+                                           reserve_fresh=4)
+    assert len(kept) == 2
+
+
+def test_diversity_cap_reserve_respects_server_cap():
+    """预留也不能让同一台服务器超限——server≤2 是硬约束。"""
+    nodes = [_it("🇮🇹 意大利 01", "same", "pending"),
+             _it("🇮🇹 意大利 02", "same", "pending"),
+             _it("🇮🇹 意大利 03", "same", "pending")]
+    kept, _ = cn_probe.apply_diversity_cap(nodes, per_server=2, per_region=99,
+                                           per_family=99, region_share=1.0,
+                                           reserve_fresh=2)
+    assert len(kept) == 2
+
+
+def test_diversity_cap_reserve_leaves_unused_slots_to_old_nodes():
+    """某地区没有新节点时，预留名额不能浪费——该地区仍按上限收满老节点。"""
+    nodes = [_it(f"🇮🇹 意大利 0{i}", f"s{i}", "carryover") for i in range(4)]
+    kept, _ = cn_probe.apply_diversity_cap(nodes, per_server=1, per_region=3,
+                                           per_family=99, region_share=1.0,
+                                           reserve_fresh=2)
+    assert len(kept) == 3

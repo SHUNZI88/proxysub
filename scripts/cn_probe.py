@@ -2606,7 +2606,8 @@ def family_of(name: str) -> str:
 def apply_diversity_cap(nodes: list[dict], per_server: int | None = None,
                         per_region: int | None = None,
                         per_family: int | None = None,
-                        region_share: float | None = None) -> tuple[list[dict], list[dict]]:
+                        region_share: float | None = None,
+                        reserve_fresh: int | None = None) -> tuple[list[dict], list[dict]]:
     """同一服务器地址的主资产配额（纯函数，任务#131）。
 
     实证：24 个节点里 16 个意大利 ss，来自 15 个地址但命名/指纹同源，说明
@@ -2614,6 +2615,19 @@ def apply_diversity_cap(nodes: list[dict], per_server: int | None = None,
       1. 供应商挂了订阅同时归零（单点故障）；
       2. 用户看到「几乎都是意大利节点」，主观可用性极差。
     按 server 限流，超出的退回第二资产（不删除，仍在复测池里）。
+
+    ## 新鲜度预留（2026-11-20，用户决策）
+
+    原实现**按列表顺序**发配额，而 `quality_key` 把 carryover 整档排在新节点
+    之前。两者叠加产生一个棘轮：上一轮的主资产先把各地区名额吃满，同地区的
+    新节点永远排不进去——实测一轮 75 个达标里，主资产只进得来 **1 个**
+    pending，其余 19 个全是上轮的老面孔，主资产被锁死在旧集合上。
+
+    现在改为两段式：先给每个地区预留 `reserve_fresh` 个名额，**只发给本轮
+    新通过的节点**（origin 非 carryover），剩余名额再按原顺序分给所有人。
+    这样每轮都能换掉几个最旧的，而总量与地区/家族/单机上限都不变。
+
+    返回 (kept, dropped)，kept 保持入参顺序（输出排序由调用方另行负责）。
     """
     cap = int(per_server or getattr(config, "MAX_NODES_PER_SERVER", 3))
     cap_r = int(per_region or getattr(config, "MAX_NODES_PER_REGION", 5))
@@ -2628,24 +2642,50 @@ def apply_diversity_cap(nodes: list[dict], per_server: int | None = None,
     cap_share = max(3, -(-int(n_total * share * 1000) // 1000))  # 向上取整
     if cap_r > cap_share:
         cap_r = cap_share
-    kept: list[dict] = []
-    dropped: list[dict] = []
+    reserve = int(reserve_fresh if reserve_fresh is not None
+                  else getattr(config, "MAX_FRESH_RESERVE_PER_REGION", 2))
+    reserve = max(0, min(reserve, cap_r))
+
     by_srv: dict[str, int] = {}
     by_reg: dict[str, int] = {}
     by_fam: dict[str, int] = {}
-    for n in nodes:
+    kept_ids: set[int] = set()
+
+    def _try_keep(n: dict) -> bool:
         p = n.get("proxy") or {}
         srv = str(p.get("server") or "?")
         nm = str(n.get("name") or p.get("name") or "")
         reg, fam = region_of(nm), family_of(nm)
         if (by_srv.get(srv, 0) >= cap or by_reg.get(reg, 0) >= cap_r
                 or by_fam.get(fam, 0) >= cap_f):
-            dropped.append(n)
-            continue
+            return False
         by_srv[srv] = by_srv.get(srv, 0) + 1
         by_reg[reg] = by_reg.get(reg, 0) + 1
         by_fam[fam] = by_fam.get(fam, 0) + 1
-        kept.append(n)
+        kept_ids.add(id(n))
+        return True
+
+    if reserve:
+        # 第一段：按地区预留，只发给本轮新通过的节点
+        given: dict[str, int] = {}
+        for n in nodes:
+            if n.get("origin") == "carryover":
+                continue
+            p = n.get("proxy") or {}
+            nm = str(n.get("name") or p.get("name") or "")
+            reg = region_of(nm)
+            if given.get(reg, 0) >= reserve:
+                continue
+            if _try_keep(n):
+                given[reg] = given.get(reg, 0) + 1
+    # 第二段：剩余名额按原顺序分配（含未被预留吃掉名额的老节点）
+    for n in nodes:
+        if id(n) in kept_ids:
+            continue
+        _try_keep(n)
+
+    kept = [n for n in nodes if id(n) in kept_ids]
+    dropped = [n for n in nodes if id(n) not in kept_ids]
     return kept, dropped
 
 
