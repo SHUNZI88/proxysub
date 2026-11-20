@@ -407,3 +407,133 @@ def test_asset_size_settled_returns_last_reading_on_persistent_mismatch(monkeypa
     monkeypatch.setattr(gc, "_asset_size", lambda tag, name: 4553)
     monkeypatch.setattr(gc.time, "sleep", lambda s: None)
     assert gc._asset_size_settled("sub", "a.yaml", 7) == 4553
+
+
+def test_download_asset_records_each_channel_error(monkeypatch, tmp_path):
+    """三条通道全失败时，必须把**每条通道各自的**原因收集进 errs。
+
+    动机：轮次内连续 4 次下载 pool.json.gz 失败，日志只有「gh 与直链均失败」，
+    无法判断是资产不存在、还是 gh 的 git 上下文问题、还是 objects 被 RST——
+    三者解法完全不同，报不出原因的失败等于没报。
+    """
+    import subprocess as sp
+
+    class R:
+        def __init__(self, rc=1, out="", err=""):
+            self.returncode, self.stdout, self.stderr = rc, out, err
+
+    monkeypatch.setattr(gc, "has_gh", lambda: True)
+    monkeypatch.setattr(gc, "gh_bin", lambda: "gh")
+    monkeypatch.setattr(gc, "_gh_env", lambda: {})
+    monkeypatch.setattr(gc, "repo", lambda: "o/r")
+
+    def fake_run(cmd, **kw):
+        # 通道一先查 id，通道二再拉实体：都失败
+        if "tags/" in " ".join(cmd):
+            return R(0, out="")                    # 没查到资产 id
+        return R(1, err="fatal: not a git repository")
+
+    monkeypatch.setattr(gc.subprocess, "run", fake_run)
+    monkeypatch.setattr(gc, "download_url", lambda url, dest, **kw: False)
+
+    errs = []
+    assert gc.download_asset("pool", "pool.json.gz", str(tmp_path / "p.gz"), errs=errs) is False
+    joined = " | ".join(errs)
+    assert "api查id" in joined
+    assert "gh release rc=1" in joined and "not a git repository" in joined
+    assert "直链+镜像失败" in joined
+
+
+def test_download_asset_errs_is_optional(monkeypatch, tmp_path):
+    """不传 errs 也不能炸（老调用方兼容）。"""
+    monkeypatch.setattr(gc, "has_gh", lambda: False)
+    monkeypatch.setattr(gc, "download_url", lambda url, dest, **kw: False)
+    assert gc.download_asset("pool", "x.gz", str(tmp_path / "x.gz")) is False
+
+
+# ------------------------------------------------ 成败看产物，不看退出码（2026-11-20）
+def _noisy(n=4000) -> bytes:
+    """不可压缩的近随机字节：保证 gz 体积足够大，截断一定是真截断。
+
+    教训：用 `b"0," * 5000` 这类高重复载荷，gz 只有 66 字节，`raw[:200]`
+    根本没截断，测试反而"通过"了一个假前提。
+    """
+    import hashlib
+    return b"".join(hashlib.sha256(str(i).encode()).digest() for i in range(n))
+
+
+def _write_gz(path, payload=b'{"nodes":[1,2,3]}'):
+    import gzip as _gz
+    with _gz.open(path, "wb") as f:
+        f.write(payload)
+
+
+def test_artifact_ok_accepts_complete_gz(tmp_path):
+    p = tmp_path / "pool.json.gz"
+    _write_gz(p)
+    assert gc.artifact_ok(str(p)) is True
+
+
+def test_artifact_ok_rejects_truncated_gz(tmp_path):
+    """截断的 gz 必须判失败——否则解压时才炸，白烧一轮。"""
+    p = tmp_path / "pool.json.gz"
+    _write_gz(p, _noisy())
+    raw = p.read_bytes()
+    assert len(raw) > 1000, "载荷必须足够大，否则截断无意义"
+    p.write_bytes(raw[: len(raw) // 2])
+    assert gc.artifact_ok(str(p)) is False
+
+
+def test_artifact_ok_rejects_empty_and_corrupt_json(tmp_path):
+    empty = tmp_path / "a.json.gz"
+    empty.write_bytes(b"")
+    assert gc.artifact_ok(str(empty)) is False
+    bad = tmp_path / "b.json"
+    bad.write_text("{not json", encoding="utf-8")
+    assert gc.artifact_ok(str(bad)) is False
+    assert gc.artifact_ok(str(tmp_path / "missing.gz")) is False
+
+
+def test_curl_download_success_despite_nonzero_rc(monkeypatch, tmp_path):
+    """事故复现：镜像把完整 body 送完后连接被 RST，curl 退出码非 0，但文件是好的。
+
+    2026-11-20 14:35 家宽实测：轮次内 pool.json.gz 连续 4 次「下载失败」→ 降级
+    本机自抓；而工作目录里那份文件完整可解（988 个节点、CI 4 分钟前构建）。
+    判据错误导致整轮白跑，故改为按产物判定。
+    """
+    dest = str(tmp_path / "pool.json.gz")
+
+    class R:
+        returncode = 56          # curl: recv failure
+        stdout = stderr = ""
+
+    def fake_run(cmd, **kw):
+        _write_gz(dest)          # 文件其实下完了
+        return R()
+
+    monkeypatch.setattr(gc.shutil, "which", lambda n: "/usr/bin/curl")
+    monkeypatch.setattr(gc.subprocess, "run", fake_run)
+    gc._LAST_VIA.clear()
+    assert gc._curl_download("https://example.invalid/x.gz", dest) is True
+    assert any("产物完整" in v for v in gc._LAST_VIA)
+
+
+def test_curl_download_rejects_partial_file(monkeypatch, tmp_path):
+    """rc==0 但只写了一半（被截断）也要判失败。"""
+    dest = str(tmp_path / "pool.json.gz")
+
+    class R:
+        returncode = 0
+        stdout = stderr = ""
+
+    def fake_run(cmd, **kw):
+        _write_gz(dest, _noisy())
+        raw = open(dest, "rb").read()
+        open(dest, "wb").write(raw[: len(raw) // 2])
+        return R()
+
+    monkeypatch.setattr(gc.shutil, "which", lambda n: "/usr/bin/curl")
+    monkeypatch.setattr(gc.subprocess, "run", fake_run)
+    monkeypatch.setattr(gc.urllib.request, "urlopen",
+                        lambda *a, **k: (_ for _ in ()).throw(OSError("no net")))
+    assert gc._curl_download("https://example.invalid/x.gz", dest) is False

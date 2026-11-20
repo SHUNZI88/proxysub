@@ -24,6 +24,7 @@
 
 from __future__ import annotations
 
+import gzip
 import json
 import os
 import socket
@@ -72,6 +73,8 @@ def gh_proxy() -> str:
 
 _PROXY_ALIVE: dict[str, bool] = {}
 _PROXY_WARNED: set[str] = set()
+# 最近一次成功下载走的通道（纯诊断，给调用方日志用；不进任何判定）
+_LAST_VIA: list[str] = []
 
 
 def _proxy_reachable(proxy: str, timeout: float = 0.6) -> bool:
@@ -154,13 +157,56 @@ def mirrors() -> list[str]:
     return [m.strip().rstrip("/") + "/" for m in raw.split(",") if m.strip()]
 
 
+def artifact_ok(dest: str) -> bool:
+    """文件是否是**完整可用**的产物（而不是看命令的退出码）。
+
+    事故（2026-11-20 14:35，家宽）：轮次内 `pool.json.gz` 连续 4 次报下载失败、
+    整轮降级为本机自抓；而工作目录里那份文件其实**是完整的**——988 个节点，
+    `generated_at` 正是 CI 4 分钟前那次构建。也就是说下载成功了，只是命令
+    退出码非 0（镜像在把完整 body 送完后被 RST、或 curl 收尾时触到
+    `--speed-limit`），`rc == 0` 的判定把它当成失败，白扔了一整轮。
+
+    结论：成败只能由**产物**判定。gz 全量解压（截断必抛异常）、json 尝试
+    `json.loads`，其余只要求非空。**任何一次写入后都按这个判定。**
+    """
+    try:
+        if not os.path.exists(dest):
+            return False
+        size = os.path.getsize(dest)
+        if size <= 0:
+            return False
+        low = dest.lower()
+        if low.endswith(".gz"):
+            # 必须用 gzip.decompress 一次性解到底：它校验 CRC32 与 ISIZE，
+            # 截断/尾部缺失必抛 EOFError。流式 `read()` 在"刚好读完可见数据"
+            # 时会安静地返回 b""，缺尾部也看不出来（实测漏判一半体量的 gz）。
+            with open(dest, "rb") as f:
+                gzip.decompress(f.read())
+            return True
+        if low.endswith(".json"):
+            with open(dest, "r", encoding="utf-8") as f:
+                json.load(f)
+            return True
+        return True
+    except (OSError, EOFError, ValueError, gzip.BadGzipFile):
+        return False
+
+
 def _curl_download(url: str, dest: str, *, max_time: int = 300) -> bool:
     """用 curl 下载单个 URL，带「低速即中止」保护。
 
     `--speed-time 20 --speed-limit 10240`（连续 20s 低于 10KB/s 即放弃）是关键：
     被墙的连接不会立刻报错，而是**挂住不动**，没有这个参数只能靠 --max-time
     硬等满 300s——三个候选地址就是 15 分钟。
+
+    成败判定见 `artifact_ok`：**不看 rc，看产物**。写之前先删干净，
+    避免上一候选的残缺文件被下一次判定误认为成品。
     """
+    try:
+        if os.path.exists(dest):
+            os.remove(dest)
+    except OSError:
+        pass
     if shutil.which("curl"):
         cmd = ["curl", "-fsSL", "--connect-timeout", "8",
                "--speed-time", "20", "--speed-limit", "10240",
@@ -169,7 +215,9 @@ def _curl_download(url: str, dest: str, *, max_time: int = 300) -> bool:
             cmd[-1:-1] = ["--proxy", effective_proxy()]
         try:
             r = subprocess.run(cmd, capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=max_time + 15)
-            if r.returncode == 0 and os.path.exists(dest) and os.path.getsize(dest) > 0:
+            if artifact_ok(dest):
+                if r.returncode != 0:
+                    _LAST_VIA.append(f"curl rc={r.returncode} 但产物完整")
                 return True
         except (subprocess.SubprocessError, OSError):
             pass
@@ -179,7 +227,7 @@ def _curl_download(url: str, dest: str, *, max_time: int = 300) -> bool:
         req = urllib.request.Request(url, headers={"User-Agent": "proxysub-cn-probe"})
         with urllib.request.urlopen(req, timeout=max_time) as r, open(dest, "wb") as f:
             shutil.copyfileobj(r, f)
-        return os.path.exists(dest) and os.path.getsize(dest) > 0
+        return artifact_ok(dest)
     except (urllib.error.URLError, OSError, ValueError):
         return False
 
@@ -371,7 +419,8 @@ def release_assets(tag: str) -> list[dict]:
     return []
 
 
-def download_asset(tag: str, name: str, dest: str, *, timeout: int = 60) -> bool:
+def download_asset(tag: str, name: str, dest: str, *, timeout: int = 60,
+                   errs: list[str] | None = None) -> bool:
     """下载单个 Release 资产到 dest。三条通道按**实测成功率**排序。
 
     实测 2026-11-20（家宽）：
@@ -386,6 +435,16 @@ def download_asset(tag: str, name: str, dest: str, *, timeout: int = 60) -> bool
     任何一条成功即返回；全部失败返回 False（绝不抛异常）。
     """
     url = f"https://github.com/{repo()}/releases/download/{tag}/{name}"
+    if errs is None:
+        errs = []
+    _LAST_VIA.clear()
+
+    def _note(msg: str) -> None:
+        try:
+            errs.append(msg)
+        except Exception:  # noqa: BLE001 - 记录失败绝不影响主流程
+            pass
+
     if has_gh():
         # 通道一：资产接口（不依赖 git 上下文，也不走 objects 域名）
         try:
@@ -403,9 +462,18 @@ def download_asset(tag: str, name: str, dest: str, *, timeout: int = 60) -> bool
                 if r2.returncode == 0 and r2.stdout:
                     with open(dest, "wb") as f:
                         f.write(r2.stdout)
-                    return True
-        except (subprocess.SubprocessError, OSError):
-            pass
+                    if artifact_ok(dest):
+                        _LAST_VIA.append("api资产")
+                        return True
+                    _note("api资产 写入后校验不通过")
+                else:
+                    tail = ((r2.stderr or b"").decode("utf-8", "replace")).strip().splitlines()
+                    _note(f"api资产 rc={r2.returncode} {(tail[-1] if tail else '空响应')[:120]}")
+            else:
+                tail = ((r.stderr or "").strip().splitlines())
+                _note(f"api查id rc={r.returncode} 未取到 id{(('：' + tail[-1][:100]) if tail else '')}")
+        except (subprocess.SubprocessError, OSError) as e:
+            _note(f"api资产 {type(e).__name__}")
         # 通道二：gh release download（显式 -R，摆脱 git 上下文依赖）
         try:
             r = subprocess.run(
@@ -413,12 +481,22 @@ def download_asset(tag: str, name: str, dest: str, *, timeout: int = 60) -> bool
                  "-p", name, "-O", dest, "--clobber"],
                 capture_output=True, text=True, encoding="utf-8",
                 errors="replace", timeout=timeout, env=_gh_env())
-            if r.returncode == 0 and os.path.exists(dest) and os.path.getsize(dest) > 0:
+            if artifact_ok(dest):
+                _LAST_VIA.append("gh release")
                 return True
-        except subprocess.SubprocessError:
-            pass
+            tail = ((r.stderr or "").strip().splitlines())
+            _note(f"gh release rc={r.returncode} {(tail[-1] if tail else '无输出')[:120]}")
+        except subprocess.SubprocessError as e:
+            _note(f"gh release {type(e).__name__}")
+    else:
+        _note("gh 不可用")
     # 通道三：直连 + 镜像回退（沙箱直连正常时第一枪即中，家宽则落到镜像）
-    return download_url(url, dest, max_time=max(timeout, 60))
+    ok = download_url(url, dest, max_time=max(timeout, 60))
+    if not ok:
+        _note("直链+镜像失败")
+    else:
+        _LAST_VIA.append("直链+镜像")
+    return ok
 
 
 def upload_asset(tag: str, path: str, *, name: str | None = None,

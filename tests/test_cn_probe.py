@@ -659,7 +659,7 @@ def test_gh_download_delegates_to_compat(monkeypatch, tmp_path):
     dest = tmp_path / "asset.json"
     seen = {}
 
-    def fake_download(tag, pattern, d, timeout=60):
+    def fake_download(tag, pattern, d, timeout=60, errs=None):
         seen.update(tag=tag, pattern=pattern, dest=d)
         with open(d, "w", encoding="utf-8") as f:
             f.write('{"ok": true}')
@@ -669,6 +669,21 @@ def test_gh_download_delegates_to_compat(monkeypatch, tmp_path):
     assert cn_probe.gh_download("sub", "asset.json", str(dest)) is True
     assert seen == {"tag": "sub", "pattern": "asset.json", "dest": str(dest)}
     assert dest.exists()
+
+
+def test_gh_download_surfaces_channel_errors(monkeypatch, tmp_path, capsys):
+    """失败时必须回显**每条通道各自的**错误，否则「gh 与直链均失败」等于没报。"""
+    dest = tmp_path / "asset.json"
+
+    def fake_download(tag, pattern, d, timeout=60, errs=None):
+        errs.extend(["api资产 rc=1 HTTP 404", "gh release rc=1 failed to run git",
+                     "直链+镜像失败"])
+        return False
+
+    monkeypatch.setattr(cn_probe.gh_compat, "download_asset", fake_download)
+    assert cn_probe.gh_download("pool", "pool.json.gz", str(dest), retries=0) is False
+    out = capsys.readouterr().out
+    assert "api资产 rc=1" in out and "gh release rc=1" in out and "直链+镜像失败" in out
 
 
 def test_gh_download_timeout_never_raises(monkeypatch, tmp_path):

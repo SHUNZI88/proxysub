@@ -218,7 +218,53 @@
    "tunnel": 0,
    "ok": 0,
    "rate": 0.0
+  },
+  "https://raw.githubusercontent.com/ReaJason/Clash-Butler/master/clash.yaml": {
+   "repo": "ReaJason/Clash-Butler",
+   "ts": "2026-11-20T13:40:46",
+   "parsed": 40,
+   "samples": 11,
+   "verdict": "reject",
+   "lat_ok": 2,
+   "tunnel": 2,
+   "ok": 2,
+   "rate": 0.182
+  },
+  "https://raw.githubusercontent.com/asek26823-cmd/free-jichang-clash-v2ray/main/output/clash.yaml": {
+   "repo": "asek26823-cmd/free-jichang-clash-v2ray",
+   "ts": "2026-11-20T13:40:56",
+   "parsed": 6,
+   "samples": 0,
+   "verdict": "pending"
+  },
+  "https://raw.githubusercontent.com/telegeam/freenode/master/clash.yaml": {
+   "repo": "telegeam/freenode",
+   "ts": "2026-11-20T13:41:02",
+   "parsed": 5,
+   "samples": 0,
+   "verdict": "pending"
+  },
+  "https://raw.githubusercontent.com/Boshugege/singbox-config-publisher/main/examples/subscriptions/clash.yaml": {
+   "repo": "Boshugege/singbox-config-publisher",
+   "ts": "2026-11-20T13:41:03",
+   "parsed": 5,
+   "samples": 0,
+   "verdict": "pending"
+  },
+  "https://raw.githubusercontent.com/wh23423/wh-/main/s7f2k9/clash.yaml": {
+   "repo": "wh23423/wh-",
+   "ts": "2026-11-20T13:41:09",
+   "parsed": 4,
+   "samples": 0,
+   "verdict": "pending"
+  },
+  "https://raw.githubusercontent.com/zfl9/subfetch/main/fixtures/clash.yaml": {
+   "repo": "zfl9/subfetch",
+   "ts": "2026-11-20T13:41:13",
+   "parsed": 3,
+   "samples": 0,
+   "verdict": "pending"
   }
  },
- "last_run": "2026-11-20T11:18:19"
+ "last_run": "2026-11-20T13:41:30"
 }

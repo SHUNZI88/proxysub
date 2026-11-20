@@ -536,10 +536,13 @@ def gh_download(tag: str, pattern: str, dest: str, retries: int = 1) -> bool:
     for attempt in range(retries + 1):
         # 单一入口交给 gh_compat：gh 优先、失败自动回退直链下载。
         # 直链对公开仓库免 token——这是本机（Windows，无 gh）能跑通实测的前提。
+        errs: list[str] = []
         try:
-            if gh_compat.download_asset(tag, pattern, dest, timeout=60):
+            if gh_compat.download_asset(tag, pattern, dest, timeout=60, errs=errs):
+                via = " > ".join(getattr(gh_compat, "_LAST_VIA", []) or []) or "未知通道"
+                log(f"下载 {pattern} 成功（{via}）")
                 return True
-            last_err = "gh 与直链均失败"
+            last_err = "；".join(errs) if errs else "gh 与直链均失败"
         except subprocess.TimeoutExpired:
             last_err = "下载超时"
             log(f"提示: 下载 {pattern} 超时")
