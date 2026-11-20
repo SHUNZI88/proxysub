@@ -372,26 +372,22 @@ def release_assets(tag: str) -> list[dict]:
 
 
 def download_asset(tag: str, name: str, dest: str, *, timeout: int = 60) -> bool:
-    """下载单个 Release 资产到 dest。gh 优先，失败回退 REST 直链。
+    """下载单个 Release 资产到 dest。三条通道按**实测成功率**排序。
 
-    回退用 `releases/download` 直链而不是 API 资产接口：直链支持跟随重定向，
-    且公开仓库**不需要 token**——本机匿名也能跑通完整的"下载候选/交接文档"。
+    实测 2026-11-20（家宽）：
+      * `gh release download`：依赖「当前目录是个 git 仓库且有 remote」，
+        从非仓库目录调用直接 `failed to run git`；且它最终从
+        objects.githubusercontent.com 取实体，该域名在国内常被 RST。
+        轮次内实测连续 4 次 ×9s 全失败，而同一函数在仓库根目录手跑成功。
+      * `gh api releases/assets/<id>`（Accept: octet-stream）：纯 api.github.com
+        往返，同一文件 8~10s 稳定成功——**成功率最高，故排第一**。
+      * 直链 + 镜像：公开仓库免 token，家宽下快但受 objects 域名影响。
+
+    任何一条成功即返回；全部失败返回 False（绝不抛异常）。
     """
     url = f"https://github.com/{repo()}/releases/download/{tag}/{name}"
     if has_gh():
-        try:
-            r = subprocess.run(
-                [gh_bin(), "release", "download", tag, "-p", name, "-O", dest,
-                 "--clobber"],
-                capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=timeout, env=_gh_env())
-            if r.returncode == 0 and os.path.exists(dest) and os.path.getsize(dest) > 0:
-                return True
-        except subprocess.SubprocessError:
-            pass
-        # 第二路：`gh release download` 会先访问 api.github.com 解析资产，再从
-        # objects.githubusercontent.com 拉实体——后者在国内经常被 RST，表现为
-        # 下载卡住或超时（实测 1.68MB 的 pool.json 手动下 22s，轮次内直接失败）。
-        # 改走**纯 api.github.com** 的资产接口：实测同一文件 1s 级完成。
+        # 通道一：资产接口（不依赖 git 上下文，也不走 objects 域名）
         try:
             r = subprocess.run(
                 [gh_bin(), "api", f"repos/{repo()}/releases/tags/{tag}",
@@ -410,11 +406,21 @@ def download_asset(tag: str, name: str, dest: str, *, timeout: int = 60) -> bool
                     return True
         except (subprocess.SubprocessError, OSError):
             pass
-    # 直连 + 镜像回退（沙箱直连正常时第一枪即中，家宽则自动落到镜像）
+        # 通道二：gh release download（显式 -R，摆脱 git 上下文依赖）
+        try:
+            r = subprocess.run(
+                [gh_bin(), "release", "download", tag, "-R", repo(),
+                 "-p", name, "-O", dest, "--clobber"],
+                capture_output=True, text=True, encoding="utf-8",
+                errors="replace", timeout=timeout, env=_gh_env())
+            if r.returncode == 0 and os.path.exists(dest) and os.path.getsize(dest) > 0:
+                return True
+        except subprocess.SubprocessError:
+            pass
+    # 通道三：直连 + 镜像回退（沙箱直连正常时第一枪即中，家宽则落到镜像）
     return download_url(url, dest, max_time=max(timeout, 60))
 
 
-# ------------------------------------------------------------------ 写
 def upload_asset(tag: str, path: str, *, name: str | None = None,
                  timeout: int = 180) -> tuple[bool, str]:
     """上传资产并以 name 覆盖同名资产（等价 `gh release upload --clobber`）。
