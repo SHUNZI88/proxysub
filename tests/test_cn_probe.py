@@ -1779,9 +1779,10 @@ def test_diversity_cap_limits_per_server():
     """24 个节点里 16 个来自同一批意大利 ss——单供应商占三分之二，必须限流。"""
     nodes = [{"proxy": {"server": "a"}} for _ in range(5)] + \
             [{"proxy": {"server": "b"}} for _ in range(2)]
-    # 只验 server 维度：把 region/family 上限放到不生效
+    # 只验 server 维度：region/family 上限与地区占比都放到不生效
     kept, dropped = cn_probe.apply_diversity_cap(nodes, per_server=3,
-                                                per_region=99, per_family=99)
+                                                per_region=99, per_family=99,
+                                                region_share=1.0)
     assert len(kept) == 5 and len(dropped) == 2      # a 留 3，b 留 2
     assert sum(1 for n in kept if n["proxy"]["server"] == "a") == 3
 
@@ -2147,3 +2148,37 @@ def test_source_mirrors_branch_with_slash():
     assert m[0].startswith("https://raw.githubusercontent.com/o/r/feature/x/clash.yaml")
     # owner/repo/branch=feature, path=x/clash.yaml 是唯一可行切法
     assert any("gh/o/r@feature/x/clash.yaml" in u for u in m)
+
+
+# ------------------------------------------------- 地区占比自适应（任务#138）
+def _rnode(server, region_name):
+    return {"fp": f"{server}:443", "name": region_name, "src": "s",
+            "proxy": {"server": server, "port": 443, "type": "vless"},
+            "origin": "pending", "final": False, "us_ok": False}
+
+
+def test_region_cap_scales_with_publish_size():
+    """15 个节点的发布集里，单地区最多 6 个（40%），而不是固定 12 个。
+
+    事故：固定上限 12 在 15 个的发布集上等于不设限，实测意大利占 9 个（60%）。
+    """
+    nodes = [_rnode(f"it{i}.example", f"🇮🇹IT_{i}") for i in range(12)]
+    nodes += [_rnode(f"us{i}.example", f"🇺🇸US_{i}") for i in range(3)]
+    kept, dropped = cn_probe.apply_diversity_cap(nodes, per_server=1, per_region=12)
+    it = sum(1 for n in kept if "IT" in n["name"])
+    assert it <= 6, f"意大利 {it} 个，超过 15×0.4=6"
+    assert len(dropped) == 9 - 6 + 0 or it == 6
+
+
+def test_region_cap_has_floor_of_three():
+    """小规模发布集不能把地区限到 0/1：下限 3 保证仍有可用节点。"""
+    nodes = [_rnode(f"it{i}.example", f"🇮🇹IT_{i}") for i in range(5)]
+    kept, _ = cn_probe.apply_diversity_cap(nodes, per_server=1, per_region=12)
+    assert len(kept) == 3
+
+
+def test_region_cap_keeps_diverse_set_intact():
+    nodes = [_rnode(f"n{i}.example", nm) for i, nm in
+             enumerate(["🇺🇸US", "🇩🇪DE", "🇫🇷FR", "🇳🇱NL", "🇯🇵JP", "🇸🇬SG"])]
+    kept, dropped = cn_probe.apply_diversity_cap(nodes, per_server=1, per_region=12)
+    assert len(kept) == 6 and dropped == []

@@ -2349,7 +2349,8 @@ def family_of(name: str) -> str:
 
 def apply_diversity_cap(nodes: list[dict], per_server: int | None = None,
                         per_region: int | None = None,
-                        per_family: int | None = None) -> tuple[list[dict], list[dict]]:
+                        per_family: int | None = None,
+                        region_share: float | None = None) -> tuple[list[dict], list[dict]]:
     """同一服务器地址的主资产配额（纯函数，任务#131）。
 
     实证：24 个节点里 16 个意大利 ss，来自 15 个地址但命名/指纹同源，说明
@@ -2361,6 +2362,16 @@ def apply_diversity_cap(nodes: list[dict], per_server: int | None = None,
     cap = int(per_server or getattr(config, "MAX_NODES_PER_SERVER", 3))
     cap_r = int(per_region or getattr(config, "MAX_NODES_PER_REGION", 5))
     cap_f = int(per_family or getattr(config, "MAX_NODES_PER_FAMILY", 3))
+    # 地区上限改为「固定值与比例取小」（任务#138 收尾）：
+    # 固定 12 在发布集只有 15 个时等于不设限——实测出现过 15 个里 9 个意大利
+    # （60%），用户观感仍是「又是意大利」。改为单地区 ≤ max(3, ⌈n×share⌉)，
+    # 让限额随发布规模自适应：21 个时上限 9，15 个时上限 6，8 个时仍是 3。
+    share = float(region_share if region_share is not None
+                  else getattr(config, "MAX_REGION_SHARE", 0.4))
+    n_total = len(nodes)
+    cap_share = max(3, -(-int(n_total * share * 1000) // 1000))  # 向上取整
+    if cap_r > cap_share:
+        cap_r = cap_share
     kept: list[dict] = []
     dropped: list[dict] = []
     by_srv: dict[str, int] = {}
