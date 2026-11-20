@@ -49,7 +49,12 @@ jobs:
       - name: Build candidate pool
         env:
           PYTHONIOENCODING: utf-8
-        run: python scripts/pool_build.py --per-source 1500 --max-pool 8000
+        # 体量即本机等待时间（实测到 GitHub 对象存储只有 23~30KB/s）：
+        # 全量 3600+ 节点 gz 后 315KB ≈ 14s，且常因 objects.githubusercontent.com
+        # 被 RST 而直接失败；裁到 60/源、1400 上限后 gz 77KB ≈ 3s。
+        # 60/源 不影响高产出源（它们本来就只有十几到几十个节点），
+        # 只截断那些「几百上千个节点、本机产出率 0~3%」的聚合器长尾。
+        run: python scripts/pool_build.py --per-source 60 --max-pool 1400
 
       - name: Upload pool to rolling release
         env:
