@@ -1303,14 +1303,27 @@ def pool_sample(pool: list[dict], limit: int, yields: dict | None = None,
     return out
 
 
-def load_ci_pool(workdir: str, tag: str, max_age_h: float | None = None,
+def load_ci_pool(workdir: str, tag: str | None = None, max_age_h: float | None = None,
                  round_id: str = "") -> list[dict]:
     """下载 CI 构建的候选池（海外抓取），返回与 pending 同形的节点。
+
+    ⚠️ 池子所在的 **Release tag 与主资产不同**：主资产在 `sub`（每轮覆盖），
+    池子在 `config.POOL_RELEASE_TAG`（默认 `pool`，CI 每 20 分钟覆盖）。
+
+    任务#140 的架构（抓源与初选在 GitHub、本机只做实测）**因为这一条没接上
+    而从未真正生效**：调用方把自己那轮的 `tag`（= `sub`）传进来，于是每轮都在
+    `sub` 的资产里找 `pool.json.gz`，必然找不到 → 一律「下载失败」→ 一律降级
+    本机自抓。日志看起来像是"网络拿不到池子"，实际是找错了仓库里的位置。
+    `tag` 参数保留仅作兼容，**真实取值只认 config.POOL_RELEASE_TAG**。
 
     返回空列表表示「本轮拿不到可用池子」，由调用方决定是否降级自抓。
     龄期超过 POOL_MAX_AGE_H 视为不可用：免费节点寿命以小时计，池子越旧
     有效率衰减越快，本地实测预算不该花在已经凉了的名单上。
     """
+    pool_tag = getattr(config, "POOL_RELEASE_TAG", "pool")
+    if tag and tag != pool_tag:
+        log(f"提示: 候选池在 release「{pool_tag}」，不在本轮资产「{tag}」——按池子 tag 取")
+    tag = pool_tag
     name = getattr(config, "POOL_FILE", "pool.json") + ".gz"
     dest = os.path.join(workdir, name)
     try:
@@ -1321,7 +1334,7 @@ def load_ci_pool(workdir: str, tag: str, max_age_h: float | None = None,
     # 多试几次：CI 每 20 分钟 --clobber 覆盖同名资产，覆盖瞬间会 404；
     # 家宽到 GitHub 对象存储也只有 10~30KB/s，一次抖动不该让整轮降级自抓。
     if not gh_download(tag, name, dest, retries=3):
-        log("CI 候选池: 下载失败（release 无该资产或网络不可用）")
+        log(f"CI 候选池: 下载失败（release「{tag}」无 {name} 或网络不可用）")
         return []
     try:
         with gzip.open(dest, "rt", encoding="utf-8") as f:

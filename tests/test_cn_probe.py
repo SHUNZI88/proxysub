@@ -1,7 +1,9 @@
 """scripts/cn_probe.py 纯函数测试：地理证据解析、去重、验证集配置构建。"""
 
+import datetime
 import json
 import os
+import shutil
 import subprocess
 import sys
 import unittest.mock as mock
@@ -2201,3 +2203,58 @@ def test_region_cap_keeps_diverse_set_intact():
              enumerate(["🇺🇸US", "🇩🇪DE", "🇫🇷FR", "🇳🇱NL", "🇯🇵JP", "🇸🇬SG"])]
     kept, dropped = cn_probe.apply_diversity_cap(nodes, per_server=1, per_region=12)
     assert len(kept) == 6 and dropped == []
+
+
+# ------------------------------------------------ 池子必须从「pool」这个 release 取
+def _pool_gz(tmp_path, nodes, generated_at):
+    """在**源目录**造一份池子文件（不能放 dest，load_ci_pool 会先删 dest）。"""
+    import gzip as _gz
+    doc = {"generated_at": generated_at, "nodes": nodes}
+    src_dir = tmp_path / "_src"
+    src_dir.mkdir(exist_ok=True)
+    p = src_dir / "pool.json.gz"
+    with _gz.open(p, "wt", encoding="utf-8") as f:
+        json.dump(doc, f)
+    return str(p)
+
+
+def test_load_ci_pool_uses_pool_release_tag(monkeypatch, tmp_path):
+    """回归（任务#140 从未真正生效）：池子在 release「pool」里，不在本轮资产里。
+
+    事故：调用方把自己那轮的 tag（`sub`）传进 load_ci_pool，于是每轮都在
+    `sub` 的资产里找 pool.json.gz → 必然「下载失败」→ 一律降级本机自抓。
+    「抓源与初选在 GitHub 完成」这个架构因此一整天都没跑起来，而日志看起来
+    只是"网络拿不到池子"。`config.POOL_RELEASE_TAG` 当时定义了却没人用。
+    """
+    now = datetime.datetime.now(datetime.timezone.utc).isoformat().replace("+00:00", "Z")
+    src = _pool_gz(tmp_path, [{"fp": "f1", "src": "s1",
+                               "proxy": {"name": "IT 01", "type": "ss",
+                                         "server": "1.2.3.4", "port": 8388,
+                                         "cipher": "aes-256-gcm",
+                                         "password": "abc"}}], now)
+    seen = {}
+
+    def fake_dl(tag, name, dest, retries=1):
+        seen.update(tag=tag, name=name)
+        shutil.copyfile(src, dest)
+        return True
+
+    monkeypatch.setattr(cn_probe, "gh_download", fake_dl)
+    monkeypatch.setattr(cn_probe.config, "POOL_RELEASE_TAG", "pool")
+    nodes = cn_probe.load_ci_pool(str(tmp_path), "sub")
+    assert seen == {"tag": "pool", "name": "pool.json.gz"}
+    assert len(nodes) == 1 and nodes[0]["src"] == "s1"
+
+
+def test_load_ci_pool_rejects_stale_pool(monkeypatch, tmp_path):
+    """池子过旧必须拒用：免费节点寿命以小时计，测老名单等于烧预算。"""
+    old = (datetime.datetime.now(datetime.timezone.utc)
+           - datetime.timedelta(hours=9)).isoformat().replace("+00:00", "Z")
+    src = _pool_gz(tmp_path, [{"proxy": {"name": "x", "type": "ss",
+                                         "server": "1.2.3.4", "port": 8388,
+                                         "cipher": "aes-256-gcm",
+                                         "password": "abc"}}], old)
+    monkeypatch.setattr(cn_probe, "gh_download",
+                        lambda tag, name, dest, retries=1: (shutil.copyfile(src, dest), True)[1])
+    monkeypatch.setattr(cn_probe.config, "POOL_MAX_AGE_H", 4.0)
+    assert cn_probe.load_ci_pool(str(tmp_path), "pool") == []
