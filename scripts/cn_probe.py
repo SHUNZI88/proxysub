@@ -1315,7 +1315,9 @@ def load_ci_pool(workdir: str, tag: str, max_age_h: float | None = None,
             os.remove(dest)          # 防止下载失败时误用上一轮的旧池子
     except OSError:
         pass
-    if not gh_download(tag, name, dest):
+    # 多试几次：CI 每 20 分钟 --clobber 覆盖同名资产，覆盖瞬间会 404；
+    # 家宽到 GitHub 对象存储也只有 10~30KB/s，一次抖动不该让整轮降级自抓。
+    if not gh_download(tag, name, dest, retries=3):
         log("CI 候选池: 下载失败（release 无该资产或网络不可用）")
         return []
     try:

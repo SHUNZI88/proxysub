@@ -19,6 +19,10 @@ on:
     # 本机只要求池子「近」，不要求「准点」。
     - cron: '8,28,48 * * * *'
   workflow_dispatch:
+  # 外部 cron 心跳（cron-job.org 等）可触发——GitHub 计划任务在同仓库高频
+  # 工作流并存时常被推迟数十分钟，池子越旧本机产出率越低，需要一条可控通道。
+  repository_dispatch:
+    types: [pool-refresh]
 
 permissions:
   contents: write     # 需要写 Release 资产
