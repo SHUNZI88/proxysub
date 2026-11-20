@@ -99,7 +99,9 @@ _DIRECT_OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 # 后果：我按 google 尺子判「≤3000ms 可用」的节点，客户端超过一半直接超时。
 # 改用 Cloudflare 的 generate_204：HTTP 裸请求、无 TLS、全球任播，最接近
 # 客户端 url-test 的真实手感（也是 Clash 系默认测试地址的同族）。
-GENERATE_204 = "http://cp.cloudflare.com/generate_204"
+# 2026-11-20 用户决策：判据从 gstatic/CF 任播改为推特（手机端实测假可用根因）。
+# 从 config 读，便于一处切换；未配置时回退旧值。
+GENERATE_204 = getattr(config, "TWITTER_PROBE_URL", None) or "http://cp.cloudflare.com/generate_204"
 # 真实流量测试：必须是中国大陆被封锁、只有经代理才能访问的海外地址。
 # 早期用 robots.txt / cdn-cgi/trace「几行字」+ 403/非空 body 兜底作判据，放行大量
 # 「能握手但下载龟速」的伪可用节点（用户本地实测即暴露无效）。2026-10-17 改为
@@ -3681,8 +3683,12 @@ def main() -> int:
             # 4.15) 延迟串行复测（任务#127）：初筛并发 16 会虚高 RTT，而后续
             # 所有延迟判据（3000ms 降级 / 1500ms 填充剔除 / 报告）都吃这个数。
             # 初筛只负责「通不通」，真实延迟由串行复测给出。
-            if (delay_passed and getattr(config, "SERIAL_LATENCY_RECHECK", True)
-                    and not getattr(config, "TARGET_TEST_ENABLED", False)):
+            # 2026-11-20 推特判据：Google-only 模式下也必须做稳定性复测。
+            # 旧实现用 `not TARGET_TEST_ENABLED` 短路，而该开关恒为 True，
+            # 导致复测从不执行；叠加 SAMPLES=1/MIN_PASS=1（等于不采样），
+            # 单次碰巧成功的节点大量混入——正是用户手机端超时的根因。
+            # 推特判据下改为只看 SERIAL_LATENCY_RECHECK 开关。
+            if (delay_passed and getattr(config, "SERIAL_LATENCY_RECHECK", True)):
                 _t = time.time()
                 _r = serial_latency_recheck(api_port, delay_passed, results)
                 if _r["unstable"]:

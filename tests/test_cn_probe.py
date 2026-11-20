@@ -1028,10 +1028,12 @@ def test_real_min_bytes_threshold_tightened():
     在沙箱判通过、用户本地不可用。慢档（AI 提级路径）保持 32KB 不变。"""
     assert cn_probe.REAL_MIN_BYTES >= 768 * 1024
     assert cn_probe.REAL_SLOW_MIN_BYTES == 32 * 1024
-    # 延迟闸门的数值取决于「探测尺子」，两者必须一起改（任务#128）：
-    # 旧尺子 google robots 中位 1660ms、新尺子 cf-204 中位 549ms，差约 3 倍。
-    # 故 3000ms(google) → 1500ms(cf-204) 是**等效换算**，不是收紧标准。
-    assert cn_probe.GENERATE_204.startswith("http://cp.cloudflare.com/")
+    # 延迟闸门的数值取决于「探测尺子」，两者必须一起改（任务#128）。
+    # 2026-11-20 用户决策：主判据从 CF 任播改为推特（gstatic/CF 离国内路径近、
+    # 延迟天然偏低，测「能通」不代表能打开推特，实证 23 个 gstatic 全通过里
+    # 12 个推特不达标）。GENERATE_204 现在读 config.TWITTER_PROBE_URL。
+    assert cn_probe.GENERATE_204 == config.TWITTER_PROBE_URL
+    assert "twitter" in cn_probe.GENERATE_204.lower() or "x.com" in cn_probe.GENERATE_204.lower()
     assert cn_probe.CN_MAX_PUBLISH_LATENCY_MS == 1500
 
 

@@ -70,3 +70,23 @@ def test_switch_off_restores_strict_behavior_contract():
         assert [n["name"] for n in cn_probe.select_thin_nodes(nodes, results, 64)] == ["slow"]
     finally:
         config.GOOGLE_ONLY_GATE = old
+
+
+def test_twitter_probe_criterion_contract():
+    """2026-11-20 用户决策：本地实测判据从 gstatic/CF 改为推特。
+
+    手机 FlClash 实测「本地通过 32 个里 20+ 超时」，实证 gstatic 全通过的
+    23 个里 12 个推特不达标——gstatic 离国内路径近、延迟天然偏低。
+    锁定：GENERATE_204 读推特端点 + 稳定性采样恢复为多次多数通过。
+    """
+    import config
+    from scripts import cn_probe
+
+    url = getattr(config, "TWITTER_PROBE_URL", "")
+    assert url and ("twitter" in url.lower() or "x.com" in url.lower()), \
+        "主判据必须是推特端点"
+    assert cn_probe.GENERATE_204 == url
+    # 稳定性采样不能是 1/1（等于不采样，单次碰巧成功混入＝用户端超时根因）
+    assert getattr(config, "SERIAL_LATENCY_SAMPLES", 1) >= 3
+    assert getattr(config, "SERIAL_LATENCY_MIN_PASS", 1) >= 2
+    assert getattr(config, "SERIAL_LATENCY_RECHECK", False) is True
