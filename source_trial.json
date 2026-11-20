@@ -1,0 +1,178 @@
+{
+ "note": "候选源实测台账：判据只有目标站可达率（TCP 存活率无预测力）",
+ "tested": {
+  "https://raw.githubusercontent.com/anaer/Sub/main/clash.yaml": {
+   "repo": "anaer/Sub",
+   "samples": 12,
+   "tunnel": 12,
+   "ok": 0,
+   "rate": 0.0,
+   "verdict": "reject",
+   "note": "边际 1039、TCP 52.5%，但目标站 0/12；印证 11-11 的 0/159 判决",
+   "ts": "2026-11-20T10:43:09"
+  },
+  "https://raw.githubusercontent.com/bily1258-design/beimi/main/output/clash.yaml": {
+   "repo": "bily1258-design/beimi",
+   "samples": 12,
+   "tunnel": 12,
+   "ok": 4,
+   "rate": 0.333,
+   "verdict": "promote",
+   "ts": "2026-11-20T10:43:09"
+  },
+  "https://raw.githubusercontent.com/happygithub007/nodelist/main/data/clash.yaml": {
+   "repo": "happygithub007/nodelist",
+   "samples": 12,
+   "tunnel": 11,
+   "ok": 0,
+   "rate": 0.0,
+   "verdict": "reject",
+   "ts": "2026-11-20T10:43:09"
+  },
+  "https://raw.githubusercontent.com/FlyingDashie/Free-node-autotest/main/clash.yaml": {
+   "repo": "FlyingDashie/Free-node-autotest",
+   "samples": 12,
+   "tunnel": 12,
+   "ok": 7,
+   "rate": 0.583,
+   "verdict": "promote",
+   "ts": "2026-11-20T10:43:09"
+  },
+  "https://raw.githubusercontent.com/10ium/VpnClashFaCollector/main/sub/final/filembad/clash.yaml": {
+   "repo": "10ium/VpnClashFaCollector",
+   "samples": 8,
+   "tunnel": 7,
+   "ok": 0,
+   "rate": 0.0,
+   "verdict": "reject",
+   "ts": "2026-11-20T10:43:09"
+  },
+  "https://raw.githubusercontent.com/10ium/VpnClashFaCollector/main/sub/final/SPEEDS_VPN1/clash.yaml": {
+   "repo": "10ium/VpnClashFaCollector",
+   "samples": 8,
+   "tunnel": 8,
+   "ok": 0,
+   "rate": 0.0,
+   "verdict": "reject",
+   "ts": "2026-11-20T10:43:09"
+  },
+  "https://raw.githubusercontent.com/10ium/VpnClashFaCollector/main/sub/final/persianvpnhub/clash.yaml": {
+   "repo": "10ium/VpnClashFaCollector",
+   "samples": 8,
+   "tunnel": 8,
+   "ok": 0,
+   "rate": 0.0,
+   "verdict": "reject",
+   "ts": "2026-11-20T10:43:09"
+  },
+  "https://raw.githubusercontent.com/proco2024/channel/main/Telegram:@config_proxy-14040712-004-clash.yaml": {
+   "repo": "proco2024/channel",
+   "samples": 8,
+   "tunnel": 7,
+   "ok": 0,
+   "rate": 0.0,
+   "verdict": "reject",
+   "ts": "2026-11-20T10:43:09"
+  },
+  "https://raw.githubusercontent.com/proco2024/channel/main/Telegram:@config_proxy-14041207-038-clash.yaml": {
+   "repo": "proco2024/channel",
+   "samples": 8,
+   "tunnel": 8,
+   "ok": 0,
+   "rate": 0.0,
+   "verdict": "reject",
+   "ts": "2026-11-20T10:43:09"
+  },
+  "https://raw.githubusercontent.com/moneyfly1/jichangnodes/main/sub/250520/clash.yaml": {
+   "repo": "moneyfly1/jichangnodes",
+   "ts": "2026-11-20T10:43:39",
+   "parsed": 1397,
+   "samples": 2,
+   "verdict": "reject",
+   "tunnel": 2,
+   "ok": 0,
+   "rate": 0.0
+  },
+  "https://raw.githubusercontent.com/0xRadikal/Free-v2ray-Configs/main/secure/clash.yaml": {
+   "repo": "0xRadikal/Free-v2ray-Configs",
+   "ts": "2026-11-20T10:43:53",
+   "parsed": 687,
+   "samples": 8,
+   "verdict": "promote",
+   "tunnel": 8,
+   "ok": 2,
+   "rate": 0.25
+  },
+  "https://raw.githubusercontent.com/alireza786786/ai-driven-v2ray/main/secure/clash.yaml": {
+   "repo": "alireza786786/ai-driven-v2ray",
+   "ts": "2026-11-20T10:44:39",
+   "parsed": 630,
+   "samples": 8,
+   "verdict": "promote",
+   "tunnel": 8,
+   "ok": 2,
+   "rate": 0.25
+  },
+  "https://raw.githubusercontent.com/rzhy1/11/master/sub/sub_merge_clash.yaml": {
+   "repo": "rzhy1/11",
+   "ts": "2026-11-20T10:44:51",
+   "parsed": 364,
+   "samples": 6,
+   "verdict": "reject",
+   "tunnel": 6,
+   "ok": 0,
+   "rate": 0.0
+  },
+  "https://raw.githubusercontent.com/peacefish/nodefree/main/sub/sub_merge_clash.yaml": {
+   "repo": "peacefish/nodefree",
+   "ts": "2026-11-20T10:45:05",
+   "parsed": 322,
+   "samples": 7,
+   "verdict": "reject",
+   "tunnel": 7,
+   "ok": 0,
+   "rate": 0.0
+  },
+  "https://raw.githubusercontent.com/youkai53530100/youkai/master/sub/sub_merge_clash.yaml": {
+   "repo": "youkai53530100/youkai",
+   "ts": "2026-11-20T10:45:20",
+   "parsed": 184,
+   "samples": 8,
+   "verdict": "reject",
+   "tunnel": 8,
+   "ok": 0,
+   "rate": 0.0
+  },
+  "https://raw.githubusercontent.com/F0rc3Run/F0rc3Run/main/Best-Results/clash.yaml": {
+   "repo": "F0rc3Run/F0rc3Run",
+   "ts": "2026-11-20T10:45:33",
+   "parsed": 252,
+   "samples": 1,
+   "verdict": "reject",
+   "tunnel": 1,
+   "ok": 1,
+   "rate": 1.0
+  },
+  "https://raw.githubusercontent.com/redeyehare/test6/main/node/202602/11/d/20260211-clash.yaml": {
+   "repo": "redeyehare/test6",
+   "ts": "2026-11-20T10:45:55",
+   "parsed": 53,
+   "samples": 8,
+   "verdict": "reject",
+   "tunnel": 8,
+   "ok": 0,
+   "rate": 0.0
+  },
+  "https://raw.githubusercontent.com/sfyyes92/blues/main/output/clash.yaml": {
+   "repo": "sfyyes92/blues",
+   "ts": "2026-11-20T10:56:23",
+   "parsed": 34,
+   "samples": 8,
+   "verdict": "reject",
+   "tunnel": 8,
+   "ok": 0,
+   "rate": 0.0
+  }
+ },
+ "last_run": "2026-11-20T10:57:45"
+}

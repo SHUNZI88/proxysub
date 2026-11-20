@@ -1,0 +1,406 @@
+{
+ "note": "由 _scan_sources.py 的真实抓取结果固化；只含抓取成功且解析出节点的源",
+ "generated_at": "2026-11-20T10:42:33",
+ "pool": [
+  {
+   "repo": "moneyfly1/jichangnodes",
+   "url": "https://raw.githubusercontent.com/moneyfly1/jichangnodes/main/sub/250520/clash.yaml",
+   "nodes": 1397,
+   "uniq_hp": 1249,
+   "marginal": 1249,
+   "tcp_rate": 5.1,
+   "c24_n": 86,
+   "seen_at": "2026-11-20"
+  },
+  {
+   "repo": "anaer/Sub",
+   "url": "https://raw.githubusercontent.com/anaer/Sub/main/clash.yaml",
+   "nodes": 1093,
+   "uniq_hp": 1082,
+   "marginal": 1039,
+   "tcp_rate": 52.5,
+   "c24_n": 687,
+   "seen_at": "2026-11-20"
+  },
+  {
+   "repo": "bily1258-design/beimi",
+   "url": "https://raw.githubusercontent.com/bily1258-design/beimi/main/output/clash.yaml",
+   "nodes": 575,
+   "uniq_hp": 575,
+   "marginal": 557,
+   "tcp_rate": 50.0,
+   "c24_n": 336,
+   "seen_at": "2026-11-20"
+  },
+  {
+   "repo": "0xRadikal/Free-v2ray-Configs",
+   "url": "https://raw.githubusercontent.com/0xRadikal/Free-v2ray-Configs/main/secure/clash.yaml",
+   "nodes": 736,
+   "uniq_hp": 512,
+   "marginal": 438,
+   "tcp_rate": 15.4,
+   "c24_n": 230,
+   "seen_at": "2026-11-20"
+  },
+  {
+   "repo": "alireza786786/ai-driven-v2ray",
+   "url": "https://raw.githubusercontent.com/alireza786786/ai-driven-v2ray/main/secure/clash.yaml",
+   "nodes": 660,
+   "uniq_hp": 461,
+   "marginal": 397,
+   "tcp_rate": 5.0,
+   "c24_n": 210,
+   "seen_at": "2026-11-20"
+  },
+  {
+   "repo": "rzhy1/11",
+   "url": "https://raw.githubusercontent.com/rzhy1/11/master/sub/sub_merge_clash.yaml",
+   "nodes": 364,
+   "uniq_hp": 344,
+   "marginal": 344,
+   "tcp_rate": 5.0,
+   "c24_n": 119,
+   "seen_at": "2026-11-20"
+  },
+  {
+   "repo": "peacefish/nodefree",
+   "url": "https://raw.githubusercontent.com/peacefish/nodefree/main/sub/sub_merge_clash.yaml",
+   "nodes": 322,
+   "uniq_hp": 311,
+   "marginal": 311,
+   "tcp_rate": 7.5,
+   "c24_n": 103,
+   "seen_at": "2026-11-20"
+  },
+  {
+   "repo": "happygithub007/nodelist",
+   "url": "https://raw.githubusercontent.com/happygithub007/nodelist/main/data/clash.yaml",
+   "nodes": 296,
+   "uniq_hp": 267,
+   "marginal": 267,
+   "tcp_rate": 65.0,
+   "c24_n": 155,
+   "seen_at": "2026-11-20"
+  },
+  {
+   "repo": "youkai53530100/youkai",
+   "url": "https://raw.githubusercontent.com/youkai53530100/youkai/master/sub/sub_merge_clash.yaml",
+   "nodes": 184,
+   "uniq_hp": 183,
+   "marginal": 183,
+   "tcp_rate": 10.0,
+   "c24_n": 78,
+   "seen_at": "2026-11-20"
+  },
+  {
+   "repo": "FlyingDashie/Free-node-autotest",
+   "url": "https://raw.githubusercontent.com/FlyingDashie/Free-node-autotest/main/clash.yaml",
+   "nodes": 308,
+   "uniq_hp": 266,
+   "marginal": 173,
+   "tcp_rate": 54.3,
+   "c24_n": 109,
+   "seen_at": "2026-11-20"
+  },
+  {
+   "repo": "10ium/VpnClashFaCollector",
+   "url": "https://raw.githubusercontent.com/10ium/VpnClashFaCollector/main/sub/final/filembad/clash.yaml",
+   "nodes": 244,
+   "uniq_hp": 171,
+   "marginal": 142,
+   "tcp_rate": 35.9,
+   "c24_n": 76,
+   "seen_at": "2026-11-20"
+  },
+  {
+   "repo": "F0rc3Run/F0rc3Run",
+   "url": "https://raw.githubusercontent.com/F0rc3Run/F0rc3Run/main/Best-Results/clash.yaml",
+   "nodes": 252,
+   "uniq_hp": 252,
+   "marginal": 80,
+   "tcp_rate": 5.0,
+   "c24_n": 53,
+   "seen_at": "2026-11-20"
+  },
+  {
+   "repo": "proco2024/channel",
+   "url": "https://raw.githubusercontent.com/proco2024/channel/main/Telegram:@config_proxy-14040712-004-clash.yaml",
+   "nodes": 69,
+   "uniq_hp": 62,
+   "marginal": 62,
+   "tcp_rate": 64.9,
+   "c24_n": 54,
+   "seen_at": "2026-11-20"
+  },
+  {
+   "repo": "ermaozi/get_subscribe",
+   "url": "https://raw.githubusercontent.com/ermaozi/get_subscribe/main/subscribe/clash.yml",
+   "nodes": 302,
+   "uniq_hp": 280,
+   "marginal": 52,
+   "tcp_rate": 6.1,
+   "c24_n": 40,
+   "seen_at": "2026-11-20"
+  },
+  {
+   "repo": "redeyehare/test6",
+   "url": "https://raw.githubusercontent.com/redeyehare/test6/main/node/202602/11/d/20260211-clash.yaml",
+   "nodes": 53,
+   "uniq_hp": 49,
+   "marginal": 49,
+   "tcp_rate": 16.2,
+   "c24_n": 32,
+   "seen_at": "2026-11-20"
+  },
+  {
+   "repo": "sfyyes92/blues",
+   "url": "https://raw.githubusercontent.com/sfyyes92/blues/main/output/clash.yaml",
+   "nodes": 34,
+   "uniq_hp": 28,
+   "marginal": 28,
+   "tcp_rate": 57.1,
+   "c24_n": 13,
+   "seen_at": "2026-11-20"
+  },
+  {
+   "repo": "ssrsub/ssr",
+   "url": "https://raw.githubusercontent.com/ssrsub/ssr/master/clash.yaml",
+   "nodes": 52,
+   "uniq_hp": 52,
+   "marginal": 25,
+   "tcp_rate": 64.0,
+   "c24_n": 13,
+   "seen_at": "2026-11-20"
+  },
+  {
+   "repo": "Tiamat0527/config",
+   "url": "https://raw.githubusercontent.com/Tiamat0527/config/main/clash.yaml",
+   "nodes": 26,
+   "uniq_hp": 24,
+   "marginal": 24,
+   "tcp_rate": 37.5,
+   "c24_n": 20,
+   "seen_at": "2026-11-20"
+  },
+  {
+   "repo": "ReaJason/Clash-Butler",
+   "url": "https://raw.githubusercontent.com/ReaJason/Clash-Butler/master/clash.yaml",
+   "nodes": 40,
+   "uniq_hp": 40,
+   "marginal": 22,
+   "tcp_rate": 40.9,
+   "c24_n": 15,
+   "seen_at": "2026-11-20"
+  },
+  {
+   "repo": "Ruk1ng001/freeSub",
+   "url": "https://raw.githubusercontent.com/Ruk1ng001/freeSub/main/clash.yaml",
+   "nodes": 40,
+   "uniq_hp": 29,
+   "marginal": 12,
+   "tcp_rate": 50.0,
+   "c24_n": 5,
+   "seen_at": "2026-11-20"
+  },
+  {
+   "repo": "wfl504/920",
+   "url": "https://raw.githubusercontent.com/wfl504/920/master/vpn/11-10-1clash.yaml",
+   "nodes": 7,
+   "uniq_hp": 7,
+   "marginal": 6,
+   "tcp_rate": 33.3,
+   "c24_n": 4,
+   "seen_at": "2026-11-20"
+  },
+  {
+   "repo": "asek26823-cmd/free-jichang-clash-v2ray",
+   "url": "https://raw.githubusercontent.com/asek26823-cmd/free-jichang-clash-v2ray/main/output/clash.yaml",
+   "nodes": 6,
+   "uniq_hp": 6,
+   "marginal": 6,
+   "tcp_rate": 0.0,
+   "c24_n": 5,
+   "seen_at": "2026-11-20"
+  },
+  {
+   "repo": "telegeam/freenode",
+   "url": "https://raw.githubusercontent.com/telegeam/freenode/master/clash.yaml",
+   "nodes": 5,
+   "uniq_hp": 5,
+   "marginal": 5,
+   "tcp_rate": 0.0,
+   "c24_n": 3,
+   "seen_at": "2026-11-20"
+  },
+  {
+   "repo": "Boshugege/singbox-config-publisher",
+   "url": "https://raw.githubusercontent.com/Boshugege/singbox-config-publisher/main/examples/subscriptions/clash.yaml",
+   "nodes": 5,
+   "uniq_hp": 5,
+   "marginal": 5,
+   "tcp_rate": 0.0,
+   "c24_n": 0,
+   "seen_at": "2026-11-20"
+  },
+  {
+   "repo": "wh23423/wh-",
+   "url": "https://raw.githubusercontent.com/wh23423/wh-/main/s7f2k9/clash.yaml",
+   "nodes": 4,
+   "uniq_hp": 4,
+   "marginal": 4,
+   "tcp_rate": 0.0,
+   "c24_n": 1,
+   "seen_at": "2026-11-20"
+  },
+  {
+   "repo": "ripaojiedian/freenode",
+   "url": "https://raw.githubusercontent.com/ripaojiedian/freenode/main/clash",
+   "nodes": 12,
+   "uniq_hp": 11,
+   "marginal": 3,
+   "tcp_rate": 33.3,
+   "c24_n": 2,
+   "seen_at": "2026-11-20"
+  },
+  {
+   "repo": "zfl9/subfetch",
+   "url": "https://raw.githubusercontent.com/zfl9/subfetch/main/fixtures/clash.yaml",
+   "nodes": 3,
+   "uniq_hp": 3,
+   "marginal": 3,
+   "tcp_rate": 0.0,
+   "c24_n": 0,
+   "seen_at": "2026-11-20"
+  },
+  {
+   "repo": "peasoft/NoMoreWalls",
+   "url": "https://raw.githubusercontent.com/peasoft/NoMoreWalls/master/list.yml",
+   "nodes": 112,
+   "uniq_hp": 112,
+   "marginal": 2,
+   "tcp_rate": 0.0,
+   "c24_n": 2,
+   "seen_at": "2026-11-20"
+  },
+  {
+   "repo": "chengaopan/AutoMergePublicNodes",
+   "url": "https://raw.githubusercontent.com/chengaopan/AutoMergePublicNodes/master/list.yml",
+   "nodes": 113,
+   "uniq_hp": 113,
+   "marginal": 2,
+   "tcp_rate": 0.0,
+   "c24_n": 2,
+   "seen_at": "2026-11-20"
+  },
+  {
+   "repo": "keepinfov/oxidom",
+   "url": "https://raw.githubusercontent.com/keepinfov/oxidom/master/crates/oxidom-core/src/subscription_format/fixtures/marzban-clash.yaml",
+   "nodes": 2,
+   "uniq_hp": 2,
+   "marginal": 2,
+   "tcp_rate": 0.0,
+   "c24_n": 0,
+   "seen_at": "2026-11-20"
+  },
+  {
+   "repo": "safe049/safe049.github.io",
+   "url": "https://raw.githubusercontent.com/safe049/safe049.github.io/main/Downloads/clash/free_clash.yaml",
+   "nodes": 4,
+   "uniq_hp": 2,
+   "marginal": 2,
+   "tcp_rate": 0.0,
+   "c24_n": 2,
+   "seen_at": "2026-11-20"
+  },
+  {
+   "repo": "Pawdroid/Free-servers",
+   "url": "https://raw.githubusercontent.com/Pawdroid/Free-servers/main/sub",
+   "nodes": 11,
+   "uniq_hp": 11,
+   "marginal": 1,
+   "tcp_rate": 100.0,
+   "c24_n": 0,
+   "seen_at": "2026-11-20"
+  },
+  {
+   "repo": "funnyzak/network-rules",
+   "url": "https://raw.githubusercontent.com/funnyzak/network-rules/main/ClashPremium/Clash.yaml",
+   "nodes": 2,
+   "uniq_hp": 1,
+   "marginal": 1,
+   "tcp_rate": 0.0,
+   "c24_n": 0,
+   "seen_at": "2026-11-20"
+  },
+  {
+   "repo": "kzlong/Rules",
+   "url": "https://raw.githubusercontent.com/kzlong/Rules/main/Clash/clash.yaml",
+   "nodes": 1,
+   "uniq_hp": 1,
+   "marginal": 1,
+   "tcp_rate": 0.0,
+   "c24_n": 0,
+   "seen_at": "2026-11-20"
+  },
+  {
+   "repo": "Hackl0us/SS-Rule-Snippet",
+   "url": "https://raw.githubusercontent.com/Hackl0us/SS-Rule-Snippet/main/LAZY_RULES/clash.yaml",
+   "nodes": 2,
+   "uniq_hp": 1,
+   "marginal": 1,
+   "tcp_rate": 0.0,
+   "c24_n": 0,
+   "seen_at": "2026-11-20"
+  },
+  {
+   "repo": "zxsos/rocom-go",
+   "url": "https://raw.githubusercontent.com/zxsos/rocom-go/master/deploy/rocom-clash.yaml",
+   "nodes": 1,
+   "uniq_hp": 1,
+   "marginal": 1,
+   "tcp_rate": 0.0,
+   "c24_n": 1,
+   "seen_at": "2026-11-20"
+  },
+  {
+   "repo": "xinlc/dotfiles",
+   "url": "https://raw.githubusercontent.com/xinlc/dotfiles/master/mac/home/.config/clash/clash.yaml",
+   "nodes": 2,
+   "uniq_hp": 1,
+   "marginal": 1,
+   "tcp_rate": 0.0,
+   "c24_n": 0,
+   "seen_at": "2026-11-20"
+  },
+  {
+   "repo": "snakem982/proxypool",
+   "url": "https://raw.githubusercontent.com/snakem982/proxypool/main/source/clash-meta-2.yaml",
+   "nodes": 57,
+   "uniq_hp": 57,
+   "marginal": 0,
+   "tcp_rate": 92.5,
+   "c24_n": 0,
+   "seen_at": "2026-11-20"
+  },
+  {
+   "repo": "ermaozi01/free_clash_vpn",
+   "url": "https://raw.githubusercontent.com/ermaozi01/free_clash_vpn/main/subscribe/clash.yml",
+   "nodes": 28,
+   "uniq_hp": 28,
+   "marginal": 0,
+   "tcp_rate": 89.3,
+   "c24_n": 0,
+   "seen_at": "2026-11-20"
+  },
+  {
+   "repo": "awesome-vpn/awesome-vpn",
+   "url": "https://raw.githubusercontent.com/awesome-vpn/awesome-vpn/master/clash.yaml",
+   "nodes": 24,
+   "uniq_hp": 24,
+   "marginal": 0,
+   "tcp_rate": 8.3,
+   "c24_n": 0,
+   "seen_at": "2026-11-20"
+  }
+ ]
+}
