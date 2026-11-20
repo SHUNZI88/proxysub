@@ -111,3 +111,87 @@ def test_vmess_still_excluded_by_evidence():
     node = {"name": "V", "type": "vmess", "server": "v.example.com", "port": 443,
             "uuid": "b831381d-6324-4d53-ad4f-8cda48b30811"}
     assert fc.protocol_gate_reason(node).startswith("protocol_not_whitelisted")
+
+
+# ---- 任务#140（2026-11-20）：ss 空查询串 / 2022-blake3 / hy2 / anytls ----
+# 事故：v2rayfree 的 15 条 ss 有 10 条写成 `…@host:port?#name`，旧实现
+# int("19999?") 抛错被吞 → 节点静默消失。丢的正是 202.50.253.x:19999 这一批
+# 本机可用率最高的节点。解析层的静默丢包会让「供给不足」看起来像网络问题。
+
+import common as cm
+
+
+def _p(uri):
+    got = cm.parse_subscription_text(uri)
+    return got[0] if got else None
+
+
+def test_ss_trailing_empty_query_parses():
+    node = _p("ss://YWVzLTI1Ni1nY206cGFzcw==@202.50.253.45:19999?#DE%20SS-22")
+    assert node is not None
+    assert node["server"] == "202.50.253.45"
+    assert node["port"] == 19999
+    assert node["cipher"] == "aes-256-gcm"
+    assert node["password"] == "pass"
+
+
+def test_ss_trailing_slash_before_fragment_parses():
+    node = _p("ss://YWVzLTI1Ni1nY206cGFzcw==@1.2.3.4:8388/#node")
+    assert node is not None and node["port"] == 8388
+
+
+def test_ss_2022_key_is_unquoted_and_normalized():
+    """SIP002 里 2022 密钥常写成 URL 编码（%3D）；必须解回来再校验长度。"""
+    key = base64.b64encode(b"0123456789abcdef0123456789abcdef").decode()
+    quoted = key.replace("=", "%3D")
+    node = _p(f"ss://2022-blake3-chacha20-poly1305:{quoted}@1.2.3.4:443#k")
+    assert node is not None
+    assert node["password"] == key          # 标准 base64，mihomo 才认
+
+
+def test_ss_2022_bad_key_length_rejected():
+    """长度不对的密钥会让 mihomo fatal 退出、拖垮整份配置，必须静态拒绝。"""
+    bad = base64.b64encode(b"tooshort").decode()
+    assert _p(f"ss://2022-blake3-chacha20-poly1305:{bad}@1.2.3.4:443#k") is None
+    assert _p("ss://2022-blake3-aes-128-gcm:notbase64!!@1.2.3.4:443#k") is None
+
+
+def test_ss_plugin_is_mapped_to_mihomo_opts():
+    node = _p("ss://YWVzLTI1Ni1nY206cGFzcw==@1.2.3.4:8388"
+              "?plugin=obfs-local%3Bobfs%3Dhttp%3Bobfs-host%3Dbing.com#o")
+    assert node is not None
+    assert node["plugin"] == "obfs"
+    assert node["plugin-opts"]["mode"] == "http"
+    assert node["plugin-opts"]["host"] == "bing.com"
+
+
+def test_hysteria2_and_hy2_links_parse():
+    for scheme in ("hysteria2", "hy2"):
+        node = _p(f"{scheme}://pw@1.2.3.4:443?sni=a.example.com&insecure=1"
+                  f"&obfs=salamander&obfs-password=x#H")
+        assert node is not None, scheme
+        assert node["type"] == "hysteria2"
+        assert node["password"] == "pw"
+        assert node["sni"] == "a.example.com"
+        assert node["skip-cert-verify"] is True
+        assert node["obfs"] == "salamander"
+        assert node["obfs-password"] == "x"
+
+
+def test_anytls_link_parses():
+    node = _p("anytls://pw@5.6.7.8:8443?sni=b.example.com#AT")
+    assert node is not None
+    assert node["type"] == "anytls"
+    assert node["port"] == 8443
+    assert node["sni"] == "b.example.com"
+
+
+def test_parse_keeps_all_schemes_in_one_feed():
+    """一条订阅里混排 ss/hy2/vless 时不能只解析第一种。"""
+    text = "\n".join([
+        "ss://YWVzLTI1Ni1nY206cGFzcw==@1.2.3.4:19999?#a",
+        "hy2://pw@5.6.7.8:443?sni=x.com#b",
+        "anytls://pw@9.9.9.9:8443?sni=y.com#c",
+    ])
+    types = sorted(n["type"] for n in cm.parse_subscription_text(text))
+    assert types == ["anytls", "hysteria2", "ss"]

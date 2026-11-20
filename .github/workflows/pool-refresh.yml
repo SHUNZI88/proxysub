@@ -1,0 +1,85 @@
+name: Candidate pool refresh
+
+# 职责：**只做抓源与初选**，不做任何「能不能用」的判断。
+#
+# 为什么单独一个工作流：
+#   * 抓源必须发生在海外网络（runner 上 raw.githubusercontent 与各订阅源都是
+#     一等公民），而「节点在我这里能不能用」必须发生在家宽。两者混在一台
+#     机器上，会把「源连不上」误记成「源没内容」，源评估越评越窄。
+#   * 免费节点寿命以小时计。daily-update 每 6 小时一轮，本机拿到的候选平均
+#     已放凉 3~6 小时；这个工作流只做抓取+解析+去重，2 分钟内跑完，因此可以
+#     高频刷新，让本机实测永远对着几十分钟内的新鲜名单。
+#
+# 产物：滚动 Release（tag: pool）里的固定资产名 pool.json / pool_stats.json。
+# 本机实测脚本按龄期（POOL_MAX_AGE_H）判断是否可用，过旧自动降级自抓并告警。
+
+on:
+  schedule:
+    # 每 20 分钟一次。GitHub 的计划任务可能延迟数分钟，但不影响用途：
+    # 本机只要求池子「近」，不要求「准点」。
+    - cron: '8,28,48 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write     # 需要写 Release 资产
+
+concurrency:
+  group: proxysub-pool
+  cancel-in-progress: true      # 池子是可再生产物，新轮次直接取代旧轮次
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Build candidate pool
+        env:
+          PYTHONIOENCODING: utf-8
+        run: python scripts/pool_build.py --per-source 1500 --max-pool 8000
+
+      - name: Upload pool to rolling release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          tag="pool"
+          test -s pool.json
+          if ! gh release view "$tag" >/dev/null 2>&1; then
+            gh release create "$tag" --title "candidate pool" \
+              --notes "Auto-refreshed candidate pool (fetched + parsed + deduped on CI; NOT China-tested). Consumed by the local probe."
+          fi
+          gh release upload "$tag" pool.json pool_stats.json --clobber
+
+      - name: Summary
+        if: always()
+        run: |
+          python - <<'EOF' >> "$GITHUB_STEP_SUMMARY"
+          import json, os
+          if not os.path.exists("pool.json"):
+              print("pool.json 未生成（构建失败）")
+          else:
+              doc = json.load(open("pool.json", encoding="utf-8"))
+              src = doc.get("sources") or {}
+              ok = [k for k, v in src.items() if v.get("ok")]
+              print(f"### 候选池 {len(doc.get('nodes') or [])} 个节点 / {len(ok)}/{len(src)} 个源成功")
+              print("")
+              print("| 源 | 解析 | 保留 | 状态 |")
+              print("|---|---|---|---|")
+              for k, v in sorted(src.items(), key=lambda x: -int(x[1].get("kept") or 0)):
+                  print(f"| `{k}` | {v.get('count',0)} | {v.get('kept',0)} | "
+                        f"{'OK' if v.get('ok') else str(v.get('error'))[:40]} |")
+          EOF

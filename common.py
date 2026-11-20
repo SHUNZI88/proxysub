@@ -284,8 +284,49 @@ def _try_b64_decode(text: str) -> str | None:
         except Exception:
             return None
 
+def _ss_plugin_opts(spec: str) -> dict:
+    """把 SIP002 的 plugin 串转成 mihomo 的 plugin / plugin-opts。
+
+    `obfs-local;obfs=http;obfs-host=xxx`        → obfs / {mode, host}
+    `v2ray-plugin;mode=websocket;host=h;path=/` → v2ray-plugin / {mode, host, path, tls}
+    不认识的形式返回 {}，由调用方决定丢弃（带混淆的节点缺参数必然连不上，
+    留着只会占用拨测名额并污染通过率统计）。
+    """
+    parts = [p for p in spec.split(";") if p]
+    if not parts:
+        return {}
+    kind = parts[0].lower()
+    kv = {}
+    for p in parts[1:]:
+        if "=" in p:
+            k, v = p.split("=", 1)
+            kv[k.strip().lower()] = v.strip()
+        else:
+            kv[p.strip().lower()] = "true"
+    if kind in ("obfs-local", "simple-obfs", "obfs"):
+        opts = {"mode": kv.get("obfs", "http")}
+        if kv.get("obfs-host"):
+            opts["host"] = kv["obfs-host"]
+        return {"plugin": "obfs", "plugin-opts": opts}
+    if kind == "v2ray-plugin":
+        opts = {"mode": kv.get("mode", "websocket")}
+        for src, dst in (("host", "host"), ("path", "path"), ("tls", "tls")):
+            if kv.get(src):
+                opts[dst] = kv[src]
+        return {"plugin": "v2ray-plugin", "plugin-opts": opts}
+    return {}
+
+
 def _parse_ss_uri(uri: str) -> dict | None:
-    # ss://BASE64(method:pass@host:port)#name  or ss://method:pass@host:port
+    """ss:// 解析，兼容 SIP002 与旧式整段 base64。
+
+    2026-11-20 实证（docs/cn_probe.md 第 24 节）：v2rayfree 的 15 条 ss 中
+    有 10 条写成 `…#?name`（fragment 前带一个空查询串）。旧实现对 hostport
+    直接 int("19999?") 抛 ValueError，被外层 except 吞掉 → 节点静默消失，
+    而这批 202.50.253.x:19999 恰是本机可用率最高的一类。**静默丢包比报错
+    危险**：它让「供给不足」看起来像网络问题。故此处先剥离 fragment 与
+    query，再切 host:port；带 plugin 的按 plugin-opts 还原。
+    """
     try:
         if not uri.startswith("ss://"):
             return None
@@ -294,22 +335,46 @@ def _parse_ss_uri(uri: str) -> dict | None:
         if "#" in rest:
             rest, name = rest.split("#", 1)
             name = unquote(name)
+        query = ""
+        if "?" in rest:
+            rest, query = rest.split("?", 1)
+        rest = rest.rstrip("/")
         if "@" not in rest:
             decoded = _try_b64_decode(rest)
             if not decoded or "@" not in decoded:
                 return None
-            rest = decoded
+            rest = decoded.split("#", 1)[0]
         userinfo, hostport = rest.rsplit("@", 1)
         if ":" not in hostport:
             return None
         host, port = hostport.rsplit(":", 1)
-        # userinfo may still be base64
+        port = port.strip().rstrip("/")
+        if not port.isdigit():
+            return None
+        # userinfo may still be base64（旧式：整段 base64 后再拼 @host:port）
         if ":" not in userinfo:
             d = _try_b64_decode(userinfo)
             if d and ":" in d:
                 userinfo = d
         method, password = userinfo.split(":", 1)
-        return {
+        method = unquote(method).strip()
+        password = unquote(password)
+        # 2022-blake3 系列的「密码」是 base64 编码的预共享密钥，长度必须精确
+        # （aes-128 → 16B，其余 → 32B）且必须是**标准** base64。SIP002 里常写成
+        # URL 编码（…%3D），不 unquote 就是非法字符；长度不符时 mihomo 会
+        # `level=fatal Parse config error` 让**整份配置**加载失败（实测
+        # 2026-11-20：kooker 源的一个 47.85.162.44:443 直接拖垮 6 个分片实例，
+        # 整轮产出为零）。这里先做静态校验，宁可丢一个节点。
+        if method.lower().startswith("2022-blake3") and ":" not in password:
+            need = 16 if "aes-128" in method.lower() else 32
+            try:
+                raw_key = base64.b64decode(password, validate=True)
+            except Exception:
+                return None
+            if len(raw_key) != need:
+                return None
+            password = base64.b64encode(raw_key).decode("ascii")
+        proxy = {
             "name": name or f"ss-{host}",
             "type": "ss",
             "server": host,
@@ -317,6 +382,103 @@ def _parse_ss_uri(uri: str) -> dict | None:
             "cipher": method,
             "password": password,
         }
+        if query:
+            plugin = (parse_qs(query).get("plugin") or [None])[0]
+            if plugin:
+                opts = _ss_plugin_opts(unquote(plugin))
+                if not opts:
+                    return None
+                proxy.update(opts)
+        return proxy
+    except Exception:
+        return None
+
+
+def _parse_hysteria2_uri(uri: str) -> dict | None:
+    """hysteria2:// 与 hy2:// —— QUIC 系，国内家宽上常有意外的好表现。
+
+    这类链接此前完全无解析器：kooker 单源 696 条链接里 40 条 hy2 被整体丢弃
+    （见 docs/cn_probe.md 第 24 节）。参数映射到 mihomo 的 hysteria2 字段。
+    """
+    low = uri.lower()
+    for scheme in ("hysteria2://", "hy2://"):
+        if low.startswith(scheme):
+            rest = uri[len(scheme):]
+            break
+    else:
+        return None
+    try:
+        name = None
+        if "#" in rest:
+            rest, frag = rest.split("#", 1)
+            name = unquote(frag)
+        query = ""
+        if "?" in rest:
+            rest, query = rest.split("?", 1)
+        rest = rest.rstrip("/")
+        if "@" not in rest:
+            return None
+        auth, netloc = rest.rsplit("@", 1)
+        if ":" not in netloc:
+            return None
+        host, _, port = netloc.rpartition(":")
+        if not port.isdigit():
+            return None
+        qs = parse_qs(query)
+        p = {
+            "name": name or f"hy2-{host}",
+            "type": "hysteria2",
+            "server": host,
+            "port": int(port),
+            "password": unquote(auth),
+        }
+        sni = (qs.get("sni") or qs.get("peer") or [None])[0]
+        if sni:
+            p["sni"] = sni
+        if (qs.get("insecure") or qs.get("allowInsecure") or ["0"])[0] in ("1", "true"):
+            p["skip-cert-verify"] = True
+        obfs = (qs.get("obfs") or [None])[0]
+        if obfs and obfs.lower() != "none":
+            p["obfs"] = obfs
+            opw = (qs.get("obfs-password") or qs.get("obfs_password") or [None])[0]
+            if opw:
+                p["obfs-password"] = opw
+        return p
+    except Exception:
+        return None
+
+
+def _parse_anytls_uri(uri: str) -> dict | None:
+    """anytls://password@host:port?sni=..#name（mihomo 已支持）。"""
+    if not uri.lower().startswith("anytls://"):
+        return None
+    try:
+        rest = uri[len("anytls://"):]
+        name = None
+        if "#" in rest:
+            rest, frag = rest.split("#", 1)
+            name = unquote(frag)
+        query = ""
+        if "?" in rest:
+            rest, query = rest.split("?", 1)
+        rest = rest.rstrip("/")
+        if "@" not in rest:
+            return None
+        pw, netloc = rest.rsplit("@", 1)
+        if ":" not in netloc:
+            return None
+        host, _, port = netloc.rpartition(":")
+        if not port.isdigit():
+            return None
+        qs = parse_qs(query)
+        p = {"name": name or f"anytls-{host}", "type": "anytls",
+             "server": host, "port": int(port), "password": unquote(pw)}
+        sni = (qs.get("sni") or qs.get("peer") or [None])[0]
+        if sni:
+            p["sni"] = sni
+        if (qs.get("insecure") or ["0"])[0] in ("1", "true"):
+            p["skip-cert-verify"] = True
+        return p
     except Exception:
         return None
 
@@ -464,7 +626,9 @@ def parse_subscription_text(text: str) -> list[dict]:
         line = line.strip()
         if not line or line.startswith("#"):
             continue
-        for parser in (_parse_ss_uri, _parse_vmess_uri, _parse_trojan_uri, _parse_vless_uri):
+        for parser in (_parse_ss_uri, _parse_vmess_uri, _parse_trojan_uri,
+                       _parse_vless_uri, _parse_hysteria2_uri,
+                       _parse_anytls_uri):
             p = parser(line)
             if p:
                 out.append(p)

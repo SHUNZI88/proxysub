@@ -47,6 +47,7 @@ import hashlib
 import json
 import os
 import platform
+import random
 import re
 import shutil
 import socket
@@ -1154,6 +1155,208 @@ def fetch_live_pool(workdir: str, per_source: int | None = None,
     return nodes
 
 
+def load_source_yield(workdir: str) -> dict[str, dict]:
+    """逐源历史产出率（本机实测口径）：{src: {tested, passed}}。
+
+    用途只有一个——把有限的拨测名额向**真能出节点**的源倾斜。此前 14 个源
+    平均分配名额，实测结果是 311 个节点测下来 0 通过的大源吃掉 76% 预算
+    （见 docs 第 21 节）。产出率是唯一值得优化的目标函数。
+    """
+    path = os.path.join(workdir, getattr(config, "SOURCE_YIELD_FILE", "source_yield.json"))
+    try:
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+        return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
+
+
+def note_source_yield(workdir: str, by_source: dict) -> dict:
+    """把本轮 by_source 统计累加进 source_yield.json（衰减式，坏源能被淘汰）。"""
+    path = os.path.join(workdir, getattr(config, "SOURCE_YIELD_FILE", "source_yield.json"))
+    cur = load_source_yield(workdir)
+    for src, st in (by_source or {}).items():
+        if not isinstance(st, dict):
+            continue
+        tested = int(st.get("tested") or 0)
+        passed = int(st.get("passed") or 0)
+        if tested <= 0:
+            continue
+        rec = cur.get(src) or {"tested": 0, "passed": 0, "rounds": 0}
+        # 历史按 0.7 衰减：让最近的实测更有话语权，同时不至于一轮定生死
+        rec["tested"] = int(rec.get("tested", 0) * 0.7) + tested
+        rec["passed"] = int(rec.get("passed", 0) * 0.7) + passed
+        rec["rounds"] = int(rec.get("rounds", 0)) + 1
+        cur[src] = rec
+    try:
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(cur, f, ensure_ascii=False, indent=1)
+    except OSError as e:
+        log(f"警告: 写 source_yield 失败: {e}")
+    return cur
+
+
+def pool_sample(pool: list[dict], limit: int, yields: dict | None = None,
+                round_id: str = "", min_per: int | None = None) -> list[dict]:
+    """从 CI 池子里按「逐源历史产出率」取样，返回待测节点（纯函数）。
+
+    为什么不是均匀抽样：各源产出率差两个数量级（实测 33% vs 0%）。均匀抽样
+    等于把 96% 的名额浪费在几乎不出节点的源上。做法是三层：
+
+      1. 保底：每源先给 min_per 个，保证新源/未评源有机会被验证（否则它
+         永远没有历史、永远拿不到名额，形成自我实现的淘汰）；
+      2. 余量按产出率权重分配，单源不超过总量的 45%——防止一个大源把
+         整轮测试变成它一家的体检；
+      3. 源内用轮次 id 做种子随机取，跨轮次自然轮换，池子最终被cover。
+
+    产出率用 (passed+1)/(tested+20) 平滑：新源默认约 5%，既不吹高也不判死。
+    """
+    limit = max(0, int(limit))
+    if not pool or limit <= 0:
+        return []
+    yields = yields or {}
+    min_per = int(min_per if min_per is not None else
+                  getattr(config, "POOL_MIN_PER_SRC", 20))
+    by: dict[str, list[dict]] = {}
+    for n in pool:
+        by.setdefault(str(n.get("src") or "?"), []).append(n)
+
+    def rate(src: str) -> float:
+        rec = yields.get(src) or {}
+        t = float(rec.get("tested") or 0)
+        p = float(rec.get("passed") or 0)
+        return (p + 1.0) / (t + 20.0)
+
+    def floor_for(src: str) -> int:
+        """每源保底名额：新源给足，已证零产出的只留探针。
+
+        教训：官方的"每源保底 N"是探索预算，但一旦源数上到 20+，固定保底会
+        把一半名额分给实证零产出的源（实测 14 源里 8 个连续多轮 0 通过）。
+        探索要保留，但代价必须随证据递减。
+        """
+        rec = yields.get(src) or {}
+        t = int(rec.get("tested") or 0)
+        p = int(rec.get("passed") or 0)
+        if t == 0:
+            return min_per
+        if p == 0 and t >= 60:
+            return max(3, min_per // 5)
+        return min_per
+
+    def hard_cap(src: str) -> int:
+        """单源上界：正常 45%，已证零产出则收紧到探针级。
+
+        只收紧"初始保底"是不够的：余量补位循环会把剩下的名额倒回唯一还有
+        空间的源，于是 200 测 0 通过的源照样吃掉整轮预算——这正是改造前
+        12 个零产源占 76% 预算的机制。
+        """
+        rec = yields.get(src) or {}
+        if int(rec.get("passed") or 0) == 0 and int(rec.get("tested") or 0) >= 60:
+            return floor_for(src)
+        return max(1, int(limit * 0.45))
+
+    alloc: dict[str, int] = {}
+    for src, items in by.items():
+        alloc[src] = min(len(items), floor_for(src), hard_cap(src))
+    used = sum(alloc.values())
+    remaining = limit - used
+    if remaining > 0:
+        weights = {src: rate(src) for src in by}
+        total_w = sum(weights.values()) or 1.0
+        # 先按权重分配一次
+        for src in sorted(by, key=lambda s: -weights[s]):
+            room = min(len(by[src]) - alloc[src], hard_cap(src) - alloc[src])
+            if room <= 0:
+                continue
+            want = int(round(remaining * weights[src] / total_w))
+            add = max(0, min(room, want))
+            alloc[src] += add
+            remaining -= add
+        # 取整会剩零头；再按权重从高到低补齐，直到没有余量或没人还有空间
+        # （单源上限是有意的：不让一个大源把整轮变成它一家的体检）
+        while remaining > 0:
+            progressed = False
+            for src in sorted(by, key=lambda s: -weights[s]):
+                if remaining <= 0:
+                    break
+                room = min(len(by[src]) - alloc[src], hard_cap(src) - alloc[src])
+                if room <= 0:
+                    continue
+                add = max(1, min(room, remaining))
+                alloc[src] += add
+                remaining -= add
+                progressed = True
+            if not progressed:
+                break
+    out: list[dict] = []
+    for src, items in by.items():
+        k = alloc.get(src, 0)
+        if k <= 0:
+            continue
+        if k >= len(items):
+            out.extend(items)
+            continue
+        out.extend(random.Random(f"{src}|{round_id}").sample(items, k))
+    return out
+
+
+def load_ci_pool(workdir: str, tag: str, max_age_h: float | None = None,
+                 round_id: str = "") -> list[dict]:
+    """下载 CI 构建的候选池（海外抓取），返回与 pending 同形的节点。
+
+    返回空列表表示「本轮拿不到可用池子」，由调用方决定是否降级自抓。
+    龄期超过 POOL_MAX_AGE_H 视为不可用：免费节点寿命以小时计，池子越旧
+    有效率衰减越快，本地实测预算不该花在已经凉了的名单上。
+    """
+    name = getattr(config, "POOL_FILE", "pool.json")
+    dest = os.path.join(workdir, name)
+    try:
+        if os.path.exists(dest):
+            os.remove(dest)          # 防止下载失败时误用上一轮的旧池子
+    except OSError:
+        pass
+    if not gh_download(tag, name, dest):
+        log("CI 候选池: 下载失败（release 无该资产或网络不可用）")
+        return []
+    try:
+        with open(dest, encoding="utf-8") as f:
+            doc = json.load(f)
+    except Exception as e:
+        log(f"CI 候选池: 解析失败 {e}")
+        return []
+    ts = parse_ts(doc.get("generated_at"))
+    age_h = None
+    if ts is not None:
+        age_h = (datetime.datetime.now(datetime.timezone.utc) - ts).total_seconds() / 3600
+    limit_h = float(max_age_h if max_age_h is not None else
+                    getattr(config, "POOL_MAX_AGE_H", 4.0))
+    if age_h is not None and age_h > limit_h:
+        log(f"CI 候选池: 过旧（{age_h:.1f}h > {limit_h:.0f}h），不使用")
+        return []
+    raw = doc.get("nodes") or []
+    nodes = []
+    for n in raw:
+        proxy = n.get("proxy") if isinstance(n, dict) else None
+        if not isinstance(proxy, dict) or not proxy.get("server"):
+            continue
+        if common.protocol_gate_reason(proxy):
+            continue
+        nodes.append({
+            "fp": n.get("fp") or common.fingerprint(proxy),
+            "name": str(proxy.get("name") or "node"),
+            "proxy": dict(proxy),
+            "origin": "pending",
+            "final": False,
+            "us_ok": False,
+            "src": str(n.get("src") or "?"),
+            "live": True,
+        })
+    srcs = {n["src"] for n in nodes}
+    age_txt = f"{age_h:.1f}h" if age_h is not None else "龄期未知"
+    log(f"CI 候选池: {len(nodes)} 个 / {len(srcs)} 个源（{age_txt} 前构建，海外抓取）")
+    return nodes
+
+
 def load_carryover(main_clash: str) -> list[dict]:
     """当前主资产（上一轮发布集）-> carryover 节点（滚动携带+自清洁）。"""
     if not os.path.exists(main_clash):
@@ -2063,11 +2266,38 @@ def start_shards(proxies: list[dict], workdir: str, k: int) -> list[dict]:
     """
     exe = ensure_mihomo(workdir)
     if not exe:
+        log("分片启动失败: mihomo 不可用")
         return []
     base = os.path.join(workdir, "shards")
     os.makedirs(base, exist_ok=True)
     used: set[int] = set()
     shards: list[dict] = []
+
+    # 启动前**统一预检一次**（任务#140）：一个非法节点（2022-blake3 密钥长度
+    # 不对、REALITY short-id 非法等）会让 mihomo fatal 退出——6 个分片全灭、
+    # 整轮静默零产出，且日志只说「mihomo 未就绪」，看不出根因。此前只有主
+    # 配置走 prune_invalid_cfg，分片没有。
+    # 只验一遍而不是每片验一遍：k 个实例的 proxies 完全相同，重复验只是把
+    # 15 轮 `-t` 乘以 k，白等几分钟。
+    pre_dir = os.path.join(base, "_pre")
+    os.makedirs(pre_dir, exist_ok=True)
+    pre_cfg = {
+        "mixed-port": 17800, "allow-lan": False, "mode": "rule",
+        "log-level": "warning", "external-controller": "127.0.0.1:17900",
+        "proxies": [dict(p) for p in proxies],
+        "proxy-groups": [{"name": "PROBE", "type": "select",
+                          "proxies": [p["name"] for p in proxies] + ["DIRECT"]}],
+        "rules": ["MATCH,PROBE"],
+    }
+    bad = prune_invalid_cfg(exe, pre_dir, pre_cfg, os.path.join(pre_dir, "cfg.yaml"))
+    proxies = pre_cfg.get("proxies") or []
+    if bad:
+        log(f"分片预检: 剔除 {len(bad)} 个会让配置整体加载失败的节点，"
+            f"剩 {len(proxies)} 个可测")
+    if not proxies:
+        log("分片预检: 无合法节点，跳过本轮拨测")
+        return []
+
     for i in range(max(1, k)):
         d = os.path.join(base, f"s{i}")
         os.makedirs(d, exist_ok=True)
@@ -2090,6 +2320,8 @@ def start_shards(proxies: list[dict], workdir: str, k: int) -> list[dict]:
         shards.append({"api": api, "mixed": mixed, "proc": proc, "dir": d})
     for sh in shards:
         if not wait_controller(sh["api"], timeout=45):
+            log(f"分片启动失败: 实例 {os.path.basename(sh['dir'])} 未就绪"
+                f"（配置仍无法加载，见 {sh['dir']}/m.log）")
             stop_shards(shards)
             return []
     return shards
@@ -3100,18 +3332,36 @@ def main() -> int:
     # 下载失败的 fresh 轮 pend_path 不存在，加载自然为空，与原行为一致。
     pend = load_doc_nodes(pend_path, "pending") if (
         fresh or os.path.exists(pend_path)) else []
-    # 实时抓取替换快照（任务#133）：快照平均 3~6 小时前生成，免费节点早已死亡。
-    # 若实时抓取拿到东西，用它作 pending 主体，快照里未被覆盖的节点保留。
-    if getattr(config, "LIVE_FETCH_ENABLED", True):
+    # 候选来源（任务#140）：**CI 池子优先，本机自抓只作降级**。
+    #
+    # 原实现直接在本机抓订阅源，理由是 CI 快照太旧（3~6h）。方向没错，位置
+    # 错了：本机抓 raw.githubusercontent 十次有两三次失败（实测同一 URL 3 次
+    # 只成功 1 次），于是「源没内容」与「源我这边连不上」不可区分，源的可达
+    # 性判断被 GFW 噪声污染。现在抓取与初选放在 CI（每 20 分钟重建池子），
+    # 本机只消费，并且只负责「从我这里能不能用」这一件事。
+    _pool = load_ci_pool(workdir, tag, round_id=time.strftime("%Y%m%dT%H"))
+    if _pool:
+        _old = len(pend)
+        pend = _pool
+        if _old:
+            log(f"测试集来源: CI 候选池 {len(_pool)} 个（丢弃交接快照 {_old} 个）")
+        # 名额倾斜：各源本机产出率差两个数量级，均匀抽样等于把预算浪费在
+        # 几乎不出节点的源上。产量数据来自 source_yield.json（本机实测口径）。
+        _yields = load_source_yield(workdir)
+        _n0 = len(pend)
+        pend = pool_sample(pend, getattr(config, "POOL_SAMPLE_N", 1400),
+                           _yields, round_id=time.strftime("%Y%m%dT%H"))
+        if len(pend) < _n0:
+            log(f"点名取样: 池子 {_n0} → {len(pend)} 个"
+                f"（按逐源历史产出率分配名额，单源上限 45%）")
+    elif getattr(config, "LIVE_FETCH_ENABLED", True):
+        log("警告: 未取得 CI 候选池，降级为本机自抓——此时候选受本机网络影响，"
+            "本轮源可达性数据不可用于源评估")
         _live = fetch_live_pool(workdir)
         if _live:
-            # 实时源独占 pending（任务#133）：快照平均 3~6 小时前生成、通过率
-            # 0.26%，留着只会稀释名额。实测 1500 个测试集里 926 个来自快照，
-            # 白占半天时间换来个位数产出；丢掉它们，同样时长能多测一倍新节点。
             _old = len(pend)
             pend = _live
-            log(f"测试集来源: 实时 {len(_live)} 个（丢弃快照 {_old} 个，"
-                f"快照通过率 0.26% 不值预算）")
+            log(f"测试集来源: 本机自抓 {len(_live)} 个（丢弃快照 {_old} 个）")
     resc = load_doc_nodes(rescue_path, "rescue") if (
         fresh or os.path.exists(rescue_path)) else []
     # 用户池复测（任务#122）：同 vantage 或证据过期的池节点，必须走本轮实测，
@@ -3976,6 +4226,21 @@ def main() -> int:
             f"带ai={_ev['source_scores_with_ai']} 源")
     except Exception as e:  # 学习回写失败绝不能影响已完成的发布
         log(f"警告: 学习回写失败（不影响本轮发布）: {type(e).__name__}: {e}")
+    # 逐源产出率回写（任务#140）：下一轮点名取样的权重来源。口径只有本机
+    # 实测（tested/passed），不掺 CI 视角——CI 能连通不等于这里能用。
+    try:
+        _ysrc = (report.get("counts") or {}).get("by_source") or {}
+        _y = note_source_yield(workdir, _ysrc)
+        _good = [k for k, v in _y.items()
+                 if (v.get("passed") or 0) > 0 and (v.get("tested") or 0) >= 10]
+        if _good:
+            _top = sorted(_good, key=lambda k: -(float(_y[k]["passed"]) /
+                                                 max(1.0, float(_y[k]["tested"]))))[:5]
+            log("源产出率（本机口径）Top: " + ", ".join(
+                f"{k} {float(_y[k]['passed'])/max(1.0,float(_y[k]['tested'])):.0%}"
+                f"({int(_y[k]['passed'])}/{int(_y[k]['tested'])})" for k in _top))
+    except Exception as e:  # 统计回写失败不影响发布
+        log(f"警告: 源产出率回写失败: {type(e).__name__}: {e}")
 
     # 任务#119：旧日志「主资产 4 个」实际是 4 个格式文件，被反复误读成
     # 「只有 4 个节点」，直接触发「怎么越来越少」的误判。口径写全。
