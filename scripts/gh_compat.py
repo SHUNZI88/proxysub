@@ -557,7 +557,13 @@ def _upload_once(tag: str, path: str, asset_name: str, timeout: int) -> tuple[bo
                 tmpdir = tempfile.mkdtemp(prefix="ghup_")
                 target = os.path.join(tmpdir, asset_name)
                 shutil.copyfile(path, target)
-            r = subprocess.run([gh_bin(), "release", "upload", tag, "--clobber", target],
+            # 必须显式 -R：否则 gh 试图从当前目录的 git remote 推断仓库，
+            # 而本机用便携版 gh + PortableGit，工作目录又不是 git 仓库，
+            # 于是报 "unable to find git executable in PATH" 导致发布失败
+            # （2026-11-20 22:10 实证：86 节点已生成却传不上去）。
+            # 与 release download / api 调用保持一致，一律显式指定仓库。
+            r = subprocess.run([gh_bin(), "release", "upload", tag,
+                                "-R", repo(), "--clobber", target],
                                capture_output=True, text=True, encoding="utf-8",
                                errors="replace", timeout=timeout, env=_gh_env())
             if r.returncode == 0:

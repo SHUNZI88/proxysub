@@ -560,3 +560,40 @@ def test_dispatch_workflow_reports_failure_without_raising(monkeypatch):
     monkeypatch.setattr(gc.subprocess, "run", lambda *a, **k: R())
     ok, why = gc.dispatch_workflow("pool-refresh.yml")
     assert ok is False and "workflow_dispatch" in why
+
+
+def test_upload_once_gh_argv_has_explicit_repo(monkeypatch, tmp_path):
+    """gh release upload 必须显式带 -R repo()。
+
+    2026-11-20 22:10 事故：upload 没指定 -R，gh 试图从当前目录的 git remote
+    推断仓库，便携版找不到 git → "unable to find git executable in PATH"，
+    86 个已实测连通的节点全部传不上去、线上停在旧的 8 节点版本。
+    锁定 argv，防止这个 -R 以后又被改丢。
+    """
+    seen = {}
+
+    class R:
+        returncode = 0
+        stdout = ""
+        stderr = ""
+
+    def fake_run(argv, **kwargs):
+        seen["argv"] = argv
+        return R()
+
+    monkeypatch.setattr(gc, "has_gh", lambda: True)
+    monkeypatch.setattr(gc, "gh_bin", lambda: "gh")
+    monkeypatch.setattr(gc, "_gh_env", lambda: {})
+    monkeypatch.setattr(gc, "repo", lambda: "SHUNZI88/proxysub")
+    monkeypatch.setattr(gc.subprocess, "run", fake_run)
+
+    f = tmp_path / "p_58dd290962_c.yaml"
+    f.write_bytes(b"proxies: []\n")
+
+    ok, err = gc._upload_once("sub", str(f), "p_58dd290962_c.yaml", 60)
+    assert ok is True and err == ""
+    argv = seen["argv"]
+    assert "release" in argv and "upload" in argv
+    assert "-R" in argv, "upload 必须显式 -R，否则便携版 gh 找不到 git"
+    idx = argv.index("-R")
+    assert argv[idx + 1] == "SHUNZI88/proxysub"
