@@ -2615,11 +2615,34 @@ def family_of(name: str) -> str:
     return n[:8] or "其他"
 
 
+def provider_key(p: dict) -> str:
+    """物理供应商指纹：同一账号在多个 IP 上开同端口/同密码的批量节点。
+
+    FlClash 实测（2026-11-20）：19 个「意大利节点」来自 10 个 IP，
+    但端口全是 19999、密码完全相同、同属 202.50.253.0/24、出口 ASN 全是
+    30088。它们名字不同（6 个家族）、fingerprint 不同，却属于同一个供应商，
+    一旦该机场故障或被封就同时归零。只有凭据能识别出这种批量入口。
+
+    vless/vmess/trojan 的 uuid 与 ss 的 cipher+password 都纳入指纹；
+    缺少任何凭据字段时返回空串——宁可漏限不可误伤。
+    """
+    typ = str(p.get("type") or "").lower()
+    port = str(p.get("port") or "")
+    cred = str(p.get("password") or p.get("uuid") or "")
+    cipher = str(p.get("cipher") or "")
+    if not typ or not port or not (cred or cipher):
+        return ""
+    raw = f"{typ}|{port}|{cipher}|{cred}".encode("utf-8", "replace")
+    return hashlib.sha256(raw).hexdigest()[:16]
+
+
 def apply_diversity_cap(nodes: list[dict], per_server: int | None = None,
                         per_region: int | None = None,
                         per_family: int | None = None,
                         region_share: float | None = None,
-                        reserve_fresh: int | None = None) -> tuple[list[dict], list[dict]]:
+                        reserve_fresh: int | None = None,
+                        per_provider: int | None = None,
+                        per_c24: int | None = None) -> tuple[list[dict], list[dict]]:
     """同一服务器地址的主资产配额（纯函数，任务#131）。
 
     实证：24 个节点里 16 个意大利 ss，来自 15 个地址但命名/指纹同源，说明
@@ -2644,6 +2667,10 @@ def apply_diversity_cap(nodes: list[dict], per_server: int | None = None,
     cap = int(per_server or getattr(config, "MAX_NODES_PER_SERVER", 3))
     cap_r = int(per_region or getattr(config, "MAX_NODES_PER_REGION", 5))
     cap_f = int(per_family or getattr(config, "MAX_NODES_PER_FAMILY", 3))
+    cap_p = int(per_provider if per_provider is not None
+                else getattr(config, "MAX_NODES_PER_PROVIDER", 4))
+    cap_c24 = int(per_c24 if per_c24 is not None
+                  else getattr(config, "MAX_NODES_PER_C24_FINAL", 4))
     # 地区上限改为「固定值与比例取小」（任务#138 收尾）：
     # 固定 12 在发布集只有 15 个时等于不设限——实测出现过 15 个里 9 个意大利
     # （60%），用户观感仍是「又是意大利」。改为单地区 ≤ max(3, ⌈n×share⌉)，
@@ -2661,6 +2688,8 @@ def apply_diversity_cap(nodes: list[dict], per_server: int | None = None,
     by_srv: dict[str, int] = {}
     by_reg: dict[str, int] = {}
     by_fam: dict[str, int] = {}
+    by_prov: dict[str, int] = {}
+    by_net: dict[str, int] = {}
     kept_ids: set[int] = set()
 
     def _try_keep(n: dict) -> bool:
@@ -2668,12 +2697,19 @@ def apply_diversity_cap(nodes: list[dict], per_server: int | None = None,
         srv = str(p.get("server") or "?")
         nm = str(n.get("name") or p.get("name") or "")
         reg, fam = region_of(nm), family_of(nm)
+        pk, net = provider_key(p), _c24_of(srv.lower())
         if (by_srv.get(srv, 0) >= cap or by_reg.get(reg, 0) >= cap_r
-                or by_fam.get(fam, 0) >= cap_f):
+                or by_fam.get(fam, 0) >= cap_f
+                or (pk and by_prov.get(pk, 0) >= cap_p)
+                or (net and by_net.get(net, 0) >= cap_c24)):
             return False
         by_srv[srv] = by_srv.get(srv, 0) + 1
         by_reg[reg] = by_reg.get(reg, 0) + 1
         by_fam[fam] = by_fam.get(fam, 0) + 1
+        if pk:
+            by_prov[pk] = by_prov.get(pk, 0) + 1
+        if net:
+            by_net[net] = by_net.get(net, 0) + 1
         kept_ids.add(id(n))
         return True
 
@@ -3913,11 +3949,17 @@ def main() -> int:
             degraded = degraded + _ddrop
             _reg = counts_by(_ddrop, lambda n: region_of(n.get("name", "")))
             _fam = counts_by(_ddrop, lambda n: family_of(n.get("name", "")))
+            _pk = counts_by(_ddrop, lambda n: provider_key(n.get("proxy") or {}) or "-")
+            _net = counts_by(_ddrop,
+                             lambda n: _c24_of(str((n.get("proxy") or {}).get("server") or "").lower()) or "-")
             log(f"集中度上限: {len(_ddrop)} 个节点退回第二资产"
                 f"（server ≤{getattr(config, 'MAX_NODES_PER_SERVER', 3)} / "
                 f"地区 ≤{getattr(config, 'MAX_NODES_PER_REGION', 6)} / "
-                f"家族 ≤{getattr(config, 'MAX_NODES_PER_FAMILY', 4)}）；"
-                f"被压掉的地区 {dict(_reg)}，家族 {dict(list(_fam.items())[:4])}")
+                f"家族 ≤{getattr(config, 'MAX_NODES_PER_FAMILY', 4)} / "
+                f"供应商 ≤{getattr(config, 'MAX_NODES_PER_PROVIDER', 4)} / "
+                f"/24 ≤{getattr(config, 'MAX_NODES_PER_C24_FINAL', 4)}）；"
+                f"被压掉的地区 {dict(_reg)}，供应商指纹 {dict(list(_pk.items())[:4])}，"
+                f"网段 {dict(list(_net.items())[:4])}")
 
     # 6.69c) AI 网页可用性标注（任务#131 续）：chatgpt.com 403 的节点加 ·无AI。
     # 不剔除——免费池里 AI 网页干净的本就稀少，全剔会让订阅归零；

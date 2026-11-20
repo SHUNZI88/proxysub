@@ -2350,3 +2350,67 @@ def test_load_ci_pool_does_not_trigger_when_fresh(monkeypatch, tmp_path):
                         lambda wf, ref="main": (called.append(wf), (True, "ok"))[1])
     cn_probe.load_ci_pool(str(tmp_path), "pool")
     assert called == []
+
+
+# ------------------------------------------------ 物理供应商去重（FlClash 实测后）
+def _prov(name, srv, pw="sharedpw", origin="carryover", port=19999):
+    return {"name": name, "origin": origin,
+            "proxy": {"name": name, "type": "ss", "server": srv, "port": port,
+                      "cipher": "aes-256-gcm", "password": pw}}
+
+
+def test_provider_key_ignores_name_and_server():
+    """同一账号在 10 个 IP 上开同端口同密码 → 必须是同一个供应商指纹。"""
+    a = _prov("🇮🇹 意大利 ITA #1", "202.50.253.18")
+    b = _prov("[freeSub#155] IT_speednode_017", "202.50.253.99")
+    c = _prov("🇮🇹IT_1|1.3MB/s", "202.50.253.72")
+    assert cn_probe.provider_key(a["proxy"]) == cn_probe.provider_key(b["proxy"])
+    assert cn_probe.provider_key(a["proxy"]) == cn_probe.provider_key(c["proxy"])
+    other = _prov("另一家", "202.50.253.18", pw="differentpw")
+    assert cn_probe.provider_key(a["proxy"]) != cn_probe.provider_key(other["proxy"])
+
+
+def test_provider_cap_caps_carryover_same_credential_different_ips():
+    """事故复现：19 个 carryover 同密码同端口、10 个不同 IP，必须只留 4 个。
+
+    旧的三道闸门全漏：server 按单 IP（每个 2 个）、地区上限 20、家族按名字
+    （6 个不同家族），初筛 /24≤3 又只作用于 pending——carryover 原样通过。
+    """
+    nodes = [_prov(f"🇮🇹 意大利 ITA #{i}", f"202.50.253.{10+i}") for i in range(19)]
+    kept, dropped = cn_probe.apply_diversity_cap(
+        nodes, per_server=2, per_region=20, per_family=12,
+        region_share=1.0, reserve_fresh=0, per_provider=4, per_c24=99)
+    assert len(kept) == 4 and len(dropped) == 15
+    assert all(n["origin"] == "carryover" for n in dropped)
+
+
+def test_c24_cap_caps_different_credentials_same_subnet():
+    """不同凭据但同 /24 的机房，也要限流。"""
+    nodes = [_prov(f"🇮🇹 意大利 {i}", "202.50.253.%d" % (10 + i), pw=f"pw{i}")
+             for i in range(8)]
+    kept, dropped = cn_probe.apply_diversity_cap(
+        nodes, per_server=2, per_region=20, per_family=12,
+        region_share=1.0, reserve_fresh=0, per_provider=99, per_c24=3)
+    assert len(kept) == 3 and len(dropped) == 5
+
+
+def test_provider_cap_does_not_block_genuinely_different_providers():
+    nodes = [_prov(f"节点 {i}", f"10.{i}.0.1", pw=f"pw{i}") for i in range(6)]
+    kept, _ = cn_probe.apply_diversity_cap(
+        nodes, per_server=99, per_region=99, per_family=99,
+        region_share=1.0, reserve_fresh=0, per_provider=4, per_c24=99)
+    assert len(kept) == 6
+
+
+def test_provider_cap_and_fresh_reserve_coexist():
+    """供应商上限与新鲜度预留叠加：不同供应商的新老节点各留 2 个。"""
+    nodes = ([_prov(f"🇮🇹 意大利 老{i}", "202.50.253.%d" % (10+i),
+                    pw="oldpw", origin="carryover") for i in range(4)]
+             + [_prov(f"🇮🇹 意大利 新{i}", "203.0.113.%d" % (10+i),
+                      pw="newpw", origin="pending") for i in range(4)])
+    kept, _ = cn_probe.apply_diversity_cap(
+        nodes, per_server=99, per_region=99, per_family=99,
+        region_share=1.0, reserve_fresh=2, per_provider=2, per_c24=99)
+    assert len(kept) == 4
+    assert sum(1 for n in kept if n["origin"] == "pending") == 2
+    assert sum(1 for n in kept if n["origin"] == "carryover") == 2
