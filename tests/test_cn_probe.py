@@ -2414,3 +2414,27 @@ def test_provider_cap_and_fresh_reserve_coexist():
     assert len(kept) == 4
     assert sum(1 for n in kept if n["origin"] == "pending") == 2
     assert sum(1 for n in kept if n["origin"] == "carryover") == 2
+
+
+# ---------------------------------------------------------------- 地区屏蔽（用户 2026-11-20）
+def test_block_regions_config_is_italy():
+    """用户明确要求屏蔽意大利——锁定默认配置，防止以后被改丢。"""
+    assert "意大利" in getattr(config, "BLOCK_REGIONS", ())
+
+
+def test_load_carryover_drops_blocked_region(monkeypatch, tmp_path):
+    """carryover 加载时即过滤屏蔽地区，防止意大利节点靠滚动携带常驻。"""
+    monkeypatch.setattr(config, "BLOCK_REGIONS", ("意大利",), raising=False)
+    cfg = {"proxies": [
+        _proxy(name="🇮🇹 意大利 | ITA #3"),
+        _proxy(name="🇭🇰 香港 01"),
+        _proxy(name="[freeSub#093] IT_speednode_0017"),
+        _proxy(name="🇺🇸 US 01"),
+    ]}
+    p = tmp_path / "main_clash.yaml"
+    p.write_text(yaml.dump(cfg, allow_unicode=True), encoding="utf-8")
+    nodes = cn_probe.load_carryover(str(p))
+    names = [n["name"] for n in nodes]
+    assert not any(cn_probe.region_of(x) == "意大利" for x in names), names
+    assert any("香港" in x for x in names)
+    assert any("US" in x for x in names)

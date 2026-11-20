@@ -1436,8 +1436,13 @@ def load_carryover(main_clash: str) -> list[dict]:
         log(f"警告: 解析主资产失败: {e}")
         return []
     nodes = []
+    # 地区屏蔽（用户 2026-11-20）：上一轮主资产里来自屏蔽地区的节点不再 carryover，
+    # 否则意大利节点靠滚动携带永久常驻，发布侧过滤也会被下一轮重新带回。
+    _block_regions = set(getattr(config, "BLOCK_REGIONS", ()) or ())
     for p in cfg.get("proxies", []) or []:
         if not isinstance(p, dict) or not p.get("server"):
+            continue
+        if _block_regions and region_of(str(p.get("name") or "")) in _block_regions:
             continue
         nodes.append({
             "fp": common.fingerprint(p),
@@ -4107,6 +4112,24 @@ def main() -> int:
     by_origin = {o: sum(1 for n in verified if n["origin"] == o)
                  for o in ("pending", "rescue", "carryover", "user_pool")}
     # 分源/分协议聚合（Phase 2.2）：tested/passed 双口径，供 CI 源级评分与门槛自学习
+    # 6.69d) 地区屏蔽（用户 2026-11-20 明确要求：满屏意大利节点，屏蔽意大利）
+    # 与 Google-only 判据正交：判据回答「能不能连 Google」，地区屏蔽回答「从哪来」。
+    # 用户要的是节点多样性，不是「一损俱损的同一批意大利机场机器」——这批节点
+    # 同 /24(202.50.253.0/24)、同端口 19999、同密码、同 ASN 30088，只是换了 6 种
+    # 家族名（ITA/freeSub/dokng/v2nodes/IT_speednode/IPV4），靠 carryover 滚动常驻。
+    # 按名字解析地区（region_of 能识别 🇮🇹/ITA/意大利/IT_ 全部写法），在发布集过滤；
+    # load_carryover 同步过滤，防止下一轮又把意大利带回来（滚动携带绕过屏蔽）。
+    _block_regions = set(getattr(config, "BLOCK_REGIONS", ()) or ())
+    if _block_regions:
+        _blocked = [n for n in verified
+                    if region_of(n.get("name", "")) in _block_regions]
+        if _blocked:
+            _blocked_set = set(map(id, _blocked))
+            verified = [n for n in verified if id(n) not in _blocked_set]
+            degraded = degraded + _blocked
+            log(f"地区屏蔽: {len(_blocked)} 个节点来自屏蔽地区 "
+                f"{sorted(_block_regions)} → 从发布集移除（退回第二资产，不删除）")
+
     # 分源仅统计带 src 的节点（carryover 等无源节点不归任何源，避免产生 "?" 伪源
     # 污染源级评分）；分协议仍覆盖全部节点。
     # 分源行带 AI 证据三口径（任务#92）：ai_tested/ai_reachable/ai_api，
