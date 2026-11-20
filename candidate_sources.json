@@ -1,5 +1,20 @@
 {
-  "candidates": {},
+  "candidates": {
+    "https://raw.githubusercontent.com/TopChina/proxy-list/main/clash_sub.yaml": {
+      "repo": "TopChina/proxy-list",
+      "stars": 308,
+      "repo_created": "2025-07-03T03:24:04Z",
+      "reputation": "ok",
+      "reputation_note": "stars=308,age=505d",
+      "required_runs": 3,
+      "first_seen": "2026-11-20",
+      "initial_nodes": 276,
+      "runs": 0,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": []
+    }
+  },
   "rejected": {
     "https://raw.githubusercontent.com/free-nodes/clashfree/main/clash20261029.yml": {
       "reason": "honeypot_structure:shared_cred:54/54",

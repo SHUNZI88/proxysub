@@ -3,11 +3,6 @@
   "max_official": 40,
   "official": [
     {
-      "url": "https://raw.githubusercontent.com/Russ534/clash/cdf534db8f8c9306d61c630b840d0a1936d09dd2/bp.yaml",
-      "origin": "manual",
-      "added": "2026-10-10"
-    },
-    {
       "url": "https://raw.githubusercontent.com/shaoyouvip/free/main/mihomo.yaml",
       "origin": "manual",
       "added": "2026-10-10"
@@ -99,12 +94,6 @@
       "origin": "manual",
       "added": "2026-11-20",
       "note": "本机实测 9/15 目标站可达（60%）——ss 解析修复后才显现"
-    },
-    {
-      "url": "https://raw.githubusercontent.com/mfuu/v2ray/master/sub",
-      "origin": "manual",
-      "added": "2026-11-20",
-      "note": "本机实测 6/15（40%），小池子高产出"
     },
     {
       "url": "https://raw.githubusercontent.com/ripaojiedian/freenode/main/sub",
@@ -362,6 +351,18 @@
       "url": "https://raw.githubusercontent.com/alireza786786/ai-driven-v2ray/main/secure/clash.yaml",
       "date": "2026-11-20",
       "reason": "trial_misjudged:小样本 2/8 误收，正式拨测 199 个节点 0 通过"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Russ534/clash/cdf534db8f8c9306d61c630b840d0a1936d09dd2/bp.yaml",
+      "reason": "cn_low_pass_rate:0/30",
+      "date": "2026-11-20",
+      "mv": 2
+    },
+    {
+      "url": "https://raw.githubusercontent.com/mfuu/v2ray/master/sub",
+      "reason": "cn_low_pass_rate:0/21",
+      "date": "2026-11-20",
+      "mv": 2
     }
   ],
   "deny_repos": [],
