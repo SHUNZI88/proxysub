@@ -93,20 +93,6 @@
       "added": "2026-11-20",
       "repo": "bily1258-design/beimi",
       "note": "任务#138：目标站实测 4/12 可达（chatgpt 200×4、youtube 3/12），隧道 12/12；边际新增 557 个唯一 host:port。"
-    },
-    {
-      "url": "https://raw.githubusercontent.com/0xRadikal/Free-v2ray-Configs/main/secure/clash.yaml",
-      "origin": "trial",
-      "added": "2026-11-20",
-      "repo": "0xRadikal/Free-v2ray-Configs",
-      "note": "任务#139 目标站实测：2/8 可达（隧道 8/8），达标线 25%"
-    },
-    {
-      "url": "https://raw.githubusercontent.com/alireza786786/ai-driven-v2ray/main/secure/clash.yaml",
-      "origin": "trial",
-      "added": "2026-11-20",
-      "repo": "alireza786786/ai-driven-v2ray",
-      "note": "任务#139 目标站实测：2/8 可达（隧道 8/8），达标线 25%"
     }
   ],
   "removed": [
@@ -306,6 +292,16 @@
       "reason": "cn_low_pass_rate:0/98",
       "date": "2026-11-12",
       "mv": 2
+    },
+    {
+      "url": "https://raw.githubusercontent.com/0xRadikal/Free-v2ray-Configs/main/secure/clash.yaml",
+      "date": "2026-11-20",
+      "reason": "trial_misjudged:小样本 2/8 误收，正式拨测 199 个节点 0 通过"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/alireza786786/ai-driven-v2ray/main/secure/clash.yaml",
+      "date": "2026-11-20",
+      "reason": "trial_misjudged:小样本 2/8 误收，正式拨测 199 个节点 0 通过"
     }
   ],
   "deny_repos": [],

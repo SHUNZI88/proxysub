@@ -63,7 +63,7 @@ SOURCES = os.path.join(REPO_ROOT, "sources.json")
 SCAN_CACHE = os.path.join(os.path.dirname(REPO_ROOT), "_source_scan.json")
 
 TCP_SAMPLE = 90          # 每源先取多少个做 TCP 筛
-PER_SRC = 8              # TCP 通过后实测几个
+PER_SRC = 12             # TCP 通过后实测几个（样本越多，25% 这类边缘值越不可信）
 BATCH_NODES = 40         # 一批塞多少个节点进 mihomo
 TCP_TIMEOUT = 4.0
 PROBE_TIMEOUT = 6
@@ -234,13 +234,26 @@ def run_batch(mihomo: str, workdir: str, items: list[tuple[str, dict]]) -> dict[
                 break
             except Exception:
                 continue
+        lat_cap = int(getattr(config, "TARGET_LATENCY_MAX_MS", 1500))
         for p in proxies:
             if p["name"] not in keep:
                 continue
             if not cn_probe.api_put(api_port, "/proxies/PROBE", {"name": p["name"]}):
-                res[p["name"]] = {"baidu": None, "chatgpt": None}
+                res[p["name"]] = {"baidu": None, "chatgpt": None, "latency": None}
+                continue
+            # 必须与正式轮次同一把尺子（任务#139 修正）：
+            # 正式轮次是「TCP → delay < TARGET_LATENCY_MAX_MS → 目标直测」。
+            # 这里若跳过延迟闸门，就会把一批在正式轮次里连初筛都过不去的节点
+            # 判为可用——实测教训：FlyingDashie 单测 7/12 可用，但当轮正式拨测
+            # 该源 97 个节点 0 通过，因为它全部倒在 delay 初筛。
+            dl = cn_probe.delay_once(api_port, p["name"], timeout_ms=lat_cap)
+            lat = dl.get("latency_ms") if dl.get("ok") else None
+            if lat is None or lat > lat_cap:
+                res[p["name"]] = {"baidu": None, "chatgpt": None, "latency": lat,
+                                  "fail": "latency"}
                 continue
             res[p["name"]] = {
+                "latency": lat,
                 "baidu": cn_probe._http_status_via_proxy("http://www.baidu.com", proxy_url,
                                                          PROBE_TIMEOUT),
                 "chatgpt": cn_probe._http_status_via_proxy("https://chatgpt.com/", proxy_url,
@@ -277,7 +290,8 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="候选源试用：目标站实测后决定是否转正")
     ap.add_argument("--limit", type=int, default=6, help="本轮验几个源（默认 6）")
     ap.add_argument("--min-rate", type=float, default=0.25, help="达标可达率（默认 0.25）")
-    ap.add_argument("--min-alive", type=int, default=2, help="至少几个可用（默认 2）")
+    ap.add_argument("--min-alive", type=int, default=3,
+                    help="至少几个可用（默认 3）——2/8 这种边缘值已被实证误收过一次")
     ap.add_argument("--min-samples", type=int, default=5,
                     help="实测样本不足此数不判（默认 5）——1/1 的 100%% 是噪声，不是信号")
     ap.add_argument("--dry-run", action="store_true", help="只报告，不改 sources.json")
@@ -343,31 +357,34 @@ def main(argv: list[str] | None = None) -> int:
         res = run_batch(mihomo, workdir, chunk)
         for j, (repo, _p) in enumerate(chunk):
             r = res.get(f"T{j:03d}")
-            a = agg.setdefault(repo, {"n": 0, "tunnel": 0, "ok": 0})
+            a = agg.setdefault(repo, {"n": 0, "tunnel": 0, "ok": 0, "lat_ok": 0})
             a["n"] += 1
             if not r:
                 continue
+            if r.get("latency"):
+                a["lat_ok"] += 1
             if r.get("baidu"):
                 a["tunnel"] += 1
             if r.get("chatgpt"):
                 a["ok"] += 1
 
     print("\n[3/3] 判定 ...")
-    print(f"{'源':40} {'实测':>4} {'隧道':>4} {'可用':>4} {'可达率':>7}")
-    print("-" * 66)
+    print(f"{'源':40} {'实测':>4} {'延迟达标':>8} {'隧道':>4} {'可用':>4} {'可达率':>7}")
+    print("-" * 74)
     promoted = []
     for repo, a in sorted(agg.items(), key=lambda kv: -kv[1]["ok"]):
         rate = a["ok"] / max(a["n"], 1)
-        print(f"{repo:40} {a['n']:4d} {a['tunnel']:4d} {a['ok']:4d} {rate * 100:6.1f}%")
+        print(f"{repo:40} {a['n']:4d} {a['lat_ok']:8d} {a['tunnel']:4d} {a['ok']:4d} "
+              f"{rate * 100:6.1f}%")
         url = next(u for r, u in todo if r == repo)
         verdict = judge_verdict(a["n"], a["ok"], args.min_rate,
                                 args.min_alive, args.min_samples)
         if verdict == "insufficient":
             verdict = "reject"
             print(f"    （{repo} 仅 {a['n']} 个样本 < {args.min_samples}，不足以判定）")
-        ledger["tested"][url].update({"samples": a["n"], "tunnel": a["tunnel"],
-                                      "ok": a["ok"], "rate": round(rate, 3),
-                                      "verdict": verdict})
+        ledger["tested"][url].update({"samples": a["n"], "lat_ok": a["lat_ok"],
+                                      "tunnel": a["tunnel"], "ok": a["ok"],
+                                      "rate": round(rate, 3), "verdict": verdict})
         if verdict == "promote":
             promoted.append((repo, url, a, rate))
 

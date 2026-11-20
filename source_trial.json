@@ -98,20 +98,22 @@
    "ts": "2026-11-20T10:43:53",
    "parsed": 687,
    "samples": 8,
-   "verdict": "promote",
+   "verdict": "reject",
    "tunnel": 8,
    "ok": 2,
-   "rate": 0.25
+   "rate": 0.25,
+   "note": "正式拨测实证：0xRadikal 78 个 0 通过、alireza 121 个 0 通过。小样本 2/8 的 25% 是噪声，且当时未过延迟闸门。"
   },
   "https://raw.githubusercontent.com/alireza786786/ai-driven-v2ray/main/secure/clash.yaml": {
    "repo": "alireza786786/ai-driven-v2ray",
    "ts": "2026-11-20T10:44:39",
    "parsed": 630,
    "samples": 8,
-   "verdict": "promote",
+   "verdict": "reject",
    "tunnel": 8,
    "ok": 2,
-   "rate": 0.25
+   "rate": 0.25,
+   "note": "正式拨测实证：0xRadikal 78 个 0 通过、alireza 121 个 0 通过。小样本 2/8 的 25% 是噪声，且当时未过延迟闸门。"
   },
   "https://raw.githubusercontent.com/rzhy1/11/master/sub/sub_merge_clash.yaml": {
    "repo": "rzhy1/11",
@@ -172,7 +174,51 @@
    "tunnel": 8,
    "ok": 0,
    "rate": 0.0
+  },
+  "https://raw.githubusercontent.com/ssrsub/ssr/master/clash.yaml": {
+   "repo": "ssrsub/ssr",
+   "ts": "2026-11-20T11:15:34",
+   "parsed": 52,
+   "samples": 8,
+   "verdict": "reject",
+   "lat_ok": 1,
+   "tunnel": 1,
+   "ok": 0,
+   "rate": 0.0
+  },
+  "https://raw.githubusercontent.com/Tiamat0527/config/main/clash.yaml": {
+   "repo": "Tiamat0527/config",
+   "ts": "2026-11-20T11:15:39",
+   "parsed": 26,
+   "samples": 8,
+   "verdict": "reject",
+   "lat_ok": 0,
+   "tunnel": 0,
+   "ok": 0,
+   "rate": 0.0
+  },
+  "https://raw.githubusercontent.com/Ruk1ng001/freeSub/main/clash.yaml": {
+   "repo": "Ruk1ng001/freeSub",
+   "ts": "2026-11-20T11:16:29",
+   "parsed": 40,
+   "samples": 8,
+   "verdict": "reject",
+   "lat_ok": 2,
+   "tunnel": 2,
+   "ok": 0,
+   "rate": 0.0
+  },
+  "https://raw.githubusercontent.com/wfl504/920/master/vpn/11-10-1clash.yaml": {
+   "repo": "wfl504/920",
+   "ts": "2026-11-20T11:16:58",
+   "parsed": 7,
+   "samples": 2,
+   "verdict": "reject",
+   "lat_ok": 0,
+   "tunnel": 0,
+   "ok": 0,
+   "rate": 0.0
   }
  },
- "last_run": "2026-11-20T10:57:45"
+ "last_run": "2026-11-20T11:18:19"
 }
