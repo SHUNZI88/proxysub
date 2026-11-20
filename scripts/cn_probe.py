@@ -3697,7 +3697,14 @@ def main() -> int:
             # 任务#132：用户明确要求「别再搞多指标，直接打我要用的站」。
             # 代理指标曾两次与真实用途背离（测速域名落进免流白名单、AI API
             # 可达而 chatgpt 网页 403），故默认走目标直测。
-            if delay_passed:
+            _google_only = bool(getattr(config, "GOOGLE_ONLY_GATE", True))
+            if _google_only and delay_passed:
+                # 原始设计：delay 初筛（Google generate_204）连通即通过。
+                # 不叠加三站直测 / 真实流量测速——那些是任务#132 后我自己加的，
+                # 实测把 104 个能连 Google 的节点砍到 17 个，是产出归零主因。
+                log(f"Google-only 判据: 初筛连通 {len(delay_passed)} 个即视为通过，"
+                    f"跳过三站/吞吐/延迟终筛（设计判据：能连 Google 即可）")
+            elif delay_passed:
                 t1 = time.time()
                 todo_real = [n for n in delay_passed if n["probe_name"] not in ck_real]
                 if todo_real and getattr(config, "TARGET_TEST_ENABLED", False):
@@ -3874,9 +3881,10 @@ def main() -> int:
     _lat_cap = (int(getattr(config, "TARGET_LATENCY_MAX_MS", 1500))
                 if getattr(config, "TARGET_TEST_ENABLED", False)
                 else CN_MAX_PUBLISH_LATENCY_MS)
-    _slow = [n for n in verified
-             if (results.get(n["probe_name"], {}).get("latency_ms") or 99999)
-             > _lat_cap]
+    _slow = [] if getattr(config, "GOOGLE_ONLY_GATE", True) else [
+        n for n in verified
+        if (results.get(n["probe_name"], {}).get("latency_ms") or 99999)
+        > _lat_cap]
     if _slow:
         verified = [n for n in verified if n not in _slow]
         degraded = degraded + _slow
@@ -3946,7 +3954,8 @@ def main() -> int:
     # 能过延迟与目标站两道闸（首包有响应），客户端体验却是"一直转圈"。
     # 门槛 64KB/s：够网页与文本 AI，不够视频——不够的退回第二资产（不删）。
     _min_kbps = float(getattr(config, "MIN_PUBLISH_KBPS", 64))
-    _thin = select_thin_nodes(verified, results, _min_kbps)
+    _thin = ([] if getattr(config, "GOOGLE_ONLY_GATE", True)
+             else select_thin_nodes(verified, results, _min_kbps))
     if _thin:
         verified = [n for n in verified if n not in _thin]
         degraded = degraded + _thin
@@ -3992,7 +4001,7 @@ def main() -> int:
                 + (f"；{_ux_unknown} 个无证据保留" if _ux_unknown else ""))
 
     # 6.69b) 集中度上限（任务#131）：同一 server 超过 MAX_NODES_PER_SERVER 的退回
-    if verified:
+    if verified and not getattr(config, "GOOGLE_ONLY_GATE", True):
         _dkept, _ddrop = apply_diversity_cap(
             verified, getattr(config, "MAX_NODES_PER_SERVER", 3))
         if _ddrop:
@@ -4137,10 +4146,14 @@ def main() -> int:
     except Exception:
         _prev_n = 0
     _floor = int(getattr(config, "QUALITY_FLOOR_NODES", 8))
-    if verified and _prev_n > len(verified) and len(verified) < _floor:
+    if (not getattr(config, "GOOGLE_ONLY_GATE", True)
+            and verified and _prev_n > len(verified) and len(verified) < _floor):
         log(f"质量熔断: 本轮验证集 {len(verified)} 个 < 下限 {_floor}，"
             f"而上一轮有 {_prev_n} 个；保留上一轮资产，本轮不覆盖")
         return 0
+    if getattr(config, "GOOGLE_ONLY_GATE", True) and verified:
+        log(f"Google-only 判据: 本轮 {len(verified)} 个连通节点，"
+            f"跳过质量熔断（设计判据：能连 Google 即发布）")
 
     if ai_probed:
         log(f"AI 可达性: 探测 {len(ai_probed)} 个，任一可达 {len(ai_reach)}，"
