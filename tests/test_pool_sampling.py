@@ -45,9 +45,16 @@ def test_zero_yield_source_floor_shrinks_after_enough_evidence():
     pool = _pool({"dead": 500})
     yields = {"dead": {"tested": 200, "passed": 0}}
     got = cn_probe.pool_sample(pool, 100, yields, round_id="r1", min_per=20)
-    # 2026-11-20：探针名额从 3~4 放宽到 min_per//2=10——旧值把零产源永久
-    # 钉死，订阅源换新节点后也无增量机会。惩罚保留（远小于保底 20），但不归零。
-    assert 5 <= len(got) <= 20, "已证零产出留缩减但仍可复活的探索名额"
+    # 2026-11-21 15:40：判据换成推特后，24 源有 20 源被旧 gstatic 口径的
+    # 「零产出」钉死在 10 个名额，2278 候选只取样 1203——用户「资源枯竭」的
+    # 真正机制。现放宽为 30% 上限（35 个/100），仍低于正常源 45%，惩罚保留
+    # 但不再饿死；判死门槛从 tested>=60 提到 >=150。
+    assert 20 <= len(got) <= 40, "零产源仍收缩（<正常 45%），但必须留足可复活名额"
+    # 证据不足（tested<150）时不该被判定为零产源，应拿满正常保底
+    got2 = cn_probe.pool_sample(_pool({"fresh": 500}),
+                               100, {"fresh": {"tested": 80, "passed": 0}},
+                               round_id="r1", min_per=20)
+    assert len(got2) >= 20, "证据不足时不得提前判死"
 
 
 def test_no_source_exceeds_cap():
@@ -94,9 +101,13 @@ def test_pool_sample_groups_short_and_full_name_together():
 
 
 def test_zero_yield_source_not_permanently_starved():
-    """已证零产出源保留可复活的探索面（>=5），不再钉死 3~4 个。"""
+    """已证零产出源必须保留可复活的探索面（2026-11-21 15:40 放宽到 30 个/100）。
+
+    原契约「<=20」是在旧 gstatic 判据下定的；换成推特判据后 20/24 源沦为
+    「零产出」，若继续按 <=20 收敛，等于把 80% 货源变相删除。
+    """
     pool = _pool({"dead": 500})
     yields = {"dead": {"tested": 200, "passed": 0}}
     got = cn_probe.pool_sample(pool, 100, yields, round_id="r1", min_per=20)
-    assert len(got) >= 5, "零产源仍需保留有意义的探索名额"
-    assert len(got) <= 20, "但也不能超过正常保底，惩罚仍需体现"
+    assert len(got) >= 20, "零产源仍需保留有意义的探索名额（不能再钉在 10 个）"
+    assert len(got) <= 40, "惩罚仍需体现：上限低于正常源的 45%"

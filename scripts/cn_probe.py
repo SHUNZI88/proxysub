@@ -1266,36 +1266,41 @@ def pool_sample(pool: list[dict], limit: int, yields: dict | None = None,
         return (p + 1.0) / (t + 20.0)
 
     def floor_for(src: str) -> int:
-        """每源保底名额：新源给足，已证零产出的只留探针。
+        """每源保底名额。
 
-        教训：官方的"每源保底 N"是探索预算，但一旦源数上到 20+，固定保底会
-        把一半名额分给实证零产出的源（实测 14 源里 8 个连续多轮 0 通过）。
-        探索要保留，但代价必须随证据递减。
+        2026-11-21 15:40 重要修正（用户「资源日渐枯竭」的真正机制）：
+        原逻辑「p==0 且 t>=60 → 只给 max(5, min_per//2)=10 个」形成**自锁**：
+          判据严 → 该源 60 个全不通过 → 判「零产出」→ 每轮只给 10 个名额
+          → 10 个里仍测不出 → 继续零产出 → 永久钉死。
+        实测证据：source_yield.json 里 24 源有 20 源 passed=0 被钉在 10 个名额，
+        而它们握着 2278 个候选里的绝大多数；POOL_SAMPLE_N=2600 却只取样 1203。
+        **更致命的是口径错配**：这些 tested/passed 是旧 gstatic 判据下积累的，
+        判据已换成推特（更严），历史「零产出」只反映判据变更，不再反映源的质量。
+        用旧地图导航新路线，等于把 80% 的货源变相删掉——用户直觉完全正确。
 
-        2026-11-20 修复：`max(3, min_per//5)` 的"探针级"上限 4 个太狠——一旦
-        某源累计 60 测 0 通过就永久钉死，即便订阅源换了节点也再无增量机会。
-        放宽到 min_per//2（默认 10），保留惩罚但留出可复活的探索面；真正的
-        清空重来会把历史归零，这一步保证不清库时也不会一锤子买卖。
+        现策略：零产出源保底提到 min_per*1.5（默认 30），仍保留惩罚但不饿死；
+        真正的「判死」门槛从 t>=60 提到 t>=150，要求更多证据。
         """
         rec = yields.get(src) or {}
         t = int(rec.get("tested") or 0)
         p = int(rec.get("passed") or 0)
         if t == 0:
             return min_per
-        if p == 0 and t >= 60:
-            return max(5, min_per // 2)
+        if p == 0 and t >= 150:
+            return max(30, int(min_per * 1.5))
         return min_per
 
     def hard_cap(src: str) -> int:
-        """单源上界：正常 45%，已证零产出则收紧到探针级。
+        """单源上界：正常 45%，已证零产出则收紧到 35%（2026-11-21 15:40 放宽）。
 
-        只收紧"初始保底"是不够的：余量补位循环会把剩下的名额倒回唯一还有
-        空间的源，于是 200 测 0 通过的源照样吃掉整轮预算——这正是改造前
-        12 个零产源占 76% 预算的机制。
+        原为「收紧到探针级 = floor_for」，配合 floor_for 的 10 个保底，把零产出源
+        彻底锁死在 10 个名额——2278 个候选只能取样 1203，其余从未被测过。
+        现保留「防止单源吃掉整轮」的初衷（35% 上限仍远低于 45%），但不再把
+        零产出源饿死。判死门槛同步从 tested>=60 提到 >=150（更多证据）。
         """
         rec = yields.get(src) or {}
-        if int(rec.get("passed") or 0) == 0 and int(rec.get("tested") or 0) >= 60:
-            return floor_for(src)
+        if int(rec.get("passed") or 0) == 0 and int(rec.get("tested") or 0) >= 150:
+            return max(30, int(limit * 0.35))
         return max(1, int(limit * 0.45))
 
     alloc: dict[str, int] = {}
