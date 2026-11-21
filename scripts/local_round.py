@@ -186,6 +186,14 @@ def main(argv: list[str] | None = None) -> int:
         log(f"库存重置：已备份并移走 {len(moved)} 个文件（{', '.join(moved) or '无'}）"
             f"→ {backup}；候选文档保留，下轮从订阅源重建")
 
+    # 池子保活（2026-11-21）：必须放在 round_guard 决策之前。
+    # 否则「资产未超龄」跳过本轮时 cn_probe 根本不启动，CI 池无人刷新，
+    # 一路放旧到 POOL_MAX_AGE_H(4h) 后会被判定「过旧不使用」，产出悄悄下滑。
+    try:
+        cn_probe.pool_keepalive(workdir)
+    except Exception as e:  # noqa: BLE001 - 保活失败绝不影响本轮决策
+        log(f"池子保活失败（{type(e).__name__}），不影响本轮决策")
+
     if not args.force:
         ok, why = round_guard.decide(workdir, stale_h=args.stale_h)
         if not ok:

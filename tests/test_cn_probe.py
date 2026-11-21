@@ -2440,3 +2440,57 @@ def test_load_carryover_drops_blocked_region(monkeypatch, tmp_path):
     assert not any(cn_probe.region_of(x) == "意大利" for x in names), names
     assert any("香港" in x for x in names)
     assert any("US" in x for x in names)
+
+
+# ------------------------------------------------- 池子保活（2026-11-21）
+def test_pool_keepalive_dispatches_when_stale(monkeypatch, tmp_path):
+    """池子过旧时必须主动拍 CI——这是「其余全在 GitHub」的可靠性兜底。
+
+    缺口实证：round_guard 以「资产未超龄」跳过本轮时 cn_probe 不启动，
+    load_ci_pool 里的自愈触发不执行，池子一路放旧到 4h 后被判定不可用。
+    """
+    import gzip
+    from scripts import gh_compat
+
+    seen = {}
+
+    def fake_dl(tag, name, dest, retries=3):
+        with gzip.open(dest, "wt", encoding="utf-8") as f:
+            json.dump({"generated_at": "2020-01-01T00:00:00Z"}, f)
+        return True
+
+    def fake_dispatch(workflow, ref="main", timeout=25):
+        seen["workflow"] = workflow
+        return True, "已请求"
+
+    # 注意：cn_probe 内部 `import gh_compat` 与测试的 `scripts.gh_compat`
+    # 是两个不同模块实例，必须打在 cn_probe 持有的那个模块对象上。
+    monkeypatch.setattr(cn_probe, "gh_download", fake_dl)
+    monkeypatch.setattr(cn_probe.gh_compat, "dispatch_workflow", fake_dispatch)
+
+    age = cn_probe.pool_keepalive(str(tmp_path))
+    assert age is not None and age > 1
+    assert seen.get("workflow") == "pool-refresh.yml"
+
+
+def test_pool_keepalive_skips_when_fresh(monkeypatch, tmp_path):
+    """池子新鲜时不该打扰 CI（避免每小时空触发一次 workflow）。"""
+    import gzip
+    import time as _t
+    from scripts import gh_compat
+
+    seen = {}
+
+    def fake_dl(tag, name, dest, retries=3):
+        now = _t.strftime("%Y-%m-%dT%H:%M:%SZ", _t.gmtime())
+        with gzip.open(dest, "wt", encoding="utf-8") as f:
+            json.dump({"generated_at": now}, f)
+        return True
+
+    monkeypatch.setattr(cn_probe, "gh_download", fake_dl)
+    monkeypatch.setattr(cn_probe.gh_compat, "dispatch_workflow",
+                        lambda *a, **k: (seen.setdefault("hit", True), (True, "x"))[1])
+
+    age = cn_probe.pool_keepalive(str(tmp_path))
+    assert age is not None and age < 0.5
+    assert "hit" not in seen

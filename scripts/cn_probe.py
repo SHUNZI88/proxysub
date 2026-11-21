@@ -1343,6 +1343,53 @@ def pool_sample(pool: list[dict], limit: int, yields: dict | None = None,
     return out
 
 
+def pool_keepalive(workdir: str) -> float | None:
+    """池子保活：不开跑实测也要检查 CI 池年龄，过旧就触发重建（2026-11-21）。
+
+    缺口（实证）：`round_guard` 以「资产未超龄」跳过本轮时，cn_probe 整个不启动，
+    load_ci_pool 里的自愈触发自然也不会执行。于是池子从上一轮发布起一路放旧：
+    09:00 轮跳过（资产 9.6h < 10h 线）时，池子已 3.7h 未刷新；再放旧到超过
+    POOL_MAX_AGE_H(4h)，load_ci_pool 会直接判定「过旧不使用」，只剩节点库与
+    实时抓取——这是产出悄无声息下滑的隐性机制，日志里看不出来。
+
+    成本：一次 pool.json.gz 读取（~115KB）+ 必要时一次 workflow_dispatch，<1s。
+    失败只记一行，绝不阻断本地轮次。
+    """
+    tag = getattr(config, "POOL_RELEASE_TAG", "pool")
+    name = getattr(config, "POOL_FILE", "pool.json") + ".gz"
+    dest = os.path.join(workdir, "_pool_keepalive.json.gz")
+    age_h = None
+    try:
+        if gh_download(tag, name, dest, retries=2):
+            with gzip.open(dest, "rt", encoding="utf-8") as f:
+                ts = parse_ts(json.load(f).get("generated_at"))
+            if ts is not None:
+                age_h = (datetime.datetime.now(datetime.timezone.utc)
+                         - ts).total_seconds() / 3600
+    except Exception as e:  # noqa: BLE001
+        log(f"池子保活: 读取龄期失败（{type(e).__name__}）")
+    finally:
+        try:
+            os.remove(dest)
+        except OSError:
+            pass
+
+    if age_h is None:
+        return None
+    trigger_h = float(getattr(config, "POOL_TRIGGER_AGE_H", 0.75))
+    if age_h > trigger_h:
+        try:
+            ok, why = gh_compat.dispatch_workflow(
+                getattr(config, "POOL_WORKFLOW", "pool-refresh.yml"))
+            log(f"池子保活: CI 池已 {age_h:.2f}h 未更新（> {trigger_h:.2f}h），"
+                f"已请求重建：{why}")
+        except Exception as e:  # noqa: BLE001
+            log(f"池子保活: 请求重建失败（{type(e).__name__}）")
+    else:
+        log(f"池子保活: CI 池龄期 {age_h:.2f}h，无需重建")
+    return age_h
+
+
 def load_ci_pool(workdir: str, tag: str | None = None, max_age_h: float | None = None,
                  round_id: str = "") -> list[dict]:
     """下载 CI 构建的候选池（海外抓取），返回与 pending 同形的节点。
