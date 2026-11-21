@@ -2411,6 +2411,7 @@ def start_shards(proxies: list[dict], workdir: str, k: int) -> list[dict]:
     pre_cfg = {
         "mixed-port": 17800, "allow-lan": False, "mode": "rule",
         "log-level": "warning", "external-controller": "127.0.0.1:17900",
+        "unified-delay": True,
         "proxies": [dict(p) for p in proxies],
         "proxy-groups": [{"name": "PROBE", "type": "select",
                           "proxies": [p["name"] for p in proxies] + ["DIRECT"]}],
@@ -2433,6 +2434,7 @@ def start_shards(proxies: list[dict], workdir: str, k: int) -> list[dict]:
         cfg = {
             "mixed-port": mixed, "allow-lan": False, "mode": "rule",
             "log-level": "warning", "external-controller": f"127.0.0.1:{api}",
+            "unified-delay": True,
             "proxies": [dict(p) for p in proxies],
             "proxy-groups": [{"name": "PROBE", "type": "select",
                               "proxies": [p["name"] for p in proxies] + ["DIRECT"]}],
@@ -3084,6 +3086,8 @@ def client_grade_verify(nodes: list[dict], workdir: str) -> tuple[list[dict], di
         "allow-lan": False,
         "mode": "global",
         "log-level": "warning",
+        # 与主拨测、与客户端同量纲（见主拨测处 unified-delay 注释）
+        "unified-delay": True,
         "external-controller": f"127.0.0.1:{api_port}",
         "proxies": [dict(n["proxy"], name=n["probe_name"]) for n in nodes],
     }
@@ -3392,65 +3396,84 @@ def _unique_names(proxies: list[dict]) -> list[str]:
 
 
 def build_verified_config(nodes: list[dict], results: dict | None = None) -> dict:
-    """验证集 clash 配置：合规节点进自动/地区组，Insecure 独立隔离组。
+    """验证集 clash 配置：全量节点进自动组，按地区分组，量纲与客户端对齐。
 
-    results（2026-10-24 新增）：本轮拨测结果；有 AI 可达证据的节点进
-    「🤖 AI 可用」组并置于节点选择首位——用户客户端一键切换 AI 通道
-    （任务#96 后 AI 证据全覆盖，该组在纯快照轮亦可靠）。
+    2026-11-21 重构（用户「一个简单项目反复搞不好」后推倒重来）。旧实现的四个
+    结构性缺陷，每一个都在把可用节点变相删掉：
+
+    1. **url-test 用 gstatic 测速**：本地判据已改推特，但下发给客户端的组仍用
+       http://gstatic/generate_204 —— 客户端因此会把「Google 通、推特不通」的
+       节点选成最快，用户开推特就超时。判据尺子必须两侧同源。
+    2. **insecure 节点被隔离进 select 组**：8 个发布节点里 4 个带
+       skip-cert-verify（vless 自签很常见），全被塞进「⚠️ 高风险」select 组，
+       而「♻️ 自动选择」url-test 只剩 4 个成员。用户挂自动选择时，等于一半
+       节点不存在。现改为：全部节点进自动组，insecure 仅保留一个可选组做提醒。
+    3. **缺 unified-delay**：客户端与服务端延迟读数差 2.5~12 倍，任何跨端对照
+       都是错位的。
+    4. **tolerance=50**：跨境延迟天然抖动 30~80ms，50ms 容差导致出口频繁乒乓，
+       每切一次拆一次 TCP/TLS 会话、出口 IP 跳变，体感就是「时快时慢」。
+       社区 2026 共识取 150。
+
+    另外「🤖 AI 可用」「✅ 本地实测」子集组不再插到「节点选择」首位——旧写法
+    会把默认出口锁死在少数几个节点上，用户以为整个订阅只有这几个能用。
     """
     proxies = [dict(n["proxy"]) for n in nodes]
     names = _unique_names(proxies)  # 先统一分配唯一名，再回填 proxy.name 供分组引用
     for p, nm in zip(proxies, names):
         p["name"] = nm
-    compliant = [p for p in proxies if not _truthy(p.get("skip-cert-verify"))]
-    insecure = [p for p in proxies if _truthy(p.get("skip-cert-verify"))]
-    compliant_names = [p["name"] for p in compliant]
-    insecure_names = [p["name"] for p in insecure]
-    # AI 可达名单（与 compliant_names 同序对齐）
-    ai_names = []
-    if results:
-        for n, nm in zip(nodes, names):
-            r = results.get(n.get("probe_name", ""), {})
-            if (r.get("ai") or {}).get("ai_reachable"):
-                ai_names.append(nm)
-    groups = [
-        {"name": "🚀 节点选择", "type": "select",
-         "proxies": ["♻️ 自动选择", "DIRECT"] + compliant_names},
-        {"name": "♻️ 自动选择", "type": "url-test", "proxies": compliant_names,
-         "url": config.PROBE_URL, "interval": 300, "tolerance": 50},
-    ]
-    if ai_names:
-        # AI 组置顶（插在「节点选择」引用的首位），url-test 自动选最快 AI 节点
-        groups.append({"name": "🤖 AI 可用", "type": "url-test",
-                       "proxies": ai_names, "url": config.PROBE_URL,
-                       "interval": 300, "tolerance": 50})
-        groups[0]["proxies"].insert(0, "🤖 AI 可用")
-    # 任务#119：用户家宽实测验证过的节点单独成组并置顶。它们与沙箱实测节点
-    # 证据来源不同（沙箱 0 通过 ≠ 本地不可用），混在自动组里用户无从分辨。
-    uv_names = [nm for n, nm in zip(nodes, names) if n.get("_user_verified")]
-    if uv_names:
-        groups.append({"name": "✅ 本地实测", "type": "url-test",
-                       "proxies": uv_names, "url": config.PROBE_URL,
-                       "interval": 300, "tolerance": 50})
-        groups[0]["proxies"].insert(0, "✅ 本地实测")
+
+    all_names = [p["name"] for p in proxies]
+    # 判据端点与本地实测同源（推特）。取不到推特配置时回退 PROBE_URL，但绝不
+    # 静默用 gstatic——那正是客户端选错节点的根源。
+    probe_url = getattr(config, "TWITTER_PROBE_URL", None) or config.PROBE_URL
+    ut = {"type": "url-test", "url": probe_url, "interval": 300,
+          "tolerance": 150, "lazy": True}
+
+    # 地区分组：全部节点参与（含 insecure），每组 ≥2 个才有意义。
+    region_groups: list[dict] = []
     if classify_proxy is not None:
         regions: dict[str, list[str]] = {}
-        for p in compliant:
+        for p in proxies:
             regions.setdefault(classify_proxy(str(p.get("name", ""))), []).append(p["name"])
-        for region, rnames in regions.items():
+        for region, rnames in sorted(regions.items(), key=lambda kv: -len(kv[1])):
             if len(rnames) >= 2:
-                groups.append({"name": region, "type": "url-test", "proxies": rnames,
-                               "url": config.PROBE_URL, "interval": 300})
-                groups[0]["proxies"].append(region)
+                g = {"name": f"{region} ⚡", **ut, "proxies": rnames}
+                region_groups.append(g)
+
+    # 子集组：只作参考，不置顶、不抢默认出口
+    subset_groups: list[dict] = []
+    if results:
+        ai_names = [nm for n, nm in zip(nodes, names)
+                    if ((results.get(n.get("probe_name", ""), {}) or {})
+                        .get("ai") or {}).get("ai_reachable")]
+        if len(ai_names) >= 2:
+            subset_groups.append({"name": "🤖 AI 可用", **ut, "proxies": ai_names})
+    uv_names = [nm for n, nm in zip(nodes, names) if n.get("_user_verified")]
+    if len(uv_names) >= 2:
+        subset_groups.append({"name": "✅ 本地实测", **ut, "proxies": uv_names})
+
+    insecure_names = [p["name"] for p in proxies if _truthy(p.get("skip-cert-verify"))]
+
+    groups: list[dict] = [
+        {"name": "🚀 节点选择", "type": "select",
+         "proxies": ["⚡ 自动最快"] + [g["name"] for g in region_groups]
+                    + [g["name"] for g in subset_groups] + all_names + ["DIRECT"]},
+        {"name": "⚡ 自动最快", **ut, "proxies": all_names},
+        *region_groups,
+        *subset_groups,
+    ]
     if insecure_names:
+        # 仅作提醒/手动挑选用；这些节点已在自动组内正常参与测速
         groups.append({"name": config.INSECURE_GROUP, "type": "select",
                        "proxies": insecure_names})
-        groups[0]["proxies"].append(config.INSECURE_GROUP)
+
     return {
         "mixed-port": 7890,
         "allow-lan": False,
         "mode": "rule",
-        "log-level": "info",
+        "log-level": "warning",
+        # 与客户端默认一致：延迟只算 TCP+TLS 建连，不把 HTTP 处理计入
+        "unified-delay": True,
         "proxies": proxies,
         "proxy-groups": groups,
         "rules": ["GEOIP,CN,DIRECT", "MATCH,🚀 节点选择"],
@@ -3787,6 +3810,10 @@ def main() -> int:
         "allow-lan": False,
         "mode": "rule",
         "log-level": "warning",
+        # 2026-11-21 实证：不开 unified-delay 时 mihomo 的 delay 把 TLS 握手等
+        # 开销一并计入，同一批节点数值虚高 2.5~12 倍（中位 5.58x，4253ms→356ms）。
+        # 新版客户端默认开启，服务端不开启就等于用两把不同刻度的尺子做筛选决策。
+        "unified-delay": True,
         "external-controller": f"127.0.0.1:{api_port}",
         "proxies": [dict(n["proxy"], name=n["probe_name"]) for n in nodes],
         "proxy-groups": [{"name": "PROBE", "type": "select",

@@ -260,13 +260,15 @@ def test_build_verified_config_groups():
     ]
     cfg = cn_probe.build_verified_config(nodes)
     names = [g["name"] for g in cfg["proxy-groups"]]
-    assert "🚀 节点选择" in names and "♻️ 自动选择" in names
-    # Insecure 独立隔离，不进自动组
-    auto = next(g for g in cfg["proxy-groups"] if g["name"] == "♻️ 自动选择")
-    assert "SG 03" not in auto["proxies"]
+    assert "🚀 节点选择" in names and "⚡ 自动最快" in names
+    # 2026-11-21 反转：insecure 节点**必须**在自动组内。
+    # 旧行为把它们隔离进 select 组，导致 8 个发布节点里 4 个 vless(skip-cert-verify)
+    # 在「自动选择」中不存在——用户挂自动选择等于只有一半节点可用。
+    auto = next(g for g in cfg["proxy-groups"] if g["name"] == "⚡ 自动最快")
+    assert auto["proxies"] == ["🇭🇰 香港 01", "🇯🇵 日本 02", "SG 03"]
     insecure = next(g for g in cfg["proxy-groups"]
                     if g["name"] == config.INSECURE_GROUP)
-    assert insecure["proxies"] == ["SG 03"]
+    assert insecure["proxies"] == ["SG 03"]  # 仍保留可选组做提醒
     assert len(cfg["proxies"]) == 3
 
 
@@ -276,16 +278,21 @@ def test_build_verified_config_ai_group():
     nodes = [
         {"proxy": _proxy(name="HK 01", server="a.example"), "probe_name": "p0"},
         {"proxy": _proxy(name="SG 02", server="b.example"), "probe_name": "p1"},
+        {"proxy": _proxy(name="US 03", server="c.example"), "probe_name": "p2"},
     ]
     results = {"p0": {"ok": True, "ai": {"ai_reachable": True}},
-               "p1": {"ok": True, "ai": {}}}
+               "p1": {"ok": True, "ai": {"ai_reachable": True}},
+               "p2": {"ok": True, "ai": {}}}
     cfg = cn_probe.build_verified_config(nodes, results)
     gnames = [g["name"] for g in cfg["proxy-groups"]]
     assert "🤖 AI 可用" in gnames
     ai = next(g for g in cfg["proxy-groups"] if g["name"] == "🤖 AI 可用")
-    assert ai["proxies"] == ["HK 01"]
+    assert ai["proxies"] == ["HK 01", "SG 02"]
+    # 2026-11-21 反转：子集组不得插到「节点选择」首位。
+    # 旧写法让默认出口锁死在该子集（往往只有几个节点），用户以为整个订阅就这几个能用。
     sel = next(g for g in cfg["proxy-groups"] if g["name"] == "🚀 节点选择")
-    assert sel["proxies"][0] == "🤖 AI 可用"
+    assert sel["proxies"][0] == "⚡ 自动最快"
+    assert "🤖 AI 可用" in sel["proxies"]
     # 无证据 → 无 AI 组
     cfg2 = cn_probe.build_verified_config(nodes)
     assert "🤖 AI 可用" not in [g["name"] for g in cfg2["proxy-groups"]]
@@ -1484,14 +1491,18 @@ def test_build_verified_config_user_pool_group_is_on_top():
          "proxy": _proxy(name="沙箱节点")},
         {"name": "本地实测", "probe_name": "y", "_user_verified": True,
          "proxy": _proxy(name="本地实测")},
+        {"name": "本地实测2", "probe_name": "z", "_user_verified": True,
+         "proxy": _proxy(name="本地实测2")},
     ]
     cfg = cn_probe.build_verified_config(nodes, {})
     groups = cfg["proxy-groups"]
     assert "✅ 本地实测" in [g["name"] for g in groups]
     uv = next(g for g in groups if g["name"] == "✅ 本地实测")
-    assert uv["proxies"] == ["本地实测"]
-    assert groups[0]["proxies"][0] == "✅ 本地实测"
-    assert len(cfg["proxies"]) == 2
+    assert uv["proxies"] == ["本地实测", "本地实测2"]
+    # 2026-11-21：不再置顶（理由同 AI 组），仅作为可选组供手动切换
+    assert groups[0]["proxies"][0] == "⚡ 自动最快"
+    assert "✅ 本地实测" in groups[0]["proxies"]
+    assert len(cfg["proxies"]) == 3
 
 
 def test_build_user_pool_excludes_dead_and_is_idempotent(tmp_path, monkeypatch):
