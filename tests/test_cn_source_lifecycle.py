@@ -174,6 +174,38 @@ class TestCnFetchTilt:
 # B. 淘汰层：update_official 的 cn 决策
 # ===========================================================================
 
+# 2026-11-21：淘汰阈值已按现实校准（CN_MIN_SAMPLE 20→200、CN_DEMOTE_STREAK
+# 2→6、MIN_OFFICIAL 6→30）。本文件的用例构造的是「20 个样本、7 个源」的小场景，
+# 目的是验证**淘汰逻辑本身**（streak、三重保底、Wilson 判据），不是验证阈值数值。
+# 故在本模块内把阈值调回旧值，让逻辑用例保持可读；阈值的真实取值由
+# tests/test_source_thresholds.py 单独锁定。
+import pytest as _pytest
+
+
+@_pytest.fixture(autouse=True)
+def _legacy_thresholds(monkeypatch):
+    import config as _cfg
+    monkeypatch.setattr(_cfg, "CN_MIN_SAMPLE", 20, raising=False)
+    monkeypatch.setattr(_cfg, "CN_DEMOTE_STREAK", 2, raising=False)
+    monkeypatch.setattr(_cfg, "MIN_OFFICIAL", 6, raising=False)
+
+
+# 2026-11-21：淘汰阈值已按现实校准（CN_MIN_SAMPLE 20→200、CN_DEMOTE_STREAK
+# 2→6、MIN_OFFICIAL 6→30）。本文件的用例构造的是「20 个样本、7 个源」的小场景，
+# 目的是验证**淘汰逻辑本身**（streak、三重保底、Wilson 判据），不是验证阈值数值。
+# 故在本模块内把阈值调回旧值，让逻辑用例保持可读；阈值的真实取值由
+# tests/test_source_thresholds.py 单独锁定。
+import pytest as _pytest
+
+
+@_pytest.fixture(autouse=True)
+def _legacy_thresholds(monkeypatch):
+    import config as _cfg
+    monkeypatch.setattr(_cfg, "CN_MIN_SAMPLE", 20, raising=False)
+    monkeypatch.setattr(_cfg, "CN_DEMOTE_STREAK", 2, raising=False)
+    monkeypatch.setattr(_cfg, "MIN_OFFICIAL", 6, raising=False)
+
+
 class TestUpdateOfficialCnDemote:
     """cn 淘汰判据、streak、三重保底。CI 侧判据全部保持健康（并联不干扰）。
 

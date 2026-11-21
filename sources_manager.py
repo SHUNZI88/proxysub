@@ -28,7 +28,10 @@ CANDIDATES_FILE = "candidate_sources.json"
 SOURCE_SCORES_FILE = "source_scores.json"
 
 # ---- lifecycle knobs ----
-MAX_OFFICIAL = 30
+# 2026-11-21：30 → 60。免费源的正确用法是「广撒网」——单个源通过率 0.6%、
+# 但源数翻倍，绝对产出就翻倍。此前源总量被压到 19 个（removed 41 个），
+# 是「节点资源日渐枯竭」的直接机制。
+MAX_OFFICIAL = 60
 MAX_PROMOTIONS_PER_RUN = 2
 PROBATION_RUNS = 3            # consecutive good runs needed (normal reputation)
 PROBATION_RUNS_LOW_REP = 5    # low-star / young repos are held longer
@@ -57,7 +60,15 @@ REMOVED_COOLDOWN_DAYS = 30
 # 用坏尺子做的判决不能永久生效。故：判决记录带 mv（判据版本）；
 # 版本升级后，**依赖实测的判决自动失效**、源退回 official 重试；
 # 与尺子无关的判决（redistributes_bait / honeypot_tamper / 抓取失败）不受影响。
-MEASUREMENT_VERSION = 2
+# 2026-11-21 升到 3：本日判定尺子发生两处根本变化——
+#   ① 本地实测判据 gstatic(204) → 推特 api.twitter.com（用户指定）；
+#   ② 拨测/终验 mihomo 开启 unified-delay（此前延迟读数虚高 2.5~12 倍）。
+# 旧尺子下的「cn_low_pass_rate / zero_real_ok / zero_unique_contribution」
+# 判决一律作废，源退回 official 重新试用。实证：official 被淘到只剩 19 个，
+# 而 removed 里躺着 NoMoreWalls(0/123)、V2RayAggregator(0/98)、anaer/Sub(0/159)、
+# yy1588133/proxy-pool(0/23) 等业界主力源——它们不是坏了，是被 0.6% 的
+# 全池通过率连坐判死的。
+MEASUREMENT_VERSION = 3
 MEASUREMENT_DEPENDENT_REASONS = (
     # official 侧
     "cn_low_pass_rate", "zero_real_ok", "zero_unique_contribution",
