@@ -107,8 +107,8 @@ def test_client_grade_verify_contract():
     assert config.CLIENT_GRADE_CONCURRENCY <= 6, "并发必须贴近单机手机，不能自家抬高 RTT"
     assert config.CLIENT_GRADE_MIN_PASS_ROUNDS >= config.CLIENT_GRADE_ROUNDS, \
         "要求全轮通过，不许有偶发掉线（那正是手机端撞超时的样本）"
-    assert 1000 <= config.CLIENT_GRADE_LATENCY_CAP_MS <= 3000, \
-        "延迟上限要落在实证好坏分界（稳定<1600ms / 波动>2500ms）区间"
+    assert 1000 <= config.CLIENT_GRADE_LATENCY_CAP_MS <= 4500, \
+        "延迟上限只做极端慢粗筛；实证延迟与稳定性不相关，不可压得过紧"
     assert bool(getattr(config, "GOOGLE_ONLY_GATE", False)) is True
     assert cn_probe.GENERATE_204 == config.TWITTER_PROBE_URL
 

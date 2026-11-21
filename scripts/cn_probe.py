@@ -4371,8 +4371,8 @@ def main() -> int:
             f"而上一轮有 {_prev_n} 个；保留上一轮资产，本轮不覆盖")
         return 0
     if getattr(config, "GOOGLE_ONLY_GATE", True) and verified:
-        log(f"Google-only 判据: 本轮 {len(verified)} 个连通节点，"
-            f"跳过质量熔断（设计判据：能连 Google 即发布）")
+        log(f"主判据直通: 本轮 {len(verified)} 个连通节点，跳过质量熔断"
+            f"（设计判据：能连 {GENERATE_204} 即发布）")
 
     if ai_probed:
         log(f"AI 可达性: 探测 {len(ai_probed)} 个，任一可达 {len(ai_reach)}，"
