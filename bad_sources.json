@@ -62,7 +62,7 @@
   "https://raw.githubusercontent.com/free-nodes/v2rayfree/main/sub": {
     "fail_streak": 0,
     "last_error": null,
-    "last_count": 16
+    "last_count": 19
   },
   "https://raw.githubusercontent.com/Pawdroid/Free-servers/main/sub": {
     "fail_streak": 0,
@@ -150,7 +150,7 @@
     "last_count": 303
   },
   "https://raw.githubusercontent.com/wuge0/free-nodes/main/output/clash.yaml": {
-    "fail_streak": 2,
+    "fail_streak": 3,
     "last_error": "404 Client Error: Not Found for url: https://raw.githubusercontent.com/wuge0/free-nodes/main/output/clash.yaml",
     "last_count": 0
   },
@@ -218,5 +218,20 @@
     "fail_streak": 0,
     "last_error": null,
     "last_count": 3728
+  },
+  "https://cdn.jsdelivr.net/gh/anaer/Sub@main/clash.yaml": {
+    "fail_streak": 0,
+    "last_error": null,
+    "last_count": 1796
+  },
+  "https://raw.githubusercontent.com/asgharkapk/Sub-Config-Extractor/main/output_configs/mixed/ALIILAPRO/v2rayNG-Config/sub.txt.yaml": {
+    "fail_streak": 0,
+    "last_error": null,
+    "last_count": 4371
+  },
+  "https://anaer.github.io/Sub/clash.yaml": {
+    "fail_streak": 0,
+    "last_error": null,
+    "last_count": 2124
   }
 }

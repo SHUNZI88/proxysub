@@ -1,23 +1,23 @@
 # proxysub 健康报告
 
-更新时间：2026-11-21 21:36 UTC
+更新时间：2026-11-21 21:58 UTC
 运行模式：**mihomo**
 
 ## 概览
 
-- 最终节点：**195**（合规 139，高风险隔离 56）
-- 真实拨测通过率：**61.7%**（605/980）
-- TCP 存活：5119 | 正式源 42 个 | 候选源 4 个
+- 最终节点：**199**（合规 128，高风险隔离 71）
+- 真实拨测通过率：**60.8%**（596/980）
+- TCP 存活：5113 | 正式源 42 个 | 候选源 4 个
 
 ## 协议分布
 
 | 协议 | 数量 |
 |---|---|
-| VLESS-Reality | 88 |
-| Hysteria2 | 46 |
-| VLESS-TLS | 33 |
-| Trojan | 19 |
-| Ss | 9 |
+| VLESS-Reality | 72 |
+| Hysteria2 | 71 |
+| VLESS-TLS | 34 |
+| Trojan | 15 |
+| Ss | 7 |
 
 ## 区域分布
 
@@ -25,27 +25,27 @@
 |---|---|
 | 🌐 其他 | 60 |
 | 🇯🇵 日本 | 35 |
+| 🇸🇬 新加坡 | 30 |
 | 🇺🇸 美国 | 30 |
-| 🇸🇬 新加坡 | 29 |
-| 🇭🇰 香港 | 17 |
+| 🇭🇰 香港 | 23 |
 | 🇹🇼 台湾 | 9 |
 | 🇬🇧 英国 | 8 |
-| 🇰🇷 韩国 | 7 |
+| 🇰🇷 韩国 | 4 |
 
 ## 源贡献 Top 10（正式源）
 
 | 源 | 真实通过 | 独有存活 | 存活 |
 |---|---|---|---|
-| `VPN-Subcription-Links/ClashX-V2Ray-TopFreeProxy` | 142 | 192 | 1155 |
-| `mahdibland/V2RayAggregator` | 119 | 0 | 154 |
-| `mahdibland/ShadowsocksAggregator` | 119 | 0 | 154 |
-| `FlyingDashie/Free-node-autotest` | 110 | 102 | 186 |
-| `yy1588133/proxy-pool` | 110 | 4 | 606 |
-| `lanzm/MetaFetch` | 100 | 89 | 175 |
-| `Au1rxx/free-vpn-subscriptions` | 94 | 472 | 984 |
-| `Au1rxx/free-vpn-subscriptions` | 93 | 70 | 618 |
-| `Au1rxx/free-vpn-subscriptions` | 87 | 268 | 575 |
-| `ermaozi/get_subscribe` | 81 | 0 | 222 |
+| `VPN-Subcription-Links/ClashX-V2Ray-TopFreeProxy` | 150 | 192 | 1153 |
+| `Au1rxx/free-vpn-subscriptions` | 122 | 268 | 575 |
+| `mahdibland/V2RayAggregator` | 121 | 0 | 151 |
+| `mahdibland/ShadowsocksAggregator` | 121 | 0 | 151 |
+| `Au1rxx/free-vpn-subscriptions` | 117 | 70 | 618 |
+| `yy1588133/proxy-pool` | 115 | 5 | 604 |
+| `Au1rxx/free-vpn-subscriptions` | 113 | 474 | 988 |
+| `FlyingDashie/Free-node-autotest` | 113 | 100 | 182 |
+| `ermaozi/get_subscribe` | 96 | 0 | 220 |
+| `sub/clash` | 96 | 0 | 220 |
 
 ## 警告
 
