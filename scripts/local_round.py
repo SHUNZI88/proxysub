@@ -200,10 +200,17 @@ def main(argv: list[str] | None = None) -> int:
     # 池子保活（2026-11-21）：必须放在 round_guard 决策之前。
     # 否则「资产未超龄」跳过本轮时 cn_probe 根本不启动，CI 池无人刷新，
     # 一路放旧到 POOL_MAX_AGE_H(4h) 后会被判定「过旧不使用」，产出悄悄下滑。
+    #
+    # ⚠️ 2026-11-21 15:40 补：cn_probe 的 log() 走 stdout，计划任务的 stdout
+    # 无人接收，于是保活是否生效在 local_round.log 里**完全不可见**——今早
+    # 池子 4.5h 没刷新却查不到任何痕迹，就是这么来的。此处把返回值落到
+    # local_round.log，让「保活跑了 / 没跑 / 龄期多少」永久可审计。
     try:
-        cn_probe.pool_keepalive(workdir)
+        _age = cn_probe.pool_keepalive(workdir)
+        log("池子保活：" + (f"CI 池龄期 {_age:.2f}h" if _age is not None
+                            else "读取龄期失败（下载 pool.json.gz 未成功）"))
     except Exception as e:  # noqa: BLE001 - 保活失败绝不影响本轮决策
-        log(f"池子保活失败（{type(e).__name__}），不影响本轮决策")
+        log(f"池子保活失败（{type(e).__name__}: {e}），不影响本轮决策")
 
     if not args.force:
         ok, why = round_guard.decide(workdir, stale_h=args.stale_h)

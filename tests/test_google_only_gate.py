@@ -97,7 +97,13 @@ def test_client_grade_verify_contract():
 
     背景：初筛 16 并发 + delay_test 5s→8s 重试 →「8 秒内碰巧返回一次」算通；
     手机 url-test 低并发短超时，两者不同构。实证发布 12 个里稳定仅 3 个。
-    锁定：终验必须开着、低并发、多轮全通过、有延迟上限，且端点仍是推特主判据。
+    锁定：终验必须开着、低并发、有延迟上限，端点仍是推特主判据。
+
+    2026-11-21 15:40 修正契约：终验**不做严格淘汰**，只淘汰 3 轮全死的，
+    并按稳定度排序。原契约（全轮通过才留）已被数据推翻：
+      14:05 轮 19 候选 → 全通过仅 8（砍 58%）；14:19 发布；15:44 实测
+      只剩 3 稳定 / 2 已死——严格筛选并不能预测一小时后的存活。
+    免费节点寿命是小时级，广撒网 + 排序 ＞ 精选少数。
     """
     import config
     from scripts import cn_probe
@@ -105,8 +111,10 @@ def test_client_grade_verify_contract():
     assert getattr(config, "CLIENT_GRADE_ENABLED", False) is True
     assert config.CLIENT_GRADE_ROUNDS >= 3
     assert config.CLIENT_GRADE_CONCURRENCY <= 6, "并发必须贴近单机手机，不能自家抬高 RTT"
-    assert config.CLIENT_GRADE_MIN_PASS_ROUNDS >= config.CLIENT_GRADE_ROUNDS, \
-        "要求全轮通过，不许有偶发掉线（那正是手机端撞超时的样本）"
+    assert config.CLIENT_GRADE_MIN_PASS_ROUNDS <= 2, \
+        "终验不得做严格淘汰（>=3 会把可用节点砍掉一半，重蹈任务#132 覆辙）"
+    assert getattr(config, "CLIENT_GRADE_SORT_BY_STABILITY", False) is True, \
+        "既然放宽淘汰，就必须按稳定度排序，把 3/3 的排前面"
     assert 1000 <= config.CLIENT_GRADE_LATENCY_CAP_MS <= 4500, \
         "延迟上限只做极端慢粗筛；实证延迟与稳定性不相关，不可压得过紧"
     assert bool(getattr(config, "GOOGLE_ONLY_GATE", False)) is True

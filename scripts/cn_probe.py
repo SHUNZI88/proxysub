@@ -3147,11 +3147,25 @@ def client_grade_verify(nodes: list[dict], workdir: str) -> tuple[list[dict], di
             rec["ok"] = True
             kept.append(n)
 
-    log(f"客户端终验结果: 稳定可用 {len(kept)} / 候选 {len(nodes)}"
-        f"（不稳定剔除 {len(dropped_flaky)}、延迟超 {cap}ms 剔除 {len(dropped_slow)}）")
+    # 按稳定度排序（2026-11-21 15:40）：通过轮数多的在前、同轮数按中位延迟升序。
+    # 免费节点寿命是小时级，挑选越严 ≠ 用户拿到越能用；正确做法是广撒网 + 排序，
+    # 让用户端 url-test 优先命中稳定节点，而不是把波动节点整批删掉。
+    if getattr(config, "CLIENT_GRADE_SORT_BY_STABILITY", False):
+        kept.sort(key=lambda n: (-verdicts[n["fp"]]["passed"],
+                                 verdicts[n["fp"]]["median_ms"] or 99999))
+
+    how_many = {}  # 稳定度分布，便于判断这批货源的质量
+    for n in kept:
+        p = verdicts[n["fp"]]["passed"]
+        how_many[p] = how_many.get(p, 0) + 1
+    dist = " / ".join(f"{k}轮通过 {v}个" for k, v in sorted(how_many.items(),
+                                                            reverse=True))
+    log(f"客户端终验结果: 保留 {len(kept)} / 候选 {len(nodes)}"
+        f"（全死剔除 {len(dropped_flaky)}、延迟超 {cap}ms 剔除 {len(dropped_slow)}）"
+        f"{('；稳定度分布 ' + dist) if dist else ''}")
     for n in dropped_flaky:
         r = verdicts[n["fp"]]
-        log(f"  · 不稳定 {r['passed']}/{rounds}: {str(n.get('name'))[:38]} {r['rounds']}")
+        log(f"  · 全死 {r['passed']}/{rounds}: {str(n.get('name'))[:38]} {r['rounds']}")
     for n in dropped_slow:
         r = verdicts[n["fp"]]
         log(f"  · 延迟高 中位{r['median_ms']}ms: {str(n.get('name'))[:38]}")
