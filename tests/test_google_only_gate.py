@@ -121,3 +121,19 @@ def test_main_calls_client_grade_verify_before_publish():
     assert "client_grade_verify(" in src
     # 调用点必须在 write_verified_outputs 之前
     assert src.index("client_grade_verify(") < src.index("write_verified_outputs(")
+
+
+def test_quick_health_uses_main_probe_url():
+    """健康抽查的端点必须与发布判据一致（2026-11-21）。
+
+    原先 quick_health 硬编码 gstatic，与推特主判据不一致：
+    「gstatic 通、推特不通」的节点被判健康 → 腐烂名单一路用到 stale-h(10h)。
+    同时锁定健康线（6 个里 ≥4 可用），旧线 ≤sample//3 太松。
+    """
+    import inspect
+    from scripts import local_round
+
+    src = inspect.getsource(local_round.quick_health)
+    assert "www.gstatic.com" not in src, "健康抽查不得硬编码 gstatic，须用主判据端点"
+    assert "cn_probe.GENERATE_204" in src
+    assert "need_ok" in src

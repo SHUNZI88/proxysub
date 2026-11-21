@@ -77,10 +77,17 @@ def quick_health(workdir: str, sample: int = 6, ttfb_max: int | None = None,
     可用（意大利 ss 存活最好，美国/荷兰/瑞典 vless 全灭）。光靠「资产龄期」
     判断该不该跑，会让用户在最后几个小时里对着一份几乎全死的名单。
 
-    判据：TTFB ≤ 阈值且状态 2xx/3xx 算可用；可用数 ≤ max(1, sample//3) 判腐坏。
+    判据：TTFB ≤ 阈值且状态 2xx/3xx 算可用；可用数低于 max(2, 2/3 样本) 判腐坏。
     只抽前 N 个（列表按实测速率排序，前面的就是用户最可能点的）。
+
+    **端点必须与发布判据一致（2026-11-21 修）**：原先硬编码 gstatic，
+    与主判据（推特）不一致——"gstatic 通、推特不通"的节点会被误判健康，
+    腐烂名单一路用到 stale-h(10h)。改用 cn_probe.GENERATE_204（推特主判据）。
+    腐坏线同时从「≤ sample//3」提到「< 2/3 样本」：用户实测 32 个里 20+ 超时
+    是明确不可接受，6 个里要 ≥4 个可用才算健康，宁可提前重发。
     """
     lim = int(ttfb_max or getattr(cn_probe.config, "TARGET_TTFB_MAX_MS", 2000))
+    probe_url = cn_probe.GENERATE_204
     path = os.path.join(workdir, "verified_clash.yaml")
     if not os.path.exists(path):
         return {"checked": 0, "usable": 0, "degraded": False, "why": "无本地发布集"}
@@ -120,7 +127,7 @@ def quick_health(workdir: str, sample: int = 6, ttfb_max: int | None = None,
             if not cn_probe.api_put(int(api), "/proxies/PROBE", {"name": pr["name"]}):
                 continue
             code, ms = cn_probe._http_probe_via_proxy(
-                "https://www.gstatic.com/generate_204", proxy, timeout)
+                probe_url, proxy, timeout)
             if code and 200 <= int(code) < 400 and ms is not None and ms <= lim:
                 usable += 1
                 ttfbs.append(ms)
@@ -131,11 +138,15 @@ def quick_health(workdir: str, sample: int = 6, ttfb_max: int | None = None,
         except Exception:
             proc.kill()
     checked = len(proxies)
-    bad_line = max(1, checked // 3)
+    # 健康线：6 个里至少 4 个可用（2/3），低于它就算腐烂 → 提前重发。
+    # 旧线 usable <= max(1, checked//3) 太松：6 个里 3 个可用仍算健康，
+    # 用户体感就是「一半超时」，与本次反馈一致。
+    need_ok = max(2, (checked * 2 + 2) // 3)
     return {"checked": checked, "usable": usable,
             "median": sorted(ttfbs)[len(ttfbs) // 2] if ttfbs else None,
-            "degraded": usable <= bad_line,
-            "why": f"抽查 {checked} 个，可用 {usable}（阈值 >{bad_line}）"}
+            "degraded": usable < need_ok,
+            "why": f"抽查 {checked} 个，可用 {usable}（健康线 ≥{need_ok}，"
+                   f"判据 {probe_url}）"}
 
 
 def _make_logger(path: str | None):
