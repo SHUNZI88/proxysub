@@ -2988,6 +2988,129 @@ def delay_once(port: int, name: str, timeout_ms: int | None = None) -> dict:
     return {"ok": False, "latency_ms": None}
 
 
+def client_grade_verify(nodes: list[dict], workdir: str) -> tuple[list[dict], dict]:
+    """客户端同款终验（2026-11-21）：低并发 / 多轮全通过 / 中位延迟上限。
+
+    为什么必须有这一层（用户 2026-11-20、11-21 连续两次反馈「手机端大量超时」）：
+      初筛是 16 路并发，自家并发把 RTT 抬高（同批节点并发 4486ms / 串行 2780ms），
+      再叠加 delay_test「5s 失败→8s 重试」——"8 秒内碰巧返回一次"就算连通。
+      而手机 FlClash 的 url-test 是单机低并发、超时更短，两者测的不是同一件事。
+      实证（2026-11-21 09:31，对上一轮发布的 12 个节点，4 并发/5s/3 轮）：
+        稳定 3/3 三个、波动 2/3 三个、全超时 6 个；稳定者中位 1143~1547ms，
+        波动者 2587~3731ms——延迟本身就是好坏分界线。
+
+    判定（两个条件同时满足才算稳定可用）：
+      1. 通过轮数 >= CLIENT_GRADE_MIN_PASS_ROUNDS（默认要求全通过）
+      2. 成功样本中位延迟 <= CLIENT_GRADE_LATENCY_CAP_MS（默认 2500ms）
+
+    **不新增判据维度**：端点仍是 GENERATE_204（推特主判据），只把「能连一次」
+    升级为「稳定能连且不卡」。这是对用户「手机端别超时」诉求的直接回应。
+
+    返回 (kept, verdicts)；verdicts[fp] = {"rounds","passed","median_ms","ok"}。
+    """
+    if not nodes:
+        return [], {}
+    if not getattr(config, "CLIENT_GRADE_ENABLED", False):
+        return list(nodes), {}
+
+    mihomo = ensure_mihomo(workdir)
+    if not mihomo:
+        log("客户端终验: mihomo 不可用，跳过终验（保留全部候选，不阻断发布）")
+        return list(nodes), {}
+
+    rounds = int(getattr(config, "CLIENT_GRADE_ROUNDS", 3))
+    conc = max(1, int(getattr(config, "CLIENT_GRADE_CONCURRENCY", 4)))
+    tmo = int(getattr(config, "CLIENT_GRADE_TIMEOUT_MS", 5000))
+    need = int(getattr(config, "CLIENT_GRADE_MIN_PASS_ROUNDS", rounds))
+    cap = int(getattr(config, "CLIENT_GRADE_LATENCY_CAP_MS", 2500))
+    gap = float(getattr(config, "CLIENT_GRADE_GAP_S", 12))
+
+    mixed_port, api_port = free_port(7898), free_port(9098)
+    # global + 直选节点：只做 delay 探测，不需要规则/分组（与手机 url-test 同构）
+    cfg = {
+        "mixed-port": mixed_port,
+        "allow-lan": False,
+        "mode": "global",
+        "log-level": "warning",
+        "external-controller": f"127.0.0.1:{api_port}",
+        "proxies": [dict(n["proxy"], name=n["probe_name"]) for n in nodes],
+    }
+    cfg_path = os.path.join(workdir, "client_grade_config.yaml")
+    try:
+        with open(cfg_path, "w", encoding="utf-8") as f:
+            yaml.safe_dump(cfg, f, allow_unicode=True, sort_keys=False)
+    except Exception as e:
+        log(f"客户端终验: 写配置失败（{e}），跳过终验")
+        return list(nodes), {}
+
+    log(f"客户端终验: {len(nodes)} 个候选 × {rounds} 轮 × {conc} 并发 × {tmo}ms "
+        f"（端点=推特主判据，全通过且中位≤{cap}ms 才算稳定）")
+    mlog = os.path.join(workdir, "client_grade_mihomo.log")
+    with open(mlog, "w", encoding="utf-8") as fh:
+        proc = subprocess.Popen([mihomo, "-d", workdir, "-f", cfg_path],
+                                stdout=fh, stderr=subprocess.STDOUT)
+    try:
+        if not wait_controller(api_port, timeout=30):
+            log("客户端终验: 控制器未就绪，跳过终验（保留全部候选）")
+            return list(nodes), {}
+        by_name = {n["probe_name"]: n for n in nodes}
+        names = list(by_name)
+        verdicts: dict[str, dict] = {n["fp"]: {"rounds": [], "passed": 0,
+                                              "median_ms": None, "ok": False}
+                                     for n in nodes}
+        for rd in range(1, rounds + 1):
+            t0 = time.time()
+            with ThreadPoolExecutor(max_workers=conc) as ex:
+                futs = {ex.submit(delay_once, api_port, nm, tmo): nm for nm in names}
+                for fu in as_completed(futs):
+                    nm = futs[fu]
+                    try:
+                        r = fu.result()
+                    except Exception:
+                        r = {"ok": False, "latency_ms": None}
+                    rec = verdicts[by_name[nm]["fp"]]
+                    rec["rounds"].append(r.get("latency_ms"))
+                    if r.get("ok"):
+                        rec["passed"] += 1
+            okc = sum(1 for nm in names if verdicts[by_name[nm]["fp"]]["passed"] >= rd)
+            log(f"  终验第{rd}/{rounds}轮: 累计全通过 {okc}/{len(names)}"
+                f"（本轮耗时 {time.time() - t0:.0f}s）")
+            if rd < rounds:
+                time.sleep(gap)
+    finally:
+        try:
+            proc.terminate()
+            proc.wait(timeout=10)
+        except Exception:
+            try:
+                proc.kill()
+            except Exception:
+                pass
+
+    kept, dropped_slow, dropped_flaky = [], [], []
+    for n in nodes:
+        rec = verdicts[n["fp"]]
+        good = sorted(v for v in rec["rounds"] if v is not None)
+        rec["median_ms"] = good[len(good) // 2] if good else None
+        if rec["passed"] < need:
+            dropped_flaky.append(n)
+        elif rec["median_ms"] is not None and rec["median_ms"] > cap:
+            dropped_slow.append(n)
+        else:
+            rec["ok"] = True
+            kept.append(n)
+
+    log(f"客户端终验结果: 稳定可用 {len(kept)} / 候选 {len(nodes)}"
+        f"（不稳定剔除 {len(dropped_flaky)}、延迟超 {cap}ms 剔除 {len(dropped_slow)}）")
+    for n in dropped_flaky:
+        r = verdicts[n["fp"]]
+        log(f"  · 不稳定 {r['passed']}/{rounds}: {str(n.get('name'))[:38]} {r['rounds']}")
+    for n in dropped_slow:
+        r = verdicts[n["fp"]]
+        log(f"  · 延迟高 中位{r['median_ms']}ms: {str(n.get('name'))[:38]}")
+    return kept, verdicts
+
+
 def serial_latency_recheck(api_port: int, nodes: list[dict], results: dict,
                           delay_fn=None, samples: int | None = None,
                           min_pass: int | None = None) -> dict:
@@ -4135,6 +4258,26 @@ def main() -> int:
             degraded = degraded + _blocked
             log(f"地区屏蔽: {len(_blocked)} 个节点来自屏蔽地区 "
                 f"{sorted(_block_regions)} → 从发布集移除（退回第二资产，不删除）")
+
+    # 6.69e) 客户端同款终验（2026-11-21）：用户两次反馈「手机端大量超时」。
+    # 初筛 16 路并发 + delay_test 5s→8s 重试，会把「8 秒内碰巧返回一次」算作连通；
+    # 手机 FlClash url-test 是低并发、短超时，两者不同构。此处对发布候选再做一层
+    # 同构验证：低并发 4、每轮 5s、多轮全通过、中位延迟 ≤ 2500ms 才发。
+    # **不新增判据维度**——端点仍是推特主判据，只把「能连一次」升级为「稳定不卡」。
+    if verified and getattr(config, "CLIENT_GRADE_ENABLED", False):
+        _cg_kept, _cg_verd = client_grade_verify(verified, workdir)
+        if len(_cg_kept) < len(verified):
+            _cg_keep_fps = {n["fp"] for n in _cg_kept}
+            _cg_drop = [n for n in verified if n["fp"] not in _cg_keep_fps]
+            degraded = degraded + _cg_drop
+            verified = _cg_kept
+        for n in verified:
+            _v = _cg_verd.get(n["fp"]) or {}
+            if _v.get("median_ms"):
+                _r = results.setdefault(n["probe_name"], {})
+                _r["client_grade_ms"] = _v["median_ms"]
+                _r["client_grade_passed"] = _v.get("passed")
+                _r["client_grade_rounds"] = len(_v.get("rounds") or [])
 
     # 分源仅统计带 src 的节点（carryover 等无源节点不归任何源，避免产生 "?" 伪源
     # 污染源级评分）；分协议仍覆盖全部节点。

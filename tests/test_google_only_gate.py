@@ -90,3 +90,34 @@ def test_twitter_probe_criterion_contract():
     assert getattr(config, "SERIAL_LATENCY_SAMPLES", 1) >= 3
     assert getattr(config, "SERIAL_LATENCY_MIN_PASS", 1) >= 2
     assert getattr(config, "SERIAL_LATENCY_RECHECK", False) is True
+
+
+def test_client_grade_verify_contract():
+    """客户端同款终验契约（2026-11-21，用户「手机大量超时」的根治层）。
+
+    背景：初筛 16 并发 + delay_test 5s→8s 重试 →「8 秒内碰巧返回一次」算通；
+    手机 url-test 低并发短超时，两者不同构。实证发布 12 个里稳定仅 3 个。
+    锁定：终验必须开着、低并发、多轮全通过、有延迟上限，且端点仍是推特主判据。
+    """
+    import config
+    from scripts import cn_probe
+
+    assert getattr(config, "CLIENT_GRADE_ENABLED", False) is True
+    assert config.CLIENT_GRADE_ROUNDS >= 3
+    assert config.CLIENT_GRADE_CONCURRENCY <= 6, "并发必须贴近单机手机，不能自家抬高 RTT"
+    assert config.CLIENT_GRADE_MIN_PASS_ROUNDS >= config.CLIENT_GRADE_ROUNDS, \
+        "要求全轮通过，不许有偶发掉线（那正是手机端撞超时的样本）"
+    assert 1000 <= config.CLIENT_GRADE_LATENCY_CAP_MS <= 3000, \
+        "延迟上限要落在实证好坏分界（稳定<1600ms / 波动>2500ms）区间"
+    assert bool(getattr(config, "GOOGLE_ONLY_GATE", False)) is True
+    assert cn_probe.GENERATE_204 == config.TWITTER_PROBE_URL
+
+
+def test_main_calls_client_grade_verify_before_publish():
+    """主流程必须在发布前调用终验（防止以后被删掉或挪到发布之后）。"""
+    import inspect
+    from scripts import cn_probe
+    src = inspect.getsource(cn_probe.main)
+    assert "client_grade_verify(" in src
+    # 调用点必须在 write_verified_outputs 之前
+    assert src.index("client_grade_verify(") < src.index("write_verified_outputs(")
