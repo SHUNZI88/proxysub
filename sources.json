@@ -125,35 +125,7 @@
       "note": "自称 all-verified，1525 节点/569 主机"
     },
     {
-      "url": "https://raw.githubusercontent.com/F0rc3Run/F0rc3Run/main/Best-Results/clash.yaml",
-      "origin": "rehab",
-      "added": "2026-11-21",
-      "rehab_from": "zero_unique_contribution:17runs",
-      "rehab_date": "2026-11-21"
-    },
-    {
-      "url": "https://raw.githubusercontent.com/F0rc3Run/F0rc3Run/main/Best-Results/clash-provider.yaml",
-      "origin": "rehab",
-      "added": "2026-11-21",
-      "rehab_from": "zero_unique_contribution:17runs",
-      "rehab_date": "2026-11-21"
-    },
-    {
       "url": "https://raw.githubusercontent.com/xiaocongyu66/proxypool/main/output/clash.yml",
-      "origin": "rehab",
-      "added": "2026-11-21",
-      "rehab_from": "zero_unique_contribution:17runs",
-      "rehab_date": "2026-11-21"
-    },
-    {
-      "url": "https://raw.githubusercontent.com/Barabama/FreeNodes/main/nodes/nodefree.yaml",
-      "origin": "rehab",
-      "added": "2026-11-21",
-      "rehab_from": "zero_real_ok:4runs",
-      "rehab_date": "2026-11-21"
-    },
-    {
-      "url": "https://raw.githubusercontent.com/OgdenThomas/freesub/main/output/by-country/clash-US.yaml",
       "origin": "rehab",
       "added": "2026-11-21",
       "rehab_from": "zero_unique_contribution:17runs",
@@ -227,13 +199,6 @@
       "origin": "rehab",
       "added": "2026-11-21",
       "rehab_from": "cn_low_pass_rate:0/47",
-      "rehab_date": "2026-11-21"
-    },
-    {
-      "url": "https://raw.githubusercontent.com/chengaopan/AutoMergePublicNodes/master/snippets/nodes.meta.yml",
-      "origin": "rehab",
-      "added": "2026-11-21",
-      "rehab_from": "zero_unique_contribution:16runs",
       "rehab_date": "2026-11-21"
     },
     {
@@ -374,6 +339,36 @@
       "url": "https://raw.githubusercontent.com/alireza786786/ai-driven-v2ray/main/secure/clash.yaml",
       "date": "2026-11-20",
       "reason": "trial_misjudged:小样本 2/8 误收，正式拨测 199 个节点 0 通过"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/F0rc3Run/F0rc3Run/main/Best-Results/clash.yaml",
+      "reason": "zero_unique_contribution:18runs",
+      "date": "2026-11-21",
+      "mv": 3
+    },
+    {
+      "url": "https://raw.githubusercontent.com/F0rc3Run/F0rc3Run/main/Best-Results/clash-provider.yaml",
+      "reason": "zero_unique_contribution:18runs",
+      "date": "2026-11-21",
+      "mv": 3
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Barabama/FreeNodes/main/nodes/nodefree.yaml",
+      "reason": "zero_real_ok:4runs",
+      "date": "2026-11-21",
+      "mv": 3
+    },
+    {
+      "url": "https://raw.githubusercontent.com/OgdenThomas/freesub/main/output/by-country/clash-US.yaml",
+      "reason": "zero_unique_contribution:18runs",
+      "date": "2026-11-21",
+      "mv": 3
+    },
+    {
+      "url": "https://raw.githubusercontent.com/chengaopan/AutoMergePublicNodes/master/snippets/nodes.meta.yml",
+      "reason": "zero_unique_contribution:17runs",
+      "date": "2026-11-21",
+      "mv": 3
     }
   ],
   "deny_repos": [],
