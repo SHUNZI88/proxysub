@@ -9,7 +9,7 @@
       "required_runs": 3,
       "first_seen": "2026-11-20",
       "initial_nodes": 276,
-      "runs": 2,
+      "runs": 3,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -26,8 +26,51 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-21",
+          "count": 275,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
+    },
+    "https://raw.githubusercontent.com/asgharkapk/Sub-Config-Extractor/main/output_configs/mixed/ALIILAPRO/v2rayNG-Config/sub.txt.yaml": {
+      "repo": "asgharkapk/Sub-Config-Extractor",
+      "stars": 63,
+      "repo_created": "2025-09-29T12:32:34Z",
+      "reputation": "ok",
+      "reputation_note": "stars=63,age=418d",
+      "required_runs": 3,
+      "first_seen": "2026-11-21",
+      "initial_nodes": 4371,
+      "runs": 0,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": []
+    },
+    "https://anaer.github.io/Sub/clash.yaml": {
+      "channel": "web:https://clashsub.net/free-subscribe/",
+      "origin": "channel_web",
+      "added": "2026-11-21",
+      "first_seen": "2026-11-21",
+      "runs": 0,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": [],
+      "required_runs": 3
+    },
+    "https://cdn.jsdelivr.net/gh/anaer/Sub@main/clash.yaml": {
+      "channel": "web:https://clashsub.net/free-subscribe/",
+      "origin": "channel_web",
+      "added": "2026-11-21",
+      "first_seen": "2026-11-21",
+      "runs": 0,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": [],
+      "required_runs": 3
     }
   },
   "rejected": {
