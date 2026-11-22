@@ -9,7 +9,7 @@
       "required_runs": 3,
       "first_seen": "2026-11-20",
       "initial_nodes": 276,
-      "runs": 5,
+      "runs": 6,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -47,6 +47,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-22",
+          "count": 275,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -59,13 +66,20 @@
       "required_runs": 3,
       "first_seen": "2026-11-21",
       "initial_nodes": 4371,
-      "runs": 2,
+      "runs": 3,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
         {
           "date": "2026-11-21",
           "count": 4371,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-22",
+          "count": 4381,
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
@@ -84,7 +98,7 @@
       "origin": "channel_web",
       "added": "2026-11-21",
       "first_seen": "2026-11-21",
-      "runs": 2,
+      "runs": 3,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -101,6 +115,13 @@
           "usable": 11,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-22",
+          "count": 2124,
+          "usable": 6,
+          "unique_new": 0,
+          "tamper": 0
         }
       ],
       "required_runs": 3
@@ -110,7 +131,7 @@
       "origin": "channel_web",
       "added": "2026-11-21",
       "first_seen": "2026-11-21",
-      "runs": 2,
+      "runs": 3,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -127,6 +148,13 @@
           "usable": 11,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-22",
+          "count": 2124,
+          "usable": 6,
+          "unique_new": 0,
+          "tamper": 0
         }
       ],
       "required_runs": 3
@@ -140,6 +168,70 @@
       "required_runs": 5,
       "first_seen": "2026-11-22",
       "initial_nodes": 25,
+      "runs": 1,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": [
+        {
+          "date": "2026-11-22",
+          "count": 17,
+          "usable": 4,
+          "unique_new": 4,
+          "tamper": 0
+        }
+      ]
+    },
+    "https://raw.githubusercontent.com/peacefish/nodefree/main/sub/sub_merge_clash.yaml": {
+      "repo": "peacefish/nodefree",
+      "stars": 34,
+      "repo_created": "2023-01-30T21:30:42Z",
+      "reputation": "ok",
+      "reputation_note": "stars=34,age=1391d",
+      "required_runs": 3,
+      "first_seen": "2026-11-22",
+      "initial_nodes": 976,
+      "runs": 0,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": []
+    },
+    "https://raw.githubusercontent.com/peacefish/nodefree/main/sub/clash_openshare.yaml": {
+      "repo": "peacefish/nodefree",
+      "stars": 34,
+      "repo_created": "2023-01-30T21:30:42Z",
+      "reputation": "ok",
+      "reputation_note": "stars=34,age=1391d",
+      "required_runs": 3,
+      "first_seen": "2026-11-22",
+      "initial_nodes": 26,
+      "runs": 0,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": []
+    },
+    "https://raw.githubusercontent.com/MrWQ/nodefreebot/master/mihomo.yml": {
+      "repo": "MrWQ/nodefreebot",
+      "stars": 6,
+      "repo_created": "2023-04-20T01:52:44Z",
+      "reputation": "ok",
+      "reputation_note": "stars=6,age=1312d",
+      "required_runs": 3,
+      "first_seen": "2026-11-22",
+      "initial_nodes": 22,
+      "runs": 0,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": []
+    },
+    "https://raw.githubusercontent.com/MrWQ/nodefreebot/master/clash.yml": {
+      "repo": "MrWQ/nodefreebot",
+      "stars": 6,
+      "repo_created": "2023-04-20T01:52:44Z",
+      "reputation": "ok",
+      "reputation_note": "stars=6,age=1312d",
+      "required_runs": 3,
+      "first_seen": "2026-11-22",
+      "initial_nodes": 21,
       "runs": 0,
       "good_streak": 0,
       "fail_streak": 0,

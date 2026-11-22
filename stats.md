@@ -1,24 +1,24 @@
 # proxysub 健康报告
 
-更新时间：2026-11-22 02:34 UTC
+更新时间：2026-11-22 12:55 UTC
 运行模式：**mihomo**
 
 ## 概览
 
-- 最终节点：**219**（合规 182，高风险隔离 37）
-- 真实拨测通过率：**50.0%**（503/1007）
-- TCP 存活：5423 | 正式源 41 个 | 候选源 5 个
+- 最终节点：**205**（合规 140，高风险隔离 65）
+- 真实拨测通过率：**40.3%**（395/980）
+- TCP 存活：4931 | 正式源 41 个 | 候选源 9 个
 
 ## 协议分布
 
 | 协议 | 数量 |
 |---|---|
-| VLESS-Reality | 118 |
-| VLESS-TLS | 41 |
-| Hysteria2 | 29 |
-| Trojan | 20 |
-| Ss | 9 |
-| Anytls | 2 |
+| VLESS-Reality | 95 |
+| Hysteria2 | 54 |
+| VLESS-TLS | 33 |
+| Trojan | 13 |
+| Ss | 6 |
+| Anytls | 4 |
 
 ## 区域分布
 
@@ -26,29 +26,29 @@
 |---|---|
 | 🌐 其他 | 60 |
 | 🇯🇵 日本 | 35 |
-| 🇭🇰 香港 | 32 |
 | 🇸🇬 新加坡 | 30 |
 | 🇺🇸 美国 | 30 |
+| 🇭🇰 香港 | 21 |
 | 🇹🇼 台湾 | 16 |
-| 🇰🇷 韩国 | 8 |
 | 🇬🇧 英国 | 8 |
+| 🇰🇷 韩国 | 5 |
 
 ## 源贡献 Top 10（正式源）
 
 | 源 | 真实通过 | 独有存活 | 存活 |
 |---|---|---|---|
-| `FlyingDashie/Free-node-autotest` | 161 | 207 | 283 |
-| `Au1rxx/free-vpn-subscriptions` | 69 | 268 | 577 |
-| `VPN-Subcription-Links/ClashX-V2Ray-TopFreeProxy` | 67 | 213 | 1153 |
-| `yy1588133/proxy-pool` | 53 | 4 | 605 |
-| `Au1rxx/free-vpn-subscriptions` | 48 | 70 | 621 |
-| `free18/v2ray` | 42 | 0 | 464 |
-| `bily1258-design/beimi` | 39 | 394 | 442 |
-| `Au1rxx/free-vpn-subscriptions` | 38 | 474 | 989 |
-| `chengaopan/AutoMergePublicNodes` | 38 | 0 | 214 |
-| `peasoft/NoMoreWalls` | 38 | 0 | 213 |
+| `Au1rxx/free-vpn-subscriptions` | 94 | 468 | 981 |
+| `Au1rxx/free-vpn-subscriptions` | 91 | 70 | 618 |
+| `VPN-Subcription-Links/ClashX-V2Ray-TopFreeProxy` | 83 | 113 | 1278 |
+| `FlyingDashie/Free-node-autotest` | 76 | 83 | 204 |
+| `Au1rxx/free-vpn-subscriptions` | 74 | 238 | 543 |
+| `ermaozi/get_subscribe` | 53 | 0 | 230 |
+| `https://git.io/emzclash` | 53 | 0 | 230 |
+| `yy1588133/proxy-pool` | 51 | 24 | 583 |
+| `ermaozi/get_subscribe` | 43 | 0 | 165 |
+| `chengaopan/AutoMergePublicNodes` | 42 | 0 | 195 |
 
 ## 警告
 
-- 淘汰源 `https://raw.githubusercontent.com/wuge0/free-nodes/main/output/clash.yaml`：consecutive_failures:4
-- 可疑源结构：bily1258-design: template_cluster:786c671e:104.16.10.0/24(11/22); Ruk1ng001: template_cluster:e67f6d48:202.50.253.0/24(36/38); Au1rxx: template_cluster:fbc280a6:118.253.167.0/24(27/27),template_cluster:5482e58f:42.51.25.0/24(22/22); Au1rxx: template_cluster:e67f6d48:82.38.31.0/24(78/152); mfuu: template_cluster:e67f6d48:202.50.253.0/24(15/23)
+- 本轮无源被淘汰
+- 可疑源结构：free18: template_cluster:e67f6d48:202.50.253.0/24(52/72); bily1258-design: template_cluster:786c671e:104.16.10.0/24(11/22); Ruk1ng001: template_cluster:e67f6d48:202.50.253.0/24(36/38); Au1rxx: template_cluster:fbc280a6:118.253.167.0/24(27/27),template_cluster:5482e58f:42.51.25.0/24(22/22); Au1rxx: template_cluster:e67f6d48:82.38.31.0/24(78/152); mfuu: template_cluster:e67f6d48:202.50.253.0/24(15/23)
