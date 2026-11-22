@@ -9,7 +9,7 @@
       "required_runs": 3,
       "first_seen": "2026-11-20",
       "initial_nodes": 276,
-      "runs": 4,
+      "runs": 5,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -40,6 +40,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-22",
+          "count": 274,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -52,13 +59,20 @@
       "required_runs": 3,
       "first_seen": "2026-11-21",
       "initial_nodes": 4371,
-      "runs": 1,
+      "runs": 2,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
         {
           "date": "2026-11-21",
           "count": 4371,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-22",
+          "count": 4381,
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
@@ -70,7 +84,7 @@
       "origin": "channel_web",
       "added": "2026-11-21",
       "first_seen": "2026-11-21",
-      "runs": 1,
+      "runs": 2,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -78,6 +92,13 @@
           "date": "2026-11-21",
           "count": 2124,
           "usable": 7,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-22",
+          "count": 2124,
+          "usable": 11,
           "unique_new": 0,
           "tamper": 0
         }
@@ -89,7 +110,7 @@
       "origin": "channel_web",
       "added": "2026-11-21",
       "first_seen": "2026-11-21",
-      "runs": 1,
+      "runs": 2,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -99,9 +120,30 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-22",
+          "count": 2124,
+          "usable": 11,
+          "unique_new": 0,
+          "tamper": 0
         }
       ],
       "required_runs": 3
+    },
+    "https://raw.githubusercontent.com/v2raydog-node/free-nodes/main/clash.yaml": {
+      "repo": "v2raydog-node/free-nodes",
+      "stars": 1,
+      "repo_created": "2026-10-30T12:16:12Z",
+      "reputation": "low",
+      "reputation_note": "stars=1,age=22d",
+      "required_runs": 5,
+      "first_seen": "2026-11-22",
+      "initial_nodes": 25,
+      "runs": 0,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": []
     }
   },
   "rejected": {
