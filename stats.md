@@ -1,24 +1,24 @@
 # proxysub 健康报告
 
-更新时间：2026-11-22 21:38 UTC
+更新时间：2026-11-22 22:07 UTC
 运行模式：**mihomo**
 
 ## 概览
 
-- 最终节点：**211**（合规 142，高风险隔离 69）
-- 真实拨测通过率：**37.5%**（377/1006）
-- TCP 存活：4544 | 正式源 41 个 | 候选源 9 个
+- 最终节点：**209**（合规 132，高风险隔离 77）
+- 真实拨测通过率：**39.7%**（403/1015）
+- TCP 存活：4645 | 正式源 41 个 | 候选源 9 个
 
 ## 协议分布
 
 | 协议 | 数量 |
 |---|---|
-| VLESS-Reality | 78 |
-| Hysteria2 | 56 |
-| VLESS-TLS | 45 |
-| Trojan | 22 |
+| VLESS-Reality | 76 |
+| Hysteria2 | 68 |
+| VLESS-TLS | 37 |
+| Trojan | 16 |
+| Ss | 6 |
 | Anytls | 6 |
-| Ss | 4 |
 
 ## 区域分布
 
@@ -28,25 +28,25 @@
 | 🇯🇵 日本 | 35 |
 | 🇸🇬 新加坡 | 30 |
 | 🇺🇸 美国 | 30 |
-| 🇭🇰 香港 | 27 |
-| 🇹🇼 台湾 | 16 |
+| 🇭🇰 香港 | 22 |
+| 🇹🇼 台湾 | 17 |
 | 🇬🇧 英国 | 8 |
-| 🇰🇷 韩国 | 5 |
+| 🇰🇷 韩国 | 7 |
 
 ## 源贡献 Top 10（正式源）
 
 | 源 | 真实通过 | 独有存活 | 存活 |
 |---|---|---|---|
-| `Au1rxx/free-vpn-subscriptions` | 97 | 386 | 898 |
-| `Au1rxx/free-vpn-subscriptions` | 94 | 70 | 616 |
-| `Au1rxx/free-vpn-subscriptions` | 76 | 238 | 545 |
-| `FlyingDashie/Free-node-autotest` | 72 | 92 | 189 |
-| `yy1588133/proxy-pool` | 70 | 3 | 380 |
-| `VPN-Subcription-Links/ClashX-V2Ray-TopFreeProxy` | 65 | 72 | 905 |
-| `ermaozi/get_subscribe` | 49 | 0 | 227 |
-| `sub/clash` | 49 | 0 | 227 |
-| `https://git.io/emzclash` | 49 | 0 | 227 |
-| `chengaopan/AutoMergePublicNodes` | 47 | 0 | 201 |
+| `Au1rxx/free-vpn-subscriptions` | 105 | 70 | 618 |
+| `Au1rxx/free-vpn-subscriptions` | 102 | 239 | 545 |
+| `Au1rxx/free-vpn-subscriptions` | 101 | 469 | 982 |
+| `FlyingDashie/Free-node-autotest` | 93 | 97 | 199 |
+| `VPN-Subcription-Links/ClashX-V2Ray-TopFreeProxy` | 76 | 73 | 909 |
+| `yy1588133/proxy-pool` | 75 | 4 | 383 |
+| `ermaozi/get_subscribe` | 61 | 0 | 227 |
+| `sub/clash` | 61 | 0 | 227 |
+| `https://git.io/emzclash` | 61 | 0 | 227 |
+| `chengaopan/AutoMergePublicNodes` | 49 | 0 | 202 |
 
 ## 警告
 
