@@ -9,7 +9,7 @@
       "required_runs": 3,
       "first_seen": "2026-11-20",
       "initial_nodes": 276,
-      "runs": 6,
+      "runs": 7,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -54,6 +54,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-22",
+          "count": 275,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -66,7 +73,7 @@
       "required_runs": 3,
       "first_seen": "2026-11-21",
       "initial_nodes": 4371,
-      "runs": 3,
+      "runs": 4,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -90,6 +97,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-22",
+          "count": 4408,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -98,7 +112,7 @@
       "origin": "channel_web",
       "added": "2026-11-21",
       "first_seen": "2026-11-21",
-      "runs": 3,
+      "runs": 4,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -122,6 +136,13 @@
           "usable": 6,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-22",
+          "count": 2144,
+          "usable": 11,
+          "unique_new": 0,
+          "tamper": 0
         }
       ],
       "required_runs": 3
@@ -131,7 +152,7 @@
       "origin": "channel_web",
       "added": "2026-11-21",
       "first_seen": "2026-11-21",
-      "runs": 3,
+      "runs": 4,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -155,6 +176,13 @@
           "usable": 6,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-22",
+          "count": 2124,
+          "usable": 6,
+          "unique_new": 0,
+          "tamper": 0
         }
       ],
       "required_runs": 3
@@ -168,7 +196,7 @@
       "required_runs": 5,
       "first_seen": "2026-11-22",
       "initial_nodes": 25,
-      "runs": 1,
+      "runs": 2,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -177,6 +205,13 @@
           "count": 17,
           "usable": 4,
           "unique_new": 4,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-22",
+          "count": 17,
+          "usable": 3,
+          "unique_new": 3,
           "tamper": 0
         }
       ]
@@ -190,10 +225,18 @@
       "required_runs": 3,
       "first_seen": "2026-11-22",
       "initial_nodes": 976,
-      "runs": 0,
+      "runs": 1,
       "good_streak": 0,
       "fail_streak": 0,
-      "history": []
+      "history": [
+        {
+          "date": "2026-11-22",
+          "count": 976,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        }
+      ]
     },
     "https://raw.githubusercontent.com/peacefish/nodefree/main/sub/clash_openshare.yaml": {
       "repo": "peacefish/nodefree",
@@ -204,10 +247,18 @@
       "required_runs": 3,
       "first_seen": "2026-11-22",
       "initial_nodes": 26,
-      "runs": 0,
+      "runs": 1,
       "good_streak": 0,
       "fail_streak": 0,
-      "history": []
+      "history": [
+        {
+          "date": "2026-11-22",
+          "count": 26,
+          "usable": 2,
+          "unique_new": 2,
+          "tamper": 0
+        }
+      ]
     },
     "https://raw.githubusercontent.com/MrWQ/nodefreebot/master/mihomo.yml": {
       "repo": "MrWQ/nodefreebot",
@@ -218,10 +269,18 @@
       "required_runs": 3,
       "first_seen": "2026-11-22",
       "initial_nodes": 22,
-      "runs": 0,
+      "runs": 1,
       "good_streak": 0,
       "fail_streak": 0,
-      "history": []
+      "history": [
+        {
+          "date": "2026-11-22",
+          "count": 22,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        }
+      ]
     },
     "https://raw.githubusercontent.com/MrWQ/nodefreebot/master/clash.yml": {
       "repo": "MrWQ/nodefreebot",
@@ -232,10 +291,18 @@
       "required_runs": 3,
       "first_seen": "2026-11-22",
       "initial_nodes": 21,
-      "runs": 0,
+      "runs": 1,
       "good_streak": 0,
       "fail_streak": 0,
-      "history": []
+      "history": [
+        {
+          "date": "2026-11-22",
+          "count": 21,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        }
+      ]
     }
   },
   "rejected": {
