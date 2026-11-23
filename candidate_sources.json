@@ -9,17 +9,10 @@
       "required_runs": 3,
       "first_seen": "2026-11-20",
       "initial_nodes": 276,
-      "runs": 8,
+      "runs": 9,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-11-20",
-          "count": 276,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-11-21",
           "count": 275,
@@ -68,6 +61,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-23",
+          "count": 275,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -80,7 +80,7 @@
       "required_runs": 3,
       "first_seen": "2026-11-21",
       "initial_nodes": 4371,
-      "runs": 5,
+      "runs": 6,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -118,6 +118,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-23",
+          "count": 4421,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -126,7 +133,7 @@
       "origin": "channel_web",
       "added": "2026-11-21",
       "first_seen": "2026-11-21",
-      "runs": 5,
+      "runs": 6,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -164,6 +171,13 @@
           "usable": 8,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-23",
+          "count": 2144,
+          "usable": 7,
+          "unique_new": 0,
+          "tamper": 0
         }
       ],
       "required_runs": 3
@@ -173,7 +187,7 @@
       "origin": "channel_web",
       "added": "2026-11-21",
       "first_seen": "2026-11-21",
-      "runs": 5,
+      "runs": 6,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -211,6 +225,13 @@
           "usable": 6,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-23",
+          "count": 2144,
+          "usable": 7,
+          "unique_new": 0,
+          "tamper": 0
         }
       ],
       "required_runs": 3
@@ -224,8 +245,8 @@
       "required_runs": 5,
       "first_seen": "2026-11-22",
       "initial_nodes": 25,
-      "runs": 3,
-      "good_streak": 0,
+      "runs": 4,
+      "good_streak": 1,
       "fail_streak": 0,
       "history": [
         {
@@ -248,6 +269,13 @@
           "usable": 3,
           "unique_new": 3,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-23",
+          "count": 25,
+          "usable": 8,
+          "unique_new": 8,
+          "tamper": 0
         }
       ]
     },
@@ -260,7 +288,7 @@
       "required_runs": 3,
       "first_seen": "2026-11-22",
       "initial_nodes": 976,
-      "runs": 2,
+      "runs": 3,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -273,6 +301,13 @@
         },
         {
           "date": "2026-11-22",
+          "count": 976,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-23",
           "count": 976,
           "usable": 0,
           "unique_new": 0,
@@ -289,7 +324,7 @@
       "required_runs": 3,
       "first_seen": "2026-11-22",
       "initial_nodes": 26,
-      "runs": 2,
+      "runs": 3,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -302,6 +337,13 @@
         },
         {
           "date": "2026-11-22",
+          "count": 26,
+          "usable": 2,
+          "unique_new": 2,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-23",
           "count": 26,
           "usable": 2,
           "unique_new": 2,
@@ -318,7 +360,7 @@
       "required_runs": 3,
       "first_seen": "2026-11-22",
       "initial_nodes": 22,
-      "runs": 2,
+      "runs": 3,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -331,6 +373,13 @@
         },
         {
           "date": "2026-11-22",
+          "count": 22,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-23",
           "count": 22,
           "usable": 0,
           "unique_new": 0,
@@ -347,7 +396,7 @@
       "required_runs": 3,
       "first_seen": "2026-11-22",
       "initial_nodes": 21,
-      "runs": 2,
+      "runs": 3,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -364,8 +413,29 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-23",
+          "count": 21,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
+    },
+    "https://raw.githubusercontent.com/marshall888666/free_clash_subscribe/main/source/clash-meta-2.yaml": {
+      "repo": "marshall888666/free_clash_subscribe",
+      "stars": 24,
+      "repo_created": "2025-12-02T10:36:15Z",
+      "reputation": "ok",
+      "reputation_note": "stars=24,age=355d",
+      "required_runs": 3,
+      "first_seen": "2026-11-23",
+      "initial_nodes": 24,
+      "runs": 0,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": []
     }
   },
   "rejected": {
