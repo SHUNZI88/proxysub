@@ -9,17 +9,10 @@
       "required_runs": 3,
       "first_seen": "2026-11-20",
       "initial_nodes": 276,
-      "runs": 9,
+      "runs": 10,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-11-21",
-          "count": 275,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-11-21",
           "count": 275,
@@ -68,6 +61,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-23",
+          "count": 267,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -80,7 +80,7 @@
       "required_runs": 3,
       "first_seen": "2026-11-21",
       "initial_nodes": 4371,
-      "runs": 6,
+      "runs": 7,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -125,6 +125,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-23",
+          "count": 4421,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -133,7 +140,7 @@
       "origin": "channel_web",
       "added": "2026-11-21",
       "first_seen": "2026-11-21",
-      "runs": 6,
+      "runs": 7,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -178,6 +185,13 @@
           "usable": 7,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-23",
+          "count": 2144,
+          "usable": 5,
+          "unique_new": 0,
+          "tamper": 0
         }
       ],
       "required_runs": 3
@@ -187,7 +201,7 @@
       "origin": "channel_web",
       "added": "2026-11-21",
       "first_seen": "2026-11-21",
-      "runs": 6,
+      "runs": 7,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -232,6 +246,13 @@
           "usable": 7,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-23",
+          "count": 2144,
+          "usable": 5,
+          "unique_new": 0,
+          "tamper": 0
         }
       ],
       "required_runs": 3
@@ -245,8 +266,8 @@
       "required_runs": 5,
       "first_seen": "2026-11-22",
       "initial_nodes": 25,
-      "runs": 4,
-      "good_streak": 1,
+      "runs": 5,
+      "good_streak": 2,
       "fail_streak": 0,
       "history": [
         {
@@ -276,6 +297,13 @@
           "usable": 8,
           "unique_new": 8,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-23",
+          "count": 25,
+          "usable": 7,
+          "unique_new": 7,
+          "tamper": 0
         }
       ]
     },
@@ -288,7 +316,7 @@
       "required_runs": 3,
       "first_seen": "2026-11-22",
       "initial_nodes": 976,
-      "runs": 3,
+      "runs": 4,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -301,6 +329,13 @@
         },
         {
           "date": "2026-11-22",
+          "count": 976,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-23",
           "count": 976,
           "usable": 0,
           "unique_new": 0,
@@ -324,7 +359,7 @@
       "required_runs": 3,
       "first_seen": "2026-11-22",
       "initial_nodes": 26,
-      "runs": 3,
+      "runs": 4,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -337,6 +372,13 @@
         },
         {
           "date": "2026-11-22",
+          "count": 26,
+          "usable": 2,
+          "unique_new": 2,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-23",
           "count": 26,
           "usable": 2,
           "unique_new": 2,
@@ -360,7 +402,7 @@
       "required_runs": 3,
       "first_seen": "2026-11-22",
       "initial_nodes": 22,
-      "runs": 3,
+      "runs": 4,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -373,6 +415,13 @@
         },
         {
           "date": "2026-11-22",
+          "count": 22,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-23",
           "count": 22,
           "usable": 0,
           "unique_new": 0,
@@ -396,7 +445,7 @@
       "required_runs": 3,
       "first_seen": "2026-11-22",
       "initial_nodes": 21,
-      "runs": 3,
+      "runs": 4,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -420,6 +469,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-23",
+          "count": 21,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -432,10 +488,43 @@
       "required_runs": 3,
       "first_seen": "2026-11-23",
       "initial_nodes": 24,
+      "runs": 1,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": [
+        {
+          "date": "2026-11-23",
+          "count": 24,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        }
+      ]
+    },
+    "https://raw.githubusercontent.com/oversizexl/FreeSubsCheck/main/mihomo.yaml": {
+      "repo": "oversizexl/FreeSubsCheck",
+      "stars": 8,
+      "repo_created": "2026-09-02T05:08:24Z",
+      "reputation": "ok",
+      "reputation_note": "stars=8,age=82d",
+      "required_runs": 3,
+      "first_seen": "2026-11-23",
+      "initial_nodes": 90,
       "runs": 0,
       "good_streak": 0,
       "fail_streak": 0,
       "history": []
+    },
+    "http://app.sublink.works/x/OQfwHrK": {
+      "channel": "telegram:fq5211",
+      "origin": "channel_telegram",
+      "added": "2026-11-23",
+      "first_seen": "2026-11-23",
+      "runs": 0,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": [],
+      "required_runs": 3
     }
   },
   "rejected": {
