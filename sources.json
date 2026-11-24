@@ -77,12 +77,6 @@
       "note": "本机实测 9/15 目标站可达（60%）——ss 解析修复后才显现"
     },
     {
-      "url": "https://raw.githubusercontent.com/ripaojiedian/freenode/main/sub",
-      "origin": "manual",
-      "added": "2026-11-20",
-      "note": "本机实测 2/6"
-    },
-    {
       "url": "https://raw.githubusercontent.com/Pawdroid/Free-servers/main/sub",
       "origin": "manual",
       "added": "2026-11-20",
@@ -370,6 +364,12 @@
     },
     {
       "url": "https://blog.ermao.net/sub/clash/ermao.net",
+      "reason": "zero_unique_contribution:16runs",
+      "date": "2026-11-24",
+      "mv": 3
+    },
+    {
+      "url": "https://raw.githubusercontent.com/ripaojiedian/freenode/main/sub",
       "reason": "zero_unique_contribution:16runs",
       "date": "2026-11-24",
       "mv": 3
