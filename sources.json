@@ -167,20 +167,6 @@
       "rehab_date": "2026-11-21"
     },
     {
-      "url": "https://raw.githubusercontent.com/ermaozi/get_subscribe/main/subscribe/clash.yml",
-      "origin": "rehab",
-      "added": "2026-11-21",
-      "rehab_from": "cn_low_pass_rate:0/24",
-      "rehab_date": "2026-11-21"
-    },
-    {
-      "url": "https://blog.ermao.net/sub/clash/ermao.net",
-      "origin": "rehab",
-      "added": "2026-11-21",
-      "rehab_from": "cn_low_pass_rate:0/20",
-      "rehab_date": "2026-11-21"
-    },
-    {
       "url": "https://raw.githubusercontent.com/Au1rxx/free-vpn-subscriptions/main/output/clash.yaml",
       "origin": "rehab",
       "added": "2026-11-21",
@@ -367,6 +353,18 @@
       "url": "https://raw.githubusercontent.com/wuge0/free-nodes/main/output/clash.yaml",
       "reason": "consecutive_failures:4",
       "date": "2026-11-22",
+      "mv": 3
+    },
+    {
+      "url": "https://raw.githubusercontent.com/ermaozi/get_subscribe/main/subscribe/clash.yml",
+      "reason": "zero_unique_contribution:16runs",
+      "date": "2026-11-24",
+      "mv": 3
+    },
+    {
+      "url": "https://blog.ermao.net/sub/clash/ermao.net",
+      "reason": "zero_unique_contribution:16runs",
+      "date": "2026-11-24",
       "mv": 3
     }
   ],
