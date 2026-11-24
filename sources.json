@@ -256,6 +256,13 @@
       "origin": "rehab",
       "added": "2026-11-21",
       "rehab_reason": "cn_judgement_invalidated_20261121"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/v2raydog-node/free-nodes/main/clash.yaml",
+      "origin": "discovered",
+      "added": "2026-11-24",
+      "repo": "v2raydog-node/free-nodes",
+      "probation_runs": 8
     }
   ],
   "removed": [
