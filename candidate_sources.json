@@ -9,17 +9,10 @@
       "required_runs": 3,
       "first_seen": "2026-11-21",
       "initial_nodes": 4371,
-      "runs": 13,
+      "runs": 14,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-11-23",
-          "count": 4421,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-11-23",
           "count": 4421,
@@ -68,6 +61,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-25",
+          "count": 4466,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -76,17 +76,10 @@
       "origin": "channel_web",
       "added": "2026-11-21",
       "first_seen": "2026-11-21",
-      "runs": 13,
+      "runs": 14,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-11-23",
-          "count": 2144,
-          "usable": 7,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-11-23",
           "count": 2144,
@@ -135,6 +128,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-25",
+          "count": 2143,
+          "usable": 21,
+          "unique_new": 0,
+          "tamper": 0
         }
       ],
       "required_runs": 3
@@ -144,17 +144,10 @@
       "origin": "channel_web",
       "added": "2026-11-21",
       "first_seen": "2026-11-21",
-      "runs": 13,
+      "runs": 14,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-11-23",
-          "count": 2144,
-          "usable": 7,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-11-23",
           "count": 2144,
@@ -203,6 +196,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-25",
+          "count": 1796,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ],
       "required_runs": 3
@@ -216,7 +216,7 @@
       "required_runs": 3,
       "first_seen": "2026-11-22",
       "initial_nodes": 976,
-      "runs": 10,
+      "runs": 11,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -235,13 +235,6 @@
           "tamper": 0
         },
         {
-          "date": "2026-11-23",
-          "count": 976,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
           "date": "2026-11-24",
           "count": 976,
           "usable": 0,
@@ -257,6 +250,13 @@
         },
         {
           "date": "2026-11-24",
+          "count": 976,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-25",
           "count": 976,
           "usable": 0,
           "unique_new": 0,
@@ -287,7 +287,7 @@
       "required_runs": 3,
       "first_seen": "2026-11-22",
       "initial_nodes": 26,
-      "runs": 10,
+      "runs": 11,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -306,13 +306,6 @@
           "tamper": 0
         },
         {
-          "date": "2026-11-23",
-          "count": 26,
-          "usable": 2,
-          "unique_new": 2,
-          "tamper": 0
-        },
-        {
           "date": "2026-11-24",
           "count": 26,
           "usable": 2,
@@ -328,6 +321,13 @@
         },
         {
           "date": "2026-11-24",
+          "count": 26,
+          "usable": 2,
+          "unique_new": 2,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-25",
           "count": 26,
           "usable": 2,
           "unique_new": 2,
@@ -358,7 +358,7 @@
       "required_runs": 3,
       "first_seen": "2026-11-22",
       "initial_nodes": 22,
-      "runs": 10,
+      "runs": 11,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -377,13 +377,6 @@
           "tamper": 0
         },
         {
-          "date": "2026-11-23",
-          "count": 22,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
           "date": "2026-11-24",
           "count": 22,
           "usable": 0,
@@ -399,6 +392,13 @@
         },
         {
           "date": "2026-11-24",
+          "count": 22,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-25",
           "count": 22,
           "usable": 0,
           "unique_new": 0,
@@ -429,7 +429,7 @@
       "required_runs": 3,
       "first_seen": "2026-11-22",
       "initial_nodes": 21,
-      "runs": 10,
+      "runs": 11,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -448,13 +448,6 @@
           "tamper": 0
         },
         {
-          "date": "2026-11-23",
-          "count": 21,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
           "date": "2026-11-24",
           "count": 21,
           "usable": 0,
@@ -470,6 +463,13 @@
         },
         {
           "date": "2026-11-24",
+          "count": 21,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-25",
           "count": 21,
           "usable": 0,
           "unique_new": 0,
@@ -500,7 +500,7 @@
       "required_runs": 3,
       "first_seen": "2026-11-23",
       "initial_nodes": 24,
-      "runs": 7,
+      "runs": 8,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -552,6 +552,13 @@
           "usable": 2,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-25",
+          "count": 18,
+          "usable": 2,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -564,7 +571,7 @@
       "required_runs": 3,
       "first_seen": "2026-11-23",
       "initial_nodes": 90,
-      "runs": 6,
+      "runs": 7,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -591,6 +598,13 @@
         },
         {
           "date": "2026-11-24",
+          "count": 90,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-25",
           "count": 90,
           "usable": 0,
           "unique_new": 0,
@@ -617,7 +631,7 @@
       "origin": "channel_telegram",
       "added": "2026-11-23",
       "first_seen": "2026-11-23",
-      "runs": 6,
+      "runs": 7,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -654,6 +668,13 @@
           "count": 28,
           "usable": 3,
           "unique_new": 2,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-25",
+          "count": 28,
+          "usable": 1,
+          "unique_new": 0,
           "tamper": 0
         },
         {
