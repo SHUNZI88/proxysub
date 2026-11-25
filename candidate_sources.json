@@ -1,76 +1,5 @@
 {
   "candidates": {
-    "https://raw.githubusercontent.com/TopChina/proxy-list/main/clash_sub.yaml": {
-      "repo": "TopChina/proxy-list",
-      "stars": 308,
-      "repo_created": "2025-07-03T03:24:04Z",
-      "reputation": "ok",
-      "reputation_note": "stars=308,age=505d",
-      "required_runs": 3,
-      "first_seen": "2026-11-20",
-      "initial_nodes": 276,
-      "runs": 15,
-      "good_streak": 0,
-      "fail_streak": 0,
-      "history": [
-        {
-          "date": "2026-11-22",
-          "count": 275,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-23",
-          "count": 275,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-23",
-          "count": 267,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-23",
-          "count": 267,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-24",
-          "count": 267,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-24",
-          "count": 270,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-24",
-          "count": 266,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-25",
-          "count": 266,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        }
-      ]
-    },
     "https://raw.githubusercontent.com/asgharkapk/Sub-Config-Extractor/main/output_configs/mixed/ALIILAPRO/v2rayNG-Config/sub.txt.yaml": {
       "repo": "asgharkapk/Sub-Config-Extractor",
       "stars": 63,
@@ -80,17 +9,10 @@
       "required_runs": 3,
       "first_seen": "2026-11-21",
       "initial_nodes": 4371,
-      "runs": 12,
+      "runs": 13,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-11-22",
-          "count": 4408,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-11-23",
           "count": 4421,
@@ -139,6 +61,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-25",
+          "count": 4465,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -147,17 +76,10 @@
       "origin": "channel_web",
       "added": "2026-11-21",
       "first_seen": "2026-11-21",
-      "runs": 12,
+      "runs": 13,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-11-22",
-          "count": 2144,
-          "usable": 8,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-11-23",
           "count": 2144,
@@ -206,6 +128,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-25",
+          "count": 1796,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ],
       "required_runs": 3
@@ -215,17 +144,10 @@
       "origin": "channel_web",
       "added": "2026-11-21",
       "first_seen": "2026-11-21",
-      "runs": 12,
-      "good_streak": 1,
+      "runs": 13,
+      "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-11-22",
-          "count": 2124,
-          "usable": 6,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-11-23",
           "count": 2144,
@@ -274,6 +196,13 @@
           "usable": 17,
           "unique_new": 13,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-25",
+          "count": 1796,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ],
       "required_runs": 3
@@ -287,18 +216,11 @@
       "required_runs": 3,
       "first_seen": "2026-11-22",
       "initial_nodes": 976,
-      "runs": 9,
+      "runs": 10,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
         {
-          "date": "2026-11-22",
-          "count": 976,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
           "date": "2026-11-23",
           "count": 976,
           "usable": 0,
@@ -335,6 +257,13 @@
         },
         {
           "date": "2026-11-24",
+          "count": 976,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-25",
           "count": 976,
           "usable": 0,
           "unique_new": 0,
@@ -358,18 +287,11 @@
       "required_runs": 3,
       "first_seen": "2026-11-22",
       "initial_nodes": 26,
-      "runs": 9,
+      "runs": 10,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
         {
-          "date": "2026-11-22",
-          "count": 26,
-          "usable": 2,
-          "unique_new": 2,
-          "tamper": 0
-        },
-        {
           "date": "2026-11-23",
           "count": 26,
           "usable": 2,
@@ -406,6 +328,13 @@
         },
         {
           "date": "2026-11-24",
+          "count": 26,
+          "usable": 2,
+          "unique_new": 2,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-25",
           "count": 26,
           "usable": 2,
           "unique_new": 2,
@@ -429,18 +358,11 @@
       "required_runs": 3,
       "first_seen": "2026-11-22",
       "initial_nodes": 22,
-      "runs": 9,
+      "runs": 10,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
         {
-          "date": "2026-11-22",
-          "count": 22,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
           "date": "2026-11-23",
           "count": 22,
           "usable": 0,
@@ -477,6 +399,13 @@
         },
         {
           "date": "2026-11-24",
+          "count": 22,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-25",
           "count": 22,
           "usable": 0,
           "unique_new": 0,
@@ -500,17 +429,10 @@
       "required_runs": 3,
       "first_seen": "2026-11-22",
       "initial_nodes": 21,
-      "runs": 9,
+      "runs": 10,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-11-22",
-          "count": 21,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-11-23",
           "count": 21,
@@ -559,6 +481,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-25",
+          "count": 21,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -571,7 +500,7 @@
       "required_runs": 3,
       "first_seen": "2026-11-23",
       "initial_nodes": 24,
-      "runs": 6,
+      "runs": 7,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -616,6 +545,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-25",
+          "count": 16,
+          "usable": 2,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -628,7 +564,7 @@
       "required_runs": 3,
       "first_seen": "2026-11-23",
       "initial_nodes": 90,
-      "runs": 5,
+      "runs": 6,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -655,6 +591,13 @@
         },
         {
           "date": "2026-11-24",
+          "count": 90,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-25",
           "count": 90,
           "usable": 0,
           "unique_new": 0,
@@ -674,7 +617,7 @@
       "origin": "channel_telegram",
       "added": "2026-11-23",
       "first_seen": "2026-11-23",
-      "runs": 5,
+      "runs": 6,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -711,6 +654,13 @@
           "count": 28,
           "usable": 3,
           "unique_new": 2,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-25",
+          "count": 28,
+          "usable": 1,
+          "unique_new": 0,
           "tamper": 0
         }
       ],
@@ -786,6 +736,12 @@
       "date": "2026-11-17",
       "repo": null,
       "mv": 2
+    },
+    "https://raw.githubusercontent.com/TopChina/proxy-list/main/clash_sub.yaml": {
+      "reason": "no_stable_contribution",
+      "date": "2026-11-25",
+      "repo": "TopChina/proxy-list",
+      "mv": 3
     }
   }
 }
