@@ -1,212 +1,5 @@
 {
   "candidates": {
-    "https://raw.githubusercontent.com/asgharkapk/Sub-Config-Extractor/main/output_configs/mixed/ALIILAPRO/v2rayNG-Config/sub.txt.yaml": {
-      "repo": "asgharkapk/Sub-Config-Extractor",
-      "stars": 63,
-      "repo_created": "2025-09-29T12:32:34Z",
-      "reputation": "ok",
-      "reputation_note": "stars=63,age=418d",
-      "required_runs": 3,
-      "first_seen": "2026-11-21",
-      "initial_nodes": 4371,
-      "runs": 15,
-      "good_streak": 0,
-      "fail_streak": 0,
-      "history": [
-        {
-          "date": "2026-11-23",
-          "count": 4445,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-24",
-          "count": 4445,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-24",
-          "count": 4448,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-24",
-          "count": 4462,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-25",
-          "count": 4462,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-25",
-          "count": 4465,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-25",
-          "count": 4466,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-26",
-          "count": 4466,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        }
-      ]
-    },
-    "https://anaer.github.io/Sub/clash.yaml": {
-      "channel": "web:https://clashsub.net/free-subscribe/",
-      "origin": "channel_web",
-      "added": "2026-11-21",
-      "first_seen": "2026-11-21",
-      "runs": 15,
-      "good_streak": 0,
-      "fail_streak": 0,
-      "history": [
-        {
-          "date": "2026-11-23",
-          "count": 2144,
-          "usable": 5,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-24",
-          "count": 2144,
-          "usable": 21,
-          "unique_new": 0,
-          "tamper": 1
-        },
-        {
-          "date": "2026-11-24",
-          "count": 2144,
-          "usable": 7,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-24",
-          "count": 1796,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-25",
-          "count": 1796,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-25",
-          "count": 1796,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-25",
-          "count": 2143,
-          "usable": 21,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-26",
-          "count": 2143,
-          "usable": 19,
-          "unique_new": 0,
-          "tamper": 0
-        }
-      ],
-      "required_runs": 3
-    },
-    "https://cdn.jsdelivr.net/gh/anaer/Sub@main/clash.yaml": {
-      "channel": "web:https://clashsub.net/free-subscribe/",
-      "origin": "channel_web",
-      "added": "2026-11-21",
-      "first_seen": "2026-11-21",
-      "runs": 15,
-      "good_streak": 0,
-      "fail_streak": 0,
-      "history": [
-        {
-          "date": "2026-11-23",
-          "count": 2144,
-          "usable": 5,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-24",
-          "count": 2144,
-          "usable": 2,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-24",
-          "count": 2144,
-          "usable": 7,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-24",
-          "count": 2144,
-          "usable": 7,
-          "unique_new": 2,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-25",
-          "count": 2144,
-          "usable": 17,
-          "unique_new": 13,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-25",
-          "count": 1796,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-25",
-          "count": 1796,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-26",
-          "count": 1796,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        }
-      ],
-      "required_runs": 3
-    },
     "https://raw.githubusercontent.com/peacefish/nodefree/main/sub/sub_merge_clash.yaml": {
       "repo": "peacefish/nodefree",
       "stars": 34,
@@ -216,18 +9,11 @@
       "required_runs": 3,
       "first_seen": "2026-11-22",
       "initial_nodes": 976,
-      "runs": 12,
+      "runs": 13,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
         {
-          "date": "2026-11-23",
-          "count": 976,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
           "date": "2026-11-24",
           "count": 976,
           "usable": 0,
@@ -264,6 +50,13 @@
         },
         {
           "date": "2026-11-25",
+          "count": 976,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-26",
           "count": 976,
           "usable": 0,
           "unique_new": 0,
@@ -287,18 +80,11 @@
       "required_runs": 3,
       "first_seen": "2026-11-22",
       "initial_nodes": 26,
-      "runs": 12,
+      "runs": 13,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
         {
-          "date": "2026-11-23",
-          "count": 26,
-          "usable": 2,
-          "unique_new": 2,
-          "tamper": 0
-        },
-        {
           "date": "2026-11-24",
           "count": 26,
           "usable": 2,
@@ -335,6 +121,13 @@
         },
         {
           "date": "2026-11-25",
+          "count": 26,
+          "usable": 2,
+          "unique_new": 2,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-26",
           "count": 26,
           "usable": 2,
           "unique_new": 2,
@@ -358,18 +151,11 @@
       "required_runs": 3,
       "first_seen": "2026-11-22",
       "initial_nodes": 22,
-      "runs": 12,
+      "runs": 13,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
         {
-          "date": "2026-11-23",
-          "count": 22,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
           "date": "2026-11-24",
           "count": 22,
           "usable": 0,
@@ -406,6 +192,13 @@
         },
         {
           "date": "2026-11-25",
+          "count": 22,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-26",
           "count": 22,
           "usable": 0,
           "unique_new": 0,
@@ -429,17 +222,10 @@
       "required_runs": 3,
       "first_seen": "2026-11-22",
       "initial_nodes": 21,
-      "runs": 12,
+      "runs": 13,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-11-23",
-          "count": 21,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-11-24",
           "count": 21,
@@ -488,6 +274,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-26",
+          "count": 21,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -500,17 +293,10 @@
       "required_runs": 3,
       "first_seen": "2026-11-23",
       "initial_nodes": 24,
-      "runs": 9,
+      "runs": 10,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-11-23",
-          "count": 28,
-          "usable": 1,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-11-24",
           "count": 28,
@@ -559,6 +345,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-26",
+          "count": 43,
+          "usable": 2,
+          "unique_new": 2,
+          "tamper": 0
         }
       ]
     },
@@ -571,18 +364,11 @@
       "required_runs": 3,
       "first_seen": "2026-11-23",
       "initial_nodes": 90,
-      "runs": 8,
+      "runs": 9,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
         {
-          "date": "2026-11-23",
-          "count": 90,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
           "date": "2026-11-24",
           "count": 90,
           "usable": 0,
@@ -619,6 +405,13 @@
         },
         {
           "date": "2026-11-25",
+          "count": 90,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-26",
           "count": 90,
           "usable": 0,
           "unique_new": 0,
@@ -638,17 +431,10 @@
       "origin": "channel_telegram",
       "added": "2026-11-23",
       "first_seen": "2026-11-23",
-      "runs": 8,
+      "runs": 9,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-11-23",
-          "count": 28,
-          "usable": 3,
-          "unique_new": 1,
-          "tamper": 0
-        },
         {
           "date": "2026-11-24",
           "count": 28,
@@ -695,6 +481,13 @@
           "date": "2026-11-26",
           "count": 28,
           "usable": 2,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-26",
+          "count": 28,
+          "usable": 1,
           "unique_new": 0,
           "tamper": 0
         }
@@ -776,6 +569,24 @@
       "reason": "no_stable_contribution",
       "date": "2026-11-25",
       "repo": "TopChina/proxy-list",
+      "mv": 3
+    },
+    "https://raw.githubusercontent.com/asgharkapk/Sub-Config-Extractor/main/output_configs/mixed/ALIILAPRO/v2rayNG-Config/sub.txt.yaml": {
+      "reason": "no_stable_contribution",
+      "date": "2026-11-26",
+      "repo": "asgharkapk/Sub-Config-Extractor",
+      "mv": 3
+    },
+    "https://anaer.github.io/Sub/clash.yaml": {
+      "reason": "no_stable_contribution",
+      "date": "2026-11-26",
+      "repo": null,
+      "mv": 3
+    },
+    "https://cdn.jsdelivr.net/gh/anaer/Sub@main/clash.yaml": {
+      "reason": "no_stable_contribution",
+      "date": "2026-11-26",
+      "repo": null,
       "mv": 3
     }
   }
