@@ -40,6 +40,18 @@
       "added": "2026-11-24",
       "expires": "2026-12-08",
       "source": "https://raw.githubusercontent.com/FlyingDashie/Free-node-autotest/main/clash.yaml"
+    },
+    "104.16.244.34": {
+      "reason": "tls_mitm:certificate verify failed: Hostname mismatch, certificate is not valid for ",
+      "added": "2026-11-26",
+      "expires": "2026-12-10",
+      "source": "https://raw.githubusercontent.com/FlyingDashie/Free-node-autotest/main/clash.yaml"
+    },
+    "104.27.204.44": {
+      "reason": "tls_mitm:certificate verify failed: Hostname mismatch, certificate is not valid for ",
+      "added": "2026-11-26",
+      "expires": "2026-12-10",
+      "source": "https://raw.githubusercontent.com/FlyingDashie/Free-node-autotest/main/clash.yaml"
     }
   }
 }
