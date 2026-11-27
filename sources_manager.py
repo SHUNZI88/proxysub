@@ -124,7 +124,19 @@ CODE_QUERIES = [
     "proxies filename:clash.yaml path:/",
 ]
 TARGET_FILE_RE = re.compile(
-    r"(^|/)((clash|mihomo|meta|proxies|nodes?|sub|list\.meta|clash[-_]?meta|speednodes|clash_config)[^/]*\.ya?ml)$",
+    # ① Clash/Mihomo 配置（原有口径，不动）
+    r"(^|/)("
+    r"(clash|mihomo|meta|proxies|nodes?|sub|list\.meta|clash[-_]?meta|speednodes|clash_config)[^/]*\.ya?ml"
+    # ② 纯文本/JSON 订阅（2026-11-23 新增）：分享链接 txt、Base64 订阅、sing-box
+    #    JSON。ProxyNodeHub 的 known_repos 26 条里有 18 条是这类路径，旧正则
+    #    只认 .ya?ml，整类源在文件树阶段就被过滤，结构上看不见。
+    #    关键词限定在订阅语义词上，避免 README/LICENSE/package.json 误入；
+    #    真正的兜底仍是 parse_fn 解析 + CANDIDATE_MIN_NODES 门槛。
+    r"|"
+    r"(sub|subscription|base64|nodes?|proxies|v2ray|clash|all|mix|mixed|best|list)[\w.\-]*\.(txt|json)"
+    r"|"
+    r"(sub|subscription|base64|nodes|proxies|mix|all|best)"
+    r")$",
     re.I,
 )
 SKIP_PATH_RE = re.compile(r"(^|/)(\.github|docs?|test|tests|example|examples|rules?|ruleset|template|templates)/", re.I)

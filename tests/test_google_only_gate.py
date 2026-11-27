@@ -20,8 +20,10 @@ def _read(path):
 def test_google_only_gate_defaults_on():
     """总开关默认开启 = 默认遵循用户原始设计判据。"""
     import config
-    assert getattr(config, "GOOGLE_ONLY_GATE", False) is True, (
-        "GOOGLE_ONLY_GATE 必须默认 True（用户的原始设计：能连 Google 即通过）")
+    # 2026-11-24 用户选方案1：「能连上即发布」实测导致发布节点几乎不可用，
+    # 改为三站直测（真实打开 ChatGPT/Claude/YouTube）。契约同步翻转。
+    assert getattr(config, "GOOGLE_ONLY_GATE", True) is False
+    assert getattr(config, "TARGET_TEST_ENABLED", False) is True
 
 
 def test_probe_url_is_google_generate_204():
@@ -32,28 +34,18 @@ def test_probe_url_is_google_generate_204():
 
 
 def test_all_downstream_gates_are_gated_by_switch():
-    """所有后加闸门（吞吐/集中度/熔断/延迟/终筛）都必须受总开关控制。
+    """旧严格闸门（吞吐/集中度/熔断/延迟降级）受独立开关 LEGACY_STRICT_GATES 控制。
 
-    用源码断言——这些短路嵌在主流程里，无法用纯函数单测覆盖；
-    静态检查确保每个闸门点都带 GOOGLE_ONLY_GATE 条件，漏一个就会
-    重新出现「能连 Google 却被砍」的回归。
+    2026-11-24：原先挂在 GOOGLE_ONLY_GATE 上，关掉判据开关会连带复活这四道闸门，
+    实测把 76 个直测通过砍到 6 个。现解耦，默认关。
     """
+    import config
+    assert getattr(config, "LEGACY_STRICT_GATES", True) is False
     src = _read(os.path.join(ROOT, "scripts", "cn_probe.py"))
-    # 每个闸门短路点都应引用总开关（至少 5 处：终筛/延迟/吞吐/集中度/熔断）
-    hits = len(re.findall(r"GOOGLE_ONLY_GATE", src))
-    assert hits >= 5, f"闸门短路点不足，仅找到 {hits} 处 GOOGLE_ONLY_GATE 引用"
-
-    # 关键闸门各自必须被短路（允许跨行，用 DOTALL 分段匹配）
-    assert re.search(r"_thin\s*=[\s\S]{0,120}GOOGLE_ONLY_GATE[\s\S]{0,120}select_thin_nodes", src), \
-        "吞吐闸门未受控"
-    assert re.search(r"if verified and not getattr\(config, \"GOOGLE_ONLY_GATE\"", src), \
-        "集中度限额未受控"
-    assert re.search(r"not getattr\(config, \"GOOGLE_ONLY_GATE\"[\s\S]{0,120}verified and _prev_n", src), \
-        "质量熔断未受控"
-    assert re.search(r"_google_only\s*=[\s\S]{0,60}GOOGLE_ONLY_GATE", src) and \
-        re.search(r"if _google_only and delay_passed", src), "三站终筛未受控"
-    assert re.search(r"_slow\s*=\s*\[\] if getattr\(config, \"GOOGLE_ONLY_GATE\"", src), \
-        "延迟降级未受控"
+    assert re.search(r"_thin\s*=[\s\S]{0,120}LEGACY_STRICT_GATES[\s\S]{0,120}select_thin_nodes", src), "吞吐闸门未受控"
+    assert re.search(r"if verified and getattr\(config, \"LEGACY_STRICT_GATES\"", src), "集中度限额未受控"
+    assert re.search(r"LEGACY_STRICT_GATES[\s\S]{0,120}verified and _prev_n", src), "质量熔断未受控"
+    assert re.search(r"_slow\s*=\s*\[\] if not getattr\(config, \"LEGACY_STRICT_GATES\"", src), "延迟降级未受控"
 
 
 def test_switch_off_restores_strict_behavior_contract():
@@ -117,7 +109,7 @@ def test_client_grade_verify_contract():
         "既然放宽淘汰，就必须按稳定度排序，把 3/3 的排前面"
     assert 1000 <= config.CLIENT_GRADE_LATENCY_CAP_MS <= 4500, \
         "延迟上限只做极端慢粗筛；实证延迟与稳定性不相关，不可压得过紧"
-    assert bool(getattr(config, "GOOGLE_ONLY_GATE", False)) is True
+    # 2026-11-24：终验契约与判据开关解耦（方案1 已关闭 GOOGLE_ONLY_GATE）
     assert cn_probe.GENERATE_204 == config.TWITTER_PROBE_URL
 
 
@@ -136,7 +128,7 @@ def test_quick_health_uses_main_probe_url():
 
     原先 quick_health 硬编码 gstatic，与推特主判据不一致：
     「gstatic 通、推特不通」的节点被判健康 → 腐烂名单一路用到 stale-h(10h)。
-    同时锁定健康线（6 个里 ≥4 可用），旧线 ≤sample//3 太松。
+    同时锁定健康线由 health_need_ok() 统一给出（2026-11-27 起 3/4）。
     """
     import inspect
     from scripts import local_round
@@ -145,3 +137,19 @@ def test_quick_health_uses_main_probe_url():
     assert "www.gstatic.com" not in src, "健康抽查不得硬编码 gstatic，须用主判据端点"
     assert "cn_probe.GENERATE_204" in src
     assert "need_ok" in src
+
+
+def test_health_line_is_three_quarters():
+    """健康线 2026-11-27 从 2/3 提到 3/4：6 个→5，12 个→9，且不低于 2。
+
+    实证：前 6 个 4/6 可用时，整份 12 个节点已死 5 个；旧线判「健康」不重发，
+    用户后半段对着一半超时的名单。免费节点寿命是小时级，宁可提前重发。"""
+    from scripts import local_round
+
+    assert local_round.health_need_ok(1) == 1
+    assert local_round.health_need_ok(2) == 2
+    assert local_round.health_need_ok(3) == 3
+    assert local_round.health_need_ok(4) == 3
+    assert local_round.health_need_ok(6) == 5
+    assert local_round.health_need_ok(12) == 9
+    assert local_round.health_need_ok(20) == 15

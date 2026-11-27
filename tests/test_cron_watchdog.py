@@ -282,6 +282,6 @@ def test_run_catchup_uses_full_script_path(tmp_path, monkeypatch):
     rc = wd.run_catchup(tmp_path)
     assert rc == 0
     script = seen["cmd"][-1]
-    assert script.endswith("scripts/cn_probe.py"), script
+    assert script.replace("\\", "/").endswith("scripts/cn_probe.py"), script
     assert wd.Path(script).exists()          # 路径真实存在（不是拼错的名字）
     assert wd.Path(script).parent == tmp_path / "scripts"

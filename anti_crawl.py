@@ -231,7 +231,7 @@ def asset_name(cfg: dict, basename: str) -> str:
 
 def publish_paths(cfg: dict) -> dict[str, str]:
     """basename -> .publish/<资产名>（工作流随后上传为 Release 资产）。"""
-    return {b: os.path.join(PUBLISH_DIR, asset_name(cfg, b)) for b in OUTPUT_BASENAMES}
+    return {b: f"{PUBLISH_DIR}/{asset_name(cfg, b)}" for b in OUTPUT_BASENAMES}  # 固定 "/"：Windows 下 os.path.join 会产出反斜杠
 
 
 def release_urls(cfg: dict, repo: str | None = None) -> list[str]:

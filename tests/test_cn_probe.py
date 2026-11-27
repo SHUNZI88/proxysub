@@ -273,16 +273,26 @@ def test_build_verified_config_groups():
 
 
 def test_build_verified_config_ai_group():
-    """AI 可用组（2026-10-24）：有 ai_reachable 证据的节点进「🤖 AI 可用」
-    url-test 组并置于节点选择首位；无 results/无证据时不出现该组。"""
+    """AI 可用组（2026-10-24；2026-11-27 收紧）：只收 ai_ok 实测通过的节点。
+
+    旧实现用 ai_reachable —— 只要 AI 域有响应（含 403）就算真，结果 4 个带
+    `·无AI` 的节点也被放进「🤖 AI 可用」，用户点开 ChatGPT 网页照样失败。
+    现要求 ai_api（synth_ai_from_targets 由实测 ai_ok 合成，chatgpt/claude
+    至少一个真正 2xx/3xx），_ai_web_blocked 兜底；只有 ai_reachable（API
+    可达）或完全无证据的节点不冒充 AI 可用。"""
     nodes = [
         {"proxy": _proxy(name="HK 01", server="a.example"), "probe_name": "p0"},
         {"proxy": _proxy(name="SG 02", server="b.example"), "probe_name": "p1"},
         {"proxy": _proxy(name="US 03", server="c.example"), "probe_name": "p2"},
+        {"proxy": _proxy(name="JP 04", server="d.example"), "probe_name": "p3"},
+        {"proxy": _proxy(name="DE 05", server="e.example"), "probe_name": "p4"},
     ]
-    results = {"p0": {"ok": True, "ai": {"ai_reachable": True}},
-               "p1": {"ok": True, "ai": {"ai_reachable": True}},
-               "p2": {"ok": True, "ai": {}}}
+    results = {"p0": {"ok": True, "ai": {"ai_api": True}},
+               "p1": {"ok": True, "ai": {"ai_api": True}},
+               "p2": {"ok": True, "ai": {}},
+               "p3": {"ok": True, "ai": {"ai_reachable": True}},
+               "p4": {"ok": True, "ai": {"ai_api": True}}}
+    nodes[4]["_ai_web_blocked"] = True  # 网页被 403：即便 ai_ok 也不进组
     cfg = cn_probe.build_verified_config(nodes, results)
     gnames = [g["name"] for g in cfg["proxy-groups"]]
     assert "🤖 AI 可用" in gnames
@@ -1338,22 +1348,44 @@ def _lib_node(fp, name="N", passes_hint=1):
                       "port": 443, "password": "x"}}
 
 
+def _lib_stamp(days_ago: float = 1.0) -> str:
+    """相对时间戳。原测试硬编码 2026-11-04，加入「通过龄期窗口」后必然过期失败
+    ——库节点的存活率随时间衰减，用固定日期等于让测试对时间敏感。"""
+    import datetime as _dt
+    t = _dt.datetime.now(_dt.timezone.utc) - _dt.timedelta(days=days_ago)
+    return t.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
 def test_node_library_save_and_reload(tmp_path):
     """任务#117：通过/降档节点配置存档后，下轮可作为 carryover 复测。
     这打破「通过少 → carryover 少 → 更少」的恶性循环。"""
     work = str(tmp_path)
     n1, n2 = _lib_node("fp1", "A"), _lib_node("fp2", "B")
-    assert cn_probe.save_node_library([n1, n2], work, "2026-11-04T12:00:00Z") == 2
+    assert cn_probe.save_node_library([n1, n2], work, _lib_stamp(1)) == 2
     got = cn_probe.load_node_library(work, exclude_fps=set())
     assert {x["fp"] for x in got} == {"fp1", "fp2"}
     assert all(x["origin"] == "carryover" for x in got)
     assert got[0]["proxy"]["server"] == "1.1.1.1"
 
 
+def test_node_library_skips_stale_pass(tmp_path):
+    """2026-11-24：通过记录超过 NODE_LIBRARY_PASS_AGE_D 的库节点不再占复测名额。
+
+    实测依据：140 个「7 天内通过过、≥2 次」的库节点仍有 21.4% 稳定存活，
+    而库内 17613 条从无通过记录——节点会衰减，捞回超期的既烧稳定性复测
+    的 3 次采样，又挤掉真正新鲜的候选。"""
+    work = str(tmp_path)
+    old = 999
+    cn_probe.save_node_library([_lib_node("old")], work, _lib_stamp(old))
+    cn_probe.save_node_library([_lib_node("new")], work, _lib_stamp(1))
+    got = cn_probe.load_node_library(work, exclude_fps=set())
+    assert [x["fp"] for x in got] == ["new"]
+
+
 def test_node_library_dedup_against_existing(tmp_path):
     """已在测试集里的 fp 不得重复计入，避免浪费拨测预算。"""
     work = str(tmp_path)
-    cn_probe.save_node_library([_lib_node("fp1")], work, "2026-11-04T12:00:00Z")
+    cn_probe.save_node_library([_lib_node("fp1")], work, _lib_stamp(1))
     assert cn_probe.load_node_library(work, exclude_fps={"fp1"}) == []
 
 
@@ -1361,7 +1393,7 @@ def test_node_library_prunes_stale(tmp_path):
     """超过 NODE_LIBRARY_MAX_AGE_D 的记录被清理，库不会无限膨胀。"""
     work = str(tmp_path)
     cn_probe.save_node_library([_lib_node("old")], work, "2020-01-01T00:00:00Z")
-    cn_probe.save_node_library([_lib_node("new")], work, "2026-11-04T12:00:00Z")
+    cn_probe.save_node_library([_lib_node("new")], work, _lib_stamp(1))
     got = cn_probe.load_node_library(work, exclude_fps=set())
     assert [x["fp"] for x in got] == ["new"]
 
@@ -1369,7 +1401,7 @@ def test_node_library_prunes_stale(tmp_path):
 def test_node_library_respects_limit(tmp_path):
     work = str(tmp_path)
     cn_probe.save_node_library([_lib_node(f"f{i}") for i in range(5)],
-                               work, "2026-11-04T12:00:00Z")
+                               work, _lib_stamp(1))
     assert len(cn_probe.load_node_library(work, exclude_fps=set(), limit=2)) == 2
 
 

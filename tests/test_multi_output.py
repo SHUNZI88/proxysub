@@ -176,9 +176,9 @@ def test_p0_4_hy2_obfs_passthrough_nonstandard():
     assert "obfs" not in ob  # singbox 仅 salamander 合法，非标准不写 obfs 段
 
 
-def test_p0_1_github_summary_survives_missing_keys(monkeypatch):
+def test_p0_1_github_summary_survives_missing_keys(monkeypatch, tmp_path):
     """P0-1：write_github_summary 在 info 缺键时不应 KeyError（容错风格）。"""
-    monkeypatch.setenv("GITHUB_STEP_SUMMARY", "/tmp/_summary_test.md")
+    monkeypatch.setenv("GITHUB_STEP_SUMMARY", str(tmp_path / "_summary_test.md"))
     # 构造一个只含部分键的 info，模拟调用方重构后漏传字段
     partial = {
         "final": 10, "tcp": 5, "real": 3, "https": 2,
@@ -188,7 +188,7 @@ def test_p0_1_github_summary_survives_missing_keys(monkeypatch):
     }
     # 不应抛 KeyError
     fc.write_github_summary(partial)
-    with open("/tmp/_summary_test.md", encoding="utf-8") as f:
+    with open(str(tmp_path / "_summary_test.md"), encoding="utf-8") as f:
         content = f.read()
     assert "Final proxies" in content
     assert "Discovered" not in content or "Discovered (new candidates): **0**" in content

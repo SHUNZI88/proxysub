@@ -1070,19 +1070,28 @@ def fetch_live_pool(workdir: str, per_source: int | None = None,
                 continue
         if not txt:
             return []
+        # 两种源格式都要吃（2026-11-23）：Clash YAML 与分享链接 txt。
+        # 旧实现只认 yaml 的 proxies 字段，分享链接源（vless://、ss://、trojan://）
+        # 会被 safe_load 解析成字符串后直接丢弃——日志表现为「→ 0 个（空/失败）」，
+        # 极易误判成源失效。CI 侧 pool_build 早已用 parse_subscription_text，
+        # 本机侧漏了这一条，两边口径不一致。俄罗斯侧聚合仓（如 ProxyNodeHub 收录的
+        # 那批）几乎全是分享链接，必须补齐。
+        out = []
         try:
             doc = yaml.safe_load(txt)
         except Exception:
-            return []
-        if not isinstance(doc, dict):
-            return []
-        out = []
-        for proxy in (doc.get("proxies") or []):
-            if not isinstance(proxy, dict) or not proxy.get("server"):
-                continue
-            if common.protocol_gate_reason(proxy):
-                continue          # 静态闸门（协议/加密/结构），与 CI 侧同源
-            out.append(proxy)
+            doc = None
+        if isinstance(doc, dict):
+            for proxy in (doc.get("proxies") or []):
+                if isinstance(proxy, dict) and proxy.get("server"):
+                    out.append(proxy)
+        if not out:
+            try:
+                out = [p for p in common.parse_subscription_text(txt)
+                       if isinstance(p, dict) and p.get("server")]
+            except Exception:
+                out = []
+        out = [p for p in out if not common.protocol_gate_reason(p)]
         return even_sample(out, per_source)
 
     # 总时限 + 逐源回报（任务#133）：不能因为一两个源黑洞化就拖死整轮。
@@ -1234,18 +1243,94 @@ def note_source_yield(workdir: str, by_source: dict) -> dict:
     return cur
 
 
+# ---- 逐轮源流水账（2026-11-25）：淘汰判据的唯一依据 ----------------------
+# source_yield.json 是 0.7 衰减 + int 截断的取样权重，单个 passed 下一轮即被
+# 抹成 0，且混入降级轮/试验轮，不能用来判「连续多轮 0 通过」。流水账逐轮原样
+# 记录，并带上本轮测试集口径，淘汰只认合格轮。
+ROUND_META: dict = {"testset": "unknown", "trial": False}
+LEDGER_FILE = "source_ledger.jsonl"
+RETIRE_ROUNDS_N = 6      # 合格轮中连续 0 通过的最少轮数
+RETIRE_MIN_TESTED = 150  # 这些轮累计测试数下限（真实 1% 源误判概率 < 25%）
+# 已证零产源的每轮探针名额（2026-11-27）。此前它们仍按 min_per*1.5=30 保底，
+# 14 个死源 × 30 = 420 个名额/轮（实测中因多 URL/池占比更高，约占半轮预算）。
+# 现在只留 5 个探针：一旦有 1 个通过就退出 dead 集（最近 6 轮不再全零），
+# 恢复 30 保底——既不饿死复活机会，也不再用半轮预算给死源做体检。
+DEAD_SRC_FLOOR = 5
+
+
+def append_source_ledger(workdir: str, by_source: dict, round_id: str) -> None:
+    """每轮每源一行：tested/passed 原值 + 测试集口径 + 是否试验轮。"""
+    rows: dict[str, list[int]] = {}
+    for src, st in (by_source or {}).items():
+        if not isinstance(st, dict) or int(st.get("tested") or 0) <= 0:
+            continue
+        r = rows.setdefault(canon_src(src), [0, 0])
+        r[0] += int(st.get("tested") or 0)
+        r[1] += int(st.get("passed") or 0)
+    qualified = ROUND_META.get("testset") == "ci_pool" and not ROUND_META.get("trial")
+    ts = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+    try:
+        with open(os.path.join(workdir, LEDGER_FILE), "a", encoding="utf-8") as f:
+            for src, (t, p) in sorted(rows.items()):
+                f.write(json.dumps({"ts": ts, "round": round_id, "src": src,
+                                    "tested": t, "passed": p,
+                                    "testset": ROUND_META.get("testset"),
+                                    "trial": bool(ROUND_META.get("trial")),
+                                    "qualified": qualified},
+                                   ensure_ascii=False) + "\n")
+    except OSError as e:
+        log(f"警告: 写源流水账失败: {e}")
+
+
+def source_retire_candidates(workdir: str, n: int = RETIRE_ROUNDS_N,
+                             min_tested: int = RETIRE_MIN_TESTED) -> list[dict]:
+    """只读：合格轮中**最近 n 轮**全部 0 通过且累计 tested≥min_tested 的源。
+
+    只出候选，不删任何源——是否淘汰由用户逐个确认。某源某轮无记录（抓取
+    失败/未被取样）不算 0 通过，也不打断连续性，只是不计入。
+    """
+    per: dict[str, list[dict]] = {}
+    try:
+        with open(os.path.join(workdir, LEDGER_FILE), encoding="utf-8") as f:
+            for line in f:
+                try:
+                    r = json.loads(line)
+                except ValueError:
+                    continue
+                if r.get("qualified"):
+                    per.setdefault(r["src"], []).append(r)
+    except OSError:
+        return []
+    out = []
+    for src, rs in per.items():
+        last = rs[-n:]
+        if len(last) < n:
+            continue
+        t = sum(r["tested"] for r in last)
+        if all(r["passed"] == 0 for r in last) and t >= min_tested:
+            out.append({"src": src, "rounds": len(last), "tested": t,
+                        "since": last[0]["ts"], "until": last[-1]["ts"]})
+    return sorted(out, key=lambda d: -d["tested"])
+
+
 def pool_sample(pool: list[dict], limit: int, yields: dict | None = None,
-                round_id: str = "", min_per: int | None = None) -> list[dict]:
+                round_id: str = "", min_per: int | None = None,
+                dead_srcs: set[str] | None = None) -> list[dict]:
     """从 CI 池子里按「逐源历史产出率」取样，返回待测节点（纯函数）。
 
     为什么不是均匀抽样：各源产出率差两个数量级（实测 33% vs 0%）。均匀抽样
-    等于把 96% 的名额浪费在几乎不出节点的源上。做法是三层：
+    等于把 96% 的名额浪费在几乎不出节点的源上。做法是四层：
 
       1. 保底：每源先给 min_per 个，保证新源/未评源有机会被验证（否则它
          永远没有历史、永远拿不到名额，形成自我实现的淘汰）；
       2. 余量按产出率权重分配，单源不超过总量的 45%——防止一个大源把
          整轮测试变成它一家的体检；
-      3. 源内用轮次 id 做种子随机取，跨轮次自然轮换，池子最终被cover。
+      3. 源内用轮次 id 做种子随机取，跨轮次自然轮换，池子最终被cover；
+      4. **已证零产源限流**（2026-11-27）：`dead_srcs` 是 source_ledger 中
+         连续 6 个合格轮 0 通过、累计 tested>=150 的源。它们只拿
+         DEAD_SRC_FLOOR 个探针名额，其余预算让给有产出的源。此前这些源仍
+         按 30 个保底，14 个死源占掉半轮拨测预算；一旦某个源在探针里通过
+         1 个节点，它就不再满足「最近 6 轮全零」，自动退出 dead 集。
 
     产出率用 (passed+1)/(tested+20) 平滑：新源默认约 5%，既不吹高也不判死。
     """
@@ -1255,6 +1340,7 @@ def pool_sample(pool: list[dict], limit: int, yields: dict | None = None,
     yields = yields or {}
     min_per = int(min_per if min_per is not None else
                   getattr(config, "POOL_MIN_PER_SRC", 20))
+    dead = {canon_src(s) for s in (dead_srcs or ())}
     by: dict[str, list[dict]] = {}
     for n in pool:
         by.setdefault(canon_src(n.get("src")), []).append(n)
@@ -1281,6 +1367,8 @@ def pool_sample(pool: list[dict], limit: int, yields: dict | None = None,
         现策略：零产出源保底提到 min_per*1.5（默认 30），仍保留惩罚但不饿死；
         真正的「判死」门槛从 t>=60 提到 t>=150，要求更多证据。
         """
+        if src in dead:
+            return DEAD_SRC_FLOOR
         rec = yields.get(src) or {}
         t = int(rec.get("tested") or 0)
         p = int(rec.get("passed") or 0)
@@ -1298,6 +1386,8 @@ def pool_sample(pool: list[dict], limit: int, yields: dict | None = None,
         现保留「防止单源吃掉整轮」的初衷（35% 上限仍远低于 45%），但不再把
         零产出源饿死。判死门槛同步从 tested>=60 提到 >=150（更多证据）。
         """
+        if src in dead:
+            return DEAD_SRC_FLOOR
         rec = yields.get(src) or {}
         if int(rec.get("passed") or 0) == 0 and int(rec.get("tested") or 0) >= 150:
             return max(30, int(limit * 0.35))
@@ -1348,7 +1438,7 @@ def pool_sample(pool: list[dict], limit: int, yields: dict | None = None,
     return out
 
 
-def pool_keepalive(workdir: str) -> float | None:
+def pool_keepalive(workdir: str, logger=None) -> float | None:
     """池子保活：不开跑实测也要检查 CI 池年龄，过旧就触发重建（2026-11-21）。
 
     缺口（实证）：`round_guard` 以「资产未超龄」跳过本轮时，cn_probe 整个不启动，
@@ -1363,6 +1453,10 @@ def pool_keepalive(workdir: str) -> float | None:
     tag = getattr(config, "POOL_RELEASE_TAG", "pool")
     name = getattr(config, "POOL_FILE", "pool.json") + ".gz"
     dest = os.path.join(workdir, "_pool_keepalive.json.gz")
+    # 可注入 logger（2026-11-23）：本函数由 local_round 调用时，默认 log() 走
+    # stdout，而计划任务无人接收 stdout——保活的成功/失败在 local_round.log
+    # 里完全不可见，导致「池子 5 小时没刷新」查不到任何痕迹。
+    _log = logger or log
     age_h = None
     try:
         if gh_download(tag, name, dest, retries=2):
@@ -1372,7 +1466,7 @@ def pool_keepalive(workdir: str) -> float | None:
                 age_h = (datetime.datetime.now(datetime.timezone.utc)
                          - ts).total_seconds() / 3600
     except Exception as e:  # noqa: BLE001
-        log(f"池子保活: 读取龄期失败（{type(e).__name__}）")
+        _log(f"池子保活: 读取龄期失败（{type(e).__name__}）")
     finally:
         try:
             os.remove(dest)
@@ -1386,12 +1480,14 @@ def pool_keepalive(workdir: str) -> float | None:
         try:
             ok, why = gh_compat.dispatch_workflow(
                 getattr(config, "POOL_WORKFLOW", "pool-refresh.yml"))
-            log(f"池子保活: CI 池已 {age_h:.2f}h 未更新（> {trigger_h:.2f}h），"
-                f"已请求重建：{why}")
+            # 2026-11-23 补：ok 为 False 时旧代码照样打印「已请求重建」，把
+            # 「触发了」和「触发了但被拒」混为一谈，事后无法判断保活是否生效。
+            _log(f"池子保活: CI 池已 {age_h:.2f}h 未更新（> {trigger_h:.2f}h），"
+                 f"重建请求 {'成功' if ok else '失败'}：{why}")
         except Exception as e:  # noqa: BLE001
-            log(f"池子保活: 请求重建失败（{type(e).__name__}）")
+            _log(f"池子保活: 请求重建失败（{type(e).__name__}: {e}）")
     else:
-        log(f"池子保活: CI 池龄期 {age_h:.2f}h，无需重建")
+        _log(f"池子保活: CI 池龄期 {age_h:.2f}h，无需重建")
     return age_h
 
 
@@ -1646,9 +1742,14 @@ def load_node_library(workdir: str, exclude_fps: set[str], *,
                       limit: int | None = None) -> list[dict]:
     """从节点库挑「历史通过过、本轮尚未入池」的节点复测（任务#117）。
 
-    按 passes 降序取前 N 个——通过次数是「这条链路长期可用」的最强证据
-    （实证：历史 CN 通过率存活组 76% vs 死亡组 0%）。origin 标 carryover，
-    使其在 cap_test_set 中不被裁剪。
+    2026-11-24 改判据方向（实测驱动）：
+      旧实现按 passes 降序取前 N 个，注释写「通过次数是长期可用的最强证据」。
+      但 passes 是**累计值**，高 passes 往往意味着「很久以前很稳、现在早废」——
+      实测 140 个库节点（7 天内通过过、≥2 次、不在当前发布集）稳定 21.4%，
+      而库里 17613 条从无通过记录的点同样参与排序竞争，实际被选中的偏老。
+      现改为「先按最近一次通过时间降序」，并通过 NODE_LIBRARY_PASS_AGE_D
+      设一个通过龄期窗口：超过窗口的库节点不再占复测名额（节点会衰减，
+      捞回来也大概率是死的，白烧稳定性复测的 3 次采样）。
     """
     path = _lib_path(workdir)
     if not os.path.exists(path):
@@ -1661,27 +1762,47 @@ def load_node_library(workdir: str, exclude_fps: set[str], *,
     limit = config.NODE_LIBRARY_LOAD_LIMIT if limit is None else limit
     now = time.time()
     quiet_s = float(getattr(config, "NODE_LIBRARY_RETEST_H", 6)) * 3600
+    pass_age_s = float(getattr(config, "NODE_LIBRARY_PASS_AGE_D", 10)) * 86400
     cands = []
     skipped_fresh = 0
+    skipped_stale = 0
+    blocked_regions = set(getattr(config, "BLOCK_REGIONS", ()) or ())
     for fp, rec in lib.items():
         if fp in exclude_fps:
             continue
         p = rec.get("proxy")
         if not isinstance(p, dict) or not p.get("server"):
             continue
+        # 屏蔽地区的库节点不占复测名额（2026-11-24）：发布侧一定会被剔除，
+        # 捞回来测等于白烧一轮稳定性复测。与 load_carryover 的口径保持一致。
+        if blocked_regions and region_of(str(p.get("name") or "")) in blocked_regions:
+            continue
         bad_ts = float(rec.get("usability_bad_ts") or 0)
         if bad_ts and now - bad_ts < float(getattr(config, "USABILITY_BAD_QUIET_D", 7)) * 86400:
             continue      # 可用性判定不合格的节点，静默期内不再占复测名额
-        seen = float(rec.get("last_seen_ts") or 0) or _epoch_of(rec.get("last_pass"))
+        last_pass = _epoch_of(rec.get("last_pass"))
+        if pass_age_s > 0 and (not last_pass or now - last_pass > pass_age_s):
+            skipped_stale += 1
+            continue      # 通过记录过旧：衰减概率高，不占名额
+        seen = float(rec.get("last_seen_ts") or 0) or last_pass
         # 刚测过的让位：否则高 passes 的节点每轮都占满名额，新血永远进不来
         if now - seen < quiet_s:
             skipped_fresh += 1
             continue
-        cands.append((int(rec.get("passes") or 0), seen, fp, p))
-    # 通过次数多优先；同档内「最久没测」优先（轮转，避免饿死）
-    cands.sort(key=lambda x: (-x[0], x[1]))
+        cands.append((last_pass, int(rec.get("passes") or 0), seen, fp, p))
+    # 最近通过优先（存活率的最强单一预测因子）；同档内 passes 多优先，
+    # 再审最近没测的优先（轮转，避免同几条霸占名额）。
+    cands.sort(key=lambda x: (-x[0], -x[1], x[2]))
+    per_srv = int(getattr(config, "NODE_LIBRARY_PER_SERVER", 0) or 0)
+    by_srv: dict[str, int] = {}
     out: list[dict] = []
-    for passes, seen, fp, p in cands[:limit]:
+    for last_pass, passes, seen, fp, p in cands:
+        if len(out) >= limit:
+            break
+        srv = str(p.get("server") or "?")
+        if per_srv and by_srv.get(srv, 0) >= per_srv:
+            continue      # 同一台机器的第 N+1 个小号：不占名额，让给别的主机
+        by_srv[srv] = by_srv.get(srv, 0) + 1
         exclude_fps.add(fp)
         out.append({
             "fp": fp,
@@ -1691,10 +1812,12 @@ def load_node_library(workdir: str, exclude_fps: set[str], *,
             "final": False,
             "us_ok": False,
         })
-    if out or skipped_fresh:
+    if out or skipped_fresh or skipped_stale:
         log(f"节点库: {len(out)} 个历史节点并入复测集"
             f"（库内共 {len(lib)} 个；{skipped_fresh} 个刚测过让位，"
-            f"本轮取 {limit}，按通过次数+最久未测轮转）")
+            f"{skipped_stale} 个通过记录超 {pass_age_s / 86400:.0f} 天不用，"
+            f"本轮取 {limit}，按最近通过时间优先，同机 ≤{per_srv or '∞'}；"
+            f"覆盖 {len(by_srv)} 台主机）")
     return out
 
 
@@ -3443,9 +3566,15 @@ def build_verified_config(nodes: list[dict], results: dict | None = None) -> dic
     # 子集组：只作参考，不置顶、不抢默认出口
     subset_groups: list[dict] = []
     if results:
+        # 2026-11-27：AI 组只收真正「能打开」的节点。旧实现用 ai_reachable
+        # （任何 AI 域有响应即真，包括 403），结果 4 个带 `·无AI` 的节点也被
+        # 放进「🤖 AI 可用」组——用户点开 ChatGPT 网页照样失败。synth_ai_from_targets
+        # 把 target_test 的 ai_ok 映射到 ai.ai_api，ai_api 才是「真能开」；
+        # 未测到的节点不冒充 AI 可用，_ai_web_blocked 双重兜底。
         ai_names = [nm for n, nm in zip(nodes, names)
-                    if ((results.get(n.get("probe_name", ""), {}) or {})
-                        .get("ai") or {}).get("ai_reachable")]
+                    if (((results.get(n.get("probe_name", ""), {}) or {})
+                         .get("ai") or {}).get("ai_api"))
+                    and not n.get("_ai_web_blocked")]
         if len(ai_names) >= 2:
             subset_groups.append({"name": "🤖 AI 可用", **ut, "proxies": ai_names})
     uv_names = [nm for n, nm in zip(nodes, names) if n.get("_user_verified")]
@@ -3556,11 +3685,14 @@ def build_parser() -> argparse.ArgumentParser:
                     help="总时间预算秒数（默认 1800，对齐定时任务超时；"
                          "手动跑大可放宽，测试集按剩余预算裁剪）")
     ap.add_argument("--dry-run", action="store_true", help="不发布，仅本地验证")
+    ap.add_argument("--trial", action="store_true",
+                    help="试验轮：照常运行，但源流水账标记为不合格，不参与淘汰判据")
     return ap
 
 
 def main() -> int:
     args = build_parser().parse_args()
+    ROUND_META["trial"] = bool(getattr(args, "trial", False) or getattr(args, "dry_run", False))
 
     tag = args.tag
     workdir = args.workdir
@@ -3710,6 +3842,7 @@ def main() -> int:
     # 本机只消费，并且只负责「从我这里能不能用」这一件事。
     _pool = load_ci_pool(workdir, tag, round_id=time.strftime("%Y%m%dT%H"))
     if _pool:
+        ROUND_META["testset"] = "ci_pool"
         _old = len(pend)
         pend = _pool
         if _old:
@@ -3730,15 +3863,25 @@ def main() -> int:
         # 名额倾斜：各源本机产出率差两个数量级，均匀抽样等于把预算浪费在
         # 几乎不出节点的源上。产量数据来自 source_yield.json（本机实测口径）。
         _yields = load_source_yield(workdir)
+        # 已证零产源（source_ledger：连续 6 个合格轮 0 通过、累计 tested≥150）
+        # 只留探针名额。只对**当前候选池里真实存在**的源生效，日志才准确。
+        _pool_srcs = {canon_src(n.get("src")) for n in pend}
+        _dead = {d["src"] for d in source_retire_candidates(workdir)} & _pool_srcs
+        if _dead:
+            log(f"零产源限流: {len(_dead)} 个源（连续 6 个合格轮 0 通过）"
+                f"各留 {DEAD_SRC_FLOOR} 个探针名额，其余预算给有产出的源："
+                + ", ".join(sorted(_dead)))
         _n0 = len(pend)
         pend = pool_sample(pend, getattr(config, "POOL_SAMPLE_N", 1400),
-                           _yields, round_id=time.strftime("%Y%m%dT%H"))
+                           _yields, round_id=time.strftime("%Y%m%dT%H"),
+                           dead_srcs=_dead)
         if len(pend) < _n0:
             log(f"点名取样: 合并候选 {_n0} → {len(pend)} 个"
                 f"（按逐源历史产出率分配名额，单源上限 45%，新源有保底）")
     elif getattr(config, "LIVE_FETCH_ENABLED", True):
         log("警告: 未取得 CI 候选池，降级为本机自抓——此时候选受本机网络影响，"
             "本轮源可达性数据不可用于源评估")
+        ROUND_META["testset"] = "live_only"
         _live = fetch_live_pool(workdir)
         if _live:
             _old = len(pend)
@@ -3944,9 +4087,10 @@ def main() -> int:
                             results[_nm]["latency_ms"] = _rt["latency_ms"]
                         if _rt.get("kbps") is not None:
                             results[_nm]["kbps"] = _rt["kbps"]
-                        if not _rt.get("ok"):
+                        if not _rt.get("ok") and getattr(config, "TARGET_GATE_HARD", True):
                             results[_nm]["ok"] = False
-                        results[_nm]["real_traffic"] = _rt
+                        results[_nm]["target_hit"] = bool(_rt.get("ok"))
+                        results[_nm]["real_traffic"] = dict(_rt, ok=True) if not getattr(config, "TARGET_GATE_HARD", True) else _rt
                         if _rt.get("targets") is not None:
                             results[_nm]["codes"] = dict(_rt.get("targets") or {})
                             results[_nm]["ai_ok"] = bool(_rt.get("ai_ok"))
@@ -4108,7 +4252,7 @@ def main() -> int:
     _lat_cap = (int(getattr(config, "TARGET_LATENCY_MAX_MS", 1500))
                 if getattr(config, "TARGET_TEST_ENABLED", False)
                 else CN_MAX_PUBLISH_LATENCY_MS)
-    _slow = [] if getattr(config, "GOOGLE_ONLY_GATE", True) else [
+    _slow = [] if not getattr(config, "LEGACY_STRICT_GATES", False) else [
         n for n in verified
         if (results.get(n["probe_name"], {}).get("latency_ms") or 99999)
         > _lat_cap]
@@ -4181,7 +4325,7 @@ def main() -> int:
     # 能过延迟与目标站两道闸（首包有响应），客户端体验却是"一直转圈"。
     # 门槛 64KB/s：够网页与文本 AI，不够视频——不够的退回第二资产（不删）。
     _min_kbps = float(getattr(config, "MIN_PUBLISH_KBPS", 64))
-    _thin = ([] if getattr(config, "GOOGLE_ONLY_GATE", True)
+    _thin = ([] if not getattr(config, "LEGACY_STRICT_GATES", False)
              else select_thin_nodes(verified, results, _min_kbps))
     if _thin:
         verified = [n for n in verified if n not in _thin]
@@ -4228,7 +4372,7 @@ def main() -> int:
                 + (f"；{_ux_unknown} 个无证据保留" if _ux_unknown else ""))
 
     # 6.69b) 集中度上限（任务#131）：同一 server 超过 MAX_NODES_PER_SERVER 的退回
-    if verified and not getattr(config, "GOOGLE_ONLY_GATE", True):
+    if verified and getattr(config, "LEGACY_STRICT_GATES", False):
         _dkept, _ddrop = apply_diversity_cap(
             verified, getattr(config, "MAX_NODES_PER_SERVER", 3))
         if _ddrop:
@@ -4253,13 +4397,24 @@ def main() -> int:
     # 但必须让用户一眼分辨「能上网」与「能开 ChatGPT」，这是两件事。
     _ai_blocked = 0
     for n in verified:
+        # 2026-11-24：库/上游带回的旧标注先清掉，按本轮实测重打（实证 37 个里 33 个
+        # 带 ·无AI，本轮实际只判了 3 个——其余是 carryover 名字里残留的历史标记）
+        _clean = str(n.get("name", "")).replace(config.AI_WEB_MARK, "")
+        if _clean != n.get("name"):
+            n["name"] = _clean
+            if isinstance(n.get("proxy"), dict):
+                n["proxy"] = dict(n["proxy"], name=_clean)
         ev = results.get(n["probe_name"]) or {}
         codes = ev.get("codes") or {}
-        if getattr(config, "TARGET_TEST_ENABLED", False):
-            # 直测模式：ai_ok 已由 target_test 给出（chatgpt/claude 任一 2xx/3xx）
+        # 2026-11-24 修正：只有「真测过 AI」才打标。GOOGLE_ONLY_GATE 下 target_test
+        # 根本不执行，ev 里没有 ai_ok 键，旧逻辑 `not ev.get("ai_ok")` 把 None 当
+        # False，导致 108/108 全部被误标 ·无AI（报告 ai.probed=0 可证）。
+        if "ai_ok" in ev:
             _blocked = not ev.get("ai_ok")
-        else:
+        elif codes.get("chatgpt") is not None:
             _blocked = codes.get("chatgpt") == 403
+        else:
+            _blocked = False   # 未测 ≠ 不可用，不打标
         if _blocked:
             n["_ai_web_blocked"] = True
             if not str(n.get("name", "")).endswith(config.AI_WEB_MARK):
@@ -4331,9 +4486,61 @@ def main() -> int:
     else:
         log("用户验证常驻池: 无可用记录")
 
-    by_origin = {o: sum(1 for n in verified if n["origin"] == o)
-                 for o in ("pending", "rescue", "carryover", "user_pool")}
-    # 分源/分协议聚合（Phase 2.2）：tested/passed 双口径，供 CI 源级评分与门槛自学习
+    # 6.69a) 硬闸门统一后置（2026-11-27）：端点去重 / 同机上限 / 高风险协议 /
+    # skip-cert 安全闸门必须在**所有节点来源合并之后**执行——包括 6.8 的用户实测
+    # 保活节点和 6.9 的用户常驻池。旧顺序在用户池并入之前就跑这些闸门，用户池
+    # 里的 skip-cert 节点会绕过安全闸门直接发布（现网 user_pool=0 暂未触发，
+    # 但这是结构性漏洞）。后置后，下面的 carryover 配额看到的是全部硬闸门之后
+    # 的真正存活集。
+    if getattr(config, "DEDUP_ENDPOINT", False):
+        _seen, _dup = set(), []
+        for n in list(verified):
+            _p = n.get("proxy") or {}
+            _k = (str(_p.get("server", "")).lower(), str(_p.get("port", "")))
+            if _k in _seen:
+                _dup.append(n)
+            else:
+                _seen.add(_k)
+        if _dup:
+            verified = [n for n in verified if n not in _dup]
+            log(f"端点去重: {len(_dup)} 个同 server:port 的换名副本移除")
+    _cap_srv = int(getattr(config, "PUBLISH_PER_SERVER", 2))
+    if _cap_srv:
+        _cnt, _over = {}, []
+        for n in verified:
+            _sv = str((n.get("proxy") or {}).get("server", "")).lower()
+            _cnt[_sv] = _cnt.get(_sv, 0) + 1
+            if _cnt[_sv] > _cap_srv:
+                _over.append(n)
+        if _over:
+            verified = [n for n in verified if n not in _over]
+            degraded = degraded + _over
+            log(f"同机上限: {len(_over)} 个节点超出每台 ≤{_cap_srv}，退第二资产")
+    if getattr(config, "RISKY_REQUIRE_CARRYOVER", False):
+        def _risky(n):
+            p = n.get("proxy") or {}
+            return (str(p.get("client-fingerprint", "")).lower() == "unsafe"
+                    or (p.get("type") == "vless" and p.get("network") == "xhttp"))
+        _rk = [n for n in verified if _risky(n) and n.get("origin") != "carryover"]
+        if _rk:
+            verified = [n for n in verified if n not in _rk]
+            degraded = degraded + _rk
+            log(f"高风险协议: {len(_rk)} 个 unsafe 指纹 / vless-xhttp 新节点首轮不进主资产（需跨轮复测）")
+    # 6.69b) 安全闸门（2026-11-24）：跳过证书校验的节点不进主资产
+    if getattr(config, "DROP_INSECURE_NODES", False):
+        def _insec(n):
+            v = (n.get("proxy") or {}).get("skip-cert-verify")
+            return v is True or str(v).lower() in ("true", "1", "yes")
+        _ins = [n for n in verified if _insec(n)]
+        if _ins:
+            verified = [n for n in verified if not _insec(n)]
+            degraded = degraded + _ins
+            log(f"安全闸门: {len(_ins)} 个 skip-cert-verify 节点移出主资产（可被中间人截获）")
+    log("生效闸门: " + " / ".join(f"{k}={getattr(config, k, None)}" for k in (
+        "GOOGLE_ONLY_GATE", "TARGET_TEST_ENABLED", "SERIAL_LATENCY_RECHECK",
+        "CLIENT_GRADE_ENABLED", "DROP_INSECURE_NODES", "NODE_LIBRARY_PER_SERVER",
+        "TARGET_GATE_HARD", "LEGACY_STRICT_GATES", "PUBLISH_PER_SERVER")))
+
     # 6.69d) 地区屏蔽（用户 2026-11-20 明确要求：满屏意大利节点，屏蔽意大利）
     # 与 Google-only 判据正交：判据回答「能不能连 Google」，地区屏蔽回答「从哪来」。
     # 用户要的是节点多样性，不是「一损俱损的同一批意大利机场机器」——这批节点
@@ -4351,6 +4558,23 @@ def main() -> int:
             degraded = degraded + _blocked
             log(f"地区屏蔽: {len(_blocked)} 个节点来自屏蔽地区 "
                 f"{sorted(_block_regions)} → 从发布集移除（退回第二资产，不删除）")
+
+    # 6.69f) 库节点配额（必须在**所有硬性排除之后**执行）
+    #
+    # 2026-11-27 修复：旧顺序是「配额 → skip-cert → 意大利」，于是配额先把
+    # 排名最高的 carryover 留下、把中段的干净历史节点挤进第二资产；随后
+    # skip-cert / 意大利又把留下的高排名节点删掉。结果本轮 43 个 carryover
+    # → 配额留 20 → 证书删 11 → 意大利删 9，最终只发布 1 个 carryover；
+    # 而 14 个「非意大利、不跳证书、历史通过 2–20 次」的节点早已被配额丢掉。
+    # 这是纯顺序问题，不放松任何安全/多样性政策。改动后配额看到的是硬闸门
+    # 之后的存活集，只会为真正能发布的节点保留名额。
+    _co = [n for n in verified if n.get("origin") == "carryover"]
+    _cap = max(int(getattr(config, "CARRYOVER_CAP_MIN", 20)), len(verified) - len(_co))
+    if len(_co) > _cap:
+        _ex = _co[_cap:]
+        verified = [n for n in verified if n not in _ex]
+        degraded = degraded + _ex
+        log(f"库节点配额: carryover {len(_co)} 超上限 {_cap}，{len(_ex)} 个退第二资产")
 
     # 6.69e) 客户端同款终验（2026-11-21）：用户两次反馈「手机端大量超时」。
     # 初筛 16 路并发 + delay_test 5s→8s 重试，会把「8 秒内碰巧返回一次」算作连通；
@@ -4371,6 +4595,12 @@ def main() -> int:
                 _r["client_grade_ms"] = _v["median_ms"]
                 _r["client_grade_passed"] = _v.get("passed")
                 _r["client_grade_rounds"] = len(_v.get("rounds") or [])
+
+    # 发布集最终构成（必须在客户端终验之后统计）：旧代码在地区屏蔽/配额之前
+    # 统计 by_origin，日志因此出现过「验证集 12 个（pending 13 / carryover 10）」
+    # 的自相矛盾输出（2026-11-27 实测）。
+    by_origin = {o: sum(1 for n in verified if n["origin"] == o)
+                 for o in ("pending", "rescue", "carryover", "user_pool")}
 
     # 分源仅统计带 src 的节点（carryover 等无源节点不归任何源，避免产生 "?" 伪源
     # 污染源级评分）；分协议仍覆盖全部节点。
@@ -4411,7 +4641,7 @@ def main() -> int:
     except Exception:
         _prev_n = 0
     _floor = int(getattr(config, "QUALITY_FLOOR_NODES", 8))
-    if (not getattr(config, "GOOGLE_ONLY_GATE", True)
+    if (getattr(config, "LEGACY_STRICT_GATES", False)
             and verified and _prev_n > len(verified) and len(verified) < _floor):
         log(f"质量熔断: 本轮验证集 {len(verified)} 个 < 下限 {_floor}，"
             f"而上一轮有 {_prev_n} 个；保留上一轮资产，本轮不覆盖")
@@ -4678,6 +4908,11 @@ def main() -> int:
     try:
         _ysrc = (report.get("counts") or {}).get("by_source") or {}
         _y = note_source_yield(workdir, _ysrc)
+        append_source_ledger(workdir, _ysrc, str(report.get("round_id") or ""))
+        _rc = source_retire_candidates(workdir)
+        if _rc:
+            log("源淘汰候选（仅报告，待人工确认）: " + ", ".join(
+                f"{d['src']}({d['rounds']}轮/{d['tested']}测/0过)" for d in _rc))
         _good = [k for k, v in _y.items()
                  if (v.get("passed") or 0) > 0 and (v.get("tested") or 0) >= 10]
         if _good:

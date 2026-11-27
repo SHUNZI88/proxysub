@@ -416,7 +416,7 @@ def dispatch_workflow(workflow: str, ref: str = "main", timeout: int = 25) -> tu
     if not has_gh():
         return False, "gh 不可用"
     try:
-        r = subprocess.run([gh_bin(), "workflow", "run", workflow, "--ref", ref],
+        r = subprocess.run([gh_bin(), "workflow", "run", workflow, "--ref", ref, "-R", repo()],  # 2026-11-24：缺 -R 导致 unable to find git
                            capture_output=True, text=True, encoding="utf-8",
                            errors="replace", timeout=timeout, env=_gh_env())
         if r.returncode == 0:
@@ -431,7 +431,7 @@ def release_assets(tag: str) -> list[dict]:
     """列出某 tag 的资产（`[{"name":..., "size":..., "id":...}]`）。"""
     if has_gh():
         try:
-            r = subprocess.run([gh_bin(), "release", "view", tag, "--json", "assets"],
+            r = subprocess.run([gh_bin(), "release", "view", tag, "--json", "assets", "-R", repo()],
                                capture_output=True, text=True, encoding="utf-8", errors="replace", timeout=60,
                                env=_gh_env())
             if r.returncode == 0:

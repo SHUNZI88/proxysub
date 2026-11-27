@@ -111,3 +111,48 @@ def test_zero_yield_source_not_permanently_starved():
     got = cn_probe.pool_sample(pool, 100, yields, round_id="r1", min_per=20)
     assert len(got) >= 20, "零产源仍需保留有意义的探索名额（不能再钉在 10 个）"
     assert len(got) <= 40, "惩罚仍需体现：上限低于正常源的 45%"
+
+
+def test_dead_src_from_ledger_gets_probe_floor_only():
+    """source_ledger 判死的源只留探针名额（2026-11-27）。
+
+    实证：14 个源连续 6 个合格轮 0 通过（累计 tested 209~543），此前仍按
+    30 个保底，14×30=420 名额/轮，实测中约占半轮拨测预算。dead_srcs 让
+    它们只拿 DEAD_SRC_FLOOR 个探针，预算转给有产出的源。
+    """
+    pool = _pool({"dead": 500, "g1": 500, "g2": 500, "g3": 500})
+    yields = {"dead": {"tested": 543, "passed": 0},
+              "g1": {"tested": 100, "passed": 10},
+              "g2": {"tested": 100, "passed": 10},
+              "g3": {"tested": 100, "passed": 10}}
+    got = cn_probe.pool_sample(pool, 300, yields, round_id="r1", min_per=20,
+                               dead_srcs={"dead"})
+    cnt = collections.Counter(x["src"] for x in got)
+    plain = collections.Counter(x["src"] for x in cn_probe.pool_sample(
+        pool, 300, yields, round_id="r1", min_per=20))
+    assert cnt["dead"] == cn_probe.DEAD_SRC_FLOOR
+    assert plain["dead"] == 30, "对照组：未限流时零产源仍拿 30 保底"
+    good = ("g1", "g2", "g3")
+    assert sum(cnt[g] for g in good) > sum(plain[g] for g in good), \
+        "省下的名额必须转给有产出的源"
+    assert sum(cnt[g] for g in good) == 300 - cn_probe.DEAD_SRC_FLOOR
+
+
+def test_dead_src_pool_smaller_than_floor_takes_all():
+    pool = _pool({"dead": 3})
+    got = cn_probe.pool_sample(pool, 100, {}, round_id="r1", min_per=20,
+                               dead_srcs={"dead"})
+    assert len(got) == 3
+
+
+def test_dead_src_exits_dead_set_after_one_pass():
+    """最近 6 轮只要有 1 次通过，就不再是 dead 源，恢复 30 保底。
+
+    上游 source_retire_candidates 的重算逻辑保证这一点；这里锁定 pool_sample
+    在 dead_srcs 不含该源时不得再限流（否则复活后仍被钉死）。
+    """
+    pool = _pool({"revived": 500})
+    yields = {"revived": {"tested": 543, "passed": 1}}
+    got = cn_probe.pool_sample(pool, 100, yields, round_id="r1", min_per=20,
+                               dead_srcs=set())
+    assert len(got) >= 20

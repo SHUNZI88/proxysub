@@ -58,8 +58,12 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--health-check", dest="health_check", action="store_true",
                     default=True, help="资产未超龄时抽查已发布节点，腐烂则提前重发")
     ap.add_argument("--no-health-check", dest="health_check", action="store_false")
-    ap.add_argument("--health-min-age-h", type=float, default=2.0,
-                    help="资产龄期达到该值才做健康抽查（默认 2h，避免频繁起 mihomo）")
+    ap.add_argument("--health-min-age-h", type=float, default=1.5,
+                    help="资产龄期达到该值才做健康抽查（默认 1.5h；节点寿命是小时级，"
+                         "2h 才开始查会漏掉第一波死亡）")
+    ap.add_argument("--health-sample", type=int, default=0,
+                    help="健康抽查节点数（0=全部，默认全部；只查前 N 个会让后段节点"
+                         "长期无人体检）")
     ap.add_argument("--reset-pool", action="store_true",
                     help="清空库存（节点库/用户池/检查点）后再跑，从订阅源候选重建；"
                          "原文件移到 <workdir>/reset_backup_<时间>/")
@@ -69,22 +73,34 @@ def build_parser() -> argparse.ArgumentParser:
     return ap
 
 
-def quick_health(workdir: str, sample: int = 6, ttfb_max: int | None = None,
+def health_need_ok(checked: int) -> int:
+    """健康线：至少 75% 可用（6 个→5，12 个→9），且不低于 2 个。
+
+    2026-11-27：原线是 2/3（6 个→4），意味着前 6 个里死 2 个仍算「健康」，
+    而全量实测显示此时整份 12 个节点里往往已有 5 个不可用。免费节点寿命是
+    小时级，宁可提前重发，也不要把「三成已死」当成健康。
+    """
+    return min(checked, max(2, (checked * 3 + 3) // 4))
+
+
+def quick_health(workdir: str, sample: int = 0, ttfb_max: int | None = None,
                 timeout: float = 3.0) -> dict:
-    """抽查已发布集合的前 N 个节点，判断列表是否已经「腐烂」（任务#137）。
+    """抽查已发布集合，判断列表是否已经「腐烂」（任务#137）。
 
     为什么需要它：静态发布 + 12 小时周期，实测 20 个节点 8 小时后只剩 35%
     可用（意大利 ss 存活最好，美国/荷兰/瑞典 vless 全灭）。光靠「资产龄期」
     判断该不该跑，会让用户在最后几个小时里对着一份几乎全死的名单。
 
-    判据：TTFB ≤ 阈值且状态 2xx/3xx 算可用；可用数低于 max(2, 2/3 样本) 判腐坏。
-    只抽前 N 个（列表按实测速率排序，前面的就是用户最可能点的）。
+    判据：TTFB ≤ 阈值且状态 2xx/3xx 算可用；可用数低于 health_need_ok()
+   （75%，6 个→5、12 个→9）判腐坏。默认抽查**全部**节点；sample>0 时只查
+    前 N 个（列表按实测速率排序，前面的就是用户最可能点的，但后段不查会
+    长期无人体检）。
 
     **端点必须与发布判据一致（2026-11-21 修）**：原先硬编码 gstatic，
     与主判据（推特）不一致——"gstatic 通、推特不通"的节点会被误判健康，
     腐烂名单一路用到 stale-h(10h)。改用 cn_probe.GENERATE_204（推特主判据）。
-    腐坏线同时从「≤ sample//3」提到「< 2/3 样本」：用户实测 32 个里 20+ 超时
-    是明确不可接受，6 个里要 ≥4 个可用才算健康，宁可提前重发。
+    **健康线 2026-11-27 从 2/3 提到 3/4**：用户实测 32 个里 20+ 超时是明确
+    不可接受；6 个里 4 个可用不再是健康，而是「已经死了一大批」。
     """
     lim = int(ttfb_max or getattr(cn_probe.config, "TARGET_TTFB_MAX_MS", 2000))
     probe_url = cn_probe.GENERATE_204
@@ -95,7 +111,9 @@ def quick_health(workdir: str, sample: int = 6, ttfb_max: int | None = None,
         cfg = yaml.safe_load(open(path, encoding="utf-8")) or {}
     except Exception as e:
         return {"checked": 0, "usable": 0, "degraded": False, "why": f"读取失败 {e}"}
-    proxies = (cfg.get("proxies") or [])[:max(1, sample)]
+    proxies = cfg.get("proxies") or []
+    if sample and sample > 0:
+        proxies = proxies[:sample]
     if not proxies:
         return {"checked": 0, "usable": 0, "degraded": False, "why": "发布集为空"}
 
@@ -138,10 +156,10 @@ def quick_health(workdir: str, sample: int = 6, ttfb_max: int | None = None,
         except Exception:
             proc.kill()
     checked = len(proxies)
-    # 健康线：6 个里至少 4 个可用（2/3），低于它就算腐烂 → 提前重发。
-    # 旧线 usable <= max(1, checked//3) 太松：6 个里 3 个可用仍算健康，
-    # 用户体感就是「一半超时」，与本次反馈一致。
-    need_ok = max(2, (checked * 2 + 2) // 3)
+    # 健康线：至少 75% 可用（6 个→5、12 个→9），低于它就算腐烂 → 提前重发。
+    # 旧线 2/3 太松：6 个里 4 个可用仍算健康，而实测此时整份列表往往已死
+    # 掉三到四成；用户体感就是「一半超时」。
+    need_ok = health_need_ok(checked)
     return {"checked": checked, "usable": usable,
             "median": sorted(ttfbs)[len(ttfbs) // 2] if ttfbs else None,
             "degraded": usable < need_ok,
@@ -206,7 +224,7 @@ def main(argv: list[str] | None = None) -> int:
     # 池子 4.5h 没刷新却查不到任何痕迹，就是这么来的。此处把返回值落到
     # local_round.log，让「保活跑了 / 没跑 / 龄期多少」永久可审计。
     try:
-        _age = cn_probe.pool_keepalive(workdir)
+        _age = cn_probe.pool_keepalive(workdir, logger=log)
         log("池子保活：" + (f"CI 池龄期 {_age:.2f}h" if _age is not None
                             else "读取龄期失败（下载 pool.json.gz 未成功）"))
     except Exception as e:  # noqa: BLE001 - 保活失败绝不影响本轮决策
@@ -223,11 +241,15 @@ def main(argv: list[str] | None = None) -> int:
             if args.health_check and "新鲜" in why:
                 age = round_guard.asset_age_h(workdir)
                 if age is not None and age >= args.health_min_age_h:
-                    h = quick_health(workdir)
+                    h = quick_health(workdir, sample=args.health_sample)
                     log(f"健康抽查：{h['why']}")
                     if h["degraded"]:
+                        # 资产还「新鲜」，但抽查已不达标：这条路径必须重发。
+                        # 2026-11-27 修：旧日志随后打印「补跑（资产新鲜…）」，
+                        # 与「提前重发」自相矛盾，排障时看不出到底为什么跑。
                         log("决策：提前重发（已发布列表已大面积失效）")
                         ok = True
+                        why = "健康抽查不达标"
                     else:
                         log(f"不跑：{why}；健康度尚可（{h['why']}）")
                         return 0
