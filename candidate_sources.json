@@ -1,289 +1,5 @@
 {
   "candidates": {
-    "https://raw.githubusercontent.com/peacefish/nodefree/main/sub/sub_merge_clash.yaml": {
-      "repo": "peacefish/nodefree",
-      "stars": 34,
-      "repo_created": "2023-01-30T21:30:42Z",
-      "reputation": "ok",
-      "reputation_note": "stars=34,age=1391d",
-      "required_runs": 3,
-      "first_seen": "2026-11-22",
-      "initial_nodes": 976,
-      "runs": 15,
-      "good_streak": 0,
-      "fail_streak": 0,
-      "history": [
-        {
-          "date": "2026-11-24",
-          "count": 976,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-25",
-          "count": 976,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-25",
-          "count": 976,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-25",
-          "count": 976,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-26",
-          "count": 976,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-26",
-          "count": 976,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-26",
-          "count": 976,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-27",
-          "count": 976,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        }
-      ]
-    },
-    "https://raw.githubusercontent.com/peacefish/nodefree/main/sub/clash_openshare.yaml": {
-      "repo": "peacefish/nodefree",
-      "stars": 34,
-      "repo_created": "2023-01-30T21:30:42Z",
-      "reputation": "ok",
-      "reputation_note": "stars=34,age=1391d",
-      "required_runs": 3,
-      "first_seen": "2026-11-22",
-      "initial_nodes": 26,
-      "runs": 15,
-      "good_streak": 0,
-      "fail_streak": 0,
-      "history": [
-        {
-          "date": "2026-11-24",
-          "count": 26,
-          "usable": 2,
-          "unique_new": 2,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-25",
-          "count": 26,
-          "usable": 2,
-          "unique_new": 2,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-25",
-          "count": 26,
-          "usable": 2,
-          "unique_new": 2,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-25",
-          "count": 26,
-          "usable": 2,
-          "unique_new": 2,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-26",
-          "count": 26,
-          "usable": 2,
-          "unique_new": 2,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-26",
-          "count": 26,
-          "usable": 2,
-          "unique_new": 2,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-26",
-          "count": 26,
-          "usable": 2,
-          "unique_new": 2,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-27",
-          "count": 26,
-          "usable": 2,
-          "unique_new": 2,
-          "tamper": 0
-        }
-      ]
-    },
-    "https://raw.githubusercontent.com/MrWQ/nodefreebot/master/mihomo.yml": {
-      "repo": "MrWQ/nodefreebot",
-      "stars": 6,
-      "repo_created": "2023-04-20T01:52:44Z",
-      "reputation": "ok",
-      "reputation_note": "stars=6,age=1312d",
-      "required_runs": 3,
-      "first_seen": "2026-11-22",
-      "initial_nodes": 22,
-      "runs": 15,
-      "good_streak": 0,
-      "fail_streak": 0,
-      "history": [
-        {
-          "date": "2026-11-24",
-          "count": 22,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-25",
-          "count": 22,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-25",
-          "count": 22,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-25",
-          "count": 22,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-26",
-          "count": 22,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-26",
-          "count": 22,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-26",
-          "count": 22,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-27",
-          "count": 22,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        }
-      ]
-    },
-    "https://raw.githubusercontent.com/MrWQ/nodefreebot/master/clash.yml": {
-      "repo": "MrWQ/nodefreebot",
-      "stars": 6,
-      "repo_created": "2023-04-20T01:52:44Z",
-      "reputation": "ok",
-      "reputation_note": "stars=6,age=1312d",
-      "required_runs": 3,
-      "first_seen": "2026-11-22",
-      "initial_nodes": 21,
-      "runs": 15,
-      "good_streak": 0,
-      "fail_streak": 0,
-      "history": [
-        {
-          "date": "2026-11-24",
-          "count": 21,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-25",
-          "count": 21,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-25",
-          "count": 21,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-25",
-          "count": 21,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-26",
-          "count": 21,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-26",
-          "count": 21,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-26",
-          "count": 21,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
-          "date": "2026-11-27",
-          "count": 21,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        }
-      ]
-    },
     "https://raw.githubusercontent.com/marshall888666/free_clash_subscribe/main/source/clash-meta-2.yaml": {
       "repo": "marshall888666/free_clash_subscribe",
       "stars": 24,
@@ -293,17 +9,10 @@
       "required_runs": 3,
       "first_seen": "2026-11-23",
       "initial_nodes": 24,
-      "runs": 12,
+      "runs": 13,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-11-24",
-          "count": 21,
-          "usable": 2,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-11-25",
           "count": 21,
@@ -352,6 +61,13 @@
           "usable": 3,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-27",
+          "count": 39,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -364,17 +80,10 @@
       "required_runs": 3,
       "first_seen": "2026-11-23",
       "initial_nodes": 90,
-      "runs": 11,
+      "runs": 12,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-11-24",
-          "count": 90,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-11-25",
           "count": 90,
@@ -423,6 +132,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-27",
+          "count": 90,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -431,17 +147,10 @@
       "origin": "channel_telegram",
       "added": "2026-11-23",
       "first_seen": "2026-11-23",
-      "runs": 11,
+      "runs": 12,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-11-24",
-          "count": 28,
-          "usable": 2,
-          "unique_new": 1,
-          "tamper": 0
-        },
         {
           "date": "2026-11-25",
           "count": 28,
@@ -490,6 +199,13 @@
           "usable": 1,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-27",
+          "count": 28,
+          "usable": 1,
+          "unique_new": 0,
+          "tamper": 0
         }
       ],
       "required_runs": 3
@@ -503,10 +219,18 @@
       "required_runs": 5,
       "first_seen": "2026-11-27",
       "initial_nodes": 100,
-      "runs": 0,
+      "runs": 1,
       "good_streak": 0,
       "fail_streak": 0,
-      "history": []
+      "history": [
+        {
+          "date": "2026-11-27",
+          "count": 96,
+          "usable": 4,
+          "unique_new": 0,
+          "tamper": 0
+        }
+      ]
     },
     "https://raw.githubusercontent.com/BiliRumble/NoMoreRules/master/snippets/nodes.meta.yml": {
       "repo": "BiliRumble/NoMoreRules",
@@ -517,6 +241,84 @@
       "required_runs": 5,
       "first_seen": "2026-11-27",
       "initial_nodes": 100,
+      "runs": 1,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": [
+        {
+          "date": "2026-11-27",
+          "count": 96,
+          "usable": 4,
+          "unique_new": 0,
+          "tamper": 0
+        }
+      ]
+    },
+    "https://raw.githubusercontent.com/nichecer/v2ray-node-share/main/sub.txt": {
+      "repo": "nichecer/v2ray-node-share",
+      "stars": 3,
+      "repo_created": "2026-10-28T10:08:57Z",
+      "reputation": "low",
+      "reputation_note": "stars=3,age=30d",
+      "required_runs": 5,
+      "first_seen": "2026-11-27",
+      "initial_nodes": 23,
+      "runs": 0,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": []
+    },
+    "https://raw.githubusercontent.com/nichecer/v2ray-node-share/main/nodes.txt": {
+      "repo": "nichecer/v2ray-node-share",
+      "stars": 3,
+      "repo_created": "2026-10-28T10:08:57Z",
+      "reputation": "low",
+      "reputation_note": "stars=3,age=30d",
+      "required_runs": 5,
+      "first_seen": "2026-11-27",
+      "initial_nodes": 23,
+      "runs": 0,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": []
+    },
+    "https://raw.githubusercontent.com/nichecer/clash-node-share/main/clash.yaml": {
+      "repo": "nichecer/clash-node-share",
+      "stars": 1,
+      "repo_created": "2026-10-28T11:00:13Z",
+      "reputation": "low",
+      "reputation_note": "stars=1,age=30d",
+      "required_runs": 5,
+      "first_seen": "2026-11-27",
+      "initial_nodes": 24,
+      "runs": 0,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": []
+    },
+    "https://raw.githubusercontent.com/nichecer/shadowrocket-node-share/main/sub.txt": {
+      "repo": "nichecer/shadowrocket-node-share",
+      "stars": 1,
+      "repo_created": "2026-10-28T11:24:07Z",
+      "reputation": "low",
+      "reputation_note": "stars=1,age=30d",
+      "required_runs": 5,
+      "first_seen": "2026-11-27",
+      "initial_nodes": 24,
+      "runs": 0,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": []
+    },
+    "https://raw.githubusercontent.com/nichecer/shadowrocket-node-share/main/nodes.txt": {
+      "repo": "nichecer/shadowrocket-node-share",
+      "stars": 1,
+      "repo_created": "2026-10-28T11:24:07Z",
+      "reputation": "low",
+      "reputation_note": "stars=1,age=30d",
+      "required_runs": 5,
+      "first_seen": "2026-11-27",
+      "initial_nodes": 24,
       "runs": 0,
       "good_streak": 0,
       "fail_streak": 0,
@@ -615,6 +417,30 @@
       "reason": "no_stable_contribution",
       "date": "2026-11-26",
       "repo": null,
+      "mv": 3
+    },
+    "https://raw.githubusercontent.com/peacefish/nodefree/main/sub/sub_merge_clash.yaml": {
+      "reason": "no_stable_contribution",
+      "date": "2026-11-27",
+      "repo": "peacefish/nodefree",
+      "mv": 3
+    },
+    "https://raw.githubusercontent.com/peacefish/nodefree/main/sub/clash_openshare.yaml": {
+      "reason": "no_stable_contribution",
+      "date": "2026-11-27",
+      "repo": "peacefish/nodefree",
+      "mv": 3
+    },
+    "https://raw.githubusercontent.com/MrWQ/nodefreebot/master/mihomo.yml": {
+      "reason": "no_stable_contribution",
+      "date": "2026-11-27",
+      "repo": "MrWQ/nodefreebot",
+      "mv": 3
+    },
+    "https://raw.githubusercontent.com/MrWQ/nodefreebot/master/clash.yml": {
+      "reason": "no_stable_contribution",
+      "date": "2026-11-27",
+      "repo": "MrWQ/nodefreebot",
       "mv": 3
     }
   }
