@@ -9,17 +9,10 @@
       "required_runs": 3,
       "first_seen": "2026-11-23",
       "initial_nodes": 24,
-      "runs": 13,
+      "runs": 14,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-11-25",
-          "count": 21,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-11-25",
           "count": 16,
@@ -68,6 +61,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-27",
+          "count": 19,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -80,7 +80,7 @@
       "required_runs": 3,
       "first_seen": "2026-11-23",
       "initial_nodes": 90,
-      "runs": 12,
+      "runs": 13,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -99,13 +99,6 @@
           "tamper": 0
         },
         {
-          "date": "2026-11-25",
-          "count": 90,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
           "date": "2026-11-26",
           "count": 90,
           "usable": 0,
@@ -121,6 +114,13 @@
         },
         {
           "date": "2026-11-26",
+          "count": 90,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-27",
           "count": 90,
           "usable": 0,
           "unique_new": 0,
@@ -147,17 +147,10 @@
       "origin": "channel_telegram",
       "added": "2026-11-23",
       "first_seen": "2026-11-23",
-      "runs": 12,
+      "runs": 13,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-11-25",
-          "count": 28,
-          "usable": 3,
-          "unique_new": 2,
-          "tamper": 0
-        },
         {
           "date": "2026-11-25",
           "count": 28,
@@ -206,6 +199,13 @@
           "usable": 1,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-27",
+          "count": 28,
+          "usable": 1,
+          "unique_new": 0,
+          "tamper": 0
         }
       ],
       "required_runs": 3
@@ -219,7 +219,7 @@
       "required_runs": 5,
       "first_seen": "2026-11-27",
       "initial_nodes": 100,
-      "runs": 1,
+      "runs": 2,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -228,6 +228,13 @@
           "count": 96,
           "usable": 4,
           "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-27",
+          "count": 96,
+          "usable": 5,
+          "unique_new": 2,
           "tamper": 0
         }
       ]
@@ -241,7 +248,7 @@
       "required_runs": 5,
       "first_seen": "2026-11-27",
       "initial_nodes": 100,
-      "runs": 1,
+      "runs": 2,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -250,6 +257,13 @@
           "count": 96,
           "usable": 4,
           "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-27",
+          "count": 96,
+          "usable": 5,
+          "unique_new": 2,
           "tamper": 0
         }
       ]
@@ -263,10 +277,18 @@
       "required_runs": 5,
       "first_seen": "2026-11-27",
       "initial_nodes": 23,
-      "runs": 0,
+      "runs": 1,
       "good_streak": 0,
       "fail_streak": 0,
-      "history": []
+      "history": [
+        {
+          "date": "2026-11-27",
+          "count": 23,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        }
+      ]
     },
     "https://raw.githubusercontent.com/nichecer/v2ray-node-share/main/nodes.txt": {
       "repo": "nichecer/v2ray-node-share",
@@ -277,10 +299,18 @@
       "required_runs": 5,
       "first_seen": "2026-11-27",
       "initial_nodes": 23,
-      "runs": 0,
+      "runs": 1,
       "good_streak": 0,
       "fail_streak": 0,
-      "history": []
+      "history": [
+        {
+          "date": "2026-11-27",
+          "count": 23,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        }
+      ]
     },
     "https://raw.githubusercontent.com/nichecer/clash-node-share/main/clash.yaml": {
       "repo": "nichecer/clash-node-share",
@@ -291,10 +321,18 @@
       "required_runs": 5,
       "first_seen": "2026-11-27",
       "initial_nodes": 24,
-      "runs": 0,
+      "runs": 1,
       "good_streak": 0,
       "fail_streak": 0,
-      "history": []
+      "history": [
+        {
+          "date": "2026-11-27",
+          "count": 24,
+          "usable": 4,
+          "unique_new": 0,
+          "tamper": 0
+        }
+      ]
     },
     "https://raw.githubusercontent.com/nichecer/shadowrocket-node-share/main/sub.txt": {
       "repo": "nichecer/shadowrocket-node-share",
@@ -305,10 +343,18 @@
       "required_runs": 5,
       "first_seen": "2026-11-27",
       "initial_nodes": 24,
-      "runs": 0,
+      "runs": 1,
       "good_streak": 0,
       "fail_streak": 0,
-      "history": []
+      "history": [
+        {
+          "date": "2026-11-27",
+          "count": 24,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        }
+      ]
     },
     "https://raw.githubusercontent.com/nichecer/shadowrocket-node-share/main/nodes.txt": {
       "repo": "nichecer/shadowrocket-node-share",
@@ -319,6 +365,154 @@
       "required_runs": 5,
       "first_seen": "2026-11-27",
       "initial_nodes": 24,
+      "runs": 1,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": [
+        {
+          "date": "2026-11-27",
+          "count": 24,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        }
+      ]
+    },
+    "https://raw.githubusercontent.com/0xRadikal/Free-Telegram-Proxy/main/verified/proxies.json": {
+      "repo": "0xRadikal/Free-Telegram-Proxy",
+      "stars": 273,
+      "repo_created": "2026-10-26T14:27:09Z",
+      "reputation": "low",
+      "reputation_note": "stars=273,age=32d",
+      "required_runs": 5,
+      "first_seen": "2026-11-27",
+      "initial_nodes": 2476,
+      "runs": 0,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": []
+    },
+    "https://raw.githubusercontent.com/0xRadikal/Free-Telegram-Proxy/main/resilient/proxies.json": {
+      "repo": "0xRadikal/Free-Telegram-Proxy",
+      "stars": 273,
+      "repo_created": "2026-10-26T14:27:09Z",
+      "reputation": "low",
+      "reputation_note": "stars=273,age=32d",
+      "required_runs": 5,
+      "first_seen": "2026-11-27",
+      "initial_nodes": 542,
+      "runs": 0,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": []
+    },
+    "https://raw.githubusercontent.com/Alirewa/V2ray-Configs/main/sub3.txt": {
+      "repo": "Alirewa/V2ray-Configs",
+      "stars": 44,
+      "repo_created": "2026-06-06T19:14:56Z",
+      "reputation": "ok",
+      "reputation_note": "stars=44,age=174d",
+      "required_runs": 3,
+      "first_seen": "2026-11-27",
+      "initial_nodes": 100,
+      "runs": 0,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": []
+    },
+    "https://raw.githubusercontent.com/Alirewa/V2ray-Configs/main/sub1.txt": {
+      "repo": "Alirewa/V2ray-Configs",
+      "stars": 44,
+      "repo_created": "2026-06-06T19:14:56Z",
+      "reputation": "ok",
+      "reputation_note": "stars=44,age=174d",
+      "required_runs": 3,
+      "first_seen": "2026-11-27",
+      "initial_nodes": 100,
+      "runs": 0,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": []
+    },
+    "https://raw.githubusercontent.com/kasesm/Free-Config/main/all_raw.txt": {
+      "repo": "kasesm/Free-Config",
+      "stars": 43,
+      "repo_created": "2026-02-02T13:50:28Z",
+      "reputation": "ok",
+      "reputation_note": "stars=43,age=298d",
+      "required_runs": 3,
+      "first_seen": "2026-11-27",
+      "initial_nodes": 2078,
+      "runs": 0,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": []
+    },
+    "https://raw.githubusercontent.com/kasesm/Free-Config/main/all_sub.txt": {
+      "repo": "kasesm/Free-Config",
+      "stars": 43,
+      "repo_created": "2026-02-02T13:50:28Z",
+      "reputation": "ok",
+      "reputation_note": "stars=43,age=298d",
+      "required_runs": 3,
+      "first_seen": "2026-11-27",
+      "initial_nodes": 786,
+      "runs": 0,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": []
+    },
+    "https://raw.githubusercontent.com/yafeisun/v2raynode/main/result/nodetotal.txt": {
+      "repo": "yafeisun/v2raynode",
+      "stars": 34,
+      "repo_created": "2025-09-28T07:52:02Z",
+      "reputation": "ok",
+      "reputation_note": "stars=34,age=425d",
+      "required_runs": 3,
+      "first_seen": "2026-11-27",
+      "initial_nodes": 836,
+      "runs": 0,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": []
+    },
+    "https://raw.githubusercontent.com/yafeisun/v2raynode/main/result/nodelist.txt": {
+      "repo": "yafeisun/v2raynode",
+      "stars": 34,
+      "repo_created": "2025-09-28T07:52:02Z",
+      "reputation": "ok",
+      "reputation_note": "stars=34,age=425d",
+      "required_runs": 3,
+      "first_seen": "2026-11-27",
+      "initial_nodes": 47,
+      "runs": 0,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": []
+    },
+    "https://raw.githubusercontent.com/twj0/subseek/master/data/sub_github_base64.txt": {
+      "repo": "twj0/subseek",
+      "stars": 33,
+      "repo_created": "2025-11-23T15:14:41Z",
+      "reputation": "ok",
+      "reputation_note": "stars=33,age=369d",
+      "required_runs": 3,
+      "first_seen": "2026-11-27",
+      "initial_nodes": 3862,
+      "runs": 0,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": []
+    },
+    "https://raw.githubusercontent.com/twj0/subseek/master/data/sub_github.txt": {
+      "repo": "twj0/subseek",
+      "stars": 33,
+      "repo_created": "2025-11-23T15:14:41Z",
+      "reputation": "ok",
+      "reputation_note": "stars=33,age=369d",
+      "required_runs": 3,
+      "first_seen": "2026-11-27",
+      "initial_nodes": 3862,
       "runs": 0,
       "good_streak": 0,
       "fail_streak": 0,
