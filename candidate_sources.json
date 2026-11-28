@@ -9,17 +9,10 @@
       "required_runs": 3,
       "first_seen": "2026-11-23",
       "initial_nodes": 24,
-      "runs": 14,
+      "runs": 15,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-11-25",
-          "count": 16,
-          "usable": 2,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-11-25",
           "count": 18,
@@ -68,6 +61,13 @@
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-28",
+          "count": 19,
+          "usable": 1,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -80,7 +80,7 @@
       "required_runs": 3,
       "first_seen": "2026-11-23",
       "initial_nodes": 90,
-      "runs": 13,
+      "runs": 14,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -92,13 +92,6 @@
           "tamper": 0
         },
         {
-          "date": "2026-11-25",
-          "count": 90,
-          "usable": 0,
-          "unique_new": 0,
-          "tamper": 0
-        },
-        {
           "date": "2026-11-26",
           "count": 90,
           "usable": 0,
@@ -135,6 +128,13 @@
         },
         {
           "date": "2026-11-27",
+          "count": 90,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-28",
           "count": 90,
           "usable": 0,
           "unique_new": 0,
@@ -147,17 +147,10 @@
       "origin": "channel_telegram",
       "added": "2026-11-23",
       "first_seen": "2026-11-23",
-      "runs": 13,
+      "runs": 14,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
-        {
-          "date": "2026-11-25",
-          "count": 28,
-          "usable": 1,
-          "unique_new": 0,
-          "tamper": 0
-        },
         {
           "date": "2026-11-25",
           "count": 28,
@@ -206,6 +199,13 @@
           "usable": 1,
           "unique_new": 0,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-28",
+          "count": 28,
+          "usable": 1,
+          "unique_new": 0,
+          "tamper": 0
         }
       ],
       "required_runs": 3
@@ -219,7 +219,7 @@
       "required_runs": 5,
       "first_seen": "2026-11-27",
       "initial_nodes": 100,
-      "runs": 2,
+      "runs": 3,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -235,6 +235,13 @@
           "count": 96,
           "usable": 5,
           "unique_new": 2,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-28",
+          "count": 96,
+          "usable": 3,
+          "unique_new": 0,
           "tamper": 0
         }
       ]
@@ -248,7 +255,7 @@
       "required_runs": 5,
       "first_seen": "2026-11-27",
       "initial_nodes": 100,
-      "runs": 2,
+      "runs": 3,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -265,6 +272,13 @@
           "usable": 5,
           "unique_new": 2,
           "tamper": 0
+        },
+        {
+          "date": "2026-11-28",
+          "count": 96,
+          "usable": 3,
+          "unique_new": 0,
+          "tamper": 0
         }
       ]
     },
@@ -277,7 +291,7 @@
       "required_runs": 5,
       "first_seen": "2026-11-27",
       "initial_nodes": 23,
-      "runs": 1,
+      "runs": 2,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -285,6 +299,13 @@
           "date": "2026-11-27",
           "count": 23,
           "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-28",
+          "count": 23,
+          "usable": 1,
           "unique_new": 0,
           "tamper": 0
         }
@@ -299,7 +320,7 @@
       "required_runs": 5,
       "first_seen": "2026-11-27",
       "initial_nodes": 23,
-      "runs": 1,
+      "runs": 2,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
@@ -307,6 +328,13 @@
           "date": "2026-11-27",
           "count": 23,
           "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-28",
+          "count": 23,
+          "usable": 1,
           "unique_new": 0,
           "tamper": 0
         }
@@ -321,8 +349,8 @@
       "required_runs": 5,
       "first_seen": "2026-11-27",
       "initial_nodes": 24,
-      "runs": 1,
-      "good_streak": 0,
+      "runs": 2,
+      "good_streak": 1,
       "fail_streak": 0,
       "history": [
         {
@@ -330,6 +358,13 @@
           "count": 24,
           "usable": 4,
           "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-28",
+          "count": 24,
+          "usable": 5,
+          "unique_new": 4,
           "tamper": 0
         }
       ]
@@ -343,13 +378,20 @@
       "required_runs": 5,
       "first_seen": "2026-11-27",
       "initial_nodes": 24,
-      "runs": 1,
+      "runs": 2,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
         {
           "date": "2026-11-27",
           "count": 24,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-28",
+          "count": 25,
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
@@ -365,13 +407,20 @@
       "required_runs": 5,
       "first_seen": "2026-11-27",
       "initial_nodes": 24,
-      "runs": 1,
+      "runs": 2,
       "good_streak": 0,
       "fail_streak": 0,
       "history": [
         {
           "date": "2026-11-27",
           "count": 24,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        },
+        {
+          "date": "2026-11-28",
+          "count": 25,
           "usable": 0,
           "unique_new": 0,
           "tamper": 0
@@ -387,10 +436,18 @@
       "required_runs": 5,
       "first_seen": "2026-11-27",
       "initial_nodes": 2476,
-      "runs": 0,
+      "runs": 1,
       "good_streak": 0,
       "fail_streak": 0,
-      "history": []
+      "history": [
+        {
+          "date": "2026-11-28",
+          "count": 2519,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        }
+      ]
     },
     "https://raw.githubusercontent.com/0xRadikal/Free-Telegram-Proxy/main/resilient/proxies.json": {
       "repo": "0xRadikal/Free-Telegram-Proxy",
@@ -401,10 +458,18 @@
       "required_runs": 5,
       "first_seen": "2026-11-27",
       "initial_nodes": 542,
-      "runs": 0,
+      "runs": 1,
       "good_streak": 0,
       "fail_streak": 0,
-      "history": []
+      "history": [
+        {
+          "date": "2026-11-28",
+          "count": 549,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        }
+      ]
     },
     "https://raw.githubusercontent.com/Alirewa/V2ray-Configs/main/sub3.txt": {
       "repo": "Alirewa/V2ray-Configs",
@@ -415,10 +480,18 @@
       "required_runs": 3,
       "first_seen": "2026-11-27",
       "initial_nodes": 100,
-      "runs": 0,
+      "runs": 1,
       "good_streak": 0,
       "fail_streak": 0,
-      "history": []
+      "history": [
+        {
+          "date": "2026-11-28",
+          "count": 100,
+          "usable": 1,
+          "unique_new": 1,
+          "tamper": 0
+        }
+      ]
     },
     "https://raw.githubusercontent.com/Alirewa/V2ray-Configs/main/sub1.txt": {
       "repo": "Alirewa/V2ray-Configs",
@@ -429,24 +502,18 @@
       "required_runs": 3,
       "first_seen": "2026-11-27",
       "initial_nodes": 100,
-      "runs": 0,
+      "runs": 1,
       "good_streak": 0,
       "fail_streak": 0,
-      "history": []
-    },
-    "https://raw.githubusercontent.com/kasesm/Free-Config/main/all_raw.txt": {
-      "repo": "kasesm/Free-Config",
-      "stars": 43,
-      "repo_created": "2026-02-02T13:50:28Z",
-      "reputation": "ok",
-      "reputation_note": "stars=43,age=298d",
-      "required_runs": 3,
-      "first_seen": "2026-11-27",
-      "initial_nodes": 2078,
-      "runs": 0,
-      "good_streak": 0,
-      "fail_streak": 0,
-      "history": []
+      "history": [
+        {
+          "date": "2026-11-28",
+          "count": 100,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        }
+      ]
     },
     "https://raw.githubusercontent.com/kasesm/Free-Config/main/all_sub.txt": {
       "repo": "kasesm/Free-Config",
@@ -457,10 +524,18 @@
       "required_runs": 3,
       "first_seen": "2026-11-27",
       "initial_nodes": 786,
-      "runs": 0,
+      "runs": 1,
       "good_streak": 0,
       "fail_streak": 0,
-      "history": []
+      "history": [
+        {
+          "date": "2026-11-28",
+          "count": 786,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        }
+      ]
     },
     "https://raw.githubusercontent.com/yafeisun/v2raynode/main/result/nodetotal.txt": {
       "repo": "yafeisun/v2raynode",
@@ -471,10 +546,18 @@
       "required_runs": 3,
       "first_seen": "2026-11-27",
       "initial_nodes": 836,
-      "runs": 0,
+      "runs": 1,
       "good_streak": 0,
       "fail_streak": 0,
-      "history": []
+      "history": [
+        {
+          "date": "2026-11-28",
+          "count": 836,
+          "usable": 50,
+          "unique_new": 1,
+          "tamper": 0
+        }
+      ]
     },
     "https://raw.githubusercontent.com/yafeisun/v2raynode/main/result/nodelist.txt": {
       "repo": "yafeisun/v2raynode",
@@ -485,34 +568,56 @@
       "required_runs": 3,
       "first_seen": "2026-11-27",
       "initial_nodes": 47,
+      "runs": 1,
+      "good_streak": 0,
+      "fail_streak": 0,
+      "history": [
+        {
+          "date": "2026-11-28",
+          "count": 47,
+          "usable": 0,
+          "unique_new": 0,
+          "tamper": 0
+        }
+      ]
+    },
+    "https://raw.githubusercontent.com/chenzhihan1751-cyber/node-sub-zixf/main/sub/base64.txt": {
+      "repo": "chenzhihan1751-cyber/node-sub-zixf",
+      "stars": 10,
+      "repo_created": "2026-10-10T09:35:42Z",
+      "reputation": "low",
+      "reputation_note": "stars=10,age=48d",
+      "required_runs": 5,
+      "first_seen": "2026-11-28",
+      "initial_nodes": 818,
       "runs": 0,
       "good_streak": 0,
       "fail_streak": 0,
       "history": []
     },
-    "https://raw.githubusercontent.com/twj0/subseek/master/data/sub_github_base64.txt": {
-      "repo": "twj0/subseek",
-      "stars": 33,
-      "repo_created": "2025-11-23T15:14:41Z",
-      "reputation": "ok",
-      "reputation_note": "stars=33,age=369d",
-      "required_runs": 3,
-      "first_seen": "2026-11-27",
-      "initial_nodes": 3862,
+    "https://raw.githubusercontent.com/chenzhihan1751-cyber/node-sub-zixf/main/sub/v2ray.txt": {
+      "repo": "chenzhihan1751-cyber/node-sub-zixf",
+      "stars": 10,
+      "repo_created": "2026-10-10T09:35:42Z",
+      "reputation": "low",
+      "reputation_note": "stars=10,age=48d",
+      "required_runs": 5,
+      "first_seen": "2026-11-28",
+      "initial_nodes": 818,
       "runs": 0,
       "good_streak": 0,
       "fail_streak": 0,
       "history": []
     },
-    "https://raw.githubusercontent.com/twj0/subseek/master/data/sub_github.txt": {
-      "repo": "twj0/subseek",
-      "stars": 33,
-      "repo_created": "2025-11-23T15:14:41Z",
-      "reputation": "ok",
-      "reputation_note": "stars=33,age=369d",
-      "required_runs": 3,
-      "first_seen": "2026-11-27",
-      "initial_nodes": 3862,
+    "https://raw.githubusercontent.com/Leechuihui/FreeHarbor/main/clients/clash.yaml": {
+      "repo": "Leechuihui/FreeHarbor",
+      "stars": 1,
+      "repo_created": "2026-11-20T18:20:24Z",
+      "reputation": "low",
+      "reputation_note": "stars=1,age=7d",
+      "required_runs": 5,
+      "first_seen": "2026-11-28",
+      "initial_nodes": 200,
       "runs": 0,
       "good_streak": 0,
       "fail_streak": 0,
@@ -635,6 +740,24 @@
       "reason": "no_stable_contribution",
       "date": "2026-11-27",
       "repo": "MrWQ/nodefreebot",
+      "mv": 3
+    },
+    "https://raw.githubusercontent.com/kasesm/Free-Config/main/all_raw.txt": {
+      "reason": "honeypot_structure:template_cluster:99fa1b6e:169.40.42.0/24(49/54);template_cluster:31011350:146.75.57.0/24(13/22);template_cluster:eeecf51b:188.114.98.0/24(38/42)",
+      "date": "2026-11-28",
+      "repo": "kasesm/Free-Config",
+      "mv": 3
+    },
+    "https://raw.githubusercontent.com/twj0/subseek/master/data/sub_github_base64.txt": {
+      "reason": "honeypot_structure:template_cluster:821986fd:45.80.110.0/24(20/21);template_cluster:427e7636:196.196.149.0/24(16/23);template_cluster:99fa1b6e:169.40.42.0/24(46/55)",
+      "date": "2026-11-28",
+      "repo": "twj0/subseek",
+      "mv": 3
+    },
+    "https://raw.githubusercontent.com/twj0/subseek/master/data/sub_github.txt": {
+      "reason": "honeypot_structure:template_cluster:821986fd:45.80.110.0/24(20/21);template_cluster:427e7636:196.196.149.0/24(16/23);template_cluster:99fa1b6e:169.40.42.0/24(46/55)",
+      "date": "2026-11-28",
+      "repo": "twj0/subseek",
       "mv": 3
     }
   }
